@@ -1,0 +1,29 @@
+# IMPORTANT: Stop config-server when you want to execute the tests
+spring:
+  ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/microservice_test
+    username: microservice_test
+    password: microservice_test
+  jpa:
+    properties:
+      hibernate:
+        dialect: com.pizza.configuration.persistence.CustomPostgreSQL95Dialect
+        jdbc:
+          lob:
+            # With Java >= 9, to avoid:
+            # SQLFeatureNotSupportedException: Method PgConnection.createClob() is not yet implemented
+            non_contextual_creation: true
+        #format_sql: true
+        #show_sql: true
+
+
+#show sql statement
+#logging:
+#  level:
+#    org:
+#      hibernate:
+#        SQL: debug
+#        type:
+#          descriptor:
+#            sql: trace
