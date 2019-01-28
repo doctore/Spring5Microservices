@@ -17,7 +17,6 @@ spring:
         #format_sql: true
         #show_sql: true
 
-
 #show sql statement
 #logging:
 #  level:
