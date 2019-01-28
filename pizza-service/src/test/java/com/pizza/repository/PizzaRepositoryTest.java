@@ -1,6 +1,5 @@
 package com.pizza.repository;
 
-import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,8 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.contains;
@@ -27,9 +24,6 @@ import static org.junit.Assert.*;
 public class PizzaRepositoryTest {
 
     @Autowired
-    private IngredientRepository ingredientRepository;
-
-    @Autowired
     private PizzaRepository pizzaRepository;
 
     // Elements used to test the functionality
@@ -40,32 +34,9 @@ public class PizzaRepositoryTest {
 
     @Before
     public void init() {
-        Ingredient bacon = Ingredient.builder().id(1).name("Bacon").build();
-        Ingredient cheese = Ingredient.builder().id(2).name("Cheese").build();
-        Ingredient egg = Ingredient.builder().id(3).name("Egg").build();
-        Ingredient ham = Ingredient.builder().id(4).name("Ham").build();
-        Ingredient mozzarella = Ingredient.builder().id(5).name("Mozzarella").build();
-        Ingredient oregano = Ingredient.builder().id(6).name("Oregano").build();
-        Ingredient parmesan = Ingredient.builder().id(7).name("Parmesan").build();
-        Ingredient pineapple = Ingredient.builder().id(8).name("Pineapple").build();
-        Ingredient tomatoSauce = Ingredient.builder().id(9).name("Tomato sauce").build();
-
-        ingredientRepository.saveAll(Arrays.asList(bacon, cheese, egg, ham, mozzarella,
-                                                   oregano, parmesan, pineapple, tomatoSauce));
-
-        carbonara = Pizza.builder().id(1).name("Carbonara").cost(7.50D)
-                                   .ingredients(new HashSet<>(Arrays.asList(bacon, egg, mozzarella, parmesan)))
-                                   .build();
-
-        hawaiian = Pizza.builder().id(2).name("Hawaiian").cost(8D)
-                                  .ingredients(new HashSet<>(Arrays.asList(cheese, ham, pineapple)))
-                                  .build();
-
-        margherita = Pizza.builder().id(3).name("Margherita").cost(7D)
-                                    .ingredients(new HashSet<>(Arrays.asList(mozzarella, oregano, tomatoSauce)))
-                                    .build();
-
-        pizzaRepository.saveAll(Arrays.asList(carbonara, hawaiian, margherita));
+        carbonara = pizzaRepository.findWithIngredientsByName("Carbonara").get();
+        hawaiian = pizzaRepository.findWithIngredientsByName("Hawaiian").get();
+        margherita = pizzaRepository.findWithIngredientsByName("Margherita").get();
     }
 
 
