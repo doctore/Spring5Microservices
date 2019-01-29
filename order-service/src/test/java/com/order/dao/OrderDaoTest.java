@@ -48,6 +48,27 @@ public class OrderDaoTest {
 
 
     @Test
+    public void getId_whenNullModelIsGiven_thenNullIdIsReturned() {
+        // When
+        Integer id = orderDao.getId(null);
+
+        // Then
+        assertNull(id);
+    }
+
+
+    @Test
+    public void getId_whenNotNullModelIsGiven_thenItsIdIsReturned() {
+        // When
+        Integer id = orderDao.getId(order1);
+
+        // Then
+        assertNotNull(id);
+        assertEquals(order1.getId(), id);
+    }
+
+
+    @Test
     public void findByIds_whenNullIdsAreGiven_thenEmptyListIsReturned() {
         // When
         List<Order> orders = orderDao.findByIds(null);
@@ -70,19 +91,19 @@ public class OrderDaoTest {
 
 
     @Test
-    public void findByIds_whenAnExistentIdIsGiven_thenRelatedEntityIsReturned() {
+    public void findByIds_whenAnExistentIdIsGiven_thenRelatedModelIsReturned() {
         // When
         List<Order> orders = orderDao.findByIds(order1.getId());
 
         // Then
         assertNotNull(orders);
         assertEquals(1, orders.size());
-        assertThat(order1, samePropertyValuesAs(orders.get(0)));
+        assertThat(orders.get(0), samePropertyValuesAs(order1));
     }
 
 
     @Test
-    public void findByIds_whenExistentIdsAreGiven_thenRelatedEntitiesAreReturned() {
+    public void findByIds_whenExistentIdsAreGiven_thenRelatedModelsAreReturned() {
         // When
         List<Order> orders = orderDao.findByIds(order1.getId(), order2.getId());
 
@@ -106,7 +127,7 @@ public class OrderDaoTest {
     @Test
     public void findOptionalById_whenANonExistentIdIsGiven_thenOptionalEmptyIsReturned() {
         // Given
-        Integer nonExistentId = order1.getId() + order2.getId();
+        Integer nonExistentId = -1;
 
         // When
         Optional<Order> optionalOrder = orderDao.findOptionalById(nonExistentId);
@@ -117,13 +138,13 @@ public class OrderDaoTest {
 
 
     @Test
-    public void findOptionalById_whenAnExistentIdIsGiven_thenNonEmptyOptionalIsReturned() {
+    public void findOptionalById_whenAnExistentIdIsGiven_thenOptionalWithRelatedModelIsReturned() {
         // When
         Optional<Order> optionalOrder = orderDao.findOptionalById(order1.getId());
 
         // Then
         assertTrue(optionalOrder.isPresent());
-        assertThat(order1, samePropertyValuesAs(optionalOrder.get()));
+        assertThat(optionalOrder.get(), samePropertyValuesAs(order1));
     }
 
 
@@ -151,7 +172,7 @@ public class OrderDaoTest {
 
 
     @Test
-    public void fetchToOrderDtoByIdWithOrderLineDto_whenAnExistentIdIsGiven_thenNonEmptyOptionalIsReturned() throws SQLException {
+    public void fetchToOrderDtoByIdWithOrderLineDto_whenAnExistentIdIsGiven_thenOptionalWithRelatedModelIsReturned() throws SQLException {
         // Given (information stored in test database)
         PizzaDto carbonara = PizzaDto.builder().id(1).name("Carbonara").cost(7.50).build();
         PizzaDto hawaiian = PizzaDto.builder().id(1).name("Hawaiian").cost(8D).build();
@@ -194,19 +215,19 @@ public class OrderDaoTest {
 
 
     @Test
-    public void findByCodes_whenAnExistentCodeIsGiven_thenRelatedEntityIsReturned() {
+    public void findByCodes_whenAnExistentCodeIsGiven_thenRelatedModelIsReturned() {
         // When
         List<Order> orders = orderDao.findByCodes(order1.getCode());
 
         // Then
         assertNotNull(orders);
         assertEquals(1, orders.size());
-        assertThat(order1, samePropertyValuesAs(orders.get(0)));
+        assertThat(orders.get(0), samePropertyValuesAs(order1));
     }
 
 
     @Test
-    public void findByCodes_whenExistentCodesAreGiven_thenRelatedEntitiesAreReturned() {
+    public void findByCodes_whenExistentCodesAreGiven_thenRelatedModelsAreReturned() {
         // When
         List<Order> orders = orderDao.findByCodes(order1.getCode(), order2.getCode());
 
@@ -241,13 +262,13 @@ public class OrderDaoTest {
 
 
     @Test
-    public void findByCode_whenAnExistentCodeIsGiven_thenNonEmptyOptionalIsReturned() {
+    public void findByCode_whenAnExistentCodeIsGiven_thenOptionalWithRelatedModelIsReturned() {
         // When
         Optional<Order> optionalOrder = orderDao.findByCode(order1.getCode());
 
         // Then
         assertTrue(optionalOrder.isPresent());
-        assertThat(order1, samePropertyValuesAs(optionalOrder.get()));
+        assertThat(optionalOrder.get(), samePropertyValuesAs(order1));
     }
 
 }

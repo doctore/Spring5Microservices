@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jooq.DSLContext;
-import org.jooq.impl.DAOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -30,7 +29,9 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      */
     @Override
     protected Integer getId(OrderLine orderLine) {
-        return orderLine.getId();
+        return Optional.ofNullable(orderLine)
+                       .map(OrderLine::getId)
+                       .orElse(null);
     }
 
 

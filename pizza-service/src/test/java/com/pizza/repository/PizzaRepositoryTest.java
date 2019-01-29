@@ -100,7 +100,7 @@ public class PizzaRepositoryTest {
 
 
     @Test
-    public void findWithIngredientsByName_whenAnExistentNameIsGiven_thenNonEmptyOptionalIsReturned() {
+    public void findWithIngredientsByName_whenAnExistentNameIsGiven_thenOptionalWithRelatedEntityIsReturned() {
         // When
         Optional<Pizza> optionalPizza = pizzaRepository.findWithIngredientsByName(carbonara.getName());
 
@@ -137,7 +137,7 @@ public class PizzaRepositoryTest {
 
 
     @Test
-    public void findByName_whenAnExistentNameIsGiven_thenNonEmptyOptionalIsReturned() {
+    public void findByName_whenAnExistentNameIsGiven_thenOptionalWithRelatedEntityIsReturned() {
         // When
         Optional<Pizza> optionalPizza = pizzaRepository.findByName(hawaiian.getName());
 

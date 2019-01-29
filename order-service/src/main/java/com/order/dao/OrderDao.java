@@ -34,7 +34,9 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      */
     @Override
     protected Integer getId(Order order) {
-        return order.getId();
+        return Optional.ofNullable(order)
+                       .map(Order::getId)
+                       .orElse(null);
     }
 
 

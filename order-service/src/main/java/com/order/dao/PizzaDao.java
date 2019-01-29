@@ -27,7 +27,9 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      */
     @Override
     protected Short getId(Pizza pizza) {
-        return pizza.getId();
+        return Optional.ofNullable(pizza)
+                       .map(Pizza::getId)
+                       .orElse(null);
     }
 
 
@@ -40,7 +42,7 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      *
      * @return {@link List} of {@link Pizza}s
      */
-    public List<com.order.model.Pizza> findByIds(Short... ids) {
+    public List<Pizza> findByIds(Short... ids) {
         return fetch(PizzaTable.PIZZA_TABLE.ID, ids);
     }
 
