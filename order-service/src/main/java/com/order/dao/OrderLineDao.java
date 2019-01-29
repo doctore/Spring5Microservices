@@ -21,7 +21,7 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      */
     @Autowired
     public OrderLineDao(DSLContext dslContext) {
-        super(OrderLineTable.ORDER_LINE_TABLE, com.order.model.OrderLine.class, dslContext);
+        super(OrderLineTable.ORDER_LINE_TABLE, OrderLine.class, dslContext);
     }
 
     /**

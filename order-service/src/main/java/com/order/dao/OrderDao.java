@@ -26,7 +26,7 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      */
     @Autowired
     public OrderDao(DSLContext dslContext) {
-        super(OrderTable.ORDER_TABLE, com.order.model.Order.class, dslContext);
+        super(OrderTable.ORDER_TABLE, Order.class, dslContext);
     }
 
     /**

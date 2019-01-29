@@ -19,7 +19,7 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      */
     @Autowired
     public PizzaDao(DSLContext dslContext) {
-        super(PizzaTable.PIZZA_TABLE, com.order.model.Pizza.class, dslContext);
+        super(PizzaTable.PIZZA_TABLE, Pizza.class, dslContext);
     }
 
     /**
