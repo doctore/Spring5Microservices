@@ -13,7 +13,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class PizzaDto {
 
-    private Integer id;
+    private Short id;
     private String name;
     private Double cost;
 

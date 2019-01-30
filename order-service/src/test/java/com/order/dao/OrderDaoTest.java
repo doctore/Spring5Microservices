@@ -174,8 +174,8 @@ public class OrderDaoTest {
     @Test
     public void fetchToOrderDtoByIdWithOrderLineDto_whenAnExistentIdIsGiven_thenOptionalWithRelatedModelIsReturned() throws SQLException {
         // Given (information stored in test database)
-        PizzaDto carbonara = PizzaDto.builder().id(1).name("Carbonara").cost(7.50).build();
-        PizzaDto hawaiian = PizzaDto.builder().id(1).name("Hawaiian").cost(8D).build();
+        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
+        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
 
         OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
         OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
