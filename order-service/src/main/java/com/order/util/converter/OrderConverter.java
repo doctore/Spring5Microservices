@@ -2,13 +2,14 @@ package com.order.util.converter;
 
 import com.order.dto.OrderDto;
 import com.order.model.Order;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueMappingStrategy;
 
 import java.util.Collection;
 import java.util.Optional;
 
-@Mapper(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
+@Mapper
 public interface OrderConverter {
 
     /**
@@ -43,6 +44,7 @@ public interface OrderConverter {
      *
      * @return {@link Collection} of {@link Order}
      */
+    @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
     Collection<Order> fromDtosToModels(Collection<OrderDto> orderDtos);
 
 }

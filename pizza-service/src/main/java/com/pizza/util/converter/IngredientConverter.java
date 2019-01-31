@@ -2,14 +2,14 @@ package com.pizza.util.converter;
 
 import com.pizza.dto.IngredientDto;
 import com.pizza.model.Ingredient;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueMappingStrategy;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.Collection;
 import java.util.Optional;
 
-@Mapper(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
+@Mapper
 public interface IngredientConverter {
 
     /**
@@ -44,6 +44,7 @@ public interface IngredientConverter {
      *
      * @return {@link Collection} of {@link Ingredient}
      */
+    @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
     Collection<Ingredient> fromDtosToEntities(Collection<IngredientDto> ingredientDtos);
 
     /**
@@ -78,6 +79,7 @@ public interface IngredientConverter {
      *
      * @return {@link Collection} of {@link IngredientDto}
      */
+    @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
     Collection<IngredientDto> fromEntitiesToDtos(Collection<Ingredient> ingredients);
 
 }

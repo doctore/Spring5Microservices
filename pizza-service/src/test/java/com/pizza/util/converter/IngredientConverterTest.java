@@ -25,14 +25,12 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNull_thenEmptyEntityIsReturned() {
+    public void fromDtoToEntity_whenGivenDtoIsNull_thenNullIsReturned() {
         // When
         Ingredient ingredient = ingredientConverter.fromDtoToEntity(null);
 
         // Then
-        assertNotNull(ingredient);
-        assertNull(ingredient.getId());
-        assertNull(ingredient.getName());
+        assertNull(ingredient);
     }
 
 
@@ -45,9 +43,7 @@ public class IngredientConverterTest {
         Ingredient ingredient = ingredientConverter.fromDtoToEntity(ingredientDto);
 
         // Then
-        assertNotNull(ingredient);
-        assertEquals(ingredientDto.getId(), ingredient.getId());
-        assertEquals(ingredientDto.getName(), ingredient.getName());
+        checkProperties(ingredient, ingredientDto);
     }
 
 
@@ -73,8 +69,7 @@ public class IngredientConverterTest {
         // Then
         assertNotNull(optionalIngredient);
         assertTrue(optionalIngredient.isPresent());
-        assertEquals(ingredientDto.getId(), optionalIngredient.get().getId());
-        assertEquals(ingredientDto.getName(), optionalIngredient.get().getName());
+        checkProperties(optionalIngredient.get(), ingredientDto);
     }
 
 
@@ -120,14 +115,12 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNull_thenEmptyDtoIsReturned() {
+    public void fromEntityToDto_whenGivenEntityIsNull_thenNullIsReturned() {
         // When
         IngredientDto ingredientDto = ingredientConverter.fromEntityToDto(null);
 
         // Then
-        assertNotNull(ingredientDto);
-        assertNull(ingredientDto.getId());
-        assertNull(ingredientDto.getName());
+        assertNull(ingredientDto);
     }
 
 
@@ -140,9 +133,7 @@ public class IngredientConverterTest {
         IngredientDto ingredientDto = ingredientConverter.fromEntityToDto(ingredient);
 
         // Then
-        assertNotNull(ingredientDto);
-        assertEquals(ingredient.getId(), ingredientDto.getId());
-        assertEquals(ingredient.getName(), ingredientDto.getName());
+        checkProperties(ingredient, ingredientDto);
     }
 
 
@@ -168,8 +159,7 @@ public class IngredientConverterTest {
         // Then
         assertNotNull(optionalIngredientDto);
         assertTrue(optionalIngredientDto.isPresent());
-        assertEquals(ingredient.getId(), optionalIngredientDto.get().getId());
-        assertEquals(ingredient.getName(), optionalIngredientDto.get().getName());
+        checkProperties(ingredient, optionalIngredientDto.get());
     }
 
 
@@ -211,6 +201,14 @@ public class IngredientConverterTest {
         assertNotNull(ingredientDtos);
         assertEquals(2, ingredientDtos.size());
         assertThat(ingredientDtos, containsInAnyOrder(ingredientDto1, ingredientDto2));
+    }
+
+
+    private void checkProperties(Ingredient ingredient, IngredientDto ingredientDto) {
+        assertNotNull(ingredient);
+        assertNotNull(ingredientDto);
+        assertEquals(ingredient.getId(), ingredientDto.getId());
+        assertEquals(ingredient.getName(), ingredientDto.getName());
     }
 
 }

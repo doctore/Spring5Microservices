@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,32 +47,25 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNull_thenEmptyEntityIsReturned() {
+    public void fromDtoToEntity_whenGivenDtoIsNull_thenNullIsReturned() {
         // When
         Pizza pizza = pizzaConverter.fromDtoToEntity(null);
 
         // Then
-        assertNotNull(pizza);
-        assertNull(pizza.getId());
-        assertNull(pizza.getName());
-        assertNull(pizza.getCost());
-        assertNull(pizza.getIngredients());
+        assertNull(pizza);
     }
 
 
     @Test
     public void fromDtoToEntity_whenGivenDtoIsNotNull_thenMirrorEntityIsReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
         // When
         Pizza pizza = pizzaConverter.fromDtoToEntity(pizzaDto);
 
         // Then
-        assertNotNull(pizza);
-        assertEquals(pizzaDto.getId(), pizza.getId());
-        assertEquals(pizzaDto.getName(), pizza.getName());
-        assertEquals(pizzaDto.getCost(), pizza.getCost());
+        checkProperties(pizza, pizzaDto);
         assertThat(ingredients, containsInAnyOrder(pizza.getIngredients().toArray()));
     }
 
@@ -93,7 +84,7 @@ public class PizzaConverterTest {
     @Test
     public void fromDtoToOptionalEntity_whenGivenDtoIsNotNull_thenMirrorEntityIsReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
         // When
         Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalEntity(pizzaDto);
@@ -101,9 +92,7 @@ public class PizzaConverterTest {
         // Then
         assertNotNull(optionalPizza);
         assertTrue(optionalPizza.isPresent());
-        assertEquals(pizzaDto.getId(), optionalPizza.get().getId());
-        assertEquals(pizzaDto.getName(), optionalPizza.get().getName());
-        assertEquals(pizzaDto.getCost(), optionalPizza.get().getCost());
+        checkProperties(optionalPizza.get(), pizzaDto);
         assertThat(ingredients, containsInAnyOrder(optionalPizza.get().getIngredients().toArray()));
     }
 
@@ -150,16 +139,12 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNull_thenEmptyDtoIsReturned() {
+    public void fromEntityToDto_whenGivenEntityIsNull_thenNullIsReturned() {
         // When
         PizzaDto pizzaDto = pizzaConverter.fromEntityToDto(null);
 
         // Then
-        assertNotNull(pizzaDto);
-        assertNull(pizzaDto.getId());
-        assertNull(pizzaDto.getName());
-        assertNull(pizzaDto.getCost());
-        assertNull(pizzaDto.getIngredients());
+        assertNull(pizzaDto);
     }
 
 
@@ -172,10 +157,7 @@ public class PizzaConverterTest {
         PizzaDto pizzaDto = pizzaConverter.fromEntityToDto(pizza);
 
         // Then
-        assertNotNull(pizzaDto);
-        assertEquals(pizza.getId(), pizzaDto.getId());
-        assertEquals(pizza.getName(), pizzaDto.getName());
-        assertEquals(pizza.getCost(), pizzaDto.getCost());
+        checkProperties(pizza, pizzaDto);
         assertThat(ingredientDtos, containsInAnyOrder(pizzaDto.getIngredients().toArray()));
     }
 
@@ -202,9 +184,7 @@ public class PizzaConverterTest {
         // Then
         assertNotNull(optionalPizzaDto);
         assertTrue(optionalPizzaDto.isPresent());
-        assertEquals(pizza.getId(), optionalPizzaDto.get().getId());
-        assertEquals(pizza.getName(), optionalPizzaDto.get().getName());
-        assertEquals(pizza.getCost(), optionalPizzaDto.get().getCost());
+        checkProperties(pizza, optionalPizzaDto.get());
         assertThat(ingredientDtos, containsInAnyOrder(optionalPizzaDto.get().getIngredients().toArray()));
     }
 
@@ -248,6 +228,15 @@ public class PizzaConverterTest {
         assertNotNull(pizzaDtos);
         assertEquals(2, pizzaDtos.size());
         assertThat(pizzaDtos, containsInAnyOrder(pizzaDto1, pizzaDto2));
+    }
+
+
+    private void checkProperties(Pizza pizza, PizzaDto pizzaDto) {
+        assertNotNull(pizza);
+        assertNotNull(pizzaDto);
+        assertEquals(pizza.getId(), pizzaDto.getId());
+        assertEquals(pizza.getName(), pizzaDto.getName());
+        assertEquals(pizza.getCost(), pizzaDto.getCost());
     }
 
 }
