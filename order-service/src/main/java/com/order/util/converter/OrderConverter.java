@@ -31,8 +31,7 @@ public interface OrderConverter {
      * @return {@link Optional} of {@link Order}
      */
     default Optional<Order> fromDtoToOptionalModel(OrderDto orderDto) {
-        return Optional.ofNullable(orderDto)
-                       .map(this::fromDtoToModel);
+        return Optional.ofNullable(this.fromDtoToModel(orderDto));
     }
 
     /**

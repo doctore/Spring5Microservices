@@ -87,7 +87,7 @@ public class PizzaServiceTest {
 
 
     @Test
-    public void findByName_whenAPizzaIsReturnedByRepository_thenMirrorPizzaDtoIsReturned() {
+    public void findByName_whenAPizzaIsReturnedByRepository_thenOptionalOfEquivalentPizzaDtoIsReturned() {
         // Given
         Pizza carbonara = Pizza.builder().id(1).name("Carbonara").cost(7.50D).build();
         PizzaDto carbonaraDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).build();

@@ -3,9 +3,11 @@ package com.order.util.converter;
 import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.model.OrderLine;
+import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Mapper
+@DecoratedWith(OrderLineConverterDecorator.class)
 public interface OrderLineConverter {
 
     /**
@@ -60,6 +63,35 @@ public interface OrderLineConverter {
                            return orderLines;
                        })
                        .orElse(new ArrayList<>());
+    }
+
+}
+
+
+/**
+ * Overwrite default converter methods included in {@link OrderLineConverter}
+ */
+abstract class OrderLineConverterDecorator implements OrderLineConverter {
+
+    @Autowired
+    private OrderLineConverter orderLineConverter;
+
+    /**
+     *    Create a new {@link OrderLine} which properties match with the given {@link OrderLineDto}. The difference
+     * with the "default behaviour" is that only if the given {@link OrderLineDto} is not null, we will create a new one.
+     *
+     * @param orderLineDto
+     *    {@link OrderLineDto} with the "source information"
+     * @param orderId
+     *    {@link Order#id} of the given dto
+     *
+     * @return {@link OrderLine}
+     */
+    @Override
+    public OrderLine fromDtoToModel(OrderLineDto orderLineDto, Integer orderId) {
+        return Optional.ofNullable(orderLineDto)
+                       .map(dto -> orderLineConverter.fromDtoToModel(dto, orderId))
+                       .orElse(null);
     }
 
 }

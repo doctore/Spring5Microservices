@@ -35,7 +35,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNotNull_thenMirrorEntityIsReturned() {
+    public void fromDtoToEntity_whenGivenDtoIsNotNull_thenEquivalentEntityIsReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Garlic").build();
 
@@ -59,7 +59,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalEntity_whenGivenDtoIsNotNull_thenMirrorEntityIsReturned() {
+    public void fromDtoToOptionalEntity_whenGivenDtoIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Garlic").build();
 
@@ -96,7 +96,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenMirrorCollectionOfEntitiesIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
         // Given
         IngredientDto ingredientDto1 = IngredientDto.builder().id(1).name("Garlic").build();
         IngredientDto ingredientDto2 = IngredientDto.builder().id(2).name("Cheese").build();
@@ -125,7 +125,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNotNull_thenMirrorDtoIsReturned() {
+    public void fromEntityToDto_whenGivenEntityIsNotNull_thenEquivalentDtoIsReturned() {
         // Given
         Ingredient ingredient = Ingredient.builder().id(1).name("Garlic").build();
 
@@ -149,7 +149,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntityToOptionalDto_whenGivenEntityIsNotNull_thenMirrorEntityIsReturned() {
+    public void fromEntityToOptionalDto_whenGivenEntityIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
         // Given
         Ingredient ingredient = Ingredient.builder().id(1).name("Garlic").build();
 
@@ -186,7 +186,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenMirrorCollectionOfEntitiesIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
         // Given
         Ingredient ingredient1 = Ingredient.builder().id(1).name("Garlic").build();
         Ingredient ingredient2 = Ingredient.builder().id(2).name("Cheese").build();

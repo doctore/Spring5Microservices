@@ -31,8 +31,7 @@ public interface IngredientConverter {
      * @return {@link Optional} of {@link Ingredient}
      */
     default Optional<Ingredient> fromDtoToOptionalEntity(IngredientDto ingredientDto) {
-        return Optional.ofNullable(ingredientDto)
-                       .map(this::fromDtoToEntity);
+        return Optional.ofNullable(this.fromDtoToEntity(ingredientDto));
     }
 
     /**
@@ -66,8 +65,7 @@ public interface IngredientConverter {
      * @return {@link Optional} of {@link IngredientDto}
      */
     default Optional<IngredientDto> fromEntityToOptionalDto(Ingredient ingredient) {
-        return Optional.ofNullable(ingredient)
-                       .map(this::fromEntityToDto);
+        return Optional.ofNullable(this.fromEntityToDto(ingredient));
     }
 
     /**

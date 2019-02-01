@@ -57,7 +57,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNotNull_thenMirrorEntityIsReturned() {
+    public void fromDtoToEntity_whenGivenDtoIsNotNull_thenEquivalentEntityIsReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
@@ -82,7 +82,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalEntity_whenGivenDtoIsNotNull_thenMirrorEntityIsReturned() {
+    public void fromDtoToOptionalEntity_whenGivenDtoIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
@@ -120,7 +120,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenMirrorCollectionOfEntitiesIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
         // Given
         PizzaDto pizzaDto1 = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(new HashSet<>()).build();
         PizzaDto pizzaDto2 = PizzaDto.builder().id(2).name("Hawaiian").cost(8D).ingredients(ingredientDtos).build();
@@ -149,7 +149,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNotNull_thenMirrorDtoIsReturned() {
+    public void fromEntityToDto_whenGivenEntityIsNotNull_thenEquivalentDtoIsReturned() {
         // Given
         Pizza pizza = Pizza.builder().id(1).name("Hawaiian").cost(8D).ingredients(ingredients).build();
 
@@ -174,7 +174,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntityToOptionalDto_whenGivenEntityIsNotNull_thenMirrorEntityIsReturned() {
+    public void fromEntityToOptionalDto_whenGivenEntityIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
         // Given
         Pizza pizza = Pizza.builder().id(1).name("Hawaiian").cost(8D).ingredients(ingredients).build();
 
@@ -212,7 +212,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenMirrorCollectionOfEntitiesIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
         // Given
         Pizza pizza1 = Pizza.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredients).build();
         Pizza pizza2 = Pizza.builder().id(2).name("Hawaiian").cost(8D).ingredients(new HashSet<>()).build();

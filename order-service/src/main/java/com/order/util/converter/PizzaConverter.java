@@ -31,8 +31,7 @@ public interface PizzaConverter {
      * @return {@link Optional} of {@link Pizza}
      */
     default Optional<Pizza> fromDtoToOptionalModel(PizzaDto pizzaDto) {
-        return Optional.ofNullable(pizzaDto)
-                       .map(this::fromDtoToModel);
+        return Optional.ofNullable(this.fromDtoToModel(pizzaDto));
     }
 
     /**
@@ -66,8 +65,7 @@ public interface PizzaConverter {
      * @return {@link Optional} of {@link PizzaDto}
      */
     default Optional<PizzaDto> fromModelToOptionalDto(Pizza pizza) {
-        return Optional.ofNullable(pizza)
-                .map(this::fromModelToDto);
+        return Optional.ofNullable(this.fromModelToDto(pizza));
     }
 
     /**
