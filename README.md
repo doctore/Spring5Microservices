@@ -5,6 +5,7 @@
     - [config-server](#config-server)
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
+    - [sql folder](#sql folder)
 - [Previous steps](#previous-steps)
 - [Future additions](#previous-steps)
 
@@ -37,7 +38,7 @@ spring:
     password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
 ```
 
-To increase the security level, in *bootstrap.yml* file we have deactivated the decryption on **config.server**, sending the information encrypted and delegating in every microservice
+To increase the security level, in *bootstrap.yml* file I have deactivated the decryption on **config.server**, sending the information encrypted and delegating in every microservice
 the labour of decrypt it. That is the reason to include in their *pom.xml* file, the dependency:
 
 ```
@@ -92,6 +93,11 @@ On the other hand, there are other "important folders":
 * **model** to store the Java objects that match with the tables in database.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from models to dtos and vice versa.
+
+### sql-folder
+
+With SQL files included in the main database and the one used for testing purpose. In both cases, there is one file with the structure of the tables and another one with the
+information initially included.
 
 ## Previous steps
 
