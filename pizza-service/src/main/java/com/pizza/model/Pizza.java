@@ -1,5 +1,6 @@
 package com.pizza.model;
 
+import com.pizza.configuration.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(schema = "eat")
+@Table(schema = Constants.DATABASE_SCHEMA)
 public class Pizza {
 
     @Id
@@ -38,7 +39,7 @@ public class Pizza {
     private Double cost;
 
     @ManyToMany
-    @JoinTable(schema = "eat",
+    @JoinTable(schema = Constants.DATABASE_SCHEMA,
                name = "pizza_ingredient",
                inverseJoinColumns = { @JoinColumn(name = "ingredient_id") })
     private Set<Ingredient> ingredients;

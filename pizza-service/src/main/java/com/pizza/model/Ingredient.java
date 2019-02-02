@@ -1,5 +1,6 @@
 package com.pizza.model;
 
+import com.pizza.configuration.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(schema = "eat")
+@Table(schema = Constants.DATABASE_SCHEMA)
 public class Ingredient {
 
     @Id
