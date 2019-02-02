@@ -78,8 +78,8 @@ One order has several order lines and one order line contains a pizza. The main 
 technologies:
 
 * **jOOQ** replacing to the traditional pair Hibernate/JPA. Allowing us to create type-safe queries and improve the performance between the microservice and the database.
-* **Lombok** to reduce the code development in entities and DTOs.
-* **MapStruct** used to conversion between Entities <--> DTOs in an easy way.
+* **Lombok** to reduce the code development in models and DTOs.
+* **MapStruct** used to conversion between Models <--> DTOs in an easy way.
 * **Webflux** creating a reactive REST Api as alternative to the traditional Spring MVC.
 
 In this subproject the layer's division is:
