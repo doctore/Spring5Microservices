@@ -51,7 +51,7 @@ the labour of decrypt it. That is the reason to include in their *pom.xml* file,
 ### pizza-service
 
 One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservices. The main purpose of this microservice is the creation of an small one
-on which we can use the following technologies:
+on which I am using the following technologies:
 
 * **Hibernate** as ORM to deal with the PostgreSQL database.
 * **JPA** for accessing, persisting, and managing data between Java objects and database.
@@ -74,7 +74,7 @@ On the other hand, there are other "important folders":
 
 ### order-service
 
-One order has several order lines and one order line contains a pizza. The main purpose of this microservice is the creation of an small one on which we can use the following
+One order has several order lines and one order line contains a pizza. The main purpose of this microservice is the creation of an small one on which I am using the following
 technologies:
 
 * **jOOQ** replacing to the traditional pair Hibernate/JPA. Allowing us to create type-safe queries and improve the performance between the microservice and the database.
