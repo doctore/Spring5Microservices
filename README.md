@@ -80,6 +80,7 @@ technologies:
 * **jOOQ** replacing to the traditional pair Hibernate/JPA. Allowing us to create type-safe queries and improve the performance between the microservice and the database.
 * **Lombok** to reduce the code development in models and DTOs.
 * **MapStruct** used to conversion between Models <--> DTOs in an easy way.
+* **SimpleFlatMapper** due to its integration with jOOQ, used to convert the some custom query results into a known Java object.
 * **Webflux** creating a reactive REST Api as alternative to the traditional Spring MVC.
 
 In this subproject the layer's division is:
