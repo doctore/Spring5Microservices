@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
 import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -77,9 +78,9 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * @return {@link Optional} with the {@link OrderDto} which identifier matches with the given one.
      *         {@link Optional#empty()} otherwise
      *
-     * @throws SQLException if there is an error executing the query
+     * @throws DataAccessException if there is an error executing the query
      */
-    public Optional<OrderDto> fetchToOrderDtoByIdWithOrderLineDto(Integer id) throws SQLException {
+    public Optional<OrderDto> fetchToOrderDtoByIdWithOrderLineDto(Integer id) {
         OrderTable ORDER = OrderTable.ORDER_TABLE;
         OrderLineTable ORDER_LINE = OrderLineTable.ORDER_LINE_TABLE;
         PizzaTable PIZZA = PizzaTable.PIZZA_TABLE;
@@ -96,6 +97,8 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
 
             JdbcMapper<OrderDto> jdbcMapper = getJdbcMapper(OrderDto.class, "id", "order_lines_id", "pizza_id");
             return jdbcMapper.stream(rs).findFirst();
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("There was an error trying to find the order: %d", id), e);
         }
     }
 

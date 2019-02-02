@@ -6,6 +6,7 @@ import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.service.PizzaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class PizzaController {
     private PizzaService pizzaService;
 
     @Autowired
-    public PizzaController(PizzaService pizzaService) {
+    public PizzaController(@Lazy PizzaService pizzaService) {
         this.pizzaService = pizzaService;
     }
 

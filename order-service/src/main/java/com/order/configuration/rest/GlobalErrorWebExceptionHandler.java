@@ -1,5 +1,6 @@
 package com.order.configuration.rest;
 
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
@@ -29,8 +30,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         if (ex instanceof NullPointerException) {
             return nullPointerException(exchange, (NullPointerException) ex);
         }
-        else if (ex instanceof SQLException) {
-            return sqlException(exchange, (SQLException) ex);
+        else if (ex instanceof DataAccessException) {
+            return dataAccessException(exchange, (DataAccessException) ex);
         }
         else {
             return throwable(exchange, ex);
@@ -44,13 +45,13 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @param exchange
      *    {@link ServerWebExchange} with the request information
      * @param exception
-     *    {@link NullPointerException} throws
+     *    {@link NullPointerException} thrown
      *
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> nullPointerException(ServerWebExchange exchange, NullPointerException exception) {
         logger.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTestResponse("Someone forgot to check something", exchange,
+        return buildPlainTestResponse("Trying to access to a non existing property", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -61,13 +62,13 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @param exchange
      *    {@link ServerWebExchange} with the request information
      * @param exception
-     *    {@link NullPointerException} throws
+     *    {@link DataAccessException} thrown
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> sqlException(ServerWebExchange exchange, SQLException exception) {
-        logger.error("There was an SQLException. " + getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTestResponse("Someone forgot to check something", exchange,
+    private Mono<Void> dataAccessException(ServerWebExchange exchange, DataAccessException exception) {
+        logger.error("There was an DataAccessException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildPlainTestResponse("Error trying to get/send information from/to database", exchange,
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -78,7 +79,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @param exchange
      *    {@link ServerWebExchange} with the request information
      * @param exception
-     *    {@link NullPointerException} throws
+     *    {@link Throwable} thrown
      *
      * @return {@link Mono} with the suitable response
      */

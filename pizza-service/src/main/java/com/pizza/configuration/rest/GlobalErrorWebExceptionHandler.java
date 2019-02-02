@@ -40,13 +40,13 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @param exchange
      *    {@link ServerWebExchange} with the request information
      * @param exception
-     *    {@link NullPointerException} throws
+     *    {@link NullPointerException} thrown
      *
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> nullPointerException(ServerWebExchange exchange, NullPointerException exception) {
         logger.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTestResponse("Someone forgot to check something", exchange,
+        return buildPlainTestResponse("Trying to access to a non existing property", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -57,7 +57,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @param exchange
      *    {@link ServerWebExchange} with the request information
      * @param exception
-     *    {@link NullPointerException} throws
+     *    {@link Throwable} thrown
      *
      * @return {@link Mono} with the suitable response
      */

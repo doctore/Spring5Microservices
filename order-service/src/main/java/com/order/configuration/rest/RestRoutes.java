@@ -7,6 +7,7 @@ public class RestRoutes {
 
     public static final class ORDER {
         public static final String ROOT = "/order";
+        public static final String WITH_ORDERLINES = "/withOrderlines";
     }
 
 }

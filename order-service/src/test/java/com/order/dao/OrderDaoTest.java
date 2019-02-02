@@ -161,10 +161,10 @@ public class OrderDaoTest {
     @Test
     public void fetchToOrderDtoByIdWithOrderLineDto_whenANonExistentIdIsGiven_thenOptionalEmptyIsReturned() throws SQLException {
         // Given
-        Integer nonExistentId = order1.getId() + order2.getId();
+        Integer nonExistentId = -1;
 
         // When
-        Optional<OrderDto> optionalOrderDto = orderDao.fetchToOrderDtoByIdWithOrderLineDto(null);
+        Optional<OrderDto> optionalOrderDto = orderDao.fetchToOrderDtoByIdWithOrderLineDto(nonExistentId);
 
         // Then
         assertFalse(optionalOrderDto.isPresent());
