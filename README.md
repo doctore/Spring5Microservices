@@ -5,7 +5,7 @@
     - [config-server](#config-server)
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
-    - [sql folder](#sql folder)
+    - [sql folder](#sql-folder)
 - [Previous steps](#previous-steps)
 - [Future additions](#previous-steps)
 
@@ -94,7 +94,7 @@ On the other hand, there are other "important folders":
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from models to dtos and vice versa.
 
-### sql-folder
+### sql folder
 
 With SQL files included in the main database and the one used for testing purpose. In both cases, there is one file with the structure of the tables and another one with the
 information initially included.
