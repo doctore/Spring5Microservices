@@ -11,7 +11,7 @@
 
 ## Why this project was created?
 
-Basically to know how to create a projects using the microservices approach with the last Spring version. Due to there are several options we can use for different features included
+Basically to know how to create a project using the microservices approach with the last Spring version. Due to there are several options we can use for different features included
 in a "microservices architecture", the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
 
 ## Elements included in this project
