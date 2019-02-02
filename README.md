@@ -133,5 +133,6 @@ ENCRYPT_KEY=ENCRYPT_KEY
 - Authentication and authorization using JWT token
 - Hystrix to manage potential network problems
 - Microservices communication using WebClient
+- Documentation of the REST Api with Swagger
 - Distributed tracing with Spring Cloud Sleuth and Zipkin
 - Deploy every subproject included using Docker
