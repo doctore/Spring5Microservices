@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +83,7 @@ public class PizzaService {
      *
      * @return {@link Optional} of {@link Pizza} with its "final information" after this action
      */
+    @Transactional
     public Optional<PizzaDto> save(PizzaDto pizzaDto) {
         return Optional.ofNullable(pizzaDto)
                        .flatMap(pizzaConverter::fromDtoToOptionalEntity)
