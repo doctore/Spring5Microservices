@@ -41,6 +41,8 @@ public class OrderLineService {
      *    {@link Order#id} of the given dtos
      *
      * @return {@link Collection} of {@link OrderLineDto}s with its "final information" after this action
+     *
+     * @throws IllegalArgumentException if given orderLineDtos is not null but orderId is null
      */
     public List<OrderLineDto> saveAll(Collection<OrderLineDto> orderLineDtos, Integer orderId) {
         return Optional.ofNullable(orderLineDtos)
