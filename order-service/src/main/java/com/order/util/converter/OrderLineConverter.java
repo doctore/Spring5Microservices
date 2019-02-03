@@ -4,9 +4,11 @@ import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.model.OrderLine;
 import org.mapstruct.DecoratedWith;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.mapstruct.NullValueMappingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -28,8 +30,21 @@ public interface OrderLineConverter {
      *
      * @return {@link OrderLine}
      */
-    @Mappings(@Mapping(source = "orderLineDto.pizza.id", target = "pizzaId"))
+    @Mappings({
+            @Mapping(source = "orderLineDto.pizza.id", target = "pizzaId"),
+            @Mapping(source = "orderId", target = "orderId")})
     OrderLine fromDtoToModel(OrderLineDto orderLineDto, Integer orderId);
+
+    /**
+     * Create a new {@link OrderLine} which properties match with the given {@link OrderLineDto}
+     *
+     * @param orderLineDto
+     *    {@link OrderLineDto} with the "source information"
+     *
+     * @return {@link OrderLine}
+     */
+    @Mappings(@Mapping(source = "orderLineDto.pizza.id", target = "pizzaId"))
+    OrderLine fromDtoToModel(OrderLineDto orderLineDto);
 
     /**
      * Create a new {@link OrderLine} which properties match with the given {@link OrderLineDto}
@@ -45,6 +60,18 @@ public interface OrderLineConverter {
     }
 
     /**
+     * Create a new {@link OrderLine} which properties match with the given {@link OrderLineDto}
+     *
+     * @param orderLineDto
+     *    {@link OrderLineDto} with the "source information"
+     *
+     * @return {@link Optional} of {@link OrderLine}
+     */
+    default Optional<OrderLine> fromDtoToOptionalModel(OrderLineDto orderLineDto) {
+        return Optional.ofNullable(this.fromDtoToModel(orderLineDto));
+    }
+
+    /**
      *    Return a new {@link Collection} of {@link OrderLine} with the information contains in the given
      * {@link Collection} of {@link OrderLineDto}
      *
@@ -53,9 +80,9 @@ public interface OrderLineConverter {
      * @param orderId
      *    {@link Order#id} of the given dtos
      *
-     * @return {@link Collection} of {@link OrderLine}
+     * @return {@link List} of {@link OrderLine}
      */
-    default Collection<OrderLine> fromDtosToModels(Collection<OrderLineDto> orderLineDtos, Integer orderId) {
+    default List<OrderLine> fromDtosToModels(Collection<OrderLineDto> orderLineDtos, Integer orderId) {
         return Optional.ofNullable(orderLineDtos)
                        .map(dtos -> {
                            List<OrderLine> orderLines = new ArrayList<>();
@@ -64,6 +91,53 @@ public interface OrderLineConverter {
                        })
                        .orElse(new ArrayList<>());
     }
+
+    /**
+     *    Return a new {@link Collection} of {@link OrderLine} with the information contains in the given
+     * {@link Collection} of {@link OrderLineDto}
+     *
+     * @param orderLineDtos
+     *    {@link Collection} of {@link OrderLineDto} with the "source information"
+     *
+     * @return {@link List} of {@link OrderLine}
+     */
+    @IterableMapping(nullValueMappingStrategy= NullValueMappingStrategy.RETURN_DEFAULT)
+    List<OrderLine> fromDtosToModels(Collection<OrderLineDto> orderLineDtos);
+
+    /**
+     * Create a new {@link OrderLineDto} which properties match with the given {@link OrderLine}
+     *
+     * @param orderLine
+     *    {@link OrderLine} with the "source information"
+     *
+     * @return {@link OrderLineDto}
+     */
+    @Mappings(@Mapping(source = "pizzaId", target = "pizza.id"))
+    OrderLineDto fromModelToDto(OrderLine orderLine);
+
+    /**
+     * Create a new {@link OrderLineDto} which properties match with the given {@link OrderLine}
+     *
+     * @param orderLine
+     *    {@link OrderLine} with the "source information"
+     *
+     * @return {@link Optional} of {@link OrderLineDto}
+     */
+    default Optional<OrderLineDto> fromModelToOptionalDto(OrderLine orderLine) {
+        return Optional.ofNullable(this.fromModelToDto(orderLine));
+    }
+
+    /**
+     *    Return a new {@link Collection} of {@link OrderLineDto} with the information contains in the given
+     * {@link Collection} of {@link OrderLine}
+     *
+     * @param orderLines
+     *    {@link Collection} of {@link OrderLine} with the "source information"
+     *
+     * @return {@link List} of {@link OrderLineDto}
+     */
+    @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
+    List<OrderLineDto> fromModelsToDtos(Collection<OrderLine> orderLines);
 
 }
 

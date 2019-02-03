@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -74,9 +74,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtosToModels_whenGivenCollectionIsNull_thenEmptyCollectionIsReturned() {
+    public void fromDtosToModels_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        Collection<Pizza> pizzas = pizzaConverter.fromDtosToModels(null);
+        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(null);
 
         // Then
         assertNotNull(pizzas);
@@ -85,9 +85,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtosToModels_whenGivenCollectionIsEmpty_thenEmptyCollectionIsReturned() {
+    public void fromDtosToModels_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        Collection<Pizza> pizzas = pizzaConverter.fromDtosToModels(new ArrayList<>());
+        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(new ArrayList<>());
 
         // Then
         assertNotNull(pizzas);
@@ -96,7 +96,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtosToModels_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfModelsIsReturned() {
+    public void fromDtosToModels_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
         // Given
         PizzaDto pizzaDto1 = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50D).build();
         PizzaDto pizzaDto2 = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
@@ -105,7 +105,7 @@ public class PizzaConverterTest {
         Pizza pizza2 = Pizza.builder().id(pizzaDto2.getId()).name(pizzaDto2.getName()).build();
 
         // When
-        Collection<Pizza> pizzas = pizzaConverter.fromDtosToModels(Arrays.asList(pizzaDto1, pizzaDto2));
+        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(Arrays.asList(pizzaDto1, pizzaDto2));
 
         // Then
         assertNotNull(pizzas);
@@ -164,9 +164,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromModelsToDtos_whenGivenCollectionIsNull_thenEmptyCollectionIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        Collection<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(null);
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(null);
 
         // Then
         assertNotNull(pizzaDtos);
@@ -175,9 +175,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromModelsToDtos_whenGivenCollectionIsEmpty_thenEmptyCollectionIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        Collection<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(new ArrayList<>());
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(new ArrayList<>());
 
         // Then
         assertNotNull(pizzaDtos);
@@ -186,7 +186,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromModelsToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfModelsIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
         // Given
         Pizza pizza1 = Pizza.builder().id((short)1).name("Carbonara").cost(7.50D).build();
         Pizza pizza2 = Pizza.builder().id((short)2).name("Hawaiian").cost(8D).build();
@@ -195,7 +195,7 @@ public class PizzaConverterTest {
         PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName()).cost(pizza2.getCost()).build();
 
         // When
-        Collection<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(Arrays.asList(pizza1, pizza2));
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(Arrays.asList(pizza1, pizza2));
 
         // Then
         assertNotNull(pizzaDtos);

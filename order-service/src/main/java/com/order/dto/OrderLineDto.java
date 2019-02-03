@@ -14,6 +14,7 @@ import java.util.Objects;
 public class OrderLineDto {
 
     private Integer id;
+    private Integer orderId;
     private PizzaDto pizza;
     private Short amount;
     private Double cost;
