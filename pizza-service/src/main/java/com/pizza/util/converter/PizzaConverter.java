@@ -42,7 +42,7 @@ public interface PizzaConverter {
      * @param pizzaDtos
      *    {@link Collection} of {@link PizzaDto} with the "source information"
      *
-     * @return {@link Collection} of {@link Pizza}
+     * @return {@link List} of {@link Pizza}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
     List<Pizza> fromDtosToEntities(Collection<PizzaDto> pizzaDtos);
@@ -76,7 +76,7 @@ public interface PizzaConverter {
      * @param pizzas
      *    {@link Collection} of {@link Pizza} with the "source information"
      *
-     * @return {@link Collection} of {@link PizzaDto}
+     * @return {@link List} of {@link PizzaDto}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
     List<PizzaDto> fromEntitiesToDtos(Collection<Pizza> pizzas);

@@ -42,7 +42,7 @@ public interface IngredientConverter {
      * @param ingredientDtos
      *    {@link Collection} of {@link IngredientDto} with the "source information"
      *
-     * @return {@link Collection} of {@link Ingredient}
+     * @return {@link List} of {@link Ingredient}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
     List<Ingredient> fromDtosToEntities(Collection<IngredientDto> ingredientDtos);
@@ -76,7 +76,7 @@ public interface IngredientConverter {
      * @param ingredients
      *    {@link Collection} of {@link Ingredient} with the "source information"
      *
-     * @return {@link Collection} of {@link IngredientDto}
+     * @return {@link List} of {@link IngredientDto}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
     List<IngredientDto> fromEntitiesToDtos(Collection<Ingredient> ingredients);
