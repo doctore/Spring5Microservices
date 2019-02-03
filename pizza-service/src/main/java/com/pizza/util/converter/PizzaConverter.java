@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.NullValueMappingStrategy;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Mapper(uses={IngredientConverter.class})
@@ -44,7 +45,7 @@ public interface PizzaConverter {
      * @return {@link Collection} of {@link Pizza}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
-    Collection<Pizza> fromDtosToEntities(Collection<PizzaDto> pizzaDtos);
+    List<Pizza> fromDtosToEntities(Collection<PizzaDto> pizzaDtos);
 
     /**
      * Create a new {@link PizzaDto} which properties match with the given {@link Pizza}
@@ -78,6 +79,6 @@ public interface PizzaConverter {
      * @return {@link Collection} of {@link PizzaDto}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
-    Collection<PizzaDto> fromEntitiesToDtos(Collection<Pizza> pizzas);
+    List<PizzaDto> fromEntitiesToDtos(Collection<Pizza> pizzas);
 
 }

@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -74,9 +74,9 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNull_thenEmptyCollectionIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        Collection<Ingredient> ingredients = ingredientConverter.fromDtosToEntities(null);
+        List<Ingredient> ingredients = ingredientConverter.fromDtosToEntities(null);
 
         // Then
         assertNotNull(ingredients);
@@ -85,9 +85,9 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsEmpty_thenEmptyCollectionIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        Collection<Ingredient> ingredients = ingredientConverter.fromDtosToEntities(new ArrayList<>());
+        List<Ingredient> ingredients = ingredientConverter.fromDtosToEntities(new ArrayList<>());
 
         // Then
         assertNotNull(ingredients);
@@ -96,7 +96,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
         // Given
         IngredientDto ingredientDto1 = IngredientDto.builder().id(1).name("Garlic").build();
         IngredientDto ingredientDto2 = IngredientDto.builder().id(2).name("Cheese").build();
@@ -105,7 +105,7 @@ public class IngredientConverterTest {
         Ingredient ingredient2 = Ingredient.builder().id(ingredientDto2.getId()).name(ingredientDto2.getName()).build();
 
         // When
-        Collection<Ingredient> ingredients = ingredientConverter.fromDtosToEntities(Arrays.asList(ingredientDto1, ingredientDto2));
+        List<Ingredient> ingredients = ingredientConverter.fromDtosToEntities(Arrays.asList(ingredientDto1, ingredientDto2));
 
         // Then
         assertNotNull(ingredients);
@@ -164,9 +164,9 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNull_thenEmptyCollectionIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        Collection<IngredientDto> ingredientDtos = ingredientConverter.fromEntitiesToDtos(null);
+        List<IngredientDto> ingredientDtos = ingredientConverter.fromEntitiesToDtos(null);
 
         // Then
         assertNotNull(ingredientDtos);
@@ -175,9 +175,9 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsEmpty_thenEmptyCollectionIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        Collection<IngredientDto> ingredientDtos = ingredientConverter.fromEntitiesToDtos(new ArrayList<>());
+        List<IngredientDto> ingredientDtos = ingredientConverter.fromEntitiesToDtos(new ArrayList<>());
 
         // Then
         assertNotNull(ingredientDtos);
@@ -186,7 +186,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
         // Given
         Ingredient ingredient1 = Ingredient.builder().id(1).name("Garlic").build();
         Ingredient ingredient2 = Ingredient.builder().id(2).name("Cheese").build();
@@ -195,7 +195,7 @@ public class IngredientConverterTest {
         IngredientDto ingredientDto2 = IngredientDto.builder().id(ingredient2.getId()).name(ingredient2.getName()).build();
 
         // When
-        Collection<IngredientDto> ingredientDtos = ingredientConverter.fromEntitiesToDtos(Arrays.asList(ingredient1, ingredient2));
+        List<IngredientDto> ingredientDtos = ingredientConverter.fromEntitiesToDtos(Arrays.asList(ingredient1, ingredient2));
 
         // Then
         assertNotNull(ingredientDtos);

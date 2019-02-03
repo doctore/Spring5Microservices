@@ -13,8 +13,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -98,9 +98,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNull_thenEmptyCollectionIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        Collection<Pizza> pizzas = pizzaConverter.fromDtosToEntities(null);
+        List<Pizza> pizzas = pizzaConverter.fromDtosToEntities(null);
 
         // Then
         assertNotNull(pizzas);
@@ -109,9 +109,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsEmpty_thenEmptyCollectionIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        Collection<Pizza> pizzas = pizzaConverter.fromDtosToEntities(new ArrayList<>());
+        List<Pizza> pizzas = pizzaConverter.fromDtosToEntities(new ArrayList<>());
 
         // Then
         assertNotNull(pizzas);
@@ -120,7 +120,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
+    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
         // Given
         PizzaDto pizzaDto1 = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(new HashSet<>()).build();
         PizzaDto pizzaDto2 = PizzaDto.builder().id(2).name("Hawaiian").cost(8D).ingredients(ingredientDtos).build();
@@ -129,7 +129,7 @@ public class PizzaConverterTest {
         Pizza pizza2 = Pizza.builder().id(pizzaDto2.getId()).name(pizzaDto2.getName()).ingredients(ingredients).build();
 
         // When
-        Collection<Pizza> pizzas = pizzaConverter.fromDtosToEntities(Arrays.asList(pizzaDto1, pizzaDto2));
+        List<Pizza> pizzas = pizzaConverter.fromDtosToEntities(Arrays.asList(pizzaDto1, pizzaDto2));
 
         // Then
         assertNotNull(pizzas);
@@ -190,9 +190,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNull_thenEmptyCollectionIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        Collection<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(null);
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(null);
 
         // Then
         assertNotNull(pizzaDtos);
@@ -201,9 +201,9 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsEmpty_thenEmptyCollectionIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        Collection<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(new ArrayList<>());
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(new ArrayList<>());
 
         // Then
         assertNotNull(pizzaDtos);
@@ -212,7 +212,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentCollectionOfEntitiesIsReturned() {
+    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
         // Given
         Pizza pizza1 = Pizza.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredients).build();
         Pizza pizza2 = Pizza.builder().id(2).name("Hawaiian").cost(8D).ingredients(new HashSet<>()).build();
@@ -222,7 +222,7 @@ public class PizzaConverterTest {
         PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName()).cost(pizza2.getCost())
                                                                   .ingredients(new HashSet<>()).build();
         // When
-        Collection<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(Arrays.asList(pizza1, pizza2));
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(Arrays.asList(pizza1, pizza2));
 
         // Then
         assertNotNull(pizzaDtos);

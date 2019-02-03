@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.NullValueMappingStrategy;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Mapper
@@ -44,7 +45,7 @@ public interface IngredientConverter {
      * @return {@link Collection} of {@link Ingredient}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
-    Collection<Ingredient> fromDtosToEntities(Collection<IngredientDto> ingredientDtos);
+    List<Ingredient> fromDtosToEntities(Collection<IngredientDto> ingredientDtos);
 
     /**
      * Create a new {@link IngredientDto} which properties match with the given {@link Ingredient}
@@ -78,6 +79,6 @@ public interface IngredientConverter {
      * @return {@link Collection} of {@link IngredientDto}
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
-    Collection<IngredientDto> fromEntitiesToDtos(Collection<Ingredient> ingredients);
+    List<IngredientDto> fromEntitiesToDtos(Collection<Ingredient> ingredients);
 
 }
