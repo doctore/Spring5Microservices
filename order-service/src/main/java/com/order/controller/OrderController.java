@@ -42,8 +42,8 @@ public class OrderController {
      * @param orderDto
      *    {@link OrderDto} to create
      *
-     * @return if pizza is not {@code Null}: {@link HttpStatus#CREATED} and created {@link Order}
-     *         if pizza is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
+     * @return if orderDto is not {@code Null}: {@link HttpStatus#CREATED} and created {@link OrderDto}
+     *         if orderDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
     @PostMapping
     public Mono<ResponseEntity<OrderDto>> create(@RequestBody OrderDto orderDto) {
@@ -59,8 +59,8 @@ public class OrderController {
      * @param id
      *    {@link Order#id} to find
      *
-     * @return if name was found: {@link HttpStatus#OK} and {@link OrderDto} that matches
-     *         if name was not found: {@link HttpStatus#NOT_FOUND}
+     * @return if id was found: {@link HttpStatus#OK} and {@link OrderDto} that matches
+     *         if id was not found: {@link HttpStatus#NOT_FOUND}
      */
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
     public Mono<ResponseEntity<OrderDto>> findByIdWithOrderLines(@PathVariable Integer id) {
@@ -76,8 +76,8 @@ public class OrderController {
      * @param orderDto
      *    {@link OrderDto} to update
      *
-     * @return if pizza is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link Order}
-     *         if pizza is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
+     * @return if orderDto is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link OrderDto}
+     *         if orderDto is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
     @PutMapping
     public Mono<ResponseEntity<OrderDto>> update(@RequestBody OrderDto orderDto) {

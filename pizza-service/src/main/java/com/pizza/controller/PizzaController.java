@@ -35,8 +35,8 @@ public class PizzaController {
      * @param pizzaDto
      *    {@link PizzaDto} to create
      *
-     * @return if pizza is not {@code Null}: {@link HttpStatus#CREATED} and created {@link Pizza}
-     *         if pizza is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
+     * @return if pizzaDto is not {@code Null}: {@link HttpStatus#CREATED} and created {@link Pizza}
+     *         if pizzaDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
     @PostMapping
     public Mono<ResponseEntity<PizzaDto>> create(@RequestBody PizzaDto pizzaDto) {
