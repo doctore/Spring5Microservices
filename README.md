@@ -2,6 +2,7 @@
 
 - [Why this project was created?](#why-this-project-was-created)
 - [Elements included in this project](#elements-included-in-this-project)
+    - [registry-server](#registry-server)
     - [config-server](#config-server)
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
@@ -17,6 +18,12 @@ in a "microservices architecture", the main purpose of this project is explore t
 ## Elements included in this project
 
 Below is shown a brief introduction to the subprojects included in this one:
+
+### registry-server
+
+Server used to register all microservices included in this project. In this case, using Netflix Eureka each client can simultaneously act as a server, to replicate its status to a
+connected peer. In other words, a client retrieves a list of all connected peers of a service registry and makes all further requests to any other services through a load-balancing
+algorithm (Ribbon by default). 
 
 ### config-server
 
@@ -130,7 +137,7 @@ ENCRYPT_KEY=ENCRYPT_KEY
 
 ## Future additions
 
-- Zuul as gateway (with Ribbon as load balancer)
+- Zuul as gateway
 - Authentication and authorization using JWT token
 - Hystrix to manage potential network problems
 - Microservices communication using WebClient
