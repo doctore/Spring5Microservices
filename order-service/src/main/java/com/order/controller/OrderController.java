@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -34,6 +37,23 @@ public class OrderController {
 
 
     /**
+     * Used to create a new {@link OrderDto}
+     *
+     * @param orderDto
+     *    {@link OrderDto} to create
+     *
+     * @return if pizza is not {@code Null}: {@link HttpStatus#CREATED} and created {@link Order}
+     *         if pizza is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
+     */
+    @PostMapping
+    public Mono<ResponseEntity<OrderDto>> create(@RequestBody OrderDto orderDto) {
+        return Mono.just(orderService.save(orderDto)
+                   .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
+                   .orElse(new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY)));
+    }
+
+
+    /**
      * Return the {@link OrderDto} and its {@link OrderLineDto} information of the given {@link OrderDto#id}.
      *
      * @param id
@@ -45,6 +65,23 @@ public class OrderController {
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
     public Mono<ResponseEntity<OrderDto>> findByIdWithOrderLines(@PathVariable Integer id) {
         return Mono.just(orderService.findByIdWithOrderLines(id)
+                   .map(p -> new ResponseEntity(p, HttpStatus.OK))
+                   .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));
+    }
+
+
+    /**
+     * Used to update an existing {@link OrderDto}
+     *
+     * @param orderDto
+     *    {@link OrderDto} to update
+     *
+     * @return if pizza is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link Order}
+     *         if pizza is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
+     */
+    @PutMapping
+    public Mono<ResponseEntity<OrderDto>> update(@RequestBody OrderDto orderDto) {
+        return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))
                    .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));
     }
