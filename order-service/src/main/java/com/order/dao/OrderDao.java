@@ -9,7 +9,6 @@ import com.order.model.jooq.tables.PizzaTable;
 import com.order.model.jooq.tables.records.OrderRecord;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,8 +86,8 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
 
         try (ResultSet rs =
                      dsl.select(ORDER.ID, ORDER.CODE, ORDER.CREATED
-                               ,ORDER_LINE.ID.as("order_lines_id"), ORDER_LINE.AMOUNT.as("order_lines_amount"), ORDER_LINE.COST.as("order_lines_cost")
-                               ,PIZZA.ID.as("order_lines_pizza_id"), PIZZA.NAME.as("order_lines_pizza_name"))
+                               ,ORDER_LINE.ID.as("order_lines_id"), ORDER.ID.as("order_lines_orderId"), ORDER_LINE.AMOUNT.as("order_lines_amount"), ORDER_LINE.COST.as("order_lines_cost")
+                               ,PIZZA.ID.as("order_lines_pizza_id"), PIZZA.NAME.as("order_lines_pizza_name"), PIZZA.COST.as("order_lines_pizza_cost"))
                         .from(ORDER)
                         .leftJoin(ORDER_LINE).on(ORDER_LINE.ORDER_ID.eq(ORDER.ID))
                         .join(PIZZA).on(PIZZA.ID.eq(ORDER_LINE.PIZZA_ID))

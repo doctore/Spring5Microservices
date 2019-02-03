@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -149,7 +148,7 @@ public class OrderDaoTest {
 
 
     @Test
-    public void fetchToOrderDtoByIdWithOrderLineDto_whenNullIdIsGiven_thenEmptyOptionalIsReturned() throws SQLException {
+    public void fetchToOrderDtoByIdWithOrderLineDto_whenNullIdIsGiven_thenEmptyOptionalIsReturned() {
         // When
         Optional<OrderDto> optionalOrderDto = orderDao.fetchToOrderDtoByIdWithOrderLineDto(null);
 
@@ -159,7 +158,7 @@ public class OrderDaoTest {
 
 
     @Test
-    public void fetchToOrderDtoByIdWithOrderLineDto_whenANonExistentIdIsGiven_thenOptionalEmptyIsReturned() throws SQLException {
+    public void fetchToOrderDtoByIdWithOrderLineDto_whenANonExistentIdIsGiven_thenEmptyOptionalIsReturned() {
         // Given
         Integer nonExistentId = -1;
 
@@ -172,13 +171,13 @@ public class OrderDaoTest {
 
 
     @Test
-    public void fetchToOrderDtoByIdWithOrderLineDto_whenAnExistentIdIsGiven_thenOptionalWithRelatedModelIsReturned() throws SQLException {
+    public void fetchToOrderDtoByIdWithOrderLineDto_whenAnExistentIdIsGiven_thenOptionalWithRelatedModelIsReturned() {
         // Given (information stored in test database)
         PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
         PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
 
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
+        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).orderId(1).pizza(carbonara).cost(15D).amount((short)2).build();
+        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).orderId(1).pizza(hawaiian).cost(8D).amount((short)1).build();
 
         // When
         Optional<OrderDto> optionalOrderDto = orderDao.fetchToOrderDtoByIdWithOrderLineDto(order1.getId());

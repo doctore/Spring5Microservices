@@ -1,15 +1,22 @@
 package com.order.dao;
 
+import com.order.dto.OrderLineDto;
+import com.order.dto.PizzaDto;
 import com.order.model.Order;
 import com.order.model.OrderLine;
 import com.order.model.Pizza;
 import com.order.model.jooq.tables.OrderLineTable;
+import com.order.model.jooq.tables.PizzaTable;
 import com.order.model.jooq.tables.records.OrderLineRecord;
 
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
+import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -86,6 +93,36 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      */
     public List<OrderLine> findByPizzaIds(Short... pizzaIds) {
         return fetch(OrderLineTable.ORDER_LINE_TABLE.PIZZA_ID, pizzaIds);
+    }
+
+
+    /**
+     * Return the {@link List} of {@link OrderLineDto}s and its {@link PizzaDto} information of the given {@link Order#id}
+     *
+     * @param orderId
+     *    {@link Order#id} to find
+     *
+     * @return {@link List} of {@link OrderLineDto}s.
+     *
+     * @throws DataAccessException if there is an error executing the query
+     */
+    public List<OrderLineDto> fetchToOrderLineDtoByOrderIdWithPizzaDto(Integer orderId) {
+        OrderLineTable ORDER_LINE = OrderLineTable.ORDER_LINE_TABLE;
+        PizzaTable PIZZA = PizzaTable.PIZZA_TABLE;
+
+        try (ResultSet rs =
+                     dsl.select(ORDER_LINE.ID, ORDER_LINE.ORDER_ID, ORDER_LINE.AMOUNT, ORDER_LINE.COST
+                               ,PIZZA.ID.as("pizza_id"), PIZZA.NAME.as("pizza_name"), PIZZA.COST.as("pizza_cost"))
+                        .from(ORDER_LINE)
+                        .join(PIZZA).on(PIZZA.ID.eq(ORDER_LINE.PIZZA_ID))
+                        .where(ORDER_LINE.ORDER_ID.eq(orderId))
+                        .fetchResultSet()) {
+
+            JdbcMapper<OrderLineDto> jdbcMapper = getJdbcMapper(OrderLineDto.class, "id", "pizza_id");
+            return jdbcMapper.stream(rs).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("There was an error trying to find the order lines related with the order: %d", orderId), e);
+        }
     }
 
 }

@@ -13,7 +13,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 
 /**
  * Global exception handler to manage unhandler errors in the Rest layer (Controllers)

@@ -1,5 +1,9 @@
 package com.order.dao;
 
+import com.order.dto.OrderDto;
+import com.order.dto.OrderLineDto;
+import com.order.dto.PizzaDto;
+import com.order.model.Order;
 import com.order.model.OrderLine;
 import org.jooq.DSLContext;
 import org.junit.Before;
@@ -242,6 +246,51 @@ public class OrderLineDaoTest {
         assertNotNull(orderLines);
         assertEquals(4, orderLines.size());
         assertThat(orderLines, containsInAnyOrder(orderLine1, orderLine2, orderLine3, orderLine4));
+    }
+
+
+    @Test
+    public void fetchToOrderLineDtoByOrderIdWithPizzaDto_whenNullOrderIdIsGiven_thenEmptyListIsReturned() {
+        // When
+        List<OrderLineDto> orderLineDtos = orderLineDao.fetchToOrderLineDtoByOrderIdWithPizzaDto(null);
+
+        // Then
+        assertNotNull(orderLineDtos);
+        assertTrue(orderLineDtos.isEmpty());
+    }
+
+
+    @Test
+    public void fetchToOrderLineDtoByOrderIdWithPizzaDto_whenANonExistentOrderIdIsGiven_thenEmptyListIsReturned() {
+        // Given
+        Integer nonExistentId = -1;
+
+        // When
+        List<OrderLineDto> orderLineDtos = orderLineDao.fetchToOrderLineDtoByOrderIdWithPizzaDto(nonExistentId);
+
+        // Then
+        assertNotNull(orderLineDtos);
+        assertTrue(orderLineDtos.isEmpty());
+    }
+
+
+    @Test
+    public void fetchToOrderLineDtoByOrderIdWithPizzaDto_whenAnExistentOrderIdIsGiven_thenRelatedListOfModelsIsReturned() {
+        // Given (information stored in test database)
+        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
+        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
+
+        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).orderId(1).pizza(carbonara).cost(15D).amount((short)2).build();
+        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).orderId(1).pizza(hawaiian).cost(8D).amount((short)1).build();
+
+        // When
+        List<OrderLineDto> orderLineDtos = orderLineDao.fetchToOrderLineDtoByOrderIdWithPizzaDto(orderLine1.getOrderId());
+
+        // Then
+        assertNotNull(orderLineDtos);
+        assertEquals(2, orderLineDtos.size());
+        assertThat(orderLineDtos.get(0), samePropertyValuesAs(orderLineDto1));
+        assertThat(orderLineDtos.get(1), samePropertyValuesAs(orderLineDto2));
     }
 
 }
