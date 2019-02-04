@@ -8,6 +8,7 @@ import org.jooq.impl.DAOImpl;
 import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.simpleflatmapper.jdbc.JdbcMapperFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -57,41 +58,54 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
      *    Store in database the given object, choosing between {@code insert} or {@code update} if
      * this one is a new instance or not.
      *
-     * @param object
+     * @param model
      *    Information to save in database
+     *
+     * @return {@link Optional} with the "final version" of the given object
      */
-    public void save(P object) {
-        Optional.ofNullable(object)
-                .ifPresent(o -> {
-                    if (o.isNew()) {
-                        insert(o);
-                    } else {
-                        update(o);
-                    }
-                });
+    public Optional<P> save(P model) {
+        return Optional.ofNullable(model)
+                       .map(m -> {
+                           if (m.isNew()) {
+                               insert(m);
+                           } else {
+                               update(m);
+                           }
+                           return m;
+                       });
     }
 
 
     /**
      * Store in database the given {@link Collection}.
      *
-     * @param objects
+     * @param models
      *    {@link Collection} of objects to store in database
+     *
+     * @return {@link List} with the "final version" of the given models
      */
-    public void saveAll(Collection<P> objects) {
-        Optional.ofNullable(objects)
-                .ifPresent(o -> {
-                    Map<Boolean, List<P>> insertAndUpdate =
-                            objects.stream().collect(partitioningBy(IModel::isNew));
+    public List<P> saveAll(Collection<P> models) {
+        return Optional.ofNullable(models)
+                       .map(m -> {
+                           Map<Boolean, List<P>> insertAndUpdate =
+                                   models.stream().collect(partitioningBy(IModel::isNew));
 
-                    List<P> toInsert = insertAndUpdate.get(true);
-                    if (null != toInsert)
-                        insert(toInsert);
+                           List<P> toInsert = insertAndUpdate.get(true);
+                           if (null != toInsert)
+                               insert(toInsert);
+                           else
+                               toInsert = new ArrayList<>();
 
-                    List<P> toUpdate = insertAndUpdate.get(false);
-                    if (null != toUpdate)
-                       update(toUpdate);
-                });
+                           List<P> toUpdate = insertAndUpdate.get(false);
+                           if (null != toUpdate)
+                              update(toUpdate);
+                           else
+                               toUpdate = new ArrayList<>();
+
+                           toInsert.addAll(toUpdate);
+                           return toInsert;
+                       })
+                       .orElse(new ArrayList<>());
     }
 
 }
