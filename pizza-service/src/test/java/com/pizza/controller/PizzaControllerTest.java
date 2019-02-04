@@ -25,6 +25,8 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -53,7 +55,7 @@ public class PizzaControllerTest {
     @Test
     public void create_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
+        PizzaDto pizzaDto = PizzaDto.builder().name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
 
         // When
         when(mockPizzaService.save(any())).thenReturn(Optional.empty());
@@ -69,7 +71,7 @@ public class PizzaControllerTest {
 
 
     @Test
-    public void create_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaObjectAreReturned() {
+    public void create_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
@@ -79,7 +81,7 @@ public class PizzaControllerTest {
         PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();
         // When
-        when(mockPizzaService.save(any())).thenReturn(Optional.of(afterPizzaDto));
+        when(mockPizzaService.save(beforePizzaDto)).thenReturn(Optional.of(afterPizzaDto));
 
         // Then
         webTestClient.post()
@@ -94,6 +96,8 @@ public class PizzaControllerTest {
                      .jsonPath("$.cost").isEqualTo(afterPizzaDto.getCost())
                      .jsonPath("$.ingredients.[0].id").isEqualTo(afterIngredientDto.getId())
                      .jsonPath("$.ingredients.[0].name").isEqualTo(afterIngredientDto.getName());
+
+        verify(mockPizzaService, times(1)).save(beforePizzaDto);
     }
 
 
@@ -112,7 +116,7 @@ public class PizzaControllerTest {
 
 
     @Test
-    public void findByName_whenTheNameExists_thenOkHttpCodeAndPizzaObjectAreReturned() {
+    public void findByName_whenTheNameExists_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Bacon").build();
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D)
@@ -207,7 +211,7 @@ public class PizzaControllerTest {
 
 
     @Test
-    public void update_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
+    public void update_whenSaveDoesNotReturnAnEntity_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
 
@@ -225,17 +229,17 @@ public class PizzaControllerTest {
 
 
     @Test
-    public void update_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaObjectAreReturned() {
+    public void update_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
 
-        PizzaDto beforePizzaDto = PizzaDto.builder().name("Carbonara")
+        PizzaDto beforePizzaDto = PizzaDto.builder().id(1).name("Carbonara")
                                                     .ingredients(new HashSet<>(Arrays.asList(beforeIngredientDto))).build();
         PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();
         // When
-        when(mockPizzaService.save(any())).thenReturn(Optional.of(afterPizzaDto));
+        when(mockPizzaService.save(beforePizzaDto)).thenReturn(Optional.of(afterPizzaDto));
 
         // Then
         webTestClient.put()
@@ -250,6 +254,8 @@ public class PizzaControllerTest {
                      .jsonPath("$.cost").isEqualTo(afterPizzaDto.getCost())
                      .jsonPath("$.ingredients.[0].id").isEqualTo(afterIngredientDto.getId())
                      .jsonPath("$.ingredients.[0].name").isEqualTo(afterIngredientDto.getName());
+
+        verify(mockPizzaService, times(1)).save(beforePizzaDto);
     }
 
 }

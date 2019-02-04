@@ -11,18 +11,24 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -34,6 +40,77 @@ public class OrderControllerTest {
 
     @MockBean
     private OrderService mockOrderService;
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    static {
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
+
+
+    @Test
+    public void create_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
+        // When/Then
+        webTestClient.post()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectBody().isEmpty();
+    }
+
+
+    @Test
+    public void create_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
+        // Given
+        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+
+        // When
+        when(mockOrderService.save(any())).thenReturn(Optional.empty());
+
+        // Then
+        webTestClient.post()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(orderDto), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectBody().isEmpty();
+    }
+
+
+    @Test
+    public void create_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndOrderDtoAreReturned() {
+        // Given
+        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
+        OrderLineDto beforeOrderLineDto = OrderLineDto.builder().pizza(carbonara).cost(15D).amount((short)2).build();
+        OrderDto beforeOrderDto = OrderDto.builder().code("Order 1").created(new Date())
+                                                    .orderLines(Arrays.asList(beforeOrderLineDto)).build();
+
+        OrderLineDto afterOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
+        OrderDto afterOrderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
+                                                   .orderLines(Arrays.asList(afterOrderLineDto)).build();
+        // When
+        when(mockOrderService.save(beforeOrderDto)).thenReturn(Optional.of(afterOrderDto));
+
+        // Then
+        webTestClient.post()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(beforeOrderDto), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isCreated()
+                     .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                     .expectBody()
+                     .jsonPath("$.id").isEqualTo(afterOrderDto.getId())
+                     .jsonPath("$.code").isEqualTo(afterOrderDto.getCode())
+                     .jsonPath("$.created").isEqualTo(DATE_FORMAT.format(afterOrderDto.getCreated()))
+                     .jsonPath("$.orderLines.[0].id").isEqualTo(afterOrderLineDto.getId())
+                     .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(afterOrderLineDto.getAmount()))
+                     .jsonPath("$.orderLines.[0].cost").isEqualTo(afterOrderLineDto.getCost())
+                     .jsonPath("$.orderLines.[0].pizza.id").isEqualTo(Integer.valueOf(afterOrderLineDto.getPizza().getId()))
+                     .jsonPath("$.orderLines.[0].pizza.name").isEqualTo(afterOrderLineDto.getPizza().getName())
+                     .jsonPath("$.orderLines.[0].pizza.cost").isEqualTo(afterOrderLineDto.getPizza().getCost());
+
+        verify(mockOrderService, times(1)).save(beforeOrderDto);
+    }
 
 
     @Test
@@ -61,10 +138,6 @@ public class OrderControllerTest {
 
         OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime()))
                                               .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
         // When
         when(mockOrderService.findByIdWithOrderLines(anyInt())).thenReturn(Optional.of(orderDto));
 
@@ -77,7 +150,7 @@ public class OrderControllerTest {
                      .expectBody()
                      .jsonPath("$.id").isEqualTo(orderDto.getId())
                      .jsonPath("$.code").isEqualTo(orderDto.getCode())
-                     .jsonPath("$.created").isEqualTo(dateFormat.format(orderDto.getCreated()))
+                     .jsonPath("$.created").isEqualTo(DATE_FORMAT.format(orderDto.getCreated()))
                      .jsonPath("$.orderLines.[0].id").isEqualTo(orderLineDto1.getId())
                      .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(orderLineDto1.getAmount()))
                      .jsonPath("$.orderLines.[0].cost").isEqualTo(orderLineDto1.getCost())
@@ -90,6 +163,72 @@ public class OrderControllerTest {
                      .jsonPath("$.orderLines.[1].pizza.id").isEqualTo(Integer.valueOf(hawaiian.getId()))
                      .jsonPath("$.orderLines.[1].pizza.name").isEqualTo(hawaiian.getName())
                      .jsonPath("$.orderLines.[1].pizza.cost").isEqualTo(hawaiian.getCost());
+    }
+
+
+    @Test
+    public void update_whenEmptyDtoIsGiven_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
+        // When/Then
+        webTestClient.put()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isNotFound()
+                     .expectBody().isEmpty();
+    }
+
+
+    @Test
+    public void update_whenSaveDoesNotReturnAnEntity_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
+        // Given
+        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+
+        // When
+        when(mockOrderService.save(any())).thenReturn(Optional.empty());
+
+        // Then
+        webTestClient.put()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(orderDto), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isNotFound()
+                     .expectBody().isEmpty();
+    }
+
+
+    @Test
+    public void update_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndOrderDtoAreReturned() {
+        // Given
+        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
+        OrderLineDto beforeOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
+        OrderDto beforeOrderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
+                                                    .orderLines(Arrays.asList(beforeOrderLineDto)).build();
+
+        OrderLineDto afterOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(7.50D).amount((short)1).build();
+        OrderDto afterOrderDto = OrderDto.builder().id(1).code("Order 1 updated").created(new Date())
+                                                   .orderLines(Arrays.asList(afterOrderLineDto)).build();
+        // When
+        when(mockOrderService.save(beforeOrderDto)).thenReturn(Optional.of(afterOrderDto));
+
+        // Then
+        webTestClient.put()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(beforeOrderDto), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isOk()
+                     .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+                     .expectBody()
+                     .jsonPath("$.id").isEqualTo(afterOrderDto.getId())
+                     .jsonPath("$.code").isEqualTo(afterOrderDto.getCode())
+                     .jsonPath("$.created").isEqualTo(DATE_FORMAT.format(afterOrderDto.getCreated()))
+                     .jsonPath("$.orderLines.[0].id").isEqualTo(afterOrderLineDto.getId())
+                     .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(afterOrderLineDto.getAmount()))
+                     .jsonPath("$.orderLines.[0].cost").isEqualTo(afterOrderLineDto.getCost())
+                     .jsonPath("$.orderLines.[0].pizza.id").isEqualTo(Integer.valueOf(afterOrderLineDto.getPizza().getId()))
+                     .jsonPath("$.orderLines.[0].pizza.name").isEqualTo(afterOrderLineDto.getPizza().getName())
+                     .jsonPath("$.orderLines.[0].pizza.cost").isEqualTo(afterOrderLineDto.getPizza().getCost());
+
+        verify(mockOrderService, times(1)).save(beforeOrderDto);
     }
 
 }

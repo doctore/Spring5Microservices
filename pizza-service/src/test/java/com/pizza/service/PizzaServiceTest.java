@@ -75,14 +75,17 @@ public class PizzaServiceTest {
 
     @Test
     public void findByName_whenEmptyOptionalPizzaIsReturnedByRepository_thenEmptyOptionalIsReturned() {
+        // Given
+        String pizzaName = "Carbonara";
+
         // When
-        when(mockPizzaRepository.findWithIngredientsByName(anyString())).thenReturn(Optional.empty());
-        Optional<PizzaDto> pizzaDto = pizzaService.findByName("Carbonara");
+        when(mockPizzaRepository.findWithIngredientsByName(pizzaName)).thenReturn(Optional.empty());
+        Optional<PizzaDto> pizzaDto = pizzaService.findByName(pizzaName);
 
         // Then
         assertFalse(pizzaDto.isPresent());
         verify(mockPizzaConverter, times(0)).fromEntityToOptionalDto(any());
-        verify(mockPizzaRepository, times(1)).findWithIngredientsByName(anyString());
+        verify(mockPizzaRepository, times(1)).findWithIngredientsByName(pizzaName);
     }
 
 
@@ -93,16 +96,16 @@ public class PizzaServiceTest {
         PizzaDto carbonaraDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).build();
 
         // When
-        when(mockPizzaRepository.findWithIngredientsByName(anyString())).thenReturn(Optional.of(carbonara));
+        when(mockPizzaRepository.findWithIngredientsByName(carbonara.getName())).thenReturn(Optional.of(carbonara));
         when(mockPizzaConverter.fromEntityToOptionalDto(carbonara)).thenReturn(Optional.of(carbonaraDto));
-        Optional<PizzaDto> pizzaDto = pizzaService.findByName("Carbonara");
+        Optional<PizzaDto> pizzaDto = pizzaService.findByName(carbonara.getName());
 
         // Then
         assertTrue(pizzaDto.isPresent());
         assertThat(pizzaDto.get(), samePropertyValuesAs(carbonaraDto));
 
-        verify(mockPizzaConverter, times(1)).fromEntityToOptionalDto(any());
-        verify(mockPizzaRepository, times(1)).findWithIngredientsByName(anyString());
+        verify(mockPizzaConverter, times(1)).fromEntityToOptionalDto(carbonara);
+        verify(mockPizzaRepository, times(1)).findWithIngredientsByName(carbonara.getName());
     }
 
 
@@ -130,7 +133,7 @@ public class PizzaServiceTest {
         assertNotNull(pizzaDtoPage);
         assertEquals(0, pizzaDtoPage.getTotalElements());
         assertTrue(pizzaDtoPage.getContent().isEmpty());
-        verify(mockPizzaConverter, times(1)).fromEntitiesToDtos(any());
+        verify(mockPizzaConverter, times(1)).fromEntitiesToDtos(new ArrayList<>());
     }
 
 
@@ -148,15 +151,15 @@ public class PizzaServiceTest {
         Sort sort = Sort.by(Sort.Direction.DESC, "name");
 
         // When
-        when(mockPizzaConverter.fromEntitiesToDtos(any())).thenReturn(Arrays.asList(hawaiianDto, carbonaraDto));
+        when(mockPizzaConverter.fromEntitiesToDtos(Arrays.asList(carbonara, hawaiian))).thenReturn(Arrays.asList(carbonaraDto, hawaiianDto));
         when(mockPizzaRepository.findPageWithIngredients(any())).thenReturn(pizzaPage);
         Page<PizzaDto> pizzaDtoPage = pizzaService.findPageWithIngredients(0, size, sort);
 
         // Then
         assertNotNull(pizzaDtoPage);
         assertEquals(size, pizzaDtoPage.getTotalElements());
-        assertThat(pizzaDtoPage.getContent(), contains(hawaiianDto, carbonaraDto));
-        verify(mockPizzaConverter, times(1)).fromEntitiesToDtos(any());
+        assertThat(pizzaDtoPage.getContent(), contains(carbonaraDto, hawaiianDto));
+        verify(mockPizzaConverter, times(1)).fromEntitiesToDtos(Arrays.asList(carbonara, hawaiian));
     }
 
 

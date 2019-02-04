@@ -58,14 +58,13 @@ public class OrderService {
                        .flatMap(orderConverter::fromDtoToOptionalModel)
                        .map(order -> {
                            orderDao.save(order);
-
                            List<OrderLineDto> orderLineDtos = orderLineService.saveAll(orderDto.getOrderLines(), order.getId());
-                           OrderDto orderDtoPersisted = orderConverter.fromModelToDto(order);
-                           orderDtoPersisted.setOrderLines(orderLineDtos);
 
-                           return Optional.of(orderDtoPersisted);
+                           Optional<OrderDto> orderDtoPersisted = orderConverter.fromModelToOptionalDto(order);
+                           orderDtoPersisted.ifPresent(dto -> dto.setOrderLines(orderLineDtos));
+                           return orderDtoPersisted;
                        })
-                       .orElse(null);
+                       .orElse(Optional.empty());
     }
 
 }
