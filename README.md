@@ -1,6 +1,6 @@
 # Spring5Microservices
 
-- [Why this project was created?](#why-this-project-was-created)
+- [Why was this project created?](#why-was-this-project-created)
 - [Elements included in this project](#elements-included-in-this-project)
     - [registry-server](#registry-server)
     - [config-server](#config-server)
@@ -10,7 +10,7 @@
 - [Previous steps](#previous-steps)
 - [Future additions](#previous-steps)
 
-## Why this project was created?
+## Why was this project created?
 
 Basically to know how to create a project using the microservices approach with the last Spring version. Due to there are several options we can use for different features included
 in a "microservices architecture", the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
