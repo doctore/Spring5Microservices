@@ -77,7 +77,8 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
                                                                        + "            order by " + orderByClause
                                                                        + "           ) p_i "
                                                                        + "     ) p_i_r "
-                                                                       + "where p_i_r.rank between :rankInitial and :rankFinal", Constants.SQL_RESULT_MAPPING.PIZZA_INGREDIENTS)
+                                                                       + "where p_i_r.rank between :rankInitial and :rankFinal"
+                                                                      , Constants.SQL_RESULT_MAPPING.PIZZA_INGREDIENTS)
                                                       .setParameter("rankInitial", rankInitial)
                                                       .setParameter("rankFinal", rankFinal)
                                                       .getResultList();
