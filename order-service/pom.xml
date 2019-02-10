@@ -20,7 +20,7 @@
         <jooq.version>3.11.0</jooq.version>
         <mapstruct-processor.version>1.2.0.Final</mapstruct-processor.version>
         <maven-compiler-plugin.version>3.6.2</maven-compiler-plugin.version>
-        <sfm-jooq.version>6.2.0</sfm-jooq.version>
+        <simpleflatmapper.version>6.2.1</simpleflatmapper.version>
         <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
     </properties>
 
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>org.simpleflatmapper</groupId>
             <artifactId>sfm-jooq</artifactId>
-            <version>${sfm-jooq.version}</version>
+            <version>${simpleflatmapper.version}</version>
         </dependency>
         <!-- Test -->
         <dependency>

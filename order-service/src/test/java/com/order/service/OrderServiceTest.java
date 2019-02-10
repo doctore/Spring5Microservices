@@ -17,7 +17,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
@@ -97,6 +99,45 @@ public class OrderServiceTest {
         assertThat(Arrays.asList(optionalOrderDto.get().getOrderLines().get(0).getPizza(),
                                  optionalOrderDto.get().getOrderLines().get(1).getPizza()),
                    containsInAnyOrder(carbonara, hawaiian));
+    }
+
+
+    @Test
+    public void findPageOrderedByCreatedWithOrderLines_whenNoResultsAreReturnedByDatabase_thenEmptySetIsReturned() {
+        // When
+        when(mockOrderDao.fetchPageToOrderDtoByIdWithOrderLineDto(anyInt(), anyInt())).thenReturn(new LinkedHashSet<>());
+        Set<OrderDto> orderds = orderService.findPageOrderedByCreatedWithOrderLines(0, 2);
+
+        // Then
+        assertNotNull(orderds);
+        assertTrue(orderds.isEmpty());
+    }
+
+
+    @Test
+    public void findPageOrderedByCreatedWithOrderLines_whenInformationIsFoundInDatabase_thenEquivalentSetIsReturned() {
+        // Given
+        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
+        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
+
+        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
+        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
+
+        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
+                                              .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
+
+        Set<OrderDto> orders = new LinkedHashSet<>();
+        orders.add(orderDto);
+
+        // When
+        when(mockOrderDao.fetchPageToOrderDtoByIdWithOrderLineDto(anyInt(), anyInt())).thenReturn(orders);
+        Set<OrderDto> orderdsFromDatabase = orderService.findPageOrderedByCreatedWithOrderLines(0, 2);
+
+        // Then
+        assertNotNull(orderdsFromDatabase);
+        assertEquals(orders.size(), orderdsFromDatabase.size());
+        for (OrderDto order : orderdsFromDatabase)
+            assertThat(order, samePropertyValuesAs(orderDto));
     }
 
 

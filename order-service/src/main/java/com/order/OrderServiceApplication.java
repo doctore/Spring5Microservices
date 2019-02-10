@@ -14,10 +14,9 @@ public class OrderServiceApplication {
         OrderDao orderDao = context.getBean(OrderDao.class);
         Optional<OrderDto> order = Optional.empty();
         try {
-            order = orderDao.fetchToOrderDtoByIdWithOrderLineDto(3);
+            Set<OrderDto> orders = orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(0, 2);
         } catch (Exception e) {}
         */
     }
 
 }
-

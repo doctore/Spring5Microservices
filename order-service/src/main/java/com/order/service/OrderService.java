@@ -5,6 +5,7 @@ import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.util.converter.OrderConverter;
+import org.jooq.exception.DataAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class OrderService {
@@ -38,9 +40,29 @@ public class OrderService {
      *
      * @return {@link Optional} with the {@link OrderDto} which identifier matches with the given one.
      *         {@link Optional#empty()} otherwise
+     *
+     * @throws DataAccessException if there is an error executing the query
      */
     public Optional<OrderDto> findByIdWithOrderLines(Integer id) {
         return orderDao.fetchToOrderDtoByIdWithOrderLineDto(id);
+    }
+
+
+    /**
+     *    Return a "page of {@link OrderDto}" and its {@link OrderLineDto} information, ordered by
+     * {@link Order#created} desc.
+     *
+     * @param page
+     *    Desired page to get (taking into account the value of the given size)
+     * @param size
+     *    Number of {@link OrderDto}s included in every page
+     *
+     * @return {@link List} of {@link OrderDto} ordered by {@link Order#created} desc
+     *
+     * @throws DataAccessException if there is an error executing the query
+     */
+    public Set<OrderDto> findPageOrderedByCreatedWithOrderLines(int page, int size) {
+        return orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(page, size);
     }
 
 

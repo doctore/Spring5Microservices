@@ -13,8 +13,17 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TimeZone;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -26,6 +35,8 @@ import static org.junit.Assert.assertFalse;
 @JooqTest
 @AutoConfigureTestDatabase(replace=AutoConfigureTestDatabase.Replace.NONE)
 public class OrderDaoTest {
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     @Autowired
     private DSLContext dslContext;
@@ -268,6 +279,121 @@ public class OrderDaoTest {
         // Then
         assertTrue(optionalOrder.isPresent());
         assertThat(optionalOrder.get(), samePropertyValuesAs(order1));
+    }
+
+
+    @Test
+    public void fetchPageToOrderDtoByIdWithOrderLineDto_whenNegativePageValueIsGiven_thenEmptySetIsReturned() {
+        // When
+        Set<OrderDto> orderds = orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(-1, 2);
+
+        // Then
+        assertNotNull(orderds);
+        assertTrue(orderds.isEmpty());
+    }
+
+
+    @Test
+    public void fetchPageToOrderDtoByIdWithOrderLineDto_whenNegativeSizeValueIsGiven_thenEmptySetIsReturned() {
+        // When
+        Set<OrderDto> orderds = orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(1, -2);
+
+        // Then
+        assertNotNull(orderds);
+        assertTrue(orderds.isEmpty());
+    }
+
+
+    @Test
+    public void fetchPageToOrderDtoByIdWithOrderLineDto_whenZeroSizeValueIsGiven_thenEmptySetIsReturned() {
+        // When
+        Set<OrderDto> orderds = orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(1, 0);
+
+        // Then
+        assertNotNull(orderds);
+        assertTrue(orderds.isEmpty());
+    }
+
+
+    @Test
+    public void fetchPageToOrderDtoByIdWithOrderLineDto_whenDatabaseContainsMoreElementsThanGivenSizeAndPage_thenASubsetIsReturned() throws ParseException {
+        // Given
+        int page = 0;
+        int size = 1;
+
+        // Information stored in test database
+        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
+        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
+        PizzaDto margherita = PizzaDto.builder().id((short)3).name("Margherita").cost(7D).build();
+
+        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).orderId(1).pizza(carbonara).cost(7.5D).amount((short)1).build();
+        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).orderId(1).pizza(hawaiian).cost(8D).amount((short)1).build();
+        OrderLineDto orderLineDto3 = OrderLineDto.builder().id(3).orderId(2).pizza(carbonara).cost(7.5D).amount((short)1).build();
+        OrderLineDto orderLineDto4 = OrderLineDto.builder().id(4).orderId(2).pizza(hawaiian).cost(16D).amount((short)2).build();
+        OrderLineDto orderLineDto5 = OrderLineDto.builder().id(5).orderId(2).pizza(margherita).cost(21D).amount((short)3).build();
+
+        OrderDto orderDto1 = OrderDto.builder().id(1).code("Order 1").created(new Timestamp(DATE_FORMAT.parse("2018-12-31 16:00:00.000000").getTime()))
+                                                     .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
+        OrderDto orderDto2 = OrderDto.builder().id(2).code("Order 2").created(new Timestamp(DATE_FORMAT.parse("2019-01-02 18:00:00.000000").getTime()))
+                                                     .orderLines(Arrays.asList(orderLineDto3, orderLineDto4, orderLineDto5)).build();
+        // When
+        Set<OrderDto> orderdsPage0 = orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(page, size);
+        Set<OrderDto> orderdsPage1 = orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(page+1, size);
+
+        // Then
+        assertNotNull(orderdsPage0);
+        assertEquals(size, orderdsPage0.size());
+        for (OrderDto orderDto : orderdsPage0)
+            assertThat(orderDto, samePropertyValuesAs(orderDto2));
+
+        assertNotNull(orderdsPage1);
+        assertEquals(size, orderdsPage1.size());
+        for (OrderDto o : orderdsPage1)
+            assertThat(o, samePropertyValuesAs(orderDto1));
+    }
+
+
+    @Test
+    public void fetchPageToOrderDtoByIdWithOrderLineDto_whenAllDatabaseRowsAreRequired_thenAllDataIsReturned() throws ParseException {
+        // Given
+        int page = 0;
+        int size = 2;
+
+        // Information stored in test database
+        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
+        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
+        PizzaDto margherita = PizzaDto.builder().id((short)3).name("Margherita").cost(7D).build();
+
+        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).orderId(1).pizza(carbonara).cost(7.5D).amount((short)1).build();
+        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).orderId(1).pizza(hawaiian).cost(8D).amount((short)1).build();
+        OrderLineDto orderLineDto3 = OrderLineDto.builder().id(3).orderId(2).pizza(carbonara).cost(7.5D).amount((short)1).build();
+        OrderLineDto orderLineDto4 = OrderLineDto.builder().id(4).orderId(2).pizza(hawaiian).cost(16D).amount((short)2).build();
+        OrderLineDto orderLineDto5 = OrderLineDto.builder().id(5).orderId(2).pizza(margherita).cost(21D).amount((short)3).build();
+
+        OrderDto orderDto1 = OrderDto.builder().id(1).code("Order 1").created(new Timestamp(DATE_FORMAT.parse("2018-12-31 16:00:00.000000").getTime()))
+                                                     .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
+        OrderDto orderDto2 = OrderDto.builder().id(2).code("Order 2").created(new Timestamp(DATE_FORMAT.parse("2019-01-02 18:00:00.000000").getTime()))
+                                                     .orderLines(Arrays.asList(orderLineDto3, orderLineDto4, orderLineDto5)).build();
+        // When
+        Set<OrderDto> orderdsPage = orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(page, size);
+
+        // Then
+        assertNotNull(orderdsPage);
+        assertEquals(size, orderdsPage.size());
+        assertEquals(orderDao.count(), orderdsPage.size());
+
+        Set<Integer> ordersFound = new HashSet<>();
+        for (OrderDto o : orderdsPage) {
+            if (o.getId().equals(orderDto1.getId())) {
+                ordersFound.add(o.getId());
+                assertThat(o, samePropertyValuesAs(orderDto1));
+            }
+            if (o.getId().equals(orderDto2.getId())) {
+                ordersFound.add(o.getId());
+                assertThat(o, samePropertyValuesAs(orderDto2));
+            }
+        }
+        assertEquals(orderdsPage.size(), ordersFound.size());
     }
 
 }
