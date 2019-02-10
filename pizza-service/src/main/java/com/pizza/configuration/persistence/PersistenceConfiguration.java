@@ -9,5 +9,5 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * Custom {@link Configuration} class to add specific configuration options related with the persistence.
  */
 @Configuration
-@EnableJpaRepositories(basePackages = Constants.REPOSITORY_PATH, repositoryBaseClass = ExtendedJpaRepositoryImpl.class)
+@EnableJpaRepositories(basePackages = Constants.PATH.REPOSITORY, repositoryBaseClass = ExtendedJpaRepositoryImpl.class)
 public class PersistenceConfiguration { }

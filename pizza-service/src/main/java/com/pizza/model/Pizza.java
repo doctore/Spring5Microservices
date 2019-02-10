@@ -19,7 +19,7 @@ import java.util.Set;
 @Entity
 @Table(schema = Constants.DATABASE_SCHEMA)
 @SqlResultSetMapping(
-   name="PizzaIngredientsMapping",
+   name = Constants.SQL_RESULT_MAPPING.PIZZA_INGREDIENTS,
    entities = {
       @EntityResult(entityClass = Pizza.class),
       @EntityResult(

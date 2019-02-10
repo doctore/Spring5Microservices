@@ -1,5 +1,6 @@
 package com.pizza.repository;
 
+import com.pizza.configuration.Constants;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.model.QPizza;
@@ -76,7 +77,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
                                                                        + "            order by " + orderByClause
                                                                        + "           ) p_i "
                                                                        + "     ) p_i_r "
-                                                                       + "where p_i_r.rank between :rankInitial and :rankFinal", "PizzaIngredientsMapping")
+                                                                       + "where p_i_r.rank between :rankInitial and :rankFinal", Constants.SQL_RESULT_MAPPING.PIZZA_INGREDIENTS)
                                                       .setParameter("rankInitial", rankInitial)
                                                       .setParameter("rankFinal", rankFinal)
                                                       .getResultList();
