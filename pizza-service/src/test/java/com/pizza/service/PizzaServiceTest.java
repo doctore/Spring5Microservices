@@ -112,7 +112,7 @@ public class PizzaServiceTest {
     @Test
     public void findPageWithIngredients_whenNullPageIsGivenByRepository_thenEmptyPageIsReturned() {
         // When
-        when(mockPizzaRepository.findPageWithIngredients(any())).thenReturn(null);
+        when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(any())).thenReturn(null);
         Page<PizzaDto> pizzaDtoPage = pizzaService.findPageWithIngredients(0, 2, Sort.unsorted());
 
         // Then
@@ -126,7 +126,7 @@ public class PizzaServiceTest {
     @Test
     public void findPageWithIngredients_whenEmptyPageIsGivenByRepository_thenEmptyPageIsReturned() {
         // When
-        when(mockPizzaRepository.findPageWithIngredients(any())).thenReturn(Page.empty());
+        when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(any())).thenReturn(Page.empty());
         Page<PizzaDto> pizzaDtoPage = pizzaService.findPageWithIngredients(0, 2, Sort.unsorted());
 
         // Then
@@ -152,7 +152,7 @@ public class PizzaServiceTest {
 
         // When
         when(mockPizzaConverter.fromEntitiesToDtos(Arrays.asList(carbonara, hawaiian))).thenReturn(Arrays.asList(carbonaraDto, hawaiianDto));
-        when(mockPizzaRepository.findPageWithIngredients(any())).thenReturn(pizzaPage);
+        when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(any())).thenReturn(pizzaPage);
         Page<PizzaDto> pizzaDtoPage = pizzaService.findPageWithIngredients(0, size, sort);
 
         // Then

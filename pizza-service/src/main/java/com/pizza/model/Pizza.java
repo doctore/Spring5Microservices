@@ -6,14 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Objects;
@@ -25,6 +18,15 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(schema = Constants.DATABASE_SCHEMA)
+@SqlResultSetMapping(
+   name="PizzaIngredientsMapping",
+   entities = {
+      @EntityResult(entityClass = Pizza.class),
+      @EntityResult(
+         entityClass = Ingredient.class,
+         fields = {
+            @FieldResult(name = "id", column = "ingredients_id"),
+            @FieldResult(name = "name", column = "ingredients_name")})})
 public class Pizza {
 
     @Id
@@ -43,7 +45,6 @@ public class Pizza {
                name = "pizza_ingredient",
                inverseJoinColumns = { @JoinColumn(name = "ingredient_id") })
     private Set<Ingredient> ingredients;
-
 
     @Override
     public boolean equals(Object o) {

@@ -80,6 +80,42 @@ public class PizzaRepositoryTest {
 
 
     @Test
+    public void findPageWithIngredientsWithoutInMemoryPagination_whenNullPageableIsGiven_thenAllPizzasAreReceived() {
+        // When
+        Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(null);
+
+        // Then
+        assertNotNull(pizzaPage);
+        assertEquals(3, pizzaPage.getTotalElements());
+        assertEquals(3, pizzaPage.getNumberOfElements());
+        assertThat(pizzaPage.getContent(), containsInAnyOrder(carbonara, hawaiian, margherita));
+    }
+
+
+    @Test
+    public void findPageWithIngredientsWithoutInMemoryPagination_whenNotNullPageableIsGiven_thenDifferentPagesWillBeManaged() {
+        // Given
+        int size = 2;
+        Sort sort = Sort.by(Sort.Direction.ASC, "cost");
+
+        // When
+        Page<Pizza> pizzaPage1 = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(PageRequest.of(0, size, sort));
+        Page<Pizza> pizzaPage2 = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(PageRequest.of(1, size, sort));
+
+        // Then
+        assertNotNull(pizzaPage1);
+        assertEquals(3, pizzaPage1.getTotalElements());
+        assertEquals(2, pizzaPage1.getNumberOfElements());
+        assertThat(pizzaPage1.getContent(), contains(margherita, carbonara));
+
+        assertNotNull(pizzaPage2);
+        assertEquals(3, pizzaPage2.getTotalElements());
+        assertEquals(1, pizzaPage2.getNumberOfElements());
+        assertThat(pizzaPage2.getContent(), contains(hawaiian));
+    }
+
+
+    @Test
     public void findWithIngredientsByName_whenNoNameIsGiven_thenOptionalEmptyIsReturned() {
         // When
         Optional<Pizza> optionalPizza = pizzaRepository.findWithIngredientsByName(null);

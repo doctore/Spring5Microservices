@@ -66,7 +66,8 @@ public class PizzaService {
      * @return {@link Page} of {@link Pizza}
      */
     public Page<PizzaDto> findPageWithIngredients(int page, int size, Sort sort) {
-        Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredients(pageUtil.buildPageRequest(page,size,sort));
+        Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
+                                                   pageUtil.buildPageRequest(page,size,sort));
         return Optional.ofNullable(pizzaPage)
                        .map(p -> new PageImpl((List)pizzaConverter.fromEntitiesToDtos(p.getContent())
                                               ,pizzaPage.getPageable()
