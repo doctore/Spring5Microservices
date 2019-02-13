@@ -66,12 +66,12 @@ public interface OrderLineConverter extends BaseConverter<OrderLine, OrderLineDt
      */
     default List<OrderLine> fromDtosToModels(Collection<OrderLineDto> orderLineDtos, Integer orderId) {
         return Optional.ofNullable(orderLineDtos)
-                .map(dtos -> {
-                    List<OrderLine> orderLines = new ArrayList<>();
-                    dtos.forEach(dto -> orderLines.add(this.fromDtoToModel(dto, orderId)));
-                    return orderLines;
-                })
-                .orElse(new ArrayList<>());
+                       .map(dtos -> {
+                           List<OrderLine> orderLines = new ArrayList<>();
+                           dtos.forEach(dto -> orderLines.add(this.fromDtoToModel(dto, orderId)));
+                           return orderLines;
+                        })
+                       .orElse(new ArrayList<>());
     }
 
     /**
