@@ -79,12 +79,12 @@ public interface BaseConverter<E, D> {
      *    Return a new {@link List} of dtos with the information contained in the given
      * {@link Collection} of entities.
      *
-     * @param entitys
+     * @param entities
      *    {@link Collection} of entities with the source information
      *
      * @return {@link List} of equivalent dtos
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
-    List<D> fromEntitiesToDtos(Collection<E> entitys);
+    List<D> fromEntitiesToDtos(Collection<E> entities);
 
 }
