@@ -45,7 +45,7 @@ public interface BaseConverter<E, D> {
      * {@link Collection} of dtos.
      *
      * @param dtos
-     *    {@link Collection} of dtos with the source informacion
+     *    {@link Collection} of dtos with the source information
      *
      * @return {@link List} of equivalent entities
      */
