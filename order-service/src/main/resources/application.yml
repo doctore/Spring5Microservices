@@ -1,5 +1,6 @@
 server:
   port: 8081
+
 eureka:
   client:
     # Pull down a local copy of the registry
