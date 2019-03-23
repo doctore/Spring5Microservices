@@ -1,5 +1,6 @@
 server:
   port: 8761
+
 eureka:
   instance:
     hostname: localhost
@@ -12,7 +13,6 @@ eureka:
       # Only in NON PRODUCTION settings, preventing the deregistration of active services
       # when network hiccup has stopped the renewal request from making its way to Eureka
       enableSelfPreservation: false
-      #enable-self-preservation: false
       # Initial time to wait before server takes requests
       waitTimeInMsWhenSyncEmpty: 5
     serviceUrl:

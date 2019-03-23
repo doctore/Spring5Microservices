@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.registryserver</groupId>
-    <artifactId>registryserver</artifactId>
+    <artifactId>registry-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>registryserver</name>
+    <name>registry-server</name>
     <description>Demo registry server with Eureka for Spring Boot</description>
 
     <properties>
@@ -21,7 +21,7 @@
     </properties>
 
     <dependencies>
-        <!-- Spring microsystem -->
+        <!-- Spring dependencies -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
