@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 @Order(-2)
 public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
 
-    Logger logger = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
 
 
     @Override
@@ -49,7 +49,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> nullPointerException(ServerWebExchange exchange, NullPointerException exception) {
-        logger.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        LOGGER.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
         return buildPlainTestResponse("Trying to access to a non existing property", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -66,9 +66,9 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> dataAccessException(ServerWebExchange exchange, DataAccessException exception) {
-        logger.error("There was an DataAccessException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        LOGGER.error("There was an DataAccessException. " + getErrorMessageUsingHttpRequest(exchange), exception);
         return buildPlainTestResponse("Error trying to get/send information from/to database", exchange,
-                HttpStatus.INTERNAL_SERVER_ERROR);
+                                      HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
@@ -83,7 +83,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
-        logger.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        LOGGER.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildPlainTestResponse("Internal error in the application", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
     }
