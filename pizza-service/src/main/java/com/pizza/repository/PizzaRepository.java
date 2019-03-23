@@ -62,7 +62,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
         int rankInitial = (pageable.getPageNumber() * pageable.getPageSize()) + 1;
         int rankFinal = rankInitial + pageable.getPageSize() - 1;
 
-        String orderByClause = null == pageable.getSort()
+        String orderByClause = (null == pageable.getSort() || pageable.getSort().isUnsorted())
                 ? "id desc "
                 : String.join(",",
                               pageable.getSort().stream()
