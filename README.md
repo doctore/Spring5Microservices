@@ -4,6 +4,7 @@
 - [Elements included in this project](#elements-included-in-this-project)
     - [registry-server](#registry-server)
     - [config-server](#config-server)
+    - [gateway-server](#gateway-server)
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
     - [sql](#sql)
@@ -54,6 +55,10 @@ the labour of decrypt it. That is the reason to include in their *pom.xml* file,
    <artifactId>spring-security-rsa</artifactId>
 </dependency>
 ```
+
+### gateway-server
+
+Using Zuul, this is the gateway implementation used by the other microservices included in this proof of concept.  
 
 ### pizza-service
 
@@ -137,7 +142,6 @@ ENCRYPT_KEY=ENCRYPT_KEY
 
 ## Future additions
 
-- Zuul as gateway
 - Authentication and authorization using JWT token
 - Hystrix to manage potential network problems
 - Microservices communication using WebClient
