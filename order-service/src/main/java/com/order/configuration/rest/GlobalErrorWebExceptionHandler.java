@@ -136,7 +136,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
     /**
      *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
-     * to include iun the content
+     * to include in the content.
      *
      * @param responseMessage
      *    Information included in the returned response
