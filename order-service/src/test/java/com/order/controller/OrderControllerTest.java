@@ -48,14 +48,16 @@ public class OrderControllerTest {
 
 
     @Test
-    public void create_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
+    public void create_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // When/Then
         webTestClient.post()
                      .uri(RestRoutes.ORDER.ROOT)
                      .body(Mono.just(new OrderDto()), OrderDto.class)
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody().isEmpty();
+                     .expectBody()
+                     .equals("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: "
+                           + "must not be null, Field error in object 'orderDto' on field 'code' due to: must not be null]");
     }
 
 
@@ -167,14 +169,16 @@ public class OrderControllerTest {
 
 
     @Test
-    public void update_whenEmptyDtoIsGiven_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
+    public void update_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // When/Then
         webTestClient.put()
                      .uri(RestRoutes.ORDER.ROOT)
                      .body(Mono.just(new OrderDto()), OrderDto.class)
                      .exchange()
-                     .expectStatus().isNotFound()
-                     .expectBody().isEmpty();
+                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectBody()
+                     .equals("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: "
+                           + "must not be null, Field error in object 'orderDto' on field 'code' due to: must not be null]");
     }
 
 

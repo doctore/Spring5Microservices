@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 /**
  * Rest services to work with {@link Order}
  */
@@ -46,7 +48,7 @@ public class OrderController {
      *         if orderDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
     @PostMapping
-    public Mono<ResponseEntity<OrderDto>> create(@RequestBody OrderDto orderDto) {
+    public Mono<ResponseEntity<OrderDto>> create(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
                    .orElse(new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY)));
@@ -80,7 +82,7 @@ public class OrderController {
      *         if orderDto is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
     @PutMapping
-    public Mono<ResponseEntity<OrderDto>> update(@RequestBody OrderDto orderDto) {
+    public Mono<ResponseEntity<OrderDto>> update(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))
                    .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));

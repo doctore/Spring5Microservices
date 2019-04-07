@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -14,10 +16,22 @@ import java.util.Objects;
 public class OrderLineDto {
 
     private Integer id;
+
+    @NotNull
+    @Positive
     private Integer orderId;
+
+    @NotNull
     private PizzaDto pizza;
+
+    @NotNull
+    @Positive
     private Short amount;
+
+    @NotNull
+    @Positive
     private Double cost;
+
 
     @Override
     public boolean equals(Object o) {

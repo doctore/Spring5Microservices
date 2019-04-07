@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 @AllArgsConstructor
 @Builder
@@ -21,15 +22,19 @@ public class OrderLine implements IModel, Serializable {
     private Integer id;
 
     @NotNull
+    @Positive
     private Integer orderId;
 
     @NotNull
+    @Positive
     private Short pizzaId;
 
     @NotNull
+    @Positive
     private Short amount;
 
     @NotNull
+    @Positive
     private Double cost;
 
 
