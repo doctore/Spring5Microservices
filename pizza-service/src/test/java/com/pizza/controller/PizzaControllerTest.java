@@ -49,7 +49,8 @@ public class PizzaControllerTest {
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
                      .expectBody()
-                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
+                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: "
+                           + "must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
     }
 
 
@@ -208,7 +209,8 @@ public class PizzaControllerTest {
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
                      .expectBody()
-                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");;
+                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: "
+                           + "must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
     }
 
 
