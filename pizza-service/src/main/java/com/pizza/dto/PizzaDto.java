@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 import java.util.Set;
 
@@ -15,8 +18,15 @@ import java.util.Set;
 public class PizzaDto {
 
     private Integer id;
+
+    @NotNull
+    @Size(min=1, max=64)
     private String name;
+
+    @NotNull
+    @Positive
     private Double cost;
+
     private Set<IngredientDto> ingredients;
 
 

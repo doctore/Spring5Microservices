@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 import java.util.Set;
@@ -34,10 +35,11 @@ public class Pizza {
     private Integer id;
 
     @NotNull
-    @Size(max=64, message="Name must not be more than 64 characters long")
+    @Size(min=1, max=64)
     private String name;
 
     @NotNull
+    @Positive
     private Double cost;
 
     @ManyToMany

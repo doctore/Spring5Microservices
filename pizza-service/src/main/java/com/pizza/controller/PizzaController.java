@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 /**
  * Rest services to work with {@link Pizza}
  */
@@ -39,7 +41,7 @@ public class PizzaController {
      *         if pizzaDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
     @PostMapping
-    public Mono<ResponseEntity<PizzaDto>> create(@RequestBody PizzaDto pizzaDto) {
+    public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                                      .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
                                      .orElse(new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY)));
@@ -90,7 +92,7 @@ public class PizzaController {
      *         if pizza is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
     @PutMapping
-    public Mono<ResponseEntity<PizzaDto>> update(@RequestBody PizzaDto pizzaDto) {
+    public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))
                    .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));

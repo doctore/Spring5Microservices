@@ -41,14 +41,15 @@ public class PizzaControllerTest {
 
 
     @Test
-    public void create_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
+    public void create_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // When/Then
         webTestClient.post()
                      .uri(RestRoutes.PIZZA.ROOT)
                      .body(Mono.just(new PizzaDto()), PizzaDto.class)
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody().isEmpty();
+                     .expectBody()
+                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
     }
 
 
@@ -76,9 +77,9 @@ public class PizzaControllerTest {
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
 
-        PizzaDto beforePizzaDto = PizzaDto.builder().name("Carbonara")
+        PizzaDto beforePizzaDto = PizzaDto.builder().name("Carbonara").cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(beforeIngredientDto))).build();
-        PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName())
+        PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName()).cost(beforePizzaDto.getCost())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();
         // When
         when(mockPizzaService.save(beforePizzaDto)).thenReturn(Optional.of(afterPizzaDto));
@@ -205,13 +206,14 @@ public class PizzaControllerTest {
                      .uri(RestRoutes.PIZZA.ROOT)
                      .body(Mono.just(new PizzaDto()), PizzaDto.class)
                      .exchange()
-                     .expectStatus().isNotFound()
-                     .expectBody().isEmpty();
+                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectBody()
+                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");;
     }
 
 
     @Test
-    public void update_whenSaveDoesNotReturnAnEntity_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
+    public void update_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
 
@@ -234,9 +236,9 @@ public class PizzaControllerTest {
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
 
-        PizzaDto beforePizzaDto = PizzaDto.builder().id(1).name("Carbonara")
+        PizzaDto beforePizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(beforeIngredientDto))).build();
-        PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName())
+        PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName()).cost(beforePizzaDto.getCost())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();
         // When
         when(mockPizzaService.save(beforePizzaDto)).thenReturn(Optional.of(afterPizzaDto));

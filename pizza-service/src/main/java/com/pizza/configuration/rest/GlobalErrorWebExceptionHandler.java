@@ -8,10 +8,15 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
@@ -28,9 +33,29 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         if (ex instanceof NullPointerException) {
             return nullPointerException(exchange, (NullPointerException) ex);
         }
+        else if (ex instanceof WebExchangeBindException) {
+            return webExchangeBindException(exchange, (WebExchangeBindException) ex);
+        }
         else {
             return throwable(exchange, ex);
         }
+    }
+
+
+    /**
+     * Method used to manage when a Rest request throws a {@link WebExchangeBindException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link WebExchangeBindException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
+        logger.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildListOfValidationErrorsResponse("Error in the given parameters: ", exchange, exception,
+                                                   HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
 
@@ -90,9 +115,10 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
     /**
      *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
-     * to include iun the content.
+     * to include in the content.
      *
      * @param responseMessage
+     *    Information included in the returned response
      * @param exchange
      *    {@link ServerWebExchange} with the request information
      * @param httpStatus
@@ -104,6 +130,39 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
         exchange.getResponse().setStatusCode(httpStatus);
         exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
+
+        byte[] responseMessageBytes = responseMessage.getBytes(StandardCharsets.UTF_8);
+        DataBuffer bufferResponseMessage = exchange.getResponse().bufferFactory().wrap(responseMessageBytes);
+        return exchange.getResponse().writeWith(Mono.just(bufferResponseMessage));
+    }
+
+
+    /**
+     *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
+     * to include iun the content
+     *
+     * @param responseMessage
+     *    Information included in the returned response
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link WebExchangeBindException} with the error information
+     * @param httpStatus
+     *    {@link HttpStatus} used in the Http response
+     *
+     * @return {@link Mono} with the suitable Http response
+     */
+    private Mono<Void> buildListOfValidationErrorsResponse(String responseMessage, ServerWebExchange exchange,
+                                                           WebExchangeBindException exception, HttpStatus httpStatus) {
+        exchange.getResponse().setStatusCode(httpStatus);
+        exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
+
+        responseMessage += exception.getBindingResult()
+                                    .getFieldErrors().stream()
+                                    .map(fe -> "Field error in object '" + fe.getObjectName()
+                                             + "' on field '" + fe.getField()
+                                             + "' due to: " + fe.getDefaultMessage())
+                                    .collect(Collectors.toList());
 
         byte[] responseMessageBytes = responseMessage.getBytes(StandardCharsets.UTF_8);
         DataBuffer bufferResponseMessage = exchange.getResponse().bufferFactory().wrap(responseMessageBytes);

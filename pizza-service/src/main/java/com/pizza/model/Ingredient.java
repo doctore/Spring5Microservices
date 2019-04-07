@@ -28,7 +28,7 @@ public class Ingredient {
     private Integer id;
 
     @NotNull
-    @Size(max=64, message="Name must not be more than 64 characters long")
+    @Size(min=1, max=64)
     private String name;
 
 
