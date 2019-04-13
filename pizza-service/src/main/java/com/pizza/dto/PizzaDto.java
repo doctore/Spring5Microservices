@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
@@ -27,6 +28,7 @@ public class PizzaDto {
     @Positive
     private Double cost;
 
+    @Valid
     private Set<IngredientDto> ingredients;
 
 

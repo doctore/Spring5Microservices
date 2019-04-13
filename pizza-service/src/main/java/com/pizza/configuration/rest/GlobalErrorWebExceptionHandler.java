@@ -12,6 +12,7 @@ import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import javax.validation.ConstraintViolationException;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,9 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         }
         else if (ex instanceof WebExchangeBindException) {
             return webExchangeBindException(exchange, (WebExchangeBindException) ex);
+        }
+        else if (ex instanceof ConstraintViolationException) {
+            return constraintViolationException(exchange, (ConstraintViolationException) ex);
         }
         else {
             return throwable(exchange, ex);
@@ -70,6 +74,23 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         logger.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
         return buildPlainTestResponse("Trying to access to a non existing property", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    /**
+     * Method used to manage when a Rest request throws a {@link ConstraintViolationException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link ConstraintViolationException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
+        logger.error("There was a ConstraintViolationException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildPlainTestResponse("The following constraints have failed: " + exception.getMessage(),
+                                      exchange, HttpStatus.BAD_REQUEST);
     }
 
 

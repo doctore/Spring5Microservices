@@ -48,16 +48,18 @@ public class OrderControllerTest {
 
 
     @Test
-    public void create_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+        // Given
+        OrderDto orderDto = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
+
         // When/Then
         webTestClient.post()
                      .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .body(Mono.just(orderDto), OrderDto.class)
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody()
-                     .equals("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: "
-                           + "must not be null, Field error in object 'orderDto' on field 'code' due to: must not be null]");
+                     .expectBody(String.class)
+                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
     }
 
 
@@ -116,6 +118,21 @@ public class OrderControllerTest {
 
 
     @Test
+    public void findByIdWithOrderLines_whenTheIdDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
+        // Given
+        String notValidOrderId = "0";
+
+        // When/Then
+        webTestClient.get()
+                     .uri(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
+                     .exchange()
+                     .expectStatus().isBadRequest()
+                     .expectBody(String.class)
+                     .isEqualTo("The following constraints have failed: findByIdWithOrderLines.id: must be greater than 0");
+    }
+
+
+    @Test
     public void findByIdWithOrderLines_whenTheIdDoesNotExist_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // When
         when(mockOrderService.findByIdWithOrderLines(anyInt())).thenReturn(Optional.empty());
@@ -169,16 +186,18 @@ public class OrderControllerTest {
 
 
     @Test
-    public void update_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+        // Given
+        OrderDto orderDto = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
+
         // When/Then
         webTestClient.put()
                      .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .body(Mono.just(orderDto), OrderDto.class)
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody()
-                     .equals("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: "
-                           + "must not be null, Field error in object 'orderDto' on field 'code' due to: must not be null]");
+                     .expectBody(String.class)
+                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
     }
 
 

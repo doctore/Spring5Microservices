@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
@@ -26,6 +27,7 @@ public class OrderDto {
     @NotNull
     private Date created;
 
+    @Valid
     List<OrderLineDto> orderLines;
 
     @Override

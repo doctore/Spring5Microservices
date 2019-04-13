@@ -10,10 +10,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 
 /**
  * Rest services to work with {@link Pizza}
@@ -21,6 +25,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(RestRoutes.PIZZA.ROOT)
 @CrossOrigin(origins="*")
+@Validated
 public class PizzaController {
 
     private PizzaService pizzaService;
@@ -58,7 +63,7 @@ public class PizzaController {
      *         if name was not found: {@link HttpStatus#NOT_FOUND}
      */
     @GetMapping("/{name}")
-    public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable String name) {
+    public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) String name) {
         return Mono.just(pizzaService.findByName(name)
                                      .map(p -> new ResponseEntity(p, HttpStatus.OK))
                                      .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));
@@ -76,8 +81,8 @@ public class PizzaController {
      * @return {@link Page} of {@link PizzaDto}
      */
     @GetMapping(RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-    public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") int page,
-                                                        @RequestParam(value = "size") int size) {
+    public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") @PositiveOrZero int page,
+                                                        @RequestParam(value = "size") @Positive int size) {
         return Mono.just(pizzaService.findPageWithIngredients(page, size, null));
     }
 

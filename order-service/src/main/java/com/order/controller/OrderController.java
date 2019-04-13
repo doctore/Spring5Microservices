@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 /**
  * Rest services to work with {@link Order}
@@ -27,6 +31,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(RestRoutes.ORDER.ROOT)
 @CrossOrigin(origins="*")
+@Validated
 public class OrderController {
 
     private OrderService orderService;
@@ -65,7 +70,7 @@ public class OrderController {
      *         if id was not found: {@link HttpStatus#NOT_FOUND}
      */
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
-    public Mono<ResponseEntity<OrderDto>> findByIdWithOrderLines(@PathVariable Integer id) {
+    public Mono<ResponseEntity<OrderDto>> findByIdWithOrderLines(@PathVariable @Positive Integer id) {
         return Mono.just(orderService.findByIdWithOrderLines(id)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))
                    .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));

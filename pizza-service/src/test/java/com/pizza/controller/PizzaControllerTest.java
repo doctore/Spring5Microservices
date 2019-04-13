@@ -41,16 +41,18 @@ public class PizzaControllerTest {
 
 
     @Test
-    public void create_whenEmptyDtoIsGiven_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+        // Given
+        PizzaDto pizzaDto = PizzaDto.builder().cost(7D).ingredients(new HashSet<>()).build();
+
         // When/Then
         webTestClient.post()
                      .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .body(Mono.just(pizzaDto), PizzaDto.class)
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody()
-                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: "
-                           + "must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
+                     .expectBody(String.class)
+                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
     }
 
 
@@ -104,6 +106,21 @@ public class PizzaControllerTest {
 
 
     @Test
+    public void findByName_whenTheNameDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
+        // Given
+        String notValidPizzaName = "pizzaName1pizzaName2pizzaName3pizzaName4pizzaName5pizzaName6pizzaName7";
+
+        // When/Then
+        webTestClient.get()
+                     .uri(RestRoutes.PIZZA.ROOT + "/" + notValidPizzaName)
+                     .exchange()
+                     .expectStatus().isBadRequest()
+                     .expectBody(String.class)
+                     .isEqualTo("The following constraints have failed: findByName.name: size must be between 1 and 64");
+    }
+
+
+    @Test
     public void findByName_whenTheNameDoesNotExist_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // When
         when(mockPizzaService.findByName(anyString())).thenReturn(Optional.empty());
@@ -138,6 +155,44 @@ public class PizzaControllerTest {
                      .jsonPath("$.cost").isEqualTo(pizzaDto.getCost())
                      .jsonPath("$.ingredients.[0].id").isEqualTo(ingredientDto.getId())
                      .jsonPath("$.ingredients.[0].name").isEqualTo(ingredientDto.getName());
+    }
+
+
+    @Test
+    public void findPageWithIngredients_whenThePageDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
+        // Given
+        int notValidPage = -1;
+        int size = 1;
+
+        // When/Then
+        webTestClient.get()
+                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                                                  .queryParam("page", notValidPage)
+                                                  .queryParam("size", size)
+                                                  .build())
+                     .exchange()
+                     .expectStatus().isBadRequest()
+                     .expectBody(String.class)
+                     .isEqualTo("The following constraints have failed: findPageWithIngredients.page: must be greater than or equal to 0");
+    }
+
+
+    @Test
+    public void findPageWithIngredients_whenTheSizeDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
+        // Given
+        int page = 0;
+        int notValidSize = 0;
+
+        // When/Then
+        webTestClient.get()
+                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                                                  .queryParam("page", page)
+                                                  .queryParam("size", notValidSize)
+                                                  .build())
+                     .exchange()
+                     .expectStatus().isBadRequest()
+                     .expectBody(String.class)
+                     .isEqualTo("The following constraints have failed: findPageWithIngredients.size: must be greater than 0");
     }
 
 
@@ -182,9 +237,9 @@ public class PizzaControllerTest {
         // Then
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-                        .queryParam("page", page)
-                        .queryParam("size", size)
-                        .build())
+                                             .queryParam("page", page)
+                                             .queryParam("size", size)
+                                             .build())
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -201,16 +256,18 @@ public class PizzaControllerTest {
 
 
     @Test
-    public void update_whenEmptyDtoIsGiven_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
+    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
+        // Given
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").ingredients(new HashSet<>()).build();
+
         // When/Then
         webTestClient.put()
                      .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .body(Mono.just(pizzaDto), PizzaDto.class)
                      .exchange()
                      .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody()
-                     .equals("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: "
-                           + "must not be null, Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
+                     .expectBody(String.class)
+                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null]");
     }
 
 
