@@ -143,5 +143,4 @@ ENCRYPT_KEY=ENCRYPT_KEY
 ## Future additions
 
 - Authentication and authorization using JWT token
-- Distributed tracing with Spring Cloud Sleuth and Zipkin
 - Documentation of the REST Api with Swagger
