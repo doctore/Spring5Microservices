@@ -5,6 +5,8 @@ import com.pizza.dto.PizzaDto;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.service.PizzaService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,8 @@ import javax.validation.constraints.Size;
 @CrossOrigin(origins="*")
 @Validated
 public class PizzaController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PizzaController.class);
 
     private PizzaService pizzaService;
 
