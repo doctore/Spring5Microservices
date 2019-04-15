@@ -12,7 +12,7 @@
     <artifactId>gateway-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>gateway-server</name>
-    <description>Demo gateway server with Zuul for Spring Boot</description>
+    <description>Gateway server with Zuul for Spring 5 with microservices</description>
 
     <properties>
         <java.version>1.8</java.version>

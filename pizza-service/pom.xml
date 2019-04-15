@@ -12,7 +12,7 @@
     <artifactId>pizza-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>pizza-service</name>
-    <description>Spring 5 microservices</description>
+    <description>Spring 5 microservice related with pizzas</description>
 
     <properties>
         <hamcrest.version>2.1</hamcrest.version>

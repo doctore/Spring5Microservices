@@ -12,7 +12,7 @@
     <artifactId>registry-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>registry-server</name>
-    <description>Demo registry server with Eureka for Spring Boot</description>
+    <description>Registry server with Eureka for Spring 5 with microservices</description>
 
     <properties>
         <java.version>1.8</java.version>
