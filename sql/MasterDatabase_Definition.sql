@@ -18,24 +18,24 @@ create table eat.user(
 create unique index user_username_uindex on eat.user(username);
 
 
-create table eat.permission (
-  id 	smallserial	not null	constraint permission_pk primary key,
+create table eat.role(
+  id 	smallserial	not null	constraint role_pk primary key,
   name 	varchar(64)	not null
 );
 
-create unique index permission_name_uindex on eat.permission(name);
+create unique index role_role_uindex on eat.role(name);
 
 
-create table eat.user_permission (
-  user_id	smallint 	not null	constraint user_permission_user_id_fk references eat.user,
-  permission_id smallint 	not null    	constraint user_permission_permission_id_fk references eat.permission,
-  constraint user_permission_pk primary key (user_id, permission_id)
+create table eat.user_role(
+  user_id	smallint 	not null	constraint user_role_user_id_fk references eat.user,
+  role_id       int 		not null    	constraint user_role_role_id_fk references eat.role,
+  constraint user_role_pk primary key (user_id, role_id)
 );
 
-create index user_permission_user_id_index on eat.user_permission (user_id);
+create index user_role_user_id_index on eat.user_role (user_id);
 
 
-create table eat.ingredient (
+create table eat.ingredient(
   id	smallserial	not null	constraint ingredient_pk primary key,
   name 	varchar(64) 	not null
 );

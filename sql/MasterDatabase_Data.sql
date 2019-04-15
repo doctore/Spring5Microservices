@@ -1,4 +1,11 @@
-INSERT INTO eat.pizza (id, name, cost) 
+INSERT INTO eat.role (id, name)
+VALUES (1, 'ADMIN')
+      ,(2, 'USER');
+
+SELECT setval('eat.role_id_seq', (SELECT count(*) FROM eat.role));
+
+
+INSERT INTO eat.pizza (id, name, cost)
 VALUES (1, 'Margherita', 7)
       ,(2, 'Marinara', 7.5)
       ,(3, 'Carbonara', 8.25)
