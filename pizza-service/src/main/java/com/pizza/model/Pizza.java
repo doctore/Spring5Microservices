@@ -31,7 +31,7 @@ import java.util.Set;
 public class Pizza {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator=Constants.DATABASE_SCHEMA + "pizza_id_seq")
     private Integer id;
 
     @NotNull
