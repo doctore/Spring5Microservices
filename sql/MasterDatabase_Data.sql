@@ -5,6 +5,19 @@ VALUES (1, 'ADMIN')
 SELECT setval('eat.role_id_seq', (SELECT count(*) FROM eat.role));
 
 
+INSERT INTO eat.user (id, name, active, password, username)
+VALUES (1, 'Administrator', true, '{bcrypt}$2a$10$qTOh9o5HxlXY6jM724XcrOV.mWhOyD3/.V7vuCOwnszwiLrj8wCCO', 'admin')  -- Raw password: admin
+      ,(2, 'Normal user', true, '{bcrypt}$2a$10$i7LFiCo1JRm87ERePQOS3OkZ3Srgub8F7GyoWu6NmUuCLDTPq8zMW', 'user');    -- Raw password: user
+
+SELECT setval('eat.user_id_seq', (SELECT count(*) FROM eat.user));
+
+
+INSERT INTO eat.user_role (user_id, role_id)
+VALUES (1, 1)
+      ,(1, 2)
+      ,(2, 2);
+
+
 INSERT INTO eat.pizza (id, name, cost)
 VALUES (1, 'Margherita', 7)
       ,(2, 'Marinara', 7.5)
@@ -59,4 +72,3 @@ VALUES (1, 1, 2, 15, 2)
       ,(4, 3, 5, 22.5, 3), (5, 3, 1, 14, 2), (6, 3, 3, 8.25, 1);
 
 SELECT setval('eat.order_line_id_seq', (SELECT count(*) FROM eat.order_line));
-

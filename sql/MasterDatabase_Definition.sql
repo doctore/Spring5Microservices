@@ -2,7 +2,7 @@ create user microservice with encrypted password 'microservice';
 
 create database microservice with owner microservice;
 
-# To connect from Linux console using the new user
+-- To connect from Linux console using the new user
 psql -d microservice -U microservice
 
 create schema eat;
