@@ -157,7 +157,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
     /**
      *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
-     * to include in the content.
+     * with the "not verified" validations to include in the content.
      *
      * @param responseMessage
      *    Information included in the returned response
