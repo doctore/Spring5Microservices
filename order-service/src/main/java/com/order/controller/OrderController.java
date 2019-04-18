@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,6 +58,7 @@ public class OrderController {
      *         if orderDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
     @PostMapping
+    @Transactional(rollbackFor = Exception.class)
     public Mono<ResponseEntity<OrderDto>> create(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
@@ -91,6 +93,7 @@ public class OrderController {
      *         if orderDto is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
     @PutMapping
+    @Transactional(rollbackFor = Exception.class)
     public Mono<ResponseEntity<OrderDto>> update(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))

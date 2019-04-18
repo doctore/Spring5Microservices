@@ -9,7 +9,6 @@ import org.jooq.exception.DataAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -74,7 +73,6 @@ public class OrderService {
      *
      * @return {@link Optional} of {@link OrderDto} with its "final information" after this action
      */
-    @Transactional
     public Optional<OrderDto> save(OrderDto orderDto) {
         return Optional.ofNullable(orderDto)
                        .flatMap(orderConverter::fromDtoToOptionalModel)
