@@ -25,7 +25,8 @@ Below is shown a brief introduction to the subprojects included in this one:
 
 Server used to register all microservices included in this project. In this case, using Netflix Eureka each client can simultaneously act as a server, to replicate its status to a
 connected peer. In other words, a client retrieves a list of all connected peers of a service registry and makes all further requests to any other services through a load-balancing
-algorithm (Ribbon by default). 
+algorithm (Ribbon by default).
+<br><br> 
 
 ### config-server
 
@@ -56,10 +57,12 @@ the labour of decrypt it. That is the reason to include in their *pom.xml* file,
    <artifactId>spring-security-rsa</artifactId>
 </dependency>
 ```
+<br><br>
 
 ### gateway-server
 
 Using Zuul, this is the gateway implementation used by the other microservices included in this proof of concept.
+<br><br>
 
 ### authorization-service
 
@@ -82,6 +85,7 @@ On the other hand, there are other "important folders":
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
 * **util** to manage the JWT functionality.
+<br><br>
 
 ### pizza-service
 
@@ -107,6 +111,7 @@ On the other hand, there are other "important folders":
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from entities to dtos and vice versa.
+<br><br>
 
 ### order-service
 
@@ -131,6 +136,7 @@ On the other hand, there are other "important folders":
 * **model** to store the Java objects that match with the tables in database.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from models to dtos and vice versa.
+<br><br>
 
 ### sql
 
