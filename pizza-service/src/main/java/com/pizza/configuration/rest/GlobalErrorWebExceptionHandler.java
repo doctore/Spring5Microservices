@@ -120,14 +120,14 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return error message with Http request information
      */
     private String getErrorMessageUsingHttpRequest(ServerWebExchange exchange) {
-        return String.format("There was an error trying to execute the request with:%s" +
-                             "Http method = %s %s" +
-                             "Uri = %s %s" +
-                             "Header = %s",
-                             System.lineSeparator(),
-                             exchange.getRequest().getMethod(), System.lineSeparator(),
-                             exchange.getRequest().getURI().toString(), System.lineSeparator(),
-                             exchange.getRequest().getHeaders().entrySet());
+        return String.format("There was an error trying to execute the request with:%s"
+                           + "Http method = %s %s"
+                           + "Uri = %s %s"
+                           + "Header = %s",
+                System.lineSeparator(),
+                exchange.getRequest().getMethod(), System.lineSeparator(),
+                exchange.getRequest().getURI().toString(), System.lineSeparator(),
+                exchange.getRequest().getHeaders().entrySet());
     }
 
 
