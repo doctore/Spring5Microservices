@@ -57,7 +57,7 @@ the labour of decrypt it. That is the reason to include in their *pom.xml* file,
    <artifactId>spring-security-rsa</artifactId>
 </dependency>
 ```
-<br><br>
+<br>
 
 ### gateway-server
 
