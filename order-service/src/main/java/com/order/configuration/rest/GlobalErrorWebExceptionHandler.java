@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Order(-2)
 public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
 
-    Logger logger = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
 
 
     @Override
@@ -54,7 +54,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
-        logger.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        LOGGER.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildListOfValidationErrorsResponse("Error in the given parameters: ", exchange, exception,
                                                    HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -71,8 +71,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> nullPointerException(ServerWebExchange exchange, NullPointerException exception) {
-        logger.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTestResponse("Trying to access to a non existing property", exchange,
+        LOGGER.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildPlainTextResponse("Trying to access to a non existing property", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -88,8 +88,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
-        logger.error("There was a ConstraintViolationException. " + getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTestResponse("The following constraints have failed: " + exception.getMessage(),
+        LOGGER.error("There was a ConstraintViolationException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildPlainTextResponse("The following constraints have failed: " + exception.getMessage(),
                                       exchange, HttpStatus.BAD_REQUEST);
     }
 
@@ -105,8 +105,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
-        logger.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTestResponse("Internal error in the application", exchange,
+        LOGGER.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildPlainTextResponse("Internal error in the application", exchange,
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -144,7 +144,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable Http response
      */
-    private Mono<Void> buildPlainTestResponse(String responseMessage, ServerWebExchange exchange, HttpStatus httpStatus) {
+    private Mono<Void> buildPlainTextResponse(String responseMessage, ServerWebExchange exchange, HttpStatus httpStatus) {
 
         exchange.getResponse().setStatusCode(httpStatus);
         exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
