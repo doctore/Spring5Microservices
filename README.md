@@ -5,6 +5,7 @@
     - [registry-server](#registry-server)
     - [config-server](#config-server)
     - [gateway-server](#gateway-server)
+    - [authorization-service](#authorization-service)
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
     - [sql](#sql)
@@ -58,7 +59,29 @@ the labour of decrypt it. That is the reason to include in their *pom.xml* file,
 
 ### gateway-server
 
-Using Zuul, this is the gateway implementation used by the other microservices included in this proof of concept.  
+Using Zuul, this is the gateway implementation used by the other microservices included in this proof of concept.
+
+### authorization-service
+
+Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. The technologies used are the following ones:
+
+* **Hibernate** as ORM to deal with the PostgreSQL database.
+* **JPA** for accessing, persisting, and managing data between Java objects and database.
+* **Lombok** to reduce the code development in entities and DTOs.
+* **MVC** a traditional Spring MVC Rest API to manage the authentication/authorization requests.
+
+In this subproject the layer's division is:
+
+* **repository** layer used to access to the database.
+* **service** containing the business logic.
+* **controller** REST Api using Spring MVC.
+
+On the other hand, there are other "important folders": 
+
+* **configuration** with several classes used to manage several areas such: security, exception handlers, etc.
+* **model** to store the entities.
+* **dto** custom objects to contain specific data.
+* **util** to manage the JWT functionality.
 
 ### pizza-service
 
@@ -80,6 +103,7 @@ In this subproject the layer's division is:
 
 On the other hand, there are other "important folders": 
 
+* **configuration** with several classes used to manage several areas such: persistence, exception handlers, etc.
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from entities to dtos and vice versa.
@@ -103,6 +127,7 @@ In this subproject the layer's division is:
 
 On the other hand, there are other "important folders": 
 
+* **configuration** with several classes used to manage several areas such: exception handlers, etc.
 * **model** to store the Java objects that match with the tables in database.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from models to dtos and vice versa.
