@@ -21,6 +21,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -66,6 +67,9 @@ public class User implements UserDetails {
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (null == this.getRoles())
+            return new HashSet<>();
+
         return roles.stream()
                     .map(r -> new SimpleGrantedAuthority(r.getName().toString()))
                     .collect(Collectors.toSet());
