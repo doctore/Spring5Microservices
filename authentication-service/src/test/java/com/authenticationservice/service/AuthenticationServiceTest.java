@@ -2,52 +2,46 @@ package com.authenticationservice.service;
 
 import com.authenticationservice.configuration.security.JwtConfiguration;
 import com.authenticationservice.util.JwtUtil;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.EntityNotFoundException;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class AuthenticationServiceTest {
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder mockPasswordEncoder;
 
     @Mock
-    private JwtConfiguration jwtConfiguration;
+    private JwtConfiguration mockJwtConfiguration;
 
     @Mock
-    private JwtUtil jwtUtil;
+    private JwtUtil mockJwtUtil;
 
     @Mock
-    private UserService userService;
+    private UserService mockUserService;
 
-
-
-    /*
-
-    @Mock
-    private IngredientRepository mockIngredientRepository;
-
-    @Mock
-    private PageUtil mockPageUtil;
-
-    @Mock
-    private PizzaConverter mockPizzaConverter;
-
-    @Mock
-    private PizzaRepository mockPizzaRepository;
-
-    private PizzaService pizzaService;
+    private AuthenticationService authenticationService;
 
 
     @Before
     public void init() {
-        pizzaService = new PizzaService(mockIngredientRepository, mockPageUtil, mockPizzaConverter, mockPizzaRepository);
+        authenticationService = new AuthenticationService(mockPasswordEncoder, mockJwtConfiguration,
+                                                          mockJwtUtil, mockUserService);
     }
 
-     */
+
+    @Test(expected = EntityNotFoundException.class)
+    public void generateJwtToken_whenGivenAuthenticationRequestDtoIsNull_thenEntityNotFoundExceptionIsThrown() {
+        // When/Then
+        authenticationService.generateJwtToken(null);
+    }
 
 }
