@@ -1,4 +1,20 @@
-INSERT INTO eat.pizza (id, name, cost) 
+INSERT INTO eat.role (id, name)
+VALUES (1, 'USER');
+
+SELECT setval('eat.role_id_seq', (SELECT count(*) FROM eat.role));
+
+
+INSERT INTO eat.user (id, name, active, password, username)
+VALUES (1, 'Normal user', true, '{bcrypt}$2a$10$i7LFiCo1JRm87ERePQOS3OkZ3Srgub8F7GyoWu6NmUuCLDTPq8zMW', 'user');    -- Raw password: user
+
+SELECT setval('eat.user_id_seq', (SELECT count(*) FROM eat.user));
+
+
+INSERT INTO eat.user_role (user_id, role_id)
+VALUES (1, 1);
+
+
+INSERT INTO eat.pizza (id, name, cost)
 VALUES (1, 'Carbonara', 7.50)
       ,(2, 'Hawaiian', 8)
       ,(3, 'Margherita', 7);
