@@ -94,8 +94,8 @@ public class JwtUtilTest {
     public void isTokenValid_whenNotSameSecretKeyIsGiven_thenSignatureExceptionIsThrown() {
         // Given
         String expiredJwtToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VybmFtZSIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJVU0VSIn1dL"
-                + "CJpYXQiOjE1NTU2NzQ2NjksImV4cCI6MTU1NTY3NDY2OX0.y8FX6KYOK8OfCD_ZMbMhYa55QRLQ7-za-WVnUr_"
-                + "MEZ0ka4ZR4_4SkKuy3v_FFTEXyRPBtWSqYnB83-tW9BoQ7g";
+                               + "CJpYXQiOjE1NTU2NzQ2NjksImV4cCI6MTU1NTY3NDY2OX0.y8FX6KYOK8OfCD_ZMbMhYa55QRLQ7-za-WVnUr_"
+                               + "MEZ0ka4ZR4_4SkKuy3v_FFTEXyRPBtWSqYnB83-tW9BoQ7g";
 
         String jwtSecretKeyUsed = "secretKey";
 
