@@ -4,6 +4,9 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration properties related with JWT token
+ */
 @Getter
 @Configuration
 public class JwtConfiguration {

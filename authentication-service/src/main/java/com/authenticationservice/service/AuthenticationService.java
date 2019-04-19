@@ -40,7 +40,7 @@ public class AuthenticationService {
      *
      * @return JWT token
      */
-    public String generateJWTToken(AuthenticationRequestDto authenticationRequestDto) {
+    public String generateJwtToken(AuthenticationRequestDto authenticationRequestDto) {
         return Optional.ofNullable(authenticationRequestDto)
                        .map(au -> userService.loadUserByUsername(au.getUsername()))
                        .filter(user -> passwordEncoder.matches(authenticationRequestDto.getPassword(), user.getPassword()))
@@ -50,6 +50,21 @@ public class AuthenticationService {
                        .orElseThrow(() -> new EntityNotFoundException(
                                String.format("Failed the JWT token generation of the user %s",
                                        null == authenticationRequestDto ? "null" : authenticationRequestDto.getUsername())));
+    }
+
+
+    /**
+     * Checks if the given token is valid or not taking into account the secret key and expiration date.
+     *
+     * @param token
+     *    JWT token to validate
+     *
+     * @return {@code false} if the given token is expired or is not valid, {@code true} otherwise.
+     */
+    public boolean isJwtTokenValid(String token) {
+        return Optional.ofNullable(token)
+                       .map(t -> jwtUtil.isTokenValid(t, this.jwtConfiguration.getSecretKey()))
+                       .orElse(Boolean.FALSE);
     }
 
 }

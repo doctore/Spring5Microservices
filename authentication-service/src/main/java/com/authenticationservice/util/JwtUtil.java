@@ -39,8 +39,8 @@ public class JwtUtil {
      */
     public Optional<String> generateJwtToken(UserDetails userDetails, SignatureAlgorithm signatureAlgorithm,
                                              String jwtSecretKey, long expirationTimeInMilliseconds) {
-        Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
 
+        Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
         return Optional.ofNullable(userDetails)
                        .map(ud -> {
                            Date now = new Date();
@@ -67,7 +67,7 @@ public class JwtUtil {
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      *
-     * @return {@code false} if the given token is expired, {@code true} otherwise.
+     * @return {@code false} if the given token is expired or is not valid, {@code true} otherwise.
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */

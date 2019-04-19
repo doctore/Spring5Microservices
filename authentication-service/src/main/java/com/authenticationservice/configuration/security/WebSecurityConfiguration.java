@@ -36,8 +36,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             //.addFilterAfter(new JwtTokenAuthenticationFilter(jwtConfig), UsernamePasswordAuthenticationFilter.class)
             // Authorization requests config
             .authorizeRequests()
-            // Allow all who are accessing "login" service
+            // List of services do not require authentication
             .antMatchers(HttpMethod.POST, RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.LOGIN).permitAll()
+            .antMatchers(HttpMethod.GET, RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.VALIDATE + "/**").permitAll()
             // Any other request must be authenticated
             .anyRequest().authenticated();
     }

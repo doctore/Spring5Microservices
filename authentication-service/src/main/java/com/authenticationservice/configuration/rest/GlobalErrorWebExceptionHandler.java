@@ -1,5 +1,6 @@
 package com.authenticationservice.configuration.rest;
 
+import io.jsonwebtoken.MalformedJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -29,6 +30,41 @@ import java.util.stream.Collectors;
 public class GlobalErrorWebExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
+
+
+    /**
+     * Method used to manage when a Rest request throws a {@link ConstraintViolationException}
+     *
+     * @param exception
+     *    {@link ConstraintViolationException} thrown
+     * @param request
+     *    {@link WebRequest} with the request information
+     *
+     * @return {@link ResponseEntity} with the suitable response and error message
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<String> constraintViolationException(ConstraintViolationException exception, WebRequest request) {
+        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildPlainTextResponse("The following constraints have failed: " + exception.getMessage(),
+                                      HttpStatus.BAD_REQUEST);
+    }
+
+
+    /**
+     * Method used to manage when a Rest request throws a {@link MalformedJwtException}
+     *
+     * @param exception
+     *    {@link MalformedJwtException} thrown
+     * @param request
+     *    {@link WebRequest} with the request information
+     *
+     * @return {@link ResponseEntity} with the suitable response and error message
+     */
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<String> malformedJwtException(MalformedJwtException exception, WebRequest request) {
+        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildPlainTextResponse("There was an error related with JWT token", HttpStatus.BAD_REQUEST);
+    }
 
 
     /**
