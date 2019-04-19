@@ -1,9 +1,10 @@
 package com.authenticationservice.service;
 
 import com.authenticationservice.configuration.Constants;
+import com.authenticationservice.configuration.security.JwtConfiguration;
 import com.authenticationservice.dto.AuthenticationRequestDto;
 import com.authenticationservice.model.User;
-import com.authenticationservice.util.JWTUtil;
+import com.authenticationservice.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,12 +17,15 @@ import java.util.Optional;
 public class AuthenticationService {
 
     private PasswordEncoder passwordEncoder;
-    private JWTUtil jwtUtil;
+    private JwtConfiguration jwtConfiguration;
+    private JwtUtil jwtUtil;
     private UserService userService;
 
     @Autowired
-    public AuthenticationService(@Lazy PasswordEncoder passwordEncoder, @Lazy JWTUtil jwtUtil, @Lazy UserService userService) {
+    public AuthenticationService(@Lazy PasswordEncoder passwordEncoder, @Lazy JwtConfiguration jwtConfiguration,
+                                 @Lazy JwtUtil jwtUtil, @Lazy UserService userService) {
         this.passwordEncoder = passwordEncoder;
+        this.jwtConfiguration = jwtConfiguration;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
     }
@@ -40,7 +44,9 @@ public class AuthenticationService {
         return Optional.ofNullable(authenticationRequestDto)
                        .map(au -> userService.loadUserByUsername(au.getUsername()))
                        .filter(user -> passwordEncoder.matches(authenticationRequestDto.getPassword(), user.getPassword()))
-                       .flatMap(user -> jwtUtil.generateJWTToken(user, Constants.JWT.SIGNATURE_ALGORITHM))
+                       .flatMap(user -> jwtUtil.generateJwtToken(user, Constants.JWT.SIGNATURE_ALGORITHM,
+                                                                 this.jwtConfiguration.getSecretKey(),
+                                                                 this.jwtConfiguration.getExpirationTimeInMilliseconds()))
                        .orElseThrow(() -> new EntityNotFoundException(
                                String.format("Failed the JWT token generation of the user %s",
                                        null == authenticationRequestDto ? "null" : authenticationRequestDto.getUsername())));
