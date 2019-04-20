@@ -1,6 +1,6 @@
 package com.authenticationservice.configuration.rest;
 
-import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.JwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -12,11 +12,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
@@ -51,17 +49,17 @@ public class GlobalErrorWebExceptionHandler {
 
 
     /**
-     * Method used to manage when a Rest request throws a {@link MalformedJwtException}
+     * Method used to manage when a Rest request throws a {@link JwtException}
      *
      * @param exception
-     *    {@link MalformedJwtException} thrown
+     *    {@link JwtException} thrown
      * @param request
      *    {@link WebRequest} with the request information
      *
      * @return {@link ResponseEntity} with the suitable response and error message
      */
-    @ExceptionHandler(MalformedJwtException.class)
-    public ResponseEntity<String> malformedJwtException(MalformedJwtException exception, WebRequest request) {
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<String> jwtException(JwtException exception, WebRequest request) {
         LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("There was an error related with JWT token", HttpStatus.BAD_REQUEST);
     }
@@ -148,8 +146,8 @@ public class GlobalErrorWebExceptionHandler {
         HttpServletRequest httpRequest = ((ServletWebRequest)request).getRequest();
 
         return String.format("There was an error trying to execute the request with:%s"
-                        + "Http method = %s %s"
-                        + "Uri = %s",
+                           + "Http method = %s %s"
+                           + "Uri = %s",
                 System.lineSeparator(),
                 httpRequest.getMethod(), System.lineSeparator(),
                 httpRequest.getRequestURI());
