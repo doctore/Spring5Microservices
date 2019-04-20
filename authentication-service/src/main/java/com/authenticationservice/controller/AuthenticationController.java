@@ -47,11 +47,14 @@ public class AuthenticationController {
      * @param requestDto
      *    {@link AuthenticationRequestDto}
      *
-     * @return if there is no error, JWT token with {@link HttpStatus#OK}. The suitable Http error code otherwise.
+     * @return if there is no error, JWT token with {@link HttpStatus#OK},
+     *         {@link HttpStatus#BAD_REQUEST} otherwise.
      */
     @PostMapping(RestRoutes.AUTHENTICATION.LOGIN)
     public ResponseEntity<String> login(@RequestBody @Valid AuthenticationRequestDto requestDto) {
-        return new ResponseEntity<>(authenticationService.generateJwtToken(requestDto), HttpStatus.OK);
+        return authenticationService.generateJwtToken(requestDto)
+                                    .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
+                                    .orElse(new ResponseEntity(HttpStatus.BAD_REQUEST));
     }
 
 

@@ -7,6 +7,7 @@ import com.authenticationservice.model.User;
 import com.authenticationservice.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,17 +40,16 @@ public class AuthenticationService {
      *    {@code username} and {@code password} of an existing {@link User}
      *
      * @return JWT token
+     *
+     * @throws UsernameNotFoundException if the given {@link AuthenticationRequestDto#username} does not exists in database.
      */
-    public String generateJwtToken(AuthenticationRequestDto authenticationRequestDto) {
+    public Optional<String> generateJwtToken(AuthenticationRequestDto authenticationRequestDto) {
         return Optional.ofNullable(authenticationRequestDto)
                        .map(au -> userService.loadUserByUsername(au.getUsername()))
                        .filter(user -> passwordEncoder.matches(authenticationRequestDto.getPassword(), user.getPassword()))
                        .flatMap(user -> jwtUtil.generateJwtToken(user, Constants.JWT.SIGNATURE_ALGORITHM,
                                                                  this.jwtConfiguration.getSecretKey(),
-                                                                 this.jwtConfiguration.getExpirationTimeInMilliseconds()))
-                       .orElseThrow(() -> new EntityNotFoundException(
-                               String.format("Failed the JWT token generation of the user %s",
-                                       null == authenticationRequestDto ? "null" : authenticationRequestDto.getUsername())));
+                                                                 this.jwtConfiguration.getExpirationTimeInMilliseconds()));
     }
 
 
