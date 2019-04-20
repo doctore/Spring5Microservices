@@ -20,6 +20,7 @@ spring:
 security:
   jwt:
     token:
+      authorizationPrefix: 'Bearer '
       expirationTimeInMilliseconds: 3600000
       secretKey: "mySecretKey"
 

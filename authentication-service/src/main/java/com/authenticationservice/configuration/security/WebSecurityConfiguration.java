@@ -36,7 +36,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             // List of services do not require authentication
             .antMatchers(HttpMethod.POST, RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.LOGIN).permitAll()
-            .antMatchers(HttpMethod.GET, RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.VALIDATE + "/**").permitAll()
+            .antMatchers(HttpMethod.GET, RestRoutes.AUTHENTICATION.ROOT + "/**").permitAll()
             // Any other request must be authenticated
             .anyRequest().authenticated();
     }

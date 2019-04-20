@@ -7,11 +7,13 @@ import com.authenticationservice.model.User;
 import com.authenticationservice.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 @Service
@@ -57,14 +59,35 @@ public class AuthenticationService {
      * Checks if the given token is valid or not taking into account the secret key and expiration date.
      *
      * @param token
-     *    JWT token to validate
+     *    JWT token to validate (included Http authentication scheme)
      *
      * @return {@code false} if the given token is expired or is not valid, {@code true} otherwise.
      */
     public boolean isJwtTokenValid(String token) {
         return Optional.ofNullable(token)
-                       .map(t -> jwtUtil.isTokenValid(t, this.jwtConfiguration.getSecretKey()))
+                       .map(t -> jwtUtil.isTokenValid(t.replace(this.jwtConfiguration.getAuthorizationPrefix(), ""),
+                                                      this.jwtConfiguration.getSecretKey()))
                        .orElse(Boolean.FALSE);
+    }
+
+
+    /**
+     * Using the given JWT token returns the {@link User#username} and {@link User#getAuthorities()} data.
+     *
+     * @param token
+     *    JWT token (included Http authentication scheme)
+     *
+     * @return {@link Optional} with {@link UsernamePasswordAuthenticationToken}
+     *
+     * @throws UsernameNotFoundException if the {@code username} included in the JWT token does not exists in database
+     * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones
+     */
+    public Optional<UsernamePasswordAuthenticationToken> getAuthenticationInformation(String token) {
+        return Optional.ofNullable(token)
+                       .filter(t -> jwtUtil.isTokenValid(t.replace(this.jwtConfiguration.getAuthorizationPrefix(), ""),
+                                                         this.jwtConfiguration.getSecretKey()))
+                       .map(t -> userService.loadUserByUsername(jwtUtil.getUsernameFromToken(t, this.jwtConfiguration.getSecretKey()).get()))
+                       .map(u -> new UsernamePasswordAuthenticationToken(u.getUsername(), null, u.getAuthorities()));
     }
 
 }

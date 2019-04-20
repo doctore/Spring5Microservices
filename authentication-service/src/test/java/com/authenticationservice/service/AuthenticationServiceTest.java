@@ -182,6 +182,7 @@ public class AuthenticationServiceTest {
 
         // When
         when(mockJwtConfiguration.getSecretKey()).thenReturn("secretKey");
+        when(mockJwtConfiguration.getAuthorizationPrefix()).thenReturn("Bearer ");
         when(mockJwtUtil.isTokenValid(anyString(), anyString())).thenReturn(false);
 
         boolean isValid = authenticationService.isJwtTokenValid(jwtToken);
@@ -198,6 +199,7 @@ public class AuthenticationServiceTest {
 
         // When
         when(mockJwtConfiguration.getSecretKey()).thenReturn("secretKey");
+        when(mockJwtConfiguration.getAuthorizationPrefix()).thenReturn("Bearer ");
         when(mockJwtUtil.isTokenValid(anyString(), anyString())).thenReturn(true);
 
         boolean isValid = authenticationService.isJwtTokenValid(jwtToken);

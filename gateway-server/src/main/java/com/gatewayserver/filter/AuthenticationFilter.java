@@ -66,8 +66,7 @@ public class AuthenticationFilter extends ZuulFilter {
             return null;
         }
         if (!isAuthenticationTokenValid(authenticationConfiguration.getValidateTokenWebService(),
-                                        ctx.getRequest().getHeader(HttpHeaders.AUTHORIZATION),
-                                        authenticationConfiguration.getAuthorizationPrefix())) {
+                                        ctx.getRequest().getHeader(HttpHeaders.AUTHORIZATION))) {
             LOGGER.debug("Authentication token is not valid");
             ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
             ctx.setSendZuulResponse(false);
@@ -78,20 +77,17 @@ public class AuthenticationFilter extends ZuulFilter {
 
 
     /**
-     * Checks if the given autehntication token is valid or not
+     * Checks if the given authentication token is valid or not
      *
      * @param validateTokenWebService
      *    Web service used to validate the given token
-     * @param rawToken
+     * @param token
      *    Token (included Http authentication scheme)
-     * @param authorizationPrefix
-     *    Http authentication scheme
      *
      * @return {@code true} if the given {@code token} is valid, {@code false} otherwise
      */
-    private boolean isAuthenticationTokenValid(String validateTokenWebService, String rawToken, String authorizationPrefix) {
+    private boolean isAuthenticationTokenValid(String validateTokenWebService, String token) {
         try {
-            String token = rawToken.replace(authorizationPrefix, "");
             ResponseEntity<Boolean> restResponse = restTemplate.getForEntity(validateTokenWebService, Boolean.class, token);
             return restResponse.getBody();
         } catch(Exception ex) {

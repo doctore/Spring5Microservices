@@ -14,9 +14,6 @@ public class AuthenticationConfiguration {
     @Value("${authentication.restApi.allowedRequestURI}")
     private String allowedRequestURI;
 
-    @Value("${authentication.restApi.authorizationPrefix}")
-    private String authorizationPrefix;
-
     @Value("${authentication.restApi.validateToken}")
     private String validateTokenWebService;
 
