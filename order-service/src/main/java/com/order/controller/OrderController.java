@@ -5,8 +5,6 @@ import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.service.OrderService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -24,8 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
 /**
@@ -36,8 +32,6 @@ import javax.validation.constraints.Positive;
 @CrossOrigin(origins="*")
 @Validated
 public class OrderController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
 
     private OrderService orderService;
 
