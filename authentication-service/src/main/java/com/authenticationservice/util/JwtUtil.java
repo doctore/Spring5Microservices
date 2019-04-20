@@ -2,7 +2,6 @@ package com.authenticationservice.util;
 
 import com.authenticationservice.configuration.Constants;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -17,7 +16,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 @Component
@@ -78,8 +76,10 @@ public class JwtUtil {
      */
     public boolean isTokenValid(String token, String jwtSecretKey) {
         try {
-            Date expiration = getExpirationDateFromToken(token, jwtSecretKey);
-            return expiration.after(new Date());
+            return getExpirationDateFromToken(token, jwtSecretKey)
+                    .map(exp -> exp.after(new Date()))
+                    .orElse(false);
+
         } catch (JwtException ex) {
             LOGGER.error(String.format("There was an error checking if the token %s is valid", token), ex);
             return false;
@@ -95,29 +95,39 @@ public class JwtUtil {
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      *
-     * @return {@link UserDetails#getUsername()}
+     * @return {@link Optional} with {@link UserDetails#getUsername()}
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public String getUsernameFromToken(String token, String jwtSecretKey) {
-        return getClaimFromToken(token, jwtSecretKey, Claims::getSubject);
+    public Optional<String> getUsernameFromToken(String token, String jwtSecretKey) {
+        try {
+            return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getSubject));
+        } catch (JwtException ex) {
+            LOGGER.error(String.format("There was an error getting the username of token %s", token), ex);
+            return Optional.empty();
+        }
     }
 
 
     /**
-     * Gets the {@link Date} from which the given token is no longer valid-
+     * Gets the {@link Date} from which the given token is no longer valid.
      *
      * @param token
      *    JWT token to extract the required information
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      *
-     * @return {@link Date}
+     * @return {@link Optional} with {@link Date}
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public Date getExpirationDateFromToken(String token, String jwtSecretKey) {
-        return getClaimFromToken(token, jwtSecretKey, Claims::getExpiration);
+    public Optional<Date> getExpirationDateFromToken(String token, String jwtSecretKey) {
+        try {
+            return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
+        } catch (JwtException ex) {
+            LOGGER.error(String.format("There was an error getting the expiration date of token %s", token), ex);
+            return Optional.empty();
+        }
     }
 
 
@@ -134,7 +144,13 @@ public class JwtUtil {
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
     public Collection<? extends GrantedAuthority> getRolesFromToken(String token, String jwtSecretKey) {
-        return getClaimFromToken(token, jwtSecretKey, (claims) -> (Set)claims.computeIfAbsent(Constants.JWT.ROLES_KEY, k -> new HashSet<>()));
+        try {
+            return getClaimFromToken(token, jwtSecretKey,
+                    (claims) -> new HashSet<>((Collection)claims.computeIfAbsent(Constants.JWT.ROLES_KEY, k -> new HashSet<>())));
+        } catch (JwtException ex) {
+            LOGGER.error(String.format("There was an error getting the roles of token %s", token), ex);
+            return new HashSet<>();
+        }
     }
 
 
