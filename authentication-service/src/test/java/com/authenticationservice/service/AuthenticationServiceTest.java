@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -73,6 +75,8 @@ public class AuthenticationServiceTest {
         Optional<String> jwtToken = authenticationService.generateJwtToken(authenticationRequest);
 
         // Then
+        verify(mockUserService, times(1)).loadUserByUsername(nonExistentUsername);
+
         assertNotNull(jwtToken);
         assertFalse(jwtToken.isPresent());
     }
@@ -97,6 +101,8 @@ public class AuthenticationServiceTest {
         Optional<String> jwtToken = authenticationService.generateJwtToken(authenticationRequest);
 
         // Then
+        verify(mockPasswordEncoder, times(1)).matches(authenticationRequest.getPassword(), user.getPassword());
+
         assertNotNull(jwtToken);
         assertFalse(jwtToken.isPresent());
     }
@@ -123,6 +129,8 @@ public class AuthenticationServiceTest {
         Optional<String> jwtToken = authenticationService.generateJwtToken(authenticationRequest);
 
         // Then
+        verify(mockJwtUtil, times(1)).generateJwtToken(any(UserDetails.class), any(SignatureAlgorithm.class),
+                                                                              anyString(), anyLong());
         assertNotNull(jwtToken);
         assertFalse(jwtToken.isPresent());
     }
@@ -150,6 +158,8 @@ public class AuthenticationServiceTest {
         Optional<String> jwtTokenGenerated = authenticationService.generateJwtToken(authenticationRequest);
 
         // Then
+        verify(mockJwtUtil, times(1)).generateJwtToken(any(UserDetails.class), any(SignatureAlgorithm.class),
+                                                                              anyString(), anyLong());
         assertTrue(jwtTokenGenerated.isPresent());
         assertEquals(expectedJwtToken, jwtTokenGenerated.get());
     }
