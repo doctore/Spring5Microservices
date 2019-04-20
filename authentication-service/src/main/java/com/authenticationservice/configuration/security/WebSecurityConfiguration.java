@@ -32,8 +32,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             // handle an authorized attempts
             .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
             .and()
-            // Add a filter to validate the tokens with every request
-            //.addFilterAfter(new JwtTokenAuthenticationFilter(jwtConfig), UsernamePasswordAuthenticationFilter.class)
             // Authorization requests config
             .authorizeRequests()
             // List of services do not require authentication
