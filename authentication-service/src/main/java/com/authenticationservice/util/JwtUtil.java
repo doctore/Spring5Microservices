@@ -3,8 +3,11 @@ package com.authenticationservice.util;
 import com.authenticationservice.configuration.Constants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -19,6 +22,8 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtUtil.class);
 
     /**
      *    Using the given {@link UserDetails} information generates a valid JWT token encrypted with the selected
@@ -75,7 +80,8 @@ public class JwtUtil {
         try {
             Date expiration = getExpirationDateFromToken(token, jwtSecretKey);
             return expiration.after(new Date());
-        } catch (ExpiredJwtException e) {
+        } catch (JwtException ex) {
+            LOGGER.error(String.format("There was an error checking if the token %s is valid", token), ex);
             return false;
         }
     }

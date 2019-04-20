@@ -4,9 +4,7 @@ import com.authenticationservice.configuration.Constants;
 import com.authenticationservice.enums.RoleEnum;
 import com.authenticationservice.model.Role;
 import com.authenticationservice.model.User;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,15 +81,18 @@ public class JwtUtilTest {
     }
 
 
-    @Test(expected = MalformedJwtException.class)
-    public void isTokenValid_whenNotValidTokenIsGiven_thenMalformedJwtExceptionIsThrown() {
-        // When/Then
-        jwtUtil.isTokenValid("token JWT", "secretKey");
+    @Test
+    public void isTokenValid_whenNotValidTokenIsGiven_thenFalseIsReturned() {
+        // When
+        boolean isValid = jwtUtil.isTokenValid("token JWT", "secretKey");
+
+        // Then
+        assertFalse(isValid);
     }
 
 
-    @Test(expected = SignatureException.class)
-    public void isTokenValid_whenNotSameSecretKeyIsGiven_thenSignatureExceptionIsThrown() {
+    @Test
+    public void isTokenValid_whenNotSameSecretKeyIsGiven_thenFalseIsReturned() {
         // Given
         String expiredJwtToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VybmFtZSIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJVU0VSIn1dL"
                                + "CJpYXQiOjE1NTU2NzQ2NjksImV4cCI6MTU1NTY3NDY2OX0.y8FX6KYOK8OfCD_ZMbMhYa55QRLQ7-za-WVnUr_"
@@ -99,8 +100,11 @@ public class JwtUtilTest {
 
         String jwtSecretKeyUsed = "secretKey";
 
-        // When/Then
-        jwtUtil.isTokenValid(expiredJwtToken, jwtSecretKeyUsed+jwtSecretKeyUsed);
+        // When
+        boolean isValid = jwtUtil.isTokenValid(expiredJwtToken, jwtSecretKeyUsed+jwtSecretKeyUsed);
+
+        // Then
+        assertFalse(isValid);
     }
 
 
