@@ -176,7 +176,7 @@ ENCRYPT_KEY=ENCRYPT_KEY
 
 ## How to use it?
 
-The first step is adding in our databases: main and test ones the SQL files included in the `sql` folder. Once we have finished, it will be necessary to run the following
+The first step is adding in our databases: `main` and `test` ones, the SQL files included in the `sql` folder. Once we have finished, it will be necessary to run the following
 services (following the displayed ordination):
 
 1. **registry-server**
