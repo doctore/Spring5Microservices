@@ -2,9 +2,8 @@ package com.authenticationservice.controller;
 
 import com.authenticationservice.configuration.rest.RestRoutes;
 import com.authenticationservice.dto.AuthenticationRequestDto;
+import com.authenticationservice.dto.UsernameAuthoritiesDto;
 import com.authenticationservice.service.AuthenticationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -30,8 +29,6 @@ import javax.validation.constraints.Size;
 @CrossOrigin(origins="*")
 @Validated
 public class AuthenticationController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationController.class);
 
     private AuthenticationService authenticationService;
 
@@ -62,13 +59,30 @@ public class AuthenticationController {
      * Checks if the given token is valid or not taking into account the secret key and expiration date.
      *
      * @param token
-     *    JWT token to validate
+     *    JWT token to validate (included Http authentication scheme)
      *
      * @return if there is no error, JWT token with {@link HttpStatus#OK}. The suitable Http error code otherwise.
      */
     @GetMapping(RestRoutes.AUTHENTICATION.VALIDATE + "/{token}")
     public ResponseEntity<Boolean> validateToken(@PathVariable @NotNull @Size(min=1) String token) {
         return new ResponseEntity<>(authenticationService.isJwtTokenValid(token), HttpStatus.OK);
+    }
+
+
+    /**
+     * Using the given JWT token returns the {@link UsernameAuthoritiesDto} without {@code password} information.
+     *
+     * @param token
+     *    JWT token to validate (included Http authentication scheme)
+     *
+     * @return if there is no error, {@link UsernameAuthoritiesDto} with {@link HttpStatus#OK},
+     *         {@link HttpStatus#UNAUTHORIZED} otherwise.
+     */
+    @GetMapping(RestRoutes.AUTHENTICATION.AUTHENTICATION_INFO + "/{token}")
+    public ResponseEntity<UsernameAuthoritiesDto> getAuthenticationInformation(@PathVariable @NotNull @Size(min=1) String token) {
+        return authenticationService.getAuthenticationInformation(token)
+                                    .map(authToken -> new ResponseEntity<>(authToken, HttpStatus.OK))
+                                    .orElse(new ResponseEntity(HttpStatus.UNAUTHORIZED));
     }
 
 }

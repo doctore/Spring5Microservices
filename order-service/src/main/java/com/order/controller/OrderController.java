@@ -1,5 +1,6 @@
 package com.order.controller;
 
+import com.order.configuration.Constants;
 import com.order.configuration.rest.RestRoutes;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -53,6 +55,7 @@ public class OrderController {
      */
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
+    @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
     public Mono<ResponseEntity<OrderDto>> create(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
@@ -70,6 +73,7 @@ public class OrderController {
      *         if id was not found: {@link HttpStatus#NOT_FOUND}
      */
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
+    @PreAuthorize("hasAnyAuthority('" + Constants.ROLE_ADMIN +"','" + Constants.ROLE_USER + "')")
     public Mono<ResponseEntity<OrderDto>> findByIdWithOrderLines(@PathVariable @Positive Integer id) {
         return Mono.just(orderService.findByIdWithOrderLines(id)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))
@@ -88,6 +92,7 @@ public class OrderController {
      */
     @PutMapping
     @Transactional(rollbackFor = Exception.class)
+    @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
     public Mono<ResponseEntity<OrderDto>> update(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))

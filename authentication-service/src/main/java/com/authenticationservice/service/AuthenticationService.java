@@ -3,12 +3,12 @@ package com.authenticationservice.service;
 import com.authenticationservice.configuration.Constants;
 import com.authenticationservice.configuration.security.JwtConfiguration;
 import com.authenticationservice.dto.AuthenticationRequestDto;
+import com.authenticationservice.dto.UsernameAuthoritiesDto;
 import com.authenticationservice.model.User;
 import com.authenticationservice.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -65,8 +65,8 @@ public class AuthenticationService {
      */
     public boolean isJwtTokenValid(String token) {
         return Optional.ofNullable(token)
-                       .map(t -> jwtUtil.isTokenValid(t.replace(this.jwtConfiguration.getAuthorizationPrefix(), ""),
-                                                      this.jwtConfiguration.getSecretKey()))
+                       .map(t -> t.replace(this.jwtConfiguration.getAuthorizationPrefix(), ""))
+                       .map(t -> jwtUtil.isTokenValid(t, this.jwtConfiguration.getSecretKey()))
                        .orElse(Boolean.FALSE);
     }
 
@@ -77,17 +77,17 @@ public class AuthenticationService {
      * @param token
      *    JWT token (included Http authentication scheme)
      *
-     * @return {@link Optional} with {@link UsernamePasswordAuthenticationToken}
+     * @return {@link Optional} with {@link UsernameAuthoritiesDto}
      *
      * @throws UsernameNotFoundException if the {@code username} included in the JWT token does not exists in database
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones
      */
-    public Optional<UsernamePasswordAuthenticationToken> getAuthenticationInformation(String token) {
+    public Optional<UsernameAuthoritiesDto> getAuthenticationInformation(String token) {
         return Optional.ofNullable(token)
-                       .filter(t -> jwtUtil.isTokenValid(t.replace(this.jwtConfiguration.getAuthorizationPrefix(), ""),
-                                                         this.jwtConfiguration.getSecretKey()))
+                       .map(t -> t.replace(this.jwtConfiguration.getAuthorizationPrefix(), ""))
+                       .filter(t -> jwtUtil.isTokenValid(t, this.jwtConfiguration.getSecretKey()))
                        .map(t -> userService.loadUserByUsername(jwtUtil.getUsernameFromToken(t, this.jwtConfiguration.getSecretKey()).get()))
-                       .map(u -> new UsernamePasswordAuthenticationToken(u.getUsername(), null, u.getAuthorities()));
+                       .map(u -> new UsernameAuthoritiesDto(u.getUsername(), u.getAuthorities()));
     }
 
 }
