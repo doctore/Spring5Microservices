@@ -1,18 +1,24 @@
 package com.order.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.order.OrderServiceApplication;
+import com.order.configuration.Constants;
 import com.order.configuration.rest.RestRoutes;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
 import com.order.service.OrderService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
@@ -32,22 +38,50 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@WebFluxTest
+@ContextConfiguration(classes = OrderServiceApplication.class)
+@SpringBootTest
 public class OrderControllerTest {
 
     @Autowired
+    ApplicationContext context;
+
     private WebTestClient webTestClient;
 
     @MockBean
     private OrderService mockOrderService;
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-    static {
-        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+    @Before
+    public void setup() {
+        this.webTestClient = WebTestClient.bindToApplicationContext(this.context).configureClient().build();
     }
 
 
     @Test
+    public void create_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.post()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isUnauthorized();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
+    public void create_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.post()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isForbidden();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // Given
         OrderDto orderDto = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
@@ -57,13 +91,14 @@ public class OrderControllerTest {
                      .uri(RestRoutes.ORDER.ROOT)
                      .body(Mono.just(orderDto), OrderDto.class)
                      .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
+                     .isEqualTo("The following constraints have failed: create.orderDto.created: must not be null");
     }
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
         // Given
         OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
@@ -82,6 +117,7 @@ public class OrderControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndOrderDtoAreReturned() {
         // Given
         PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
@@ -105,7 +141,7 @@ public class OrderControllerTest {
                      .expectBody()
                      .jsonPath("$.id").isEqualTo(afterOrderDto.getId())
                      .jsonPath("$.code").isEqualTo(afterOrderDto.getCode())
-                     .jsonPath("$.created").isEqualTo(DATE_FORMAT.format(afterOrderDto.getCreated()))
+                     .jsonPath("$.created").isEqualTo(afterOrderDto.getCreated())
                      .jsonPath("$.orderLines.[0].id").isEqualTo(afterOrderLineDto.getId())
                      .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(afterOrderLineDto.getAmount()))
                      .jsonPath("$.orderLines.[0].cost").isEqualTo(afterOrderLineDto.getCost())
@@ -118,6 +154,34 @@ public class OrderControllerTest {
 
 
     @Test
+    public void findByIdWithOrderLines_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
+        // Given
+        String validOrderId = "1";
+
+        // When/Then
+        webTestClient.get()
+                     .uri(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
+                     .exchange()
+                     .expectStatus().isUnauthorized();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {"NOT_EXISTING"})
+    public void findByIdWithOrderLines_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // Given
+        String validOrderId = "1";
+
+        // When/Then
+        webTestClient.get()
+                     .uri(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
+                     .exchange()
+                     .expectStatus().isForbidden();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findByIdWithOrderLines_whenTheIdDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
         String notValidOrderId = "0";
@@ -133,6 +197,7 @@ public class OrderControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findByIdWithOrderLines_whenTheIdDoesNotExist_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // When
         when(mockOrderService.findByIdWithOrderLines(anyInt())).thenReturn(Optional.empty());
@@ -147,6 +212,7 @@ public class OrderControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findByIdWithOrderLines_whenTheIdExists_thenOkHttpCodeAndOrderWithOrderlinesAreReturned() throws JsonProcessingException {
         // Given
         PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
@@ -169,7 +235,6 @@ public class OrderControllerTest {
                      .expectBody()
                      .jsonPath("$.id").isEqualTo(orderDto.getId())
                      .jsonPath("$.code").isEqualTo(orderDto.getCode())
-                     .jsonPath("$.created").isEqualTo(DATE_FORMAT.format(orderDto.getCreated()))
                      .jsonPath("$.orderLines.[0].id").isEqualTo(orderLineDto1.getId())
                      .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(orderLineDto1.getAmount()))
                      .jsonPath("$.orderLines.[0].cost").isEqualTo(orderLineDto1.getCost())
@@ -186,6 +251,30 @@ public class OrderControllerTest {
 
 
     @Test
+    public void update_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.put()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isUnauthorized();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
+    public void update_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.put()
+                     .uri(RestRoutes.ORDER.ROOT)
+                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .exchange()
+                     .expectStatus().isForbidden();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // Given
         OrderDto orderDto = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
@@ -195,13 +284,14 @@ public class OrderControllerTest {
                      .uri(RestRoutes.ORDER.ROOT)
                      .body(Mono.just(orderDto), OrderDto.class)
                      .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
+                     .isEqualTo("The following constraints have failed: update.orderDto.created: must not be null");
     }
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenSaveDoesNotReturnAnEntity_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // Given
         OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
@@ -220,6 +310,7 @@ public class OrderControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndOrderDtoAreReturned() {
         // Given
         PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
@@ -243,7 +334,7 @@ public class OrderControllerTest {
                      .expectBody()
                      .jsonPath("$.id").isEqualTo(afterOrderDto.getId())
                      .jsonPath("$.code").isEqualTo(afterOrderDto.getCode())
-                     .jsonPath("$.created").isEqualTo(DATE_FORMAT.format(afterOrderDto.getCreated()))
+                     .jsonPath("$.created").isEqualTo(afterOrderDto.getCreated())
                      .jsonPath("$.orderLines.[0].id").isEqualTo(afterOrderLineDto.getId())
                      .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(afterOrderLineDto.getAmount()))
                      .jsonPath("$.orderLines.[0].cost").isEqualTo(afterOrderLineDto.getCost())

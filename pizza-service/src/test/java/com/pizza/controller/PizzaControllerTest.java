@@ -1,18 +1,24 @@
 package com.pizza.controller;
 
+import com.pizza.PizzaServiceApplication;
+import com.pizza.configuration.Constants;
 import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
 import com.pizza.service.PizzaService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
@@ -30,18 +36,51 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@WebFluxTest
+@ContextConfiguration(classes = PizzaServiceApplication.class)
+@SpringBootTest
 public class PizzaControllerTest {
 
     @Autowired
+    ApplicationContext context;
+
     private WebTestClient webTestClient;
 
     @MockBean
     private PizzaService mockPizzaService;
 
 
+    @Before
+    public void setup() {
+        this.webTestClient = WebTestClient.bindToApplicationContext(this.context).configureClient().build();
+    }
+
+
     @Test
-    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+    public void create_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.post()
+                     .uri(RestRoutes.PIZZA.ROOT)
+                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .exchange()
+                     .expectStatus().isUnauthorized();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
+    public void create_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.post()
+                     .uri(RestRoutes.PIZZA.ROOT)
+                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .exchange()
+                     .expectStatus().isForbidden();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().cost(7D).ingredients(new HashSet<>()).build();
 
@@ -50,13 +89,14 @@ public class PizzaControllerTest {
                      .uri(RestRoutes.PIZZA.ROOT)
                      .body(Mono.just(pizzaDto), PizzaDto.class)
                      .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'name' due to: must not be null]");
+                     .isEqualTo("The following constraints have failed: create.pizzaDto.name: must not be null");
     }
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
@@ -75,6 +115,7 @@ public class PizzaControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
@@ -106,6 +147,34 @@ public class PizzaControllerTest {
 
 
     @Test
+    public void findByName_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
+        // Given
+        String validPizzaName = "pizzaName";
+
+        // When/Then
+        webTestClient.get()
+                     .uri(RestRoutes.PIZZA.ROOT + "/" + validPizzaName)
+                     .exchange()
+                     .expectStatus().isUnauthorized();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {"NOT_EXISTING"})
+    public void findByName_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // Given
+        String validPizzaName = "pizzaName";
+
+        // When/Then
+        webTestClient.get()
+                     .uri(RestRoutes.PIZZA.ROOT + "/" + validPizzaName)
+                     .exchange()
+                     .expectStatus().isForbidden();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findByName_whenTheNameDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
         String notValidPizzaName = "pizzaName1pizzaName2pizzaName3pizzaName4pizzaName5pizzaName6pizzaName7";
@@ -121,6 +190,7 @@ public class PizzaControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findByName_whenTheNameDoesNotExist_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // When
         when(mockPizzaService.findByName(anyString())).thenReturn(Optional.empty());
@@ -135,6 +205,7 @@ public class PizzaControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findByName_whenTheNameExists_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Bacon").build();
@@ -159,6 +230,42 @@ public class PizzaControllerTest {
 
 
     @Test
+    public void findPageWithIngredients_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
+        // Given
+        int notValidPage = -1;
+        int size = 1;
+
+        // When/Then
+        webTestClient.get()
+                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                        .queryParam("page", notValidPage)
+                        .queryParam("size", size)
+                        .build())
+                     .exchange()
+                     .expectStatus().isUnauthorized();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {"NOT_EXISTING"})
+    public void findPageWithIngredients_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // Given
+        int notValidPage = -1;
+        int size = 1;
+
+        // When/Then
+        webTestClient.get()
+                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                                                  .queryParam("page", notValidPage)
+                                                  .queryParam("size", size)
+                                                  .build())
+                     .exchange()
+                     .expectStatus().isForbidden();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findPageWithIngredients_whenThePageDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
         int notValidPage = -1;
@@ -178,6 +285,7 @@ public class PizzaControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findPageWithIngredients_whenTheSizeDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
         int page = 0;
@@ -197,6 +305,7 @@ public class PizzaControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findPageWithIngredients_whenNoResultsAreFound_thenEmptyPageIsReturned() {
         // Given
         int page = 0;
@@ -223,6 +332,7 @@ public class PizzaControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findPageWithIngredients_whenResultsAreFound_thenExpectedPageIsReturned() {
         // Given
         int page = 0;
@@ -256,6 +366,30 @@ public class PizzaControllerTest {
 
 
     @Test
+    public void update_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.put()
+                     .uri(RestRoutes.PIZZA.ROOT)
+                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .exchange()
+                     .expectStatus().isUnauthorized();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_USER})
+    public void update_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // When/Then
+        webTestClient.put()
+                     .uri(RestRoutes.PIZZA.ROOT)
+                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .exchange()
+                     .expectStatus().isForbidden();
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenGivenDtoDoesNotVerifyTheValidations_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").ingredients(new HashSet<>()).build();
@@ -265,13 +399,14 @@ public class PizzaControllerTest {
                      .uri(RestRoutes.PIZZA.ROOT)
                      .body(Mono.just(pizzaDto), PizzaDto.class)
                      .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                     .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null]");
+                     .isEqualTo("The following constraints have failed: update.pizzaDto.cost: must not be null");
     }
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
@@ -290,6 +425,7 @@ public class PizzaControllerTest {
 
 
     @Test
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
