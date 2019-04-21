@@ -10,6 +10,7 @@
     - [order-service](#order-service)
     - [sql](#sql)
 - [Previous steps](#previous-steps)
+- [How to use it?](#how-to-use-it)
 - [Future additions](#previous-steps)
 
 ## Why was this project created?
@@ -172,7 +173,30 @@ that is passed to the service via an operating system environment variable calle
 ENCRYPT_KEY=ENCRYPT_KEY
 ```
 
+
+## How to use it?
+
+The first step is adding in our databases: main and test ones the SQL files included in the `sql` folder. Once we have finished, it will be necessary to run the following
+services (following the displayed ordination):
+
+1. **registry-server**
+2. **config-server**
+3. **gateway-server**
+4. **authorization-service**
+
+And finally any of the other ones (or both): **pizza-service** and **order-service**.
+
+Now, we have to get the JWT token using an existing user in database (as we can see in the next picture):
+
+![Alt text](/documentation/Login.png?raw=true "Login")
+
+In the previous image, I have used for this example `admin/admin`, there is another option included in the SQL files: `user/user`.
+
+Now, we can use the returned token to get the information manages by any microservice:
+
+![Alt text](/documentation/PizzaService.png?raw=true "Login")
+<br><br>
+
 ## Future additions
 
-- Authentication and authorization using JWT token
 - Documentation of the REST Api with Swagger
