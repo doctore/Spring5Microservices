@@ -2,6 +2,9 @@ package com.authenticationservice.service;
 
 import com.authenticationservice.configuration.security.JwtConfiguration;
 import com.authenticationservice.dto.AuthenticationRequestDto;
+import com.authenticationservice.dto.UsernameAuthoritiesDto;
+import com.authenticationservice.enums.RoleEnum;
+import com.authenticationservice.model.Role;
 import com.authenticationservice.model.User;
 import com.authenticationservice.util.JwtUtil;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -14,6 +17,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -206,6 +211,61 @@ public class AuthenticationServiceTest {
 
         // Then
         assertTrue(isValid);
+    }
+
+
+    @Test
+    public void getAuthenticationInformation_whenGivenTokenIsNull_thenOptionalEmptyIsReturned() {
+        // When
+        Optional<UsernameAuthoritiesDto> usernameAuthoritiesDto = authenticationService.getAuthenticationInformation(null);
+
+        // Then
+        assertNotNull(usernameAuthoritiesDto);
+        assertFalse(usernameAuthoritiesDto.isPresent());
+    }
+
+
+    @Test
+    public void getAuthenticationInformation_whenGivenTokenIsInvalid_thenOptionalEmptyIsReturned() {
+        // Given
+        String jwtToken = "jwtToken";
+
+        // When
+        when(mockJwtConfiguration.getSecretKey()).thenReturn("secretKey");
+        when(mockJwtConfiguration.getAuthorizationPrefix()).thenReturn("Bearer ");
+        when(mockJwtUtil.isTokenValid(anyString(), anyString())).thenReturn(false);
+
+        Optional<UsernameAuthoritiesDto> usernameAuthoritiesDto = authenticationService.getAuthenticationInformation(jwtToken);
+
+        // Then
+        assertNotNull(usernameAuthoritiesDto);
+        assertFalse(usernameAuthoritiesDto.isPresent());
+    }
+
+
+    @Test
+    public void getAuthenticationInformation_whenTheJwtWasGeneratedSuccessfully_thenValidJwtTokenIsReturned() {
+        // Given
+        String jwtToken = "jwtToken";
+        String existentUsername = "existentUsername";
+        String password = "password";
+
+        Role role = Role.builder().name(RoleEnum.ADMIN).build();
+        User user = User.builder().username(existentUsername).password(password)
+                                                             .roles(new HashSet<>(Arrays.asList(role))).build();
+        // When
+        when(mockJwtConfiguration.getSecretKey()).thenReturn("secretKey");
+        when(mockJwtConfiguration.getAuthorizationPrefix()).thenReturn("Bearer ");
+        when(mockJwtUtil.isTokenValid(anyString(), anyString())).thenReturn(true);
+        when(mockJwtUtil.getUsernameFromToken(anyString(), anyString())).thenReturn(Optional.of(existentUsername));
+        when(mockUserService.loadUserByUsername(existentUsername)).thenReturn(user);
+
+        Optional<UsernameAuthoritiesDto> usernameAuthoritiesDto = authenticationService.getAuthenticationInformation(jwtToken);
+
+        // Then
+        assertTrue(usernameAuthoritiesDto.isPresent());
+        assertEquals(user.getUsername(), usernameAuthoritiesDto.get().getUsername());
+        assertTrue(usernameAuthoritiesDto.get().getAuthorities().contains(role.getName().name()));
     }
 
 }
