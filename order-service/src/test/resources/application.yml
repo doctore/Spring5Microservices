@@ -8,3 +8,7 @@ spring:
     password: microservice_test
   jooq:
     sql-dialect: POSTGRES_9_5
+
+authentication:
+  restApi:
+    authenticationInformation: OnlyToAvoidAFailureLoadingConfigurationClass

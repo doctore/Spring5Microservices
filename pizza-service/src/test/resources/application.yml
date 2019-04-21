@@ -17,6 +17,10 @@ spring:
         format_sql: false
         show_sql: false
 
+authentication:
+  restApi:
+    authenticationInformation: OnlyToAvoidAFailureLoadingConfigurationClass
+
 #show sql statement
 #logging:
 #  level:
