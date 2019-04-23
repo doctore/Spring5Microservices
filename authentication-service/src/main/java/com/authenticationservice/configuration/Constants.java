@@ -10,6 +10,9 @@ public class Constants {
     // Database schema on which the entities have been included
     public static final String DATABASE_SCHEMA = "eat";
 
+    // Default charset for plain text
+    public static final String TEXT_PLAIN_JSON_UTF8_VALUE = "text/plain;charset=UTF-8";
+
 
     // Constants related with JWT
     public static final class JWT {

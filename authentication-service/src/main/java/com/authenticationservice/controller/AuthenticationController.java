@@ -1,5 +1,6 @@
 package com.authenticationservice.controller;
 
+import com.authenticationservice.configuration.Constants;
 import com.authenticationservice.configuration.rest.RestRoutes;
 import com.authenticationservice.dto.AuthenticationRequestDto;
 import com.authenticationservice.dto.UsernameAuthoritiesDto;
@@ -25,7 +26,7 @@ import javax.validation.constraints.Size;
  * Rest services related with authorization functionality
  */
 @RestController
-@RequestMapping(RestRoutes.AUTHENTICATION.ROOT)
+@RequestMapping(value = RestRoutes.AUTHENTICATION.ROOT)
 @CrossOrigin(origins="*")
 @Validated
 public class AuthenticationController {
@@ -47,7 +48,7 @@ public class AuthenticationController {
      * @return if there is no error, JWT token with {@link HttpStatus#OK},
      *         {@link HttpStatus#BAD_REQUEST} otherwise.
      */
-    @PostMapping(RestRoutes.AUTHENTICATION.LOGIN)
+    @PostMapping(value = RestRoutes.AUTHENTICATION.LOGIN, produces = Constants.TEXT_PLAIN_JSON_UTF8_VALUE)
     public ResponseEntity<String> login(@RequestBody @Valid AuthenticationRequestDto requestDto) {
         return authenticationService.generateJwtToken(requestDto)
                                     .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
