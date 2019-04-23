@@ -3,7 +3,7 @@ package com.authenticationservice.configuration.rest;
 /**
  * Used to define the REST API routes included in the project
  */
-public class RestRoutes {
+public final class RestRoutes {
 
     public static final class AUTHENTICATION {
         public static final String ROOT = "/authentication";
