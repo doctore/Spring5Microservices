@@ -4,6 +4,7 @@ import com.authenticationservice.configuration.Constants;
 import com.authenticationservice.configuration.rest.GlobalErrorWebExceptionHandler;
 import com.authenticationservice.configuration.rest.RestRoutes;
 import com.authenticationservice.dto.AuthenticationRequestDto;
+import com.authenticationservice.dto.UsernameAuthoritiesDto;
 import com.authenticationservice.service.AuthenticationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,12 +18,18 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @RunWith(SpringRunner.class)
@@ -103,8 +110,69 @@ public class AuthenticationControllerTest {
                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
                .content(jsonRequestDto))
                .andExpect(status().isOk())
-               .andExpect(content().contentType(Constants.TEXT_PLAIN_JSON_UTF8_VALUE))
+               .andExpect(content().contentType(Constants.TEXT_PLAIN_UTF8_VALUE))
                .andExpect(content().string(expectedJwtToken));
+    }
+
+
+    @Test
+    public void validateToken_whenGivenJwtTokenIsNotValid_thenOkHttpCodeAndFalseAsJsonResponseAreReturned() throws Exception {
+        // Given
+        String notValidToken = "notValidToken";
+
+        // When
+        when(mockAuthenticationService.isJwtTokenValid(notValidToken)).thenReturn(false);
+
+        mockMvc.perform(get(RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.VALIDATE + "/" + notValidToken))
+               .andExpect(status().isOk())
+               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+               .andExpect(content().string("false"));
+    }
+
+
+    @Test
+    public void validateToken_whenGivenJwtTokenIsValid_thenOkHttpCodeAndTrueAsJsonResponseAreReturned() throws Exception {
+        // Given
+        String validToken = "validToken";
+
+        // When
+        when(mockAuthenticationService.isJwtTokenValid(validToken)).thenReturn(true);
+
+        mockMvc.perform(get(RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.VALIDATE + "/" + validToken))
+               .andExpect(status().isOk())
+               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+               .andExpect(content().string("true"));
+    }
+
+
+    @Test
+    public void getAuthenticationInformation_whenGivenJwtTokenIsNotValid_thenUnauthorizedHttpCodeIsReturned() throws Exception {
+        // Given
+        String notValidToken = "notValidToken";
+
+        // When
+        when(mockAuthenticationService.getAuthenticationInformation(notValidToken)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get(RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.AUTHENTICATION_INFO + "/" + notValidToken))
+               .andExpect(status().isUnauthorized());
+    }
+
+
+    @Test
+    public void getAuthenticationInformation_whenGivenJwtTokenIsValid_thenUnauthorizedHttpCodeIsReturned() throws Exception {
+        // Given
+        String validToken = "validToken";
+        UsernameAuthoritiesDto usernameAuthorities = UsernameAuthoritiesDto.builder().username("username")
+                                                                                     .authorities(new HashSet<>(Arrays.asList("admin")))
+                                                                                     .build();
+        // When
+        when(mockAuthenticationService.getAuthenticationInformation(validToken)).thenReturn(Optional.of(usernameAuthorities));
+
+        mockMvc.perform(get(RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.AUTHENTICATION_INFO + "/" + validToken))
+               .andExpect(status().isOk())
+               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+               .andExpect(jsonPath("$.username", is(usernameAuthorities.getUsername())))
+               .andExpect(jsonPath("$.authorities", hasItems(usernameAuthorities.getAuthorities().toArray())));
     }
 
 
