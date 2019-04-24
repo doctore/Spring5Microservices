@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
@@ -48,7 +47,7 @@ public class AuthenticationController {
      * @return if there is no error, JWT token with {@link HttpStatus#OK},
      *         {@link HttpStatus#BAD_REQUEST} otherwise.
      */
-    @PostMapping(value = RestRoutes.AUTHENTICATION.LOGIN, produces = Constants.TEXT_PLAIN_JSON_UTF8_VALUE)
+    @PostMapping(value = RestRoutes.AUTHENTICATION.LOGIN, produces = Constants.TEXT_PLAIN_UTF8_VALUE)
     public ResponseEntity<String> login(@RequestBody @Valid AuthenticationRequestDto requestDto) {
         return authenticationService.generateJwtToken(requestDto)
                                     .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
@@ -65,7 +64,7 @@ public class AuthenticationController {
      * @return if there is no error, JWT token with {@link HttpStatus#OK}. The suitable Http error code otherwise.
      */
     @GetMapping(RestRoutes.AUTHENTICATION.VALIDATE + "/{token}")
-    public ResponseEntity<Boolean> validateToken(@PathVariable @NotNull @Size(min=1) String token) {
+    public ResponseEntity<Boolean> validateToken(@PathVariable @Size(min=2) String token) {
         return new ResponseEntity<>(authenticationService.isJwtTokenValid(token), HttpStatus.OK);
     }
 
@@ -80,7 +79,7 @@ public class AuthenticationController {
      *         {@link HttpStatus#UNAUTHORIZED} otherwise.
      */
     @GetMapping(RestRoutes.AUTHENTICATION.AUTHENTICATION_INFO + "/{token}")
-    public ResponseEntity<UsernameAuthoritiesDto> getAuthenticationInformation(@PathVariable @NotNull @Size(min=1) String token) {
+    public ResponseEntity<UsernameAuthoritiesDto> getAuthenticationInformation(@PathVariable @Size(min=2) String token) {
         return authenticationService.getAuthenticationInformation(token)
                                     .map(authToken -> new ResponseEntity<>(authToken, HttpStatus.OK))
                                     .orElse(new ResponseEntity(HttpStatus.UNAUTHORIZED));

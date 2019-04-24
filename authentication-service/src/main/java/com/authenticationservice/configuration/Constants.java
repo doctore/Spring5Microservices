@@ -11,7 +11,7 @@ public class Constants {
     public static final String DATABASE_SCHEMA = "eat";
 
     // Default charset for plain text
-    public static final String TEXT_PLAIN_JSON_UTF8_VALUE = "text/plain;charset=UTF-8";
+    public static final String TEXT_PLAIN_UTF8_VALUE = "text/plain;charset=UTF-8";
 
 
     // Constants related with JWT
