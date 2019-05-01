@@ -14,3 +14,10 @@ eureka:
     # Register the IP of the service rather than the server name (useful when there is no a
     # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
+
+springfox:
+  documentation:
+    swagger:
+      v2:
+        # Api docs path properties
+        path: /authentication/v2/api-docs

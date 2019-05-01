@@ -21,3 +21,10 @@ management:
     web:
       exposure:
         include: '*'
+
+springfox:
+  documentation:
+    swagger:
+      v2:
+        # Api docs path properties
+        path: /v2/api-docs

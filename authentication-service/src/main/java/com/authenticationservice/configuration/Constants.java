@@ -10,6 +10,9 @@ public class Constants {
     // Database schema on which the entities have been included
     public static final String DATABASE_SCHEMA = "eat";
 
+    // Documentation API version
+    public static final String DOCUMENTATION_API_VERSION = "1.0";
+
     // Default charset for plain text
     public static final String TEXT_PLAIN_UTF8_VALUE = "text/plain;charset=UTF-8";
 

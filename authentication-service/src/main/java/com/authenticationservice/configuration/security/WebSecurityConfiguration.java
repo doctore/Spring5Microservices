@@ -1,6 +1,7 @@
 package com.authenticationservice.configuration.security;
 
 import com.authenticationservice.configuration.rest.RestRoutes;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Value("${springfox.documentation.swagger.v2.path}")
+    private String documentationPath;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,6 +39,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             // Authorization requests config
             .authorizeRequests()
             // List of services do not require authentication
+            .antMatchers(HttpMethod.GET, documentationPath).permitAll()
             .antMatchers(HttpMethod.POST, RestRoutes.AUTHENTICATION.ROOT + RestRoutes.AUTHENTICATION.LOGIN).permitAll()
             .antMatchers(HttpMethod.GET, RestRoutes.AUTHENTICATION.ROOT + "/**").permitAll()
             // Any other request must be authenticated
