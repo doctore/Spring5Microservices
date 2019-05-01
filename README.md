@@ -195,6 +195,10 @@ In the previous image, I have used for this example `admin/admin`, there is anot
 Now, we can use the returned token to get the information manages by any microservice:
 
 ![Alt text](/documentation/PizzaService.png?raw=true "Login")
+
+From now, using the **gateway-server** URL, we can read the Swagger documentation included in the microservices.  
+
+![Alt text](/documentation/Swagger.png?raw=true "Login")
 <br><br>
 
 ## Future additions
