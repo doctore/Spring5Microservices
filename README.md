@@ -11,7 +11,7 @@
     - [sql](#sql)
 - [Previous steps](#previous-steps)
 - [How to use it?](#how-to-use-it)
-- [Future additions](#previous-steps)
+- [Future additions](#future-additions)
 
 ## Why was this project created?
 
@@ -199,4 +199,5 @@ Now, we can use the returned token to get the information manages by any microse
 
 ## Future additions
 
-- Documentation of the REST Api with Swagger
+- Documentation of the REST Api with Swagger, when this library provides a more stable way to work with Webflux. **gateway-server** and **authorization-service** are currently
+configured.
