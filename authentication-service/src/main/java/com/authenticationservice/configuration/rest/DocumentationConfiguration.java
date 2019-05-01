@@ -21,12 +21,12 @@ public class DocumentationConfiguration {
 
     @Bean
     public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.ant(RestRoutes.AUTHENTICATION.ROOT + "/**"))
-                .build()
-                .apiInfo(apiInfo());
+        return new Docket(DocumentationType.SWAGGER_2).useDefaultResponseMessages(false)
+                                                      .select()
+                                                      .apis(RequestHandlerSelectors.any())
+                                                      .paths(PathSelectors.ant(RestRoutes.AUTHENTICATION.ROOT + "/**"))
+                                                      .build()
+                                                      .apiInfo(apiInfo());
     }
 
 

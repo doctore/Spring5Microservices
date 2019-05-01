@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 @Primary
 public class DocumentationConfiguration implements SwaggerResourcesProvider {
 
+    private static final String DOCUMENTATION_API_VERSION = "1.0";
+
     @Value("${springfox.documentation.swagger.v2.path}")
     private String documentationPath;
 
@@ -34,7 +36,8 @@ public class DocumentationConfiguration implements SwaggerResourcesProvider {
         return Optional.ofNullable(routeLocator)
                        .map(rl -> routeLocator.getRoutes().stream()
                                                           .map(r -> swaggerResource(r.getId(),
-                                                                  r.getFullPath().replace("/**", documentationPath),"1.0"))
+                                                                  r.getFullPath().replace("/**", documentationPath),
+                                                                  DOCUMENTATION_API_VERSION))
                                                           .collect(Collectors.toList())
                         )
                        .orElse(new ArrayList<>());

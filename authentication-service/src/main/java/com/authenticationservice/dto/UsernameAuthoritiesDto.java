@@ -1,5 +1,7 @@
 package com.authenticationservice.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,9 +18,13 @@ import java.util.Set;
 @Builder
 @Data
 @NoArgsConstructor
+@ApiModel(description="Authorization information about an specific user")
 public class UsernameAuthoritiesDto {
 
+    @ApiModelProperty(required = true)
     private String username;
+
+    @ApiModelProperty(position = 1, required = true, value = "roles of the logged user containing only lowercase letters")
     private Set<String> authorities;
 
     public UsernameAuthoritiesDto(String username, Collection<? extends GrantedAuthority> authorities) {

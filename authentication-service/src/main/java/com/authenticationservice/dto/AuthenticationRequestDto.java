@@ -1,5 +1,7 @@
 package com.authenticationservice.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +15,15 @@ import java.util.Objects;
 @Builder
 @Data
 @NoArgsConstructor
+@ApiModel(description="Required data to authenticate a user")
 public class AuthenticationRequestDto {
 
+    @ApiModelProperty(required = true)
     @NotNull
     @Size(min=1, max=64)
     private String username;
 
+    @ApiModelProperty(position = 1, required = true)
     @NotNull
     @Size(min=1, max=128)
     private String password;
