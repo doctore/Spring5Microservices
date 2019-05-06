@@ -8,13 +8,15 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect: com.pizza.configuration.persistence.CustomPostgreSQL95Dialect
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        format_sql: false
         jdbc:
           lob:
             # With Java >= 9, to avoid:
             # SQLFeatureNotSupportedException: Method PgConnection.createClob() is not yet implemented
             non_contextual_creation: true
-        format_sql: false
+        # To include custom functions we want to use in HQL queries
+        metadata_builder_contributor: com.pizza.configuration.persistence.SqlFunctionsMetadataBuilderContributor
         show_sql: false
 
 authentication:
