@@ -5,6 +5,7 @@ import com.pizza.configuration.Constants;
 import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
+import com.pizza.enums.PizzaEnum;
 import com.pizza.service.PizzaService;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +83,7 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().cost(7D).ingredients(new HashSet<>()).build();
+        PizzaDto pizzaDto = PizzaDto.builder().name("Not existing").cost(7D).ingredients(new HashSet<>()).build();
 
         // When/Then
         webTestClient.post()
@@ -91,7 +92,7 @@ public class PizzaControllerTest {
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: create.pizzaDto.name: must not be null");
+                     .isEqualTo("The following constraints have failed: create.pizzaDto.name: must be one of the values included in the enum");
     }
 
 
@@ -99,8 +100,8 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
-
+        PizzaDto pizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+                                              .ingredients(new HashSet<>()).build();
         // When
         when(mockPizzaService.save(any())).thenReturn(Optional.empty());
 
@@ -121,7 +122,7 @@ public class PizzaControllerTest {
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
 
-        PizzaDto beforePizzaDto = PizzaDto.builder().name("Carbonara").cost(7D)
+        PizzaDto beforePizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(beforeIngredientDto))).build();
         PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName()).cost(beforePizzaDto.getCost())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();
@@ -209,7 +210,7 @@ public class PizzaControllerTest {
     public void findByName_whenTheNameExists_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Bacon").build();
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D)
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(ingredientDto))).build();
         // When
         when(mockPizzaService.findByName(anyString())).thenReturn(Optional.of(pizzaDto));
@@ -339,7 +340,7 @@ public class PizzaControllerTest {
         int size = 1;
 
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Bacon").build();
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D)
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
                                               .ingredients(new HashSet<>(Arrays.asList(ingredientDto))).build();
         // When
         when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(Arrays.asList(pizzaDto)));
@@ -392,8 +393,8 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenGivenDtoDoesNotVerifyTheValidations_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").ingredients(new HashSet<>()).build();
-
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue())
+                                              .ingredients(new HashSet<>()).build();
         // When/Then
         webTestClient.put()
                      .uri(RestRoutes.PIZZA.ROOT)
@@ -409,8 +410,8 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("carbonara").cost(7D).ingredients(new HashSet<>()).build();
-
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+                                              .ingredients(new HashSet<>()).build();
         // When
         when(mockPizzaService.save(any())).thenReturn(Optional.empty());
 
@@ -431,7 +432,7 @@ public class PizzaControllerTest {
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
 
-        PizzaDto beforePizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7D)
+        PizzaDto beforePizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(beforeIngredientDto))).build();
         PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName()).cost(beforePizzaDto.getCost())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();

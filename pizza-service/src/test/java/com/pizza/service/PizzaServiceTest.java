@@ -2,6 +2,7 @@ package com.pizza.service;
 
 import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
+import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.repository.IngredientRepository;
@@ -30,7 +31,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,37 +68,37 @@ public class PizzaServiceTest {
         // Then
         assertFalse(pizzaDto.isPresent());
         verify(mockPizzaConverter, times(0)).fromEntityToOptionalDto(any());
-        verify(mockPizzaRepository, times(0)).findByName(anyString());
-        verify(mockPizzaRepository, times(0)).findWithIngredientsByName(anyString());
+        verify(mockPizzaRepository, times(0)).findByName(any());
+        verify(mockPizzaRepository, times(0)).findWithIngredientsByName(any());
     }
 
 
     @Test
     public void findByName_whenEmptyOptionalPizzaIsReturnedByRepository_thenEmptyOptionalIsReturned() {
         // Given
-        String pizzaName = "Carbonara";
+        PizzaEnum pizza = PizzaEnum.CARBONARA;
 
         // When
-        when(mockPizzaRepository.findWithIngredientsByName(pizzaName)).thenReturn(Optional.empty());
-        Optional<PizzaDto> pizzaDto = pizzaService.findByName(pizzaName);
+        when(mockPizzaRepository.findWithIngredientsByName(pizza)).thenReturn(Optional.empty());
+        Optional<PizzaDto> pizzaDto = pizzaService.findByName(pizza.getDatabaseValue());
 
         // Then
         assertFalse(pizzaDto.isPresent());
         verify(mockPizzaConverter, times(0)).fromEntityToOptionalDto(any());
-        verify(mockPizzaRepository, times(1)).findWithIngredientsByName(pizzaName);
+        verify(mockPizzaRepository, times(1)).findWithIngredientsByName(pizza);
     }
 
 
     @Test
     public void findByName_whenAPizzaIsReturnedByRepository_thenOptionalOfEquivalentPizzaDtoIsReturned() {
         // Given
-        Pizza carbonara = Pizza.builder().id(1).name("Carbonara").cost(7.50D).build();
-        PizzaDto carbonaraDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).build();
+        Pizza carbonara = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7.50D).build();
+        PizzaDto carbonaraDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7.50D).build();
 
         // When
         when(mockPizzaRepository.findWithIngredientsByName(carbonara.getName())).thenReturn(Optional.of(carbonara));
         when(mockPizzaConverter.fromEntityToOptionalDto(carbonara)).thenReturn(Optional.of(carbonaraDto));
-        Optional<PizzaDto> pizzaDto = pizzaService.findByName(carbonara.getName());
+        Optional<PizzaDto> pizzaDto = pizzaService.findByName(carbonara.getName().getDatabaseValue());
 
         // Then
         assertTrue(pizzaDto.isPresent());
@@ -140,12 +140,12 @@ public class PizzaServiceTest {
     @Test
     public void findPageWithIngredients_whenResultsAreGivenByRepository_thenEquivalentDtosAreReturned() {
         // Given
-        Pizza carbonara = Pizza.builder().id(1).name("Carbonara").cost(7.50D).build();
-        Pizza hawaiian = Pizza.builder().id(2).name("Hawaiian").cost(8D).build();
+        Pizza carbonara = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7.50D).build();
+        Pizza hawaiian = Pizza.builder().id(2).name(PizzaEnum.HAWAIIAN).cost(8D).build();
         Page<Pizza> pizzaPage = new PageImpl<>(Arrays.asList(carbonara, hawaiian));
 
-        PizzaDto carbonaraDto = PizzaDto.builder().id(carbonara.getId()).name(carbonara.getName()).cost(carbonara.getCost()).build();
-        PizzaDto hawaiianDto = PizzaDto.builder().id(hawaiian.getId()).name(hawaiian.getName()).cost(hawaiian.getCost()).build();
+        PizzaDto carbonaraDto = PizzaDto.builder().id(carbonara.getId()).name(carbonara.getName().getDatabaseValue()).cost(carbonara.getCost()).build();
+        PizzaDto hawaiianDto = PizzaDto.builder().id(hawaiian.getId()).name(hawaiian.getName().getDatabaseValue()).cost(hawaiian.getCost()).build();
 
         int size = 2;
         Sort sort = Sort.by(Sort.Direction.DESC, "name");
@@ -187,8 +187,8 @@ public class PizzaServiceTest {
         IngredientDto oreganoDto = IngredientDto.builder().id(oregano.getId()).name(oregano.getName()).build();
         Set<IngredientDto> ingredientDtos = new LinkedHashSet<>(Arrays.asList(mozzarellaDto, oreganoDto));
 
-        Pizza pizza = Pizza.builder().name("carbonara").cost(7D).ingredients(ingredients).build();
-        PizzaDto pizzaDto = PizzaDto.builder().name(pizza.getName()).cost(pizza.getCost()).ingredients(ingredientDtos).build();
+        Pizza pizza = Pizza.builder().name(PizzaEnum.CARBONARA).cost(7D).ingredients(ingredients).build();
+        PizzaDto pizzaDto = PizzaDto.builder().name(pizza.getName().getDatabaseValue()).cost(pizza.getCost()).ingredients(ingredientDtos).build();
 
         // When
         when(mockIngredientRepository.saveAll(any(Collection.class))).thenReturn(new ArrayList(ingredients));
@@ -220,8 +220,8 @@ public class PizzaServiceTest {
         IngredientDto oreganoDto = IngredientDto.builder().id(oregano.getId()).name(oregano.getName()).build();
         Set<IngredientDto> ingredientDtos = new LinkedHashSet<>(Arrays.asList(mozzarellaDto, oreganoDto));
 
-        Pizza pizza = Pizza.builder().id(1).name("carbonara").cost(7D).ingredients(ingredients).build();
-        PizzaDto pizzaDto = PizzaDto.builder().id(pizza.getId()).name(pizza.getName())
+        Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7D).ingredients(ingredients).build();
+        PizzaDto pizzaDto = PizzaDto.builder().id(pizza.getId()).name(pizza.getName().getDatabaseValue())
                                               .cost(pizza.getCost()).ingredients(ingredientDtos).build();
         // When
         when(mockIngredientRepository.saveAll(any(Collection.class))).thenReturn(new ArrayList(ingredients));

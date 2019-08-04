@@ -1,5 +1,7 @@
 package com.pizza.dto;
 
+import com.pizza.configuration.validator.annotation.HasEnumInternalStringValue;
+import com.pizza.enums.PizzaEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +24,7 @@ public class PizzaDto {
 
     @NotNull
     @Size(min=1, max=64)
+    @HasEnumInternalStringValue(enumClass= PizzaEnum.class)
     private String name;
 
     @NotNull

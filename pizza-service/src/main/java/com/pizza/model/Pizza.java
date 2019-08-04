@@ -1,6 +1,8 @@
 package com.pizza.model;
 
 import com.pizza.configuration.Constants;
+import com.pizza.enums.PizzaEnum;
+import com.pizza.util.converter.enums.PizzaEnumDatabaseConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,7 +38,8 @@ public class Pizza {
 
     @NotNull
     @Size(min=1, max=64)
-    private String name;
+    @Convert(converter=PizzaEnumDatabaseConverter.class)
+    private PizzaEnum name;
 
     @NotNull
     @Positive

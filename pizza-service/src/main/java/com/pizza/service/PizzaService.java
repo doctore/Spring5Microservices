@@ -1,6 +1,7 @@
 package com.pizza.service;
 
 import com.pizza.dto.PizzaDto;
+import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.repository.IngredientRepository;
@@ -47,6 +48,10 @@ public class PizzaService {
      */
     public Optional<PizzaDto> findByName(String name) {
         return Optional.ofNullable(name)
+                       .map(n -> {
+                           Optional<PizzaEnum> pe = PizzaEnum.getFromDatabaseValue(n);
+                           return pe.isPresent() ? pe.get() : null;
+                       })
                        .flatMap(pizzaRepository::findWithIngredientsByName)
                        .flatMap(pizzaConverter::fromEntityToOptionalDto);
     }
@@ -87,7 +92,9 @@ public class PizzaService {
         return Optional.ofNullable(pizzaDto)
                        .flatMap(pizzaConverter::fromDtoToOptionalEntity)
                        .map(p -> {
-                           ingredientRepository.saveAll(p.getIngredients());
+                           if (null != p.getIngredients())
+                               ingredientRepository.saveAll(p.getIngredients());
+
                            return pizzaRepository.save(p);
                        })
                        .flatMap(pizzaConverter::fromEntityToOptionalDto);

@@ -1,6 +1,7 @@
 package com.pizza.repository;
 
 import com.pizza.configuration.persistence.PersistenceConfiguration;
+import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Pizza;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,9 +38,9 @@ public class PizzaRepositoryTest {
 
     @Before
     public void init() {
-        carbonara = pizzaRepository.findWithIngredientsByName("Carbonara").get();
-        hawaiian = pizzaRepository.findWithIngredientsByName("Hawaiian").get();
-        margherita = pizzaRepository.findWithIngredientsByName("Margherita").get();
+        carbonara = pizzaRepository.findWithIngredientsByName(PizzaEnum.CARBONARA).get();
+        hawaiian = pizzaRepository.findWithIngredientsByName(PizzaEnum.HAWAIIAN).get();
+        margherita = pizzaRepository.findWithIngredientsByName(PizzaEnum.MARGUERITA).get();
     }
 
 
@@ -126,19 +127,6 @@ public class PizzaRepositoryTest {
 
 
     @Test
-    public void findWithIngredientsByName_whenANonExistentNameIsGiven_thenOptionalEmptyIsReturned() {
-        // Given
-        String nonExistentName = carbonara.getName() + hawaiian.getName() + margherita.getName();
-
-        // When
-        Optional<Pizza> optionalPizza = pizzaRepository.findWithIngredientsByName(nonExistentName);
-
-        // Then
-        assertFalse(optionalPizza.isPresent());
-    }
-
-
-    @Test
     public void findWithIngredientsByName_whenAnExistentNameIsGiven_thenOptionalWithRelatedEntityIsReturned() {
         // When
         Optional<Pizza> optionalPizza = pizzaRepository.findWithIngredientsByName(carbonara.getName());
@@ -156,19 +144,6 @@ public class PizzaRepositoryTest {
     public void findByName_whenNoNameIsGiven_thenOptionalEmptyIsReturned() {
         // When
         Optional<Pizza> optionalPizza = pizzaRepository.findByName(null);
-
-        // Then
-        assertFalse(optionalPizza.isPresent());
-    }
-
-
-    @Test
-    public void findByName_whenANonExistentNameIsGiven_thenOptionalEmptyIsReturned() {
-        // Given
-        String nonExistentName = carbonara.getName() + hawaiian.getName() + margherita.getName();
-
-        // When
-        Optional<Pizza> optionalPizza = pizzaRepository.findByName(nonExistentName);
 
         // Then
         assertFalse(optionalPizza.isPresent());

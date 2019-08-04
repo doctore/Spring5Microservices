@@ -1,0 +1,26 @@
+package com.pizza.util.converter.enums;
+
+import com.pizza.enums.PizzaEnum;
+import org.mapstruct.Mapper;
+
+import java.util.Optional;
+
+/**
+ * Utility class to convert from {@link PizzaEnum} to "equivalent" {@link String} and vice versa.
+ */
+@Mapper
+public class PizzaEnumConverter implements BaseEnumConverter<PizzaEnum, String> {
+
+    @Override
+    public PizzaEnum fromValueToEnum(String value) {
+        return PizzaEnum.getFromDatabaseValue(value)
+                        .orElse(null);
+    }
+
+    @Override
+    public String fromEnumToValue(PizzaEnum enumValue) {
+        return Optional.ofNullable(enumValue)
+                       .map(PizzaEnum::getDatabaseValue)
+                       .orElse(null);
+    }
+}

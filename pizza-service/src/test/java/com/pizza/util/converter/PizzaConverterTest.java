@@ -2,6 +2,7 @@ package com.pizza.util.converter;
 
 import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
+import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import org.junit.Before;
@@ -125,9 +126,10 @@ public class PizzaConverterTest {
         PizzaDto pizzaDto1 = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(new HashSet<>()).build();
         PizzaDto pizzaDto2 = PizzaDto.builder().id(2).name("Hawaiian").cost(8D).ingredients(ingredientDtos).build();
 
-        Pizza pizza1 = Pizza.builder().id(pizzaDto1.getId()).name(pizzaDto1.getName()).ingredients(new HashSet<>()).build();
-        Pizza pizza2 = Pizza.builder().id(pizzaDto2.getId()).name(pizzaDto2.getName()).ingredients(ingredients).build();
-
+        Pizza pizza1 = Pizza.builder().id(pizzaDto1.getId()).name(PizzaEnum.getFromDatabaseValue(pizzaDto1.getName()).get())
+                                      .ingredients(new HashSet<>()).build();
+        Pizza pizza2 = Pizza.builder().id(pizzaDto2.getId()).name(PizzaEnum.getFromDatabaseValue(pizzaDto2.getName()).get())
+                                      .ingredients(ingredients).build();
         // When
         List<Pizza> pizzas = pizzaConverter.fromDtosToEntities(Arrays.asList(pizzaDto1, pizzaDto2));
 
@@ -151,7 +153,7 @@ public class PizzaConverterTest {
     @Test
     public void fromEntityToDto_whenGivenEntityIsNotNull_thenEquivalentDtoIsReturned() {
         // Given
-        Pizza pizza = Pizza.builder().id(1).name("Hawaiian").cost(8D).ingredients(ingredients).build();
+        Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
 
         // When
         PizzaDto pizzaDto = pizzaConverter.fromEntityToDto(pizza);
@@ -176,7 +178,7 @@ public class PizzaConverterTest {
     @Test
     public void fromEntityToOptionalDto_whenGivenEntityIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
         // Given
-        Pizza pizza = Pizza.builder().id(1).name("Hawaiian").cost(8D).ingredients(ingredients).build();
+        Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
 
         // When
         Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromEntityToOptionalDto(pizza);
@@ -214,12 +216,12 @@ public class PizzaConverterTest {
     @Test
     public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
         // Given
-        Pizza pizza1 = Pizza.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredients).build();
-        Pizza pizza2 = Pizza.builder().id(2).name("Hawaiian").cost(8D).ingredients(new HashSet<>()).build();
+        Pizza pizza1 = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7.50D).ingredients(ingredients).build();
+        Pizza pizza2 = Pizza.builder().id(2).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(new HashSet<>()).build();
 
-        PizzaDto pizzaDto1 = PizzaDto.builder().id(pizza1.getId()).name(pizza1.getName()).cost(pizza1.getCost())
+        PizzaDto pizzaDto1 = PizzaDto.builder().id(pizza1.getId()).name(pizza1.getName().getDatabaseValue()).cost(pizza1.getCost())
                                                                   .ingredients(ingredientDtos).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName()).cost(pizza2.getCost())
+        PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName().getDatabaseValue()).cost(pizza2.getCost())
                                                                   .ingredients(new HashSet<>()).build();
         // When
         List<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(Arrays.asList(pizza1, pizza2));
@@ -235,7 +237,7 @@ public class PizzaConverterTest {
         assertNotNull(pizza);
         assertNotNull(pizzaDto);
         assertEquals(pizza.getId(), pizzaDto.getId());
-        assertEquals(pizza.getName(), pizzaDto.getName());
+        assertEquals(pizza.getName().getDatabaseValue(), pizzaDto.getName());
         assertEquals(pizza.getCost(), pizzaDto.getCost());
     }
 

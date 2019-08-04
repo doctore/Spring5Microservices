@@ -1,6 +1,7 @@
 package com.pizza.repository;
 
 import com.pizza.configuration.Constants;
+import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.model.QPizza;
@@ -105,7 +106,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      *         {@link Optional#empty()} otherwise.
      */
     @EntityGraph(attributePaths = "ingredients")
-    Optional<Pizza> findWithIngredientsByName(@Nullable String name);
+    Optional<Pizza> findWithIngredientsByName(@Nullable PizzaEnum name);
 
 
     /**
@@ -117,7 +118,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      * @return {@link Optional} with the {@link Pizza} which name matches with the given one.
      *         {@link Optional#empty()} otherwise.
      */
-    default Optional<Pizza> findByName(@Nullable String name) {
+    default Optional<Pizza> findByName(@Nullable PizzaEnum name) {
         return Optional.ofNullable(name)
                        .flatMap(n -> findOne(QPizza.pizza.name.eq(n)));
     }
