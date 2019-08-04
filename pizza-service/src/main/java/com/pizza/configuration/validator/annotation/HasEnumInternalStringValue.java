@@ -34,7 +34,7 @@ public @interface HasEnumInternalStringValue {
 	/**
 	 * @return {@link Class} of {@link Enum} used to check the value
 	 */
-	Class<? extends Enum<? extends IEnumInDatabase>> enumClass();
+	Class<? extends Enum<? extends IEnumInDatabase<String>>> enumClass();
 	
 	/**
 	 * @return {@code true} if {@code null} is accepted as a valid value, {@code false} otherwise. 

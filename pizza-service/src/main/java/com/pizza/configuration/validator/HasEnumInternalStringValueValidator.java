@@ -22,7 +22,7 @@ public class HasEnumInternalStringValueValidator implements ConstraintValidator<
 	@Override
     public void initialize(final HasEnumInternalStringValue hasInternalStringValue) {
 		enumNames = Arrays.stream(hasInternalStringValue.enumClass().getEnumConstants())
-				          .map(e -> ((IEnumInDatabase)e).getDatabaseValue())
+				          .map(e -> ((IEnumInDatabase<String>)e).getDatabaseValue())
 				          .collect(Collectors.toList());
 		
 		isNullAccepted = hasInternalStringValue.isNullAccepted();

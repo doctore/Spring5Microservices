@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Allowed types of {@link Pizza}.
  */
-public enum PizzaEnum implements IEnumInDatabase {
+public enum PizzaEnum implements IEnumInDatabase<String> {
     MARGUERITA("Margherita"),
     MARINARA("Marinara"),
     CARBONARA("Carbonara"),

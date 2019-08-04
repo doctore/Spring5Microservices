@@ -24,7 +24,7 @@ public class PizzaDto {
 
     @NotNull
     @Size(min=1, max=64)
-    @HasEnumInternalStringValue(enumClass= PizzaEnum.class)
+    @HasEnumInternalStringValue(enumClass=PizzaEnum.class)
     private String name;
 
     @NotNull
