@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,31 +38,31 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         String authToken = authentication.getCredentials().toString();
-        UsernameAuthoritiesDto authInformation = getAuthenticationInformation(authenticationConfiguration.getAuthenticationInformation(),
-                                                                              authToken);
-
-        return null != authInformation ? Mono.just(getFromUsernameAuthoritiesDto(authInformation)) : Mono.empty();
+        Optional<UsernameAuthoritiesDto> authInformation = getAuthenticationInformation(authenticationConfiguration.getAuthenticationInformation(),
+                                                                                        authToken);
+        return Mono.justOrEmpty(authInformation.map(au -> getFromUsernameAuthoritiesDto(au))
+                                               .orElse(null));
     }
 
 
     /**
-     * Using the given token gets the authentication information related with the logged user
+     * Using the given token gets the authentication information related with the logged user.
      *
      * @param authenticationInformationWebService
      *    Web service used to get authentication information
      * @param token
      *    Token (included Http authentication scheme)
      *
-     * @return {@link UsernameAuthoritiesDto}
+     * @return {@link Optional} of {@link UsernameAuthoritiesDto}
      */
-    private UsernameAuthoritiesDto getAuthenticationInformation(String authenticationInformationWebService, String token) {
+    private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(String authenticationInformationWebService, String token) {
         try {
             ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.getForEntity(authenticationInformationWebService,
-                                                                                    UsernameAuthoritiesDto.class, token);
-            return restResponse.getBody();
+                                                                                            UsernameAuthoritiesDto.class, token);
+            return Optional.of(restResponse.getBody());
         } catch(Exception ex) {
             LOGGER.error("There was an error trying to validate the authentication token", ex);
-            return null;
+            return Optional.empty();
         }
     }
 
