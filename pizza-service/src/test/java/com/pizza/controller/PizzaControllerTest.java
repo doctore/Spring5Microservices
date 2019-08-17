@@ -26,8 +26,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -84,7 +87,9 @@ public class PizzaControllerTest {
     public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().name("Not existing").cost(7D).ingredients(new HashSet<>()).build();
-
+        String validPizzaNames = Arrays.stream(PizzaEnum.values())
+                                       .map(PizzaEnum::getDatabaseValue)
+                                       .collect(Collectors.joining(", "));
         // When/Then
         webTestClient.post()
                      .uri(RestRoutes.PIZZA.ROOT)
@@ -92,7 +97,8 @@ public class PizzaControllerTest {
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: create.pizzaDto.name: must be one of the values included in the enum");
+                     .isEqualTo("The following constraints have failed: create.pizzaDto.name: must be one of the values "
+                              + "included in [" + validPizzaNames + "]");
     }
 
 

@@ -25,7 +25,7 @@ import javax.validation.Payload;
 @Constraint(validatedBy = HasEnumInternalStringValueValidator.class)
 public @interface HasEnumInternalStringValue {
 	
-	String message() default "must be one of the values included in the enum";
+	String message() default "must be one of the values included in {values}";
 	
 	Class<?>[] groups() default {};
 	
