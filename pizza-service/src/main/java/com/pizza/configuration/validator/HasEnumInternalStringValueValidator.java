@@ -35,12 +35,8 @@ public class HasEnumInternalStringValueValidator implements ConstraintValidator<
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
-		boolean isValid;
-		if (null == value)
-			isValid = isNullAccepted;
-		else
-			isValid = enumValidValues.contains(value);
-
+		boolean isValid = null == value ? isNullAccepted
+				                        : enumValidValues.contains(value);
 		if (!isValid) {
 			HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
 			hibernateContext.disableDefaultConstraintViolation();
