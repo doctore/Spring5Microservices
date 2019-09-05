@@ -53,7 +53,7 @@ public class PizzaService {
                            return pe.isPresent() ? pe.get() : null;
                        })
                        .flatMap(pizzaRepository::findWithIngredientsByName)
-                       .flatMap(pizzaConverter::fromEntityToOptionalDto);
+                       .flatMap(pizzaConverter::fromModelToOptionalDto);
     }
 
 
@@ -73,9 +73,9 @@ public class PizzaService {
         Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
                                                    pageUtil.buildPageRequest(page,size,sort));
         return Optional.ofNullable(pizzaPage)
-                       .map(p -> new PageImpl((List)pizzaConverter.fromEntitiesToDtos(p.getContent())
-                                              ,pizzaPage.getPageable()
-                                              ,pizzaPage.getTotalElements()))
+                       .map(p -> new PageImpl(pizzaConverter.fromModelsToDtos(p.getContent())
+                                             ,pizzaPage.getPageable()
+                                             ,pizzaPage.getTotalElements()))
                        .orElse(new PageImpl<PizzaDto>(new ArrayList()));
     }
 
@@ -90,14 +90,14 @@ public class PizzaService {
      */
     public Optional<PizzaDto> save(PizzaDto pizzaDto) {
         return Optional.ofNullable(pizzaDto)
-                       .flatMap(pizzaConverter::fromDtoToOptionalEntity)
+                       .flatMap(pizzaConverter::fromDtoToOptionalModel)
                        .map(p -> {
                            if (null != p.getIngredients())
                                ingredientRepository.saveAll(p.getIngredients());
 
                            return pizzaRepository.save(p);
                        })
-                       .flatMap(pizzaConverter::fromEntityToOptionalDto);
+                       .flatMap(pizzaConverter::fromModelToOptionalDto);
     }
 
 }

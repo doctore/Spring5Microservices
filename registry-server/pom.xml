@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.registryserver</groupId>
     <artifactId>registry-server</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>registry-server</name>
     <description>Registry server with Eureka for Spring 5 with microservices</description>
 

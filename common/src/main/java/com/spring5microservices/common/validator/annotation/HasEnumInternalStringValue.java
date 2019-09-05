@@ -1,19 +1,18 @@
-package com.pizza.configuration.validator.annotation;
+package com.spring5microservices.common.validator.annotation;
 
-import com.pizza.configuration.validator.HasEnumInternalStringValueValidator;
-import com.pizza.enums.IEnumInDatabase;
+import com.spring5microservices.common.interfaces.IEnumInDatabase;
+import com.spring5microservices.common.validator.HasEnumInternalStringValueValidator;
+
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import javax.validation.Constraint;
-import javax.validation.Payload;
 
 /**
  *    The annotated element must be included in an internal {@link String} property of the given accepted

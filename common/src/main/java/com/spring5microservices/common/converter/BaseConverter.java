@@ -1,6 +1,5 @@
-package com.order.util.converter;
+package com.spring5microservices.common.converter;
 
-import com.order.model.IModel;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.NullValueMappingStrategy;
 
@@ -16,7 +15,7 @@ import java.util.Optional;
  * @param <D>
  *    Type of the Dto to manage
  */
-public interface BaseConverter<M extends IModel, D> {
+public interface BaseConverter<M, D> {
 
     /**
      * Create a new model which properties match with the given dto.
@@ -37,7 +36,7 @@ public interface BaseConverter<M extends IModel, D> {
      * @return {@link Optional} of the equivalent model if dto is not null,
      *         {@link Optional#empty()} otherwise.
      */
-    default Optional<M> fromDtoToOptionalModel(D dto) {
+    default Optional<M> fromDtoToOptionalModel(final D dto) {
         return Optional.ofNullable(this.fromDtoToModel(dto));
     }
 
@@ -46,12 +45,12 @@ public interface BaseConverter<M extends IModel, D> {
      * {@link Collection} of dtos.
      *
      * @param dtos
-     *    {@link Collection} of dtos with the source informacion
+     *    {@link Collection} of dtos with the source information
      *
      * @return {@link List} of equivalent models
      */
     @IterableMapping(nullValueMappingStrategy= NullValueMappingStrategy.RETURN_DEFAULT)
-    List<M> fromDtosToModels(Collection<D> dtos);
+    List<M> fromDtosToModels(final Collection<D> dtos);
 
     /**
      * Create a new dto which properties match with the given model.
@@ -61,7 +60,7 @@ public interface BaseConverter<M extends IModel, D> {
      *
      * @return equivalent dto
      */
-    D fromModelToDto(M model);
+    D fromModelToDto(final M model);
 
     /**
      * Create an {@link Optional} with a new dto which properties match with the given model.
@@ -72,7 +71,7 @@ public interface BaseConverter<M extends IModel, D> {
      * @return {@link Optional} of the equivalent dto if model is not null,
      *         {@link Optional#empty()} otherwise.
      */
-    default Optional<D> fromModelToOptionalDto(M model) {
+    default Optional<D> fromModelToOptionalDto(final M model) {
         return Optional.ofNullable(this.fromModelToDto(model));
     }
 
@@ -86,6 +85,6 @@ public interface BaseConverter<M extends IModel, D> {
      * @return {@link List} of equivalent dtos
      */
     @IterableMapping(nullValueMappingStrategy=NullValueMappingStrategy.RETURN_DEFAULT)
-    List<D> fromModelsToDtos(Collection<M> models);
+    List<D> fromModelsToDtos(final Collection<M> models);
 
 }

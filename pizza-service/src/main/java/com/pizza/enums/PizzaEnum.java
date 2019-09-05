@@ -1,6 +1,7 @@
 package com.pizza.enums;
 
 import com.pizza.model.Pizza;
+import com.spring5microservices.common.interfaces.IEnumInDatabase;
 
 import java.util.Arrays;
 import java.util.Optional;

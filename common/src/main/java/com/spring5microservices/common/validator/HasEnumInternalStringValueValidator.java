@@ -1,15 +1,14 @@
-package com.pizza.configuration.validator;
+package com.spring5microservices.common.validator;
 
-import com.pizza.configuration.validator.annotation.HasEnumInternalStringValue;
-import com.pizza.enums.IEnumInDatabase;
+import com.spring5microservices.common.interfaces.IEnumInDatabase;
+import com.spring5microservices.common.validator.annotation.HasEnumInternalStringValue;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *    Validates if the given {@link String} matches with one of the internal {@link String} property belonging to the

@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.authenticationservice</groupId>
     <artifactId>authentication-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>authentication-service</name>
     <description>Authentication service related with orders</description>
 

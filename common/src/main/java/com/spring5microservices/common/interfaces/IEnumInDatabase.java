@@ -1,4 +1,4 @@
-package com.pizza.enums;
+package com.spring5microservices.common.interfaces;
 
 /**
  * Used in the entitie's properties mapped as {@link Enum}s in database.

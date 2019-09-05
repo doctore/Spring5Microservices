@@ -50,7 +50,7 @@ public class PizzaConverterTest {
     @Test
     public void fromDtoToEntity_whenGivenDtoIsNull_thenNullIsReturned() {
         // When
-        Pizza pizza = pizzaConverter.fromDtoToEntity(null);
+        Pizza pizza = pizzaConverter.fromDtoToModel(null);
 
         // Then
         assertNull(pizza);
@@ -63,7 +63,7 @@ public class PizzaConverterTest {
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
         // When
-        Pizza pizza = pizzaConverter.fromDtoToEntity(pizzaDto);
+        Pizza pizza = pizzaConverter.fromDtoToModel(pizzaDto);
 
         // Then
         checkProperties(pizza, pizzaDto);
@@ -74,7 +74,7 @@ public class PizzaConverterTest {
     @Test
     public void fromDtoToOptionalEntity_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
         // When
-        Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalEntity(null);
+        Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalModel(null);
 
         // Then
         assertNotNull(optionalPizza);
@@ -88,7 +88,7 @@ public class PizzaConverterTest {
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
         // When
-        Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalEntity(pizzaDto);
+        Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalModel(pizzaDto);
 
         // Then
         assertNotNull(optionalPizza);
@@ -101,7 +101,7 @@ public class PizzaConverterTest {
     @Test
     public void fromDtosToEntities_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        List<Pizza> pizzas = pizzaConverter.fromDtosToEntities(null);
+        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(null);
 
         // Then
         assertNotNull(pizzas);
@@ -112,7 +112,7 @@ public class PizzaConverterTest {
     @Test
     public void fromDtosToEntities_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        List<Pizza> pizzas = pizzaConverter.fromDtosToEntities(new ArrayList<>());
+        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(new ArrayList<>());
 
         // Then
         assertNotNull(pizzas);
@@ -131,7 +131,7 @@ public class PizzaConverterTest {
         Pizza pizza2 = Pizza.builder().id(pizzaDto2.getId()).name(PizzaEnum.getFromDatabaseValue(pizzaDto2.getName()).get())
                                       .ingredients(ingredients).build();
         // When
-        List<Pizza> pizzas = pizzaConverter.fromDtosToEntities(Arrays.asList(pizzaDto1, pizzaDto2));
+        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(Arrays.asList(pizzaDto1, pizzaDto2));
 
         // Then
         assertNotNull(pizzas);
@@ -143,7 +143,7 @@ public class PizzaConverterTest {
     @Test
     public void fromEntityToDto_whenGivenEntityIsNull_thenNullIsReturned() {
         // When
-        PizzaDto pizzaDto = pizzaConverter.fromEntityToDto(null);
+        PizzaDto pizzaDto = pizzaConverter.fromModelToDto(null);
 
         // Then
         assertNull(pizzaDto);
@@ -156,7 +156,7 @@ public class PizzaConverterTest {
         Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
 
         // When
-        PizzaDto pizzaDto = pizzaConverter.fromEntityToDto(pizza);
+        PizzaDto pizzaDto = pizzaConverter.fromModelToDto(pizza);
 
         // Then
         checkProperties(pizza, pizzaDto);
@@ -167,7 +167,7 @@ public class PizzaConverterTest {
     @Test
     public void fromEntityToOptionalDto_whenGivenEntityIsNull_thenEmptyOptionalIsReturned() {
         // When
-        Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromEntityToOptionalDto(null);
+        Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromModelToOptionalDto(null);
 
         // Then
         assertNotNull(optionalPizzaDto);
@@ -181,7 +181,7 @@ public class PizzaConverterTest {
         Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
 
         // When
-        Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromEntityToOptionalDto(pizza);
+        Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromModelToOptionalDto(pizza);
 
         // Then
         assertNotNull(optionalPizzaDto);
@@ -194,7 +194,7 @@ public class PizzaConverterTest {
     @Test
     public void fromEntitiesToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
-        List<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(null);
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(null);
 
         // Then
         assertNotNull(pizzaDtos);
@@ -205,7 +205,7 @@ public class PizzaConverterTest {
     @Test
     public void fromEntitiesToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
-        List<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(new ArrayList<>());
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(new ArrayList<>());
 
         // Then
         assertNotNull(pizzaDtos);
@@ -224,7 +224,7 @@ public class PizzaConverterTest {
         PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName().getDatabaseValue()).cost(pizza2.getCost())
                                                                   .ingredients(new HashSet<>()).build();
         // When
-        List<PizzaDto> pizzaDtos = pizzaConverter.fromEntitiesToDtos(Arrays.asList(pizza1, pizza2));
+        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(Arrays.asList(pizza1, pizza2));
 
         // Then
         assertNotNull(pizzaDtos);

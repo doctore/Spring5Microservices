@@ -2,6 +2,7 @@ package com.pizza.util.converter;
 
 import com.pizza.dto.IngredientDto;
 import com.pizza.model.Ingredient;
+import com.spring5microservices.common.converter.BaseConverter;
 import org.mapstruct.Mapper;
 
 /**

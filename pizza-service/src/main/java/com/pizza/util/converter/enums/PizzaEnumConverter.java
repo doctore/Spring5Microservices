@@ -1,6 +1,7 @@
 package com.pizza.util.converter.enums;
 
 import com.pizza.enums.PizzaEnum;
+import com.spring5microservices.common.converter.enums.BaseEnumConverter;
 import org.mapstruct.Mapper;
 
 import java.util.Optional;

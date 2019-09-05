@@ -67,7 +67,7 @@ public class PizzaServiceTest {
 
         // Then
         assertFalse(pizzaDto.isPresent());
-        verify(mockPizzaConverter, times(0)).fromEntityToOptionalDto(any());
+        verify(mockPizzaConverter, times(0)).fromModelToOptionalDto(any());
         verify(mockPizzaRepository, times(0)).findByName(any());
         verify(mockPizzaRepository, times(0)).findWithIngredientsByName(any());
     }
@@ -84,7 +84,7 @@ public class PizzaServiceTest {
 
         // Then
         assertFalse(pizzaDto.isPresent());
-        verify(mockPizzaConverter, times(0)).fromEntityToOptionalDto(any());
+        verify(mockPizzaConverter, times(0)).fromModelToOptionalDto(any());
         verify(mockPizzaRepository, times(1)).findWithIngredientsByName(pizza);
     }
 
@@ -97,14 +97,14 @@ public class PizzaServiceTest {
 
         // When
         when(mockPizzaRepository.findWithIngredientsByName(carbonara.getName())).thenReturn(Optional.of(carbonara));
-        when(mockPizzaConverter.fromEntityToOptionalDto(carbonara)).thenReturn(Optional.of(carbonaraDto));
+        when(mockPizzaConverter.fromModelToOptionalDto(carbonara)).thenReturn(Optional.of(carbonaraDto));
         Optional<PizzaDto> pizzaDto = pizzaService.findByName(carbonara.getName().getDatabaseValue());
 
         // Then
         assertTrue(pizzaDto.isPresent());
         assertThat(pizzaDto.get(), samePropertyValuesAs(carbonaraDto));
 
-        verify(mockPizzaConverter, times(1)).fromEntityToOptionalDto(carbonara);
+        verify(mockPizzaConverter, times(1)).fromModelToOptionalDto(carbonara);
         verify(mockPizzaRepository, times(1)).findWithIngredientsByName(carbonara.getName());
     }
 
@@ -119,7 +119,7 @@ public class PizzaServiceTest {
         assertNotNull(pizzaDtoPage);
         assertEquals(0, pizzaDtoPage.getTotalElements());
         assertTrue(pizzaDtoPage.getContent().isEmpty());
-        verify(mockPizzaConverter, times(0)).fromEntitiesToDtos(any());
+        verify(mockPizzaConverter, times(0)).fromModelsToDtos(any());
     }
 
 
@@ -133,7 +133,7 @@ public class PizzaServiceTest {
         assertNotNull(pizzaDtoPage);
         assertEquals(0, pizzaDtoPage.getTotalElements());
         assertTrue(pizzaDtoPage.getContent().isEmpty());
-        verify(mockPizzaConverter, times(1)).fromEntitiesToDtos(new ArrayList<>());
+        verify(mockPizzaConverter, times(1)).fromModelsToDtos(new ArrayList<>());
     }
 
 
@@ -151,7 +151,7 @@ public class PizzaServiceTest {
         Sort sort = Sort.by(Sort.Direction.DESC, "name");
 
         // When
-        when(mockPizzaConverter.fromEntitiesToDtos(Arrays.asList(carbonara, hawaiian))).thenReturn(Arrays.asList(carbonaraDto, hawaiianDto));
+        when(mockPizzaConverter.fromModelsToDtos(Arrays.asList(carbonara, hawaiian))).thenReturn(Arrays.asList(carbonaraDto, hawaiianDto));
         when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(any())).thenReturn(pizzaPage);
         Page<PizzaDto> pizzaDtoPage = pizzaService.findPageWithIngredients(0, size, sort);
 
@@ -159,7 +159,7 @@ public class PizzaServiceTest {
         assertNotNull(pizzaDtoPage);
         assertEquals(size, pizzaDtoPage.getTotalElements());
         assertThat(pizzaDtoPage.getContent(), contains(carbonaraDto, hawaiianDto));
-        verify(mockPizzaConverter, times(1)).fromEntitiesToDtos(Arrays.asList(carbonara, hawaiian));
+        verify(mockPizzaConverter, times(1)).fromModelsToDtos(Arrays.asList(carbonara, hawaiian));
     }
 
 
@@ -171,7 +171,7 @@ public class PizzaServiceTest {
         // Then
         assertFalse(optionalPizzaDto.isPresent());
         verify(mockIngredientRepository, times(0)).saveAll(any());
-        verify(mockPizzaConverter, times(0)).fromEntityToOptionalDto(any());
+        verify(mockPizzaConverter, times(0)).fromModelToOptionalDto(any());
         verify(mockPizzaRepository, times(0)).save(any());
     }
 
@@ -192,8 +192,8 @@ public class PizzaServiceTest {
 
         // When
         when(mockIngredientRepository.saveAll(any(Collection.class))).thenReturn(new ArrayList(ingredients));
-        when(mockPizzaConverter.fromDtoToOptionalEntity(any(PizzaDto.class))).thenReturn(Optional.of(pizza));
-        when(mockPizzaConverter.fromEntityToOptionalDto(any(Pizza.class))).thenReturn(Optional.of(pizzaDto));
+        when(mockPizzaConverter.fromDtoToOptionalModel(any(PizzaDto.class))).thenReturn(Optional.of(pizza));
+        when(mockPizzaConverter.fromModelToOptionalDto(any(Pizza.class))).thenReturn(Optional.of(pizzaDto));
         when(mockPizzaRepository.save(any(Pizza.class))).thenReturn(pizza);
         Optional<PizzaDto> optionalPizzaDto = pizzaService.save(pizzaDto);
 
@@ -203,8 +203,8 @@ public class PizzaServiceTest {
         assertThat(pizzaDto.getIngredients(), containsInAnyOrder(optionalPizzaDto.get().getIngredients().toArray()));
 
         verify(mockIngredientRepository, times(1)).saveAll(any());
-        verify(mockPizzaConverter, times(1)).fromDtoToOptionalEntity(any());
-        verify(mockPizzaConverter, times(1)).fromEntityToOptionalDto(any());
+        verify(mockPizzaConverter, times(1)).fromDtoToOptionalModel(any());
+        verify(mockPizzaConverter, times(1)).fromModelToOptionalDto(any());
         verify(mockPizzaRepository, times(1)).save(any());
     }
 
@@ -225,8 +225,8 @@ public class PizzaServiceTest {
                                               .cost(pizza.getCost()).ingredients(ingredientDtos).build();
         // When
         when(mockIngredientRepository.saveAll(any(Collection.class))).thenReturn(new ArrayList(ingredients));
-        when(mockPizzaConverter.fromDtoToOptionalEntity(any(PizzaDto.class))).thenReturn(Optional.of(pizza));
-        when(mockPizzaConverter.fromEntityToOptionalDto(any(Pizza.class))).thenReturn(Optional.of(pizzaDto));
+        when(mockPizzaConverter.fromDtoToOptionalModel(any(PizzaDto.class))).thenReturn(Optional.of(pizza));
+        when(mockPizzaConverter.fromModelToOptionalDto(any(Pizza.class))).thenReturn(Optional.of(pizzaDto));
         when(mockPizzaRepository.save(any(Pizza.class))).thenReturn(pizza);
         Optional<PizzaDto> optionalPizzaDto = pizzaService.save(pizzaDto);
 
@@ -236,8 +236,8 @@ public class PizzaServiceTest {
         assertThat(pizzaDto.getIngredients(), containsInAnyOrder(optionalPizzaDto.get().getIngredients().toArray()));
 
         verify(mockIngredientRepository, times(1)).saveAll(any());
-        verify(mockPizzaConverter, times(1)).fromDtoToOptionalEntity(any());
-        verify(mockPizzaConverter, times(1)).fromEntityToOptionalDto(any());
+        verify(mockPizzaConverter, times(1)).fromDtoToOptionalModel(any());
+        verify(mockPizzaConverter, times(1)).fromModelToOptionalDto(any());
         verify(mockPizzaRepository, times(1)).save(any());
     }
 

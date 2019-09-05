@@ -1,4 +1,4 @@
-package com.pizza.util.converter.enums;
+package com.spring5microservices.common.converter.enums;
 
 /**
  * Parent interface of the all converters from Enum to "equivalent" {@code value} and vice versa.

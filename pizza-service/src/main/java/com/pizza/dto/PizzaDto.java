@@ -1,7 +1,7 @@
 package com.pizza.dto;
 
-import com.pizza.configuration.validator.annotation.HasEnumInternalStringValue;
 import com.pizza.enums.PizzaEnum;
+import com.spring5microservices.common.validator.annotation.HasEnumInternalStringValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
