@@ -143,7 +143,7 @@ On the other hand, there are other "important folders":
 
 ### common
 
-Maven project used to include common code used in several microservices.
+Maven project that includes common code used in several microservices.
 
 ### sql
 
