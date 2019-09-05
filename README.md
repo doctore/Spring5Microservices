@@ -8,6 +8,7 @@
     - [authorization-service](#authorization-service)
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
+    - [common](#common)
     - [sql](#sql)
 - [Previous steps](#previous-steps)
 - [How to use it?](#how-to-use-it)
@@ -139,6 +140,10 @@ On the other hand, there are other "important folders":
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from models to dtos and vice versa.
 <br><br>
+
+### common
+
+Maven project used to include common code used in several microservices.
 
 ### sql
 
