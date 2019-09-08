@@ -1,7 +1,6 @@
 package com.pizza.configuration.rest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -20,11 +19,9 @@ import java.util.stream.Collectors;
  * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
  */
 @Component
+@Log4j2
 @Order(-2)
 public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
-
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
@@ -54,7 +51,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildListOfValidationErrorsResponse("Error in the given parameters: ", exchange, exception,
                                                    HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -71,7 +68,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> nullPointerException(ServerWebExchange exchange, NullPointerException exception) {
-        LOGGER.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        log.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
         return buildPlainTextResponse("Trying to access to a non existing property", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -88,7 +85,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
-        LOGGER.error("There was a ConstraintViolationException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        log.error("There was a ConstraintViolationException. " + getErrorMessageUsingHttpRequest(exchange), exception);
         return buildPlainTextResponse("The following constraints have failed: " + exception.getMessage(),
                                       exchange, HttpStatus.BAD_REQUEST);
     }
@@ -105,7 +102,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildPlainTextResponse("Internal error in the application", exchange,
                                       HttpStatus.INTERNAL_SERVER_ERROR);
     }

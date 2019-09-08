@@ -5,8 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -19,9 +18,8 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Component
+@Log4j2
 public class JwtUtil {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JwtUtil.class);
 
     /**
      *    Using the given {@link UserDetails} information generates a valid JWT token encrypted with the selected
@@ -81,7 +79,7 @@ public class JwtUtil {
                     .orElse(false);
 
         } catch (JwtException ex) {
-            LOGGER.error(String.format("There was an error checking if the token %s is valid", token), ex);
+            log.error(String.format("There was an error checking if the token %s is valid", token), ex);
             return false;
         }
     }
@@ -103,7 +101,7 @@ public class JwtUtil {
         try {
             return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getSubject));
         } catch (JwtException ex) {
-            LOGGER.error(String.format("There was an error getting the username of token %s", token), ex);
+            log.error(String.format("There was an error getting the username of token %s", token), ex);
             return Optional.empty();
         }
     }
@@ -125,7 +123,7 @@ public class JwtUtil {
         try {
             return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
         } catch (JwtException ex) {
-            LOGGER.error(String.format("There was an error getting the expiration date of token %s", token), ex);
+            log.error(String.format("There was an error getting the expiration date of token %s", token), ex);
             return Optional.empty();
         }
     }
@@ -148,7 +146,7 @@ public class JwtUtil {
             return getClaimFromToken(token, jwtSecretKey,
                     (claims) -> new HashSet<>((Collection)claims.computeIfAbsent(Constants.JWT.ROLES_KEY, k -> new HashSet<>())));
         } catch (JwtException ex) {
-            LOGGER.error(String.format("There was an error getting the roles of token %s", token), ex);
+            log.error(String.format("There was an error getting the roles of token %s", token), ex);
             return new HashSet<>();
         }
     }

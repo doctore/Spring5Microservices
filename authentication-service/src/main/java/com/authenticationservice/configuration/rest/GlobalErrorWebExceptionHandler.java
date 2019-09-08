@@ -1,8 +1,7 @@
 package com.authenticationservice.configuration.rest;
 
 import io.jsonwebtoken.JwtException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,11 +23,9 @@ import java.util.stream.Collectors;
  * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
  */
 @ControllerAdvice
+@Log4j2
 @Order(-2)
 public class GlobalErrorWebExceptionHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
-
 
     /**
      * Method used to manage when a Rest request throws a {@link ConstraintViolationException}
@@ -42,7 +39,7 @@ public class GlobalErrorWebExceptionHandler {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<String> constraintViolationException(ConstraintViolationException exception, WebRequest request) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("The following constraints have failed: " + exception.getMessage(),
                                       HttpStatus.BAD_REQUEST);
     }
@@ -60,7 +57,7 @@ public class GlobalErrorWebExceptionHandler {
      */
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<String> jwtException(JwtException exception, WebRequest request) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("There was an error related with JWT token", HttpStatus.BAD_REQUEST);
     }
 
@@ -77,7 +74,7 @@ public class GlobalErrorWebExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> methodArgumentNotValidException(MethodArgumentNotValidException exception, WebRequest request) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildListOfValidationErrorsResponse("Error in the given parameters: ", exception,
                                                    HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -95,7 +92,7 @@ public class GlobalErrorWebExceptionHandler {
      */
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<String> nullPointerException(NullPointerException exception, WebRequest request) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("Trying to access to a non existing property", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -112,7 +109,7 @@ public class GlobalErrorWebExceptionHandler {
      */
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<String> usernameNotFoundException(UsernameNotFoundException exception, WebRequest request) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("Invalid credentials given", HttpStatus.UNAUTHORIZED);
     }
 
@@ -129,7 +126,7 @@ public class GlobalErrorWebExceptionHandler {
      */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<String> throwable(Throwable exception, WebRequest request) {
-        LOGGER.error(getErrorMessageUsingHttpRequest(request), exception);
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("Internal error in the application", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

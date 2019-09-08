@@ -1,8 +1,7 @@
 package com.pizza.configuration.security;
 
 import com.pizza.dto.UsernameAuthoritiesDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -24,9 +23,8 @@ import java.util.stream.Collectors;
  * user has the correct {@link GrantedAuthority}.
  */
 @Component
+@Log4j2
 public class AuthenticationManager implements ReactiveAuthenticationManager {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationManager.class);
 
     @Autowired
     private AuthenticationConfiguration authenticationConfiguration;
@@ -61,7 +59,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
                                                                                             UsernameAuthoritiesDto.class, token);
             return Optional.of(restResponse.getBody());
         } catch(Exception ex) {
-            LOGGER.error("There was an error trying to validate the authentication token", ex);
+            log.error("There was an error trying to validate the authentication token", ex);
             return Optional.empty();
         }
     }
