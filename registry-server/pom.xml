@@ -5,8 +5,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.2.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>2.1.8.RELEASE</version>
+        <relativePath/>
     </parent>
     <groupId>com.registryserver</groupId>
     <artifactId>registry-server</artifactId>
@@ -17,7 +17,7 @@
     <properties>
         <java.version>1.8</java.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
-        <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
+        <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
     </properties>
 
     <dependencies>

@@ -24,6 +24,12 @@ security:
       expirationTimeInMilliseconds: 3600000
       secretKey: "mySecretKey"
 
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: onlyForTests
+
 #show sql statement
 #logging:
 #  level:
