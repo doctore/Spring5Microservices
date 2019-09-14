@@ -25,7 +25,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNull_thenNullIsReturned() {
+    public void fromDtoToModel_whenGivenDtoIsNull_thenNullIsReturned() {
         // When
         Ingredient ingredient = ingredientConverter.fromDtoToModel(null);
 
@@ -35,7 +35,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNotNull_thenEquivalentEntityIsReturned() {
+    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Garlic").build();
 
@@ -48,7 +48,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalEntity_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
+    public void fromDtoToOptionalModel_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
         // When
         Optional<Ingredient> optionalIngredient = ingredientConverter.fromDtoToOptionalModel(null);
 
@@ -59,7 +59,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalEntity_whenGivenDtoIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Garlic").build();
 
@@ -74,7 +74,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
+    public void fromDtosToModels_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
         List<Ingredient> ingredients = ingredientConverter.fromDtosToModels(null);
 
@@ -85,7 +85,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
+    public void fromDtosToModels_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
         List<Ingredient> ingredients = ingredientConverter.fromDtosToModels(new ArrayList<>());
 
@@ -96,7 +96,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
+    public void fromDtosToModels_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
         // Given
         IngredientDto ingredientDto1 = IngredientDto.builder().id(1).name("Garlic").build();
         IngredientDto ingredientDto2 = IngredientDto.builder().id(2).name("Cheese").build();
@@ -115,7 +115,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNull_thenNullIsReturned() {
+    public void fromModelToDto_whenGivenModelIsNull_thenNullIsReturned() {
         // When
         IngredientDto ingredientDto = ingredientConverter.fromModelToDto(null);
 
@@ -125,7 +125,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNotNull_thenEquivalentDtoIsReturned() {
+    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned() {
         // Given
         Ingredient ingredient = Ingredient.builder().id(1).name("Garlic").build();
 
@@ -138,7 +138,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntityToOptionalDto_whenGivenEntityIsNull_thenEmptyOptionalIsReturned() {
+    public void fromModelToOptionalDto_whenGivenModelIsNull_thenEmptyOptionalIsReturned() {
         // When
         Optional<IngredientDto> optionalIngredientDto = ingredientConverter.fromModelToOptionalDto(null);
 
@@ -149,7 +149,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntityToOptionalDto_whenGivenEntityIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         Ingredient ingredient = Ingredient.builder().id(1).name("Garlic").build();
 
@@ -164,7 +164,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
         List<IngredientDto> ingredientDtos = ingredientConverter.fromModelsToDtos(null);
 
@@ -175,7 +175,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
         List<IngredientDto> ingredientDtos = ingredientConverter.fromModelsToDtos(new ArrayList<>());
 
@@ -186,7 +186,7 @@ public class IngredientConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
         // Given
         Ingredient ingredient1 = Ingredient.builder().id(1).name("Garlic").build();
         Ingredient ingredient2 = Ingredient.builder().id(2).name("Cheese").build();

@@ -176,7 +176,7 @@ public class OrderLineConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
         OrderLineDto orderLineDto = OrderLineDto.builder().id(2).pizza(pizzaDto).cost(17D).amount((short)2).build();
@@ -350,7 +350,7 @@ public class OrderLineConverterTest {
 
 
     @Test
-    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         OrderLine orderLine = OrderLine.builder().id(1).orderId(2).amount((short)1).cost(11D).pizzaId((short)3).build();
 

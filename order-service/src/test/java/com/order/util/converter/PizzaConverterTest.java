@@ -59,7 +59,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50D).build();
 
@@ -149,7 +149,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         Pizza pizza = Pizza.builder().id((short)1).name("Hawaiian").cost(8D).build();
 

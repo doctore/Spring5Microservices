@@ -48,7 +48,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNull_thenNullIsReturned() {
+    public void fromDtoToModel_whenGivenDtoIsNull_thenNullIsReturned() {
         // When
         Pizza pizza = pizzaConverter.fromDtoToModel(null);
 
@@ -58,7 +58,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToEntity_whenGivenDtoIsNotNull_thenEquivalentEntityIsReturned() {
+    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
@@ -72,7 +72,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalEntity_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
+    public void fromDtoToOptionalModel_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
         // When
         Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalModel(null);
 
@@ -83,7 +83,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalEntity_whenGivenDtoIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
 
@@ -141,7 +141,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNull_thenNullIsReturned() {
+    public void fromModelToDto_whenGivenModelIsNull_thenNullIsReturned() {
         // When
         PizzaDto pizzaDto = pizzaConverter.fromModelToDto(null);
 
@@ -151,7 +151,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntityToDto_whenGivenEntityIsNotNull_thenEquivalentDtoIsReturned() {
+    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned() {
         // Given
         Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
 
@@ -165,7 +165,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntityToOptionalDto_whenGivenEntityIsNull_thenEmptyOptionalIsReturned() {
+    public void fromModelToOptionalDto_whenGivenModelIsNull_thenEmptyOptionalIsReturned() {
         // When
         Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromModelToOptionalDto(null);
 
@@ -176,7 +176,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntityToOptionalDto_whenGivenEntityIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
 
@@ -192,7 +192,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
         // When
         List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(null);
 
@@ -203,7 +203,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
         // When
         List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(new ArrayList<>());
 
@@ -214,7 +214,7 @@ public class PizzaConverterTest {
 
 
     @Test
-    public void fromEntitiesToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
+    public void fromModelsToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
         // Given
         Pizza pizza1 = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7.50D).ingredients(ingredients).build();
         Pizza pizza2 = Pizza.builder().id(2).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(new HashSet<>()).build();

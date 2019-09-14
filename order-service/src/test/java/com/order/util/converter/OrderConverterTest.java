@@ -62,7 +62,7 @@ public class OrderConverterTest {
 
 
     @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         OrderDto orderDto = OrderDto.builder().id(2).code("Order 2").created(new Date()).build();
 
@@ -153,7 +153,7 @@ public class OrderConverterTest {
 
 
     @Test
-    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentEntityIsReturned() {
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
         // Given
         Order order = Order.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime())).build();
 
