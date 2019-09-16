@@ -16,7 +16,6 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <jaxb-api.version>2.3.1</jaxb-api.version>
         <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
     </properties>
 
@@ -29,19 +28,8 @@
         <!-- Required if we are using JDK >= 9 to avoid:
                 java.lang.TypeNotPresentException: Type javax.xml.bind.JAXBContext not present -->
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>${jaxb-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>${jaxb-api.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>${jaxb-api.version}</version>
         </dependency>
         <!-- Test -->
         <dependency>
