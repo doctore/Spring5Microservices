@@ -71,10 +71,13 @@ public class OrderControllerTest {
     @Test
     @WithMockUser(authorities = {Constants.ROLE_USER})
     public void create_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // Given
+        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+
         // When/Then
         webTestClient.post()
                      .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .body(Mono.just(orderDto), OrderDto.class)
                      .exchange()
                      .expectStatus().isForbidden();
     }
@@ -93,7 +96,7 @@ public class OrderControllerTest {
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: create.orderDto.created: must not be null");
+                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
     }
 
 
@@ -264,10 +267,13 @@ public class OrderControllerTest {
     @Test
     @WithMockUser(authorities = {Constants.ROLE_USER})
     public void update_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // Given
+        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+
         // When/Then
         webTestClient.put()
                      .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(new OrderDto()), OrderDto.class)
+                     .body(Mono.just(orderDto), OrderDto.class)
                      .exchange()
                      .expectStatus().isForbidden();
     }
@@ -286,7 +292,7 @@ public class OrderControllerTest {
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: update.orderDto.created: must not be null");
+                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
     }
 
 
