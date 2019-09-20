@@ -219,9 +219,9 @@ public class PizzaConverterTest {
         Pizza pizza1 = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7.50D).ingredients(ingredients).build();
         Pizza pizza2 = Pizza.builder().id(2).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(new HashSet<>()).build();
 
-        PizzaDto pizzaDto1 = PizzaDto.builder().id(pizza1.getId()).name(pizza1.getName().getDatabaseValue()).cost(pizza1.getCost())
+        PizzaDto pizzaDto1 = PizzaDto.builder().id(pizza1.getId()).name(pizza1.getName().getInternalPropertyValue()).cost(pizza1.getCost())
                                                                   .ingredients(ingredientDtos).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName().getDatabaseValue()).cost(pizza2.getCost())
+        PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName().getInternalPropertyValue()).cost(pizza2.getCost())
                                                                   .ingredients(new HashSet<>()).build();
         // When
         List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(Arrays.asList(pizza1, pizza2));
@@ -237,7 +237,7 @@ public class PizzaConverterTest {
         assertNotNull(pizza);
         assertNotNull(pizzaDto);
         assertEquals(pizza.getId(), pizzaDto.getId());
-        assertEquals(pizza.getName().getDatabaseValue(), pizzaDto.getName());
+        assertEquals(pizza.getName().getInternalPropertyValue(), pizzaDto.getName());
         assertEquals(pizza.getCost(), pizzaDto.getCost());
     }
 

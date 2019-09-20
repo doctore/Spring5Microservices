@@ -80,7 +80,7 @@ public class PizzaServiceTest {
 
         // When
         when(mockPizzaRepository.findWithIngredientsByName(pizza)).thenReturn(Optional.empty());
-        Optional<PizzaDto> pizzaDto = pizzaService.findByName(pizza.getDatabaseValue());
+        Optional<PizzaDto> pizzaDto = pizzaService.findByName(pizza.getInternalPropertyValue());
 
         // Then
         assertFalse(pizzaDto.isPresent());
@@ -93,12 +93,12 @@ public class PizzaServiceTest {
     public void findByName_whenAPizzaIsReturnedByRepository_thenOptionalOfEquivalentPizzaDtoIsReturned() {
         // Given
         Pizza carbonara = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7.50D).build();
-        PizzaDto carbonaraDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7.50D).build();
+        PizzaDto carbonaraDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7.50D).build();
 
         // When
         when(mockPizzaRepository.findWithIngredientsByName(carbonara.getName())).thenReturn(Optional.of(carbonara));
         when(mockPizzaConverter.fromModelToOptionalDto(carbonara)).thenReturn(Optional.of(carbonaraDto));
-        Optional<PizzaDto> pizzaDto = pizzaService.findByName(carbonara.getName().getDatabaseValue());
+        Optional<PizzaDto> pizzaDto = pizzaService.findByName(carbonara.getName().getInternalPropertyValue());
 
         // Then
         assertTrue(pizzaDto.isPresent());
@@ -144,8 +144,8 @@ public class PizzaServiceTest {
         Pizza hawaiian = Pizza.builder().id(2).name(PizzaEnum.HAWAIIAN).cost(8D).build();
         Page<Pizza> pizzaPage = new PageImpl<>(Arrays.asList(carbonara, hawaiian));
 
-        PizzaDto carbonaraDto = PizzaDto.builder().id(carbonara.getId()).name(carbonara.getName().getDatabaseValue()).cost(carbonara.getCost()).build();
-        PizzaDto hawaiianDto = PizzaDto.builder().id(hawaiian.getId()).name(hawaiian.getName().getDatabaseValue()).cost(hawaiian.getCost()).build();
+        PizzaDto carbonaraDto = PizzaDto.builder().id(carbonara.getId()).name(carbonara.getName().getInternalPropertyValue()).cost(carbonara.getCost()).build();
+        PizzaDto hawaiianDto = PizzaDto.builder().id(hawaiian.getId()).name(hawaiian.getName().getInternalPropertyValue()).cost(hawaiian.getCost()).build();
 
         int size = 2;
         Sort sort = Sort.by(Sort.Direction.DESC, "name");
@@ -188,7 +188,7 @@ public class PizzaServiceTest {
         Set<IngredientDto> ingredientDtos = new LinkedHashSet<>(Arrays.asList(mozzarellaDto, oreganoDto));
 
         Pizza pizza = Pizza.builder().name(PizzaEnum.CARBONARA).cost(7D).ingredients(ingredients).build();
-        PizzaDto pizzaDto = PizzaDto.builder().name(pizza.getName().getDatabaseValue()).cost(pizza.getCost()).ingredients(ingredientDtos).build();
+        PizzaDto pizzaDto = PizzaDto.builder().name(pizza.getName().getInternalPropertyValue()).cost(pizza.getCost()).ingredients(ingredientDtos).build();
 
         // When
         when(mockIngredientRepository.saveAll(any(Collection.class))).thenReturn(new ArrayList(ingredients));
@@ -221,7 +221,7 @@ public class PizzaServiceTest {
         Set<IngredientDto> ingredientDtos = new LinkedHashSet<>(Arrays.asList(mozzarellaDto, oreganoDto));
 
         Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7D).ingredients(ingredients).build();
-        PizzaDto pizzaDto = PizzaDto.builder().id(pizza.getId()).name(pizza.getName().getDatabaseValue())
+        PizzaDto pizzaDto = PizzaDto.builder().id(pizza.getId()).name(pizza.getName().getInternalPropertyValue())
                                               .cost(pizza.getCost()).ingredients(ingredientDtos).build();
         // When
         when(mockIngredientRepository.saveAll(any(Collection.class))).thenReturn(new ArrayList(ingredients));

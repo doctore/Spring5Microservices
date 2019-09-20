@@ -26,10 +26,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -73,10 +71,13 @@ public class PizzaControllerTest {
     @Test
     @WithMockUser(authorities = {Constants.ROLE_USER})
     public void create_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // Given
+        PizzaDto pizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D).build();
+
         // When/Then
         webTestClient.post()
                      .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .body(Mono.just(pizzaDto), PizzaDto.class)
                      .exchange()
                      .expectStatus().isForbidden();
     }
@@ -88,7 +89,7 @@ public class PizzaControllerTest {
         // Given
         PizzaDto pizzaDto = PizzaDto.builder().name("Not existing").cost(7D).ingredients(new HashSet<>()).build();
         String validPizzaNames = Arrays.stream(PizzaEnum.values())
-                                       .map(PizzaEnum::getDatabaseValue)
+                                       .map(PizzaEnum::getInternalPropertyValue)
                                        .collect(Collectors.joining(", "));
         // When/Then
         webTestClient.post()
@@ -97,8 +98,8 @@ public class PizzaControllerTest {
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: create.pizzaDto.name: must be one of the values "
-                              + "included in [" + validPizzaNames + "]");
+                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'name' due to: "
+                              + "must be one of the values included in [" + validPizzaNames + "]]");
     }
 
 
@@ -106,7 +107,7 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+        PizzaDto pizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D)
                                               .ingredients(new HashSet<>()).build();
         // When
         when(mockPizzaService.save(any())).thenReturn(Optional.empty());
@@ -128,7 +129,7 @@ public class PizzaControllerTest {
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
 
-        PizzaDto beforePizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+        PizzaDto beforePizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(beforeIngredientDto))).build();
         PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName()).cost(beforePizzaDto.getCost())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();
@@ -216,7 +217,7 @@ public class PizzaControllerTest {
     public void findByName_whenTheNameExists_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Bacon").build();
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(ingredientDto))).build();
         // When
         when(mockPizzaService.findByName(anyString())).thenReturn(Optional.of(pizzaDto));
@@ -346,7 +347,7 @@ public class PizzaControllerTest {
         int size = 1;
 
         IngredientDto ingredientDto = IngredientDto.builder().id(1).name("Bacon").build();
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D)
                                               .ingredients(new HashSet<>(Arrays.asList(ingredientDto))).build();
         // When
         when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(Arrays.asList(pizzaDto)));
@@ -386,10 +387,13 @@ public class PizzaControllerTest {
     @Test
     @WithMockUser(authorities = {Constants.ROLE_USER})
     public void update_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
+        // Given
+        PizzaDto pizzaDto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D).build();
+
         // When/Then
         webTestClient.put()
                      .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                     .body(Mono.just(pizzaDto), PizzaDto.class)
                      .exchange()
                      .expectStatus().isForbidden();
     }
@@ -399,7 +403,7 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenGivenDtoDoesNotVerifyTheValidations_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue())
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getInternalPropertyValue())
                                               .ingredients(new HashSet<>()).build();
         // When/Then
         webTestClient.put()
@@ -408,7 +412,7 @@ public class PizzaControllerTest {
                      .exchange()
                      .expectStatus().isBadRequest()
                      .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: update.pizzaDto.cost: must not be null");
+                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null]");
     }
 
 
@@ -416,7 +420,7 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
         // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+        PizzaDto pizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D)
                                               .ingredients(new HashSet<>()).build();
         // When
         when(mockPizzaService.save(any())).thenReturn(Optional.empty());
@@ -438,7 +442,7 @@ public class PizzaControllerTest {
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();
 
-        PizzaDto beforePizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getDatabaseValue()).cost(7D)
+        PizzaDto beforePizzaDto = PizzaDto.builder().id(1).name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(7D)
                                                     .ingredients(new HashSet<>(Arrays.asList(beforeIngredientDto))).build();
         PizzaDto afterPizzaDto = PizzaDto.builder().id(1).name(beforePizzaDto.getName()).cost(beforePizzaDto.getCost())
                                                    .ingredients(new HashSet<>(Arrays.asList(afterIngredientDto))).build();

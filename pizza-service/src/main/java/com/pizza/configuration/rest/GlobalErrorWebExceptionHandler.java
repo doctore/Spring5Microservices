@@ -53,7 +53,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildListOfValidationErrorsResponse("Error in the given parameters: ", exchange, exception,
-                                                   HttpStatus.UNPROCESSABLE_ENTITY);
+                                                   null != exception.getStatus() ? exception.getStatus() : HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
 

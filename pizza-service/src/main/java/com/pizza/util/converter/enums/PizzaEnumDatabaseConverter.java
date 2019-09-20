@@ -17,7 +17,7 @@ public class PizzaEnumDatabaseConverter implements AttributeConverter<PizzaEnum,
     @Override
     public String convertToDatabaseColumn(PizzaEnum pizzaEnum) {
         return Optional.ofNullable(pizzaEnum)
-                       .map(PizzaEnum::getDatabaseValue)
+                       .map(PizzaEnum::getInternalPropertyValue)
                        .orElse(null);
     }
 

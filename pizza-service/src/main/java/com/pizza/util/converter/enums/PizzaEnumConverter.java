@@ -21,7 +21,7 @@ public class PizzaEnumConverter implements BaseEnumConverter<PizzaEnum, String> 
     @Override
     public String fromEnumToValue(PizzaEnum enumValue) {
         return Optional.ofNullable(enumValue)
-                       .map(PizzaEnum::getDatabaseValue)
+                       .map(PizzaEnum::getInternalPropertyValue)
                        .orElse(null);
     }
 }

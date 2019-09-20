@@ -1,7 +1,7 @@
 package com.pizza.enums;
 
 import com.pizza.model.Pizza;
-import com.spring5microservices.common.interfaces.IEnumInDatabase;
+import com.spring5microservices.common.interfaces.IEnumInternalPropertyValue;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Allowed types of {@link Pizza}.
  */
-public enum PizzaEnum implements IEnumInDatabase<String> {
+public enum PizzaEnum implements IEnumInternalPropertyValue<String> {
     MARGUERITA("Margherita"),
     MARINARA("Marinara"),
     CARBONARA("Carbonara"),
@@ -24,7 +24,7 @@ public enum PizzaEnum implements IEnumInDatabase<String> {
     }
 
     @Override
-    public String getDatabaseValue() {
+    public String getInternalPropertyValue() {
         return this.databaseValue;
     }
 

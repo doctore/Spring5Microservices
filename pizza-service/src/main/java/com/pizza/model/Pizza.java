@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
 import java.util.Objects;
 import java.util.Set;
 
@@ -37,7 +36,6 @@ public class Pizza {
     private Integer id;
 
     @NotNull
-    @Size(min=1, max=64)
     @Convert(converter=PizzaEnumDatabaseConverter.class)
     private PizzaEnum name;
 
