@@ -1,6 +1,6 @@
-package com.security.oauth.model;
+package com.security.jwt.model;
 
-import com.security.oauth.configuration.Constants;
+import com.security.jwt.configuration.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

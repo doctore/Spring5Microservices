@@ -82,15 +82,27 @@ create table eat.order_line(
 create schema security;
 
 create table security.oauth_client_details (
-  client_id                 varchar(256)    constraint oauth_client_details_pk primary key,
+  client_id                 varchar(128)    constraint oauth_client_details_pk primary key,
   resource_ids              varchar(256),
-  client_secret             varchar(256),
+  client_secret             varchar(128)    not null,
   scope                     varchar(256),
   authorized_grant_types    varchar(256),
   web_server_redirect_uri   varchar(256),
   authorities               varchar(256),
-  access_token_validity     int,
-  refresh_token_validity    int,
-  additional_information    varchar(4096),
+  access_token_validity     int             not null,
+  refresh_token_validity    int             not null,
+  additional_information    text,
   autoapprove               varchar(256)
 );
+
+
+create table security.jwt_client_details (
+  client_id                 varchar(128)   constraint jwt_client_details_pk primary key,
+  jwt_secret                varchar(128)   not null,
+  jwt_configuration         varchar(128)   not null,
+  access_token_validity     int            not null,
+  refresh_token_validity    int            not null
+);
+
+
+
