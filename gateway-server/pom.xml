@@ -15,7 +15,7 @@
     <description>Gateway server with Zuul for Spring 5 with microservices</description>
 
     <properties>
-        <cache2k-version>1.2.4.Final</cache2k-version>
+        <cache2k.version>1.2.4.Final</cache2k.version>
         <java.version>1.8</java.version>
         <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
         <springfox-swagger.version>2.9.2</springfox-swagger.version>
@@ -56,18 +56,18 @@
         <dependency>
             <groupId>org.cache2k</groupId>
             <artifactId>cache2k-api</artifactId>
-            <version>${cache2k-version}</version>
+            <version>${cache2k.version}</version>
         </dependency>
         <dependency>
             <groupId>org.cache2k</groupId>
             <artifactId>cache2k-core</artifactId>
-            <version>${cache2k-version}</version>
+            <version>${cache2k.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.cache2k</groupId>
             <artifactId>cache2k-spring</artifactId>
-            <version>${cache2k-version}</version>
+            <version>${cache2k.version}</version>
         </dependency>
         <!--Swagger -->
         <dependency>

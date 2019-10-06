@@ -1,11 +1,12 @@
 package com.gatewayserver.filter;
 
-import com.gatewayserver.configuration.AuthenticationConfiguration;
+import com.gatewayserver.configuration.security.AuthenticationConfiguration;
+import com.gatewayserver.configuration.cache.CacheConfiguration;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import com.spring5microservices.common.service.CacheService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,16 +21,22 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  *    {@link ZuulFilter} used to be sure every JWT token included in the Authorization Http header
  * is valid and it has not expired.
  */
+@Log4j2
 @Component
 public class AuthenticationFilter extends ZuulFilter {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationFilter.class);
 
     @Autowired
     private AuthenticationConfiguration authenticationConfiguration;
 
     @Autowired
     private RestTemplate restTemplate;
+
+
+@Autowired
+private CacheConfiguration cacheConfiguration;
+
+//@Autowired
+//private CacheService cacheService;
 
 
     @Override
@@ -52,7 +59,7 @@ public class AuthenticationFilter extends ZuulFilter {
 
 
     @Override
-    public Object run() throws ZuulException {
+    public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
 
         // If we are dealing with a call to the authentication service, let the call go through without authenticating
@@ -60,14 +67,14 @@ public class AuthenticationFilter extends ZuulFilter {
             return null;
         }
         if (!shouldFilter()) {
-            LOGGER.debug("Authentication token is not present");
+            log.debug("Authentication token is not present");
             ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
             ctx.setSendZuulResponse(false);
             return null;
         }
         if (!isAuthenticationTokenValid(authenticationConfiguration.getValidateTokenWebService(),
                                         ctx.getRequest().getHeader(HttpHeaders.AUTHORIZATION))) {
-            LOGGER.debug("Authentication token is not valid");
+            log.debug("Authentication token is not valid");
             ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
             ctx.setSendZuulResponse(false);
             return null;
@@ -91,7 +98,7 @@ public class AuthenticationFilter extends ZuulFilter {
             ResponseEntity<Boolean> restResponse = restTemplate.getForEntity(validateTokenWebService, Boolean.class, token);
             return restResponse.getBody();
         } catch(Exception ex) {
-            LOGGER.error("There was an error trying to validate the authentication token", ex);
+            log.error("There was an error trying to validate the authentication token", ex);
             return false;
         }
     }
