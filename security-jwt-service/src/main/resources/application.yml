@@ -55,5 +55,5 @@ security:
 cache:
   jwtConfiguration:
     entryCapacity: 2
-    expireInMinutes: 30
+    expireInMinutes: 60
     name: jwtConfigurationCache
