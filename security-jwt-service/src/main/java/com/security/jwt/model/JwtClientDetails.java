@@ -1,7 +1,7 @@
 package com.security.jwt.model;
 
 import com.security.jwt.configuration.Constants;
-import com.security.jwt.configuration.jwt.JwtGenerationEnum;
+import com.security.jwt.enums.JwtGenerationEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +37,10 @@ public class JwtClientDetails {
     @NotNull
     @Enumerated(EnumType.STRING)
     private JwtGenerationEnum jwtConfiguration;
+
+    @NotNull
+    @Size(min=1,max=32)
+    private String tokenType;
 
     @NotNull
     private int accessTokenValidity;

@@ -1,0 +1,24 @@
+package com.security.jwt.interfaces;
+
+import com.security.jwt.dto.TokenRawInformationDto;
+import com.security.jwt.model.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+/**
+ * Functionality related with tokens used mainly for authorization purpose.
+ */
+public interface ITokenInformation {
+
+    /**
+     * Return the data required for the token generation.
+     *
+     * @param username
+     *    {@link User} identifier use to get the information to fill the tokens
+     *
+     * @return {@link TokenRawInformationDto} with information to include
+     *
+     * @throws UsernameNotFoundException if the given username does not exists.
+     */
+    TokenRawInformationDto getTokenInformation(String username);
+
+}

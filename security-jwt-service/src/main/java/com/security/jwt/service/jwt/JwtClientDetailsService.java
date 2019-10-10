@@ -1,16 +1,17 @@
 package com.security.jwt.service.jwt;
 
 import com.security.jwt.configuration.cache.CacheConfiguration;
+import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.repository.JwtClientDetailsRepository;
 import com.spring5microservices.common.service.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 @Service
@@ -36,8 +37,10 @@ public class JwtClientDetailsService {
      *    ClientId to search
      *
      * @return {@link Optional} of {@link JwtClientDetails} is exists, {@link Optional#empty()} otherwise
+     *
+     * @throws ClientNotFoundException if the given username does not exists in database.
      */
-    public Optional<JwtClientDetails> findByClientId(@Nullable String clientId) {
+    public JwtClientDetails findByClientId(String clientId) {
         return ofNullable(clientId)
                 .map(id -> (JwtClientDetails)cacheService.get(cacheConfiguration.getJwtConfigurationCacheName(), clientId)
                                                 .orElseGet(() ->
@@ -47,7 +50,8 @@ public class JwtClientDetailsService {
                                                                     return c;
                                                                 })
                                                 )
-                );
+                )
+                .orElseThrow(() -> new ClientNotFoundException(format("The given clientId: %s was not found in database", clientId)));
     }
 
 }

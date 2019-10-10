@@ -1,8 +1,8 @@
-package com.security.jwt.configuration.jwt;
+package com.security.jwt.enums;
 
+import com.security.jwt.interfaces.ITokenInformation;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.jwt.Spring5MicroserviceJwtGenerator;
-import com.spring5microservices.common.interfaces.ITokenInformation;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
