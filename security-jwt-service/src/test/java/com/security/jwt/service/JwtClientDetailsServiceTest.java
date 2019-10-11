@@ -24,7 +24,6 @@ import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -78,16 +77,23 @@ public class JwtClientDetailsServiceTest {
             assertEquals(expectedResult, jwtClientDetailsService.findByClientId(clientId));
         }
 
-        //Found jwtClientDetails only in database
+        // Found jwtClientDetails only in database
         if (repositoryResult.isPresent() && null == cacheServiceResult) {
+            verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));
+            verify(mockCacheService, times(1)).get(any(), eq(clientId));
             verify(mockCacheService, times(1)).put(any(), eq(clientId), eq(repositoryResult.get()));
         }
         // Found jwtClientDetails in cache
         if (null != cacheServiceResult) {
             verify(mockJwtClientDetailsRepository, times(0)).findByClientId(eq(clientId));
+            verify(mockCacheService, times(1)).get(any(), eq(clientId));
+            verify(mockCacheService, times(0)).put(any(), any(), any());
         }
         // Not found jwtClientDetails neither in cache nor database
         if (!repositoryResult.isPresent() && null == cacheServiceResult) {
+            int expectedInvocations = null == clientId ? 0 : 1;
+            verify(mockJwtClientDetailsRepository, times(expectedInvocations)).findByClientId(eq(clientId));
+            verify(mockCacheService, times(expectedInvocations)).get(any(), eq(clientId));
             verify(mockCacheService, times(0)).put(any(), any(), any());
         }
     }
