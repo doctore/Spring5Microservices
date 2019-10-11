@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
 
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class UserServiceTest {

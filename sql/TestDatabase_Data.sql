@@ -55,6 +55,25 @@ VALUES (1, 1, 1, 15, 2), (2, 1, 2, 8, 1)
 SELECT setval('eat.order_line_id_seq', (SELECT count(*) FROM eat.order_line));
 
 
+----------- SECURITY -----------
 
+INSERT INTO security.oauth_client_details (client_id, client_secret
+                                          ,scope, authorized_grant_types
+                                          ,web_server_redirect_uri, authorities
+                                          ,access_token_validity, refresh_token_validity
+                                          ,additional_information, autoapprove)
+VALUES ('Spring5Microservices', '{bcrypt}$2a$10$NlKX/TyTk41qraDjxg98L.xFdu7IQYRoi3Z37PZmjekaQYAeaRZgO'   -- Raw password: Spring5Microservices
+       ,'read,write,trust', 'implicit,refresh_token,password,authorization_code,client_credentials'
+       ,null, null
+       ,900, 3600
+       ,null, true);
+
+
+INSERT INTO security.jwt_client_details (client_id, jwt_secret
+                                        ,jwt_configuration, token_type
+                                        ,access_token_validity, refresh_token_validity)
+VALUES ('Spring5Microservices', '{bcrypt}$2a$10$NlKX/TyTk41qraDjxg98L.xFdu7IQYRoi3Z37PZmjekaQYAeaRZgO'   -- Raw password: Spring5Microservices
+       ,'SPRING5_MICROSERVICES', 'Bearer'
+       ,900, 3600);
 
 

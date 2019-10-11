@@ -104,6 +104,3 @@ create table security.jwt_client_details (
   access_token_validity     int            not null,
   refresh_token_validity    int            not null
 );
-
-
-
