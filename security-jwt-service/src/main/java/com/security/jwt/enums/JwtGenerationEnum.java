@@ -2,7 +2,7 @@ package com.security.jwt.enums;
 
 import com.security.jwt.interfaces.ITokenInformation;
 import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.service.jwt.Spring5MicroserviceJwtGenerator;
+import com.security.jwt.service.jwt.generator.Spring5MicroserviceJwtGenerator;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;

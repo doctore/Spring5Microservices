@@ -34,12 +34,22 @@ public class JwtConfiguration {
     private String signatureAlgorithm;
 
 
+    /**
+     * The storage mechanism to store the OAuth access token.
+     *
+     * @return {@link TokenStore}
+     */
     @Bean
     public TokenStore tokenStore() {
         return new JwtTokenStore(jwtAccessTokenConverter());
     }
 
 
+    /**
+     * Translates between JWT-encoded token values and default OAuth authentication information.
+     *
+     * @return {@link JwtAccessTokenConverter}
+     */
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
         JwtAccessTokenConverter converter = new CustomAccessTokenConverter();
@@ -50,6 +60,11 @@ public class JwtConfiguration {
     }
 
 
+    /**
+     * Base implementation for token services using JWT-encoded token values for the access and refresh ones.
+     *
+     * @return {@link DefaultTokenServices}
+     */
     @Bean
     @Primary
     public DefaultTokenServices tokenServices() {

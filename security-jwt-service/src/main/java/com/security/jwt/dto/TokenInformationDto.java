@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.Map;
 
 /**
- * Required information to send as response
+ * Required information to send as response in the {@code login} request
  */
 @AllArgsConstructor
 @Builder

@@ -1,4 +1,4 @@
-package com.security.jwt.service;
+package com.security.jwt.service.jwt;
 
 import com.security.jwt.configuration.cache.CacheConfiguration;
 import com.security.jwt.exception.ClientNotFoundException;
@@ -76,7 +76,10 @@ public class JwtClientDetailsServiceTest {
         else {
             assertEquals(expectedResult, jwtClientDetailsService.findByClientId(clientId));
         }
+        verifyInvocations(clientId, repositoryResult, cacheServiceResult);
+    }
 
+    private void verifyInvocations(String clientId, Optional<JwtClientDetails> repositoryResult, JwtClientDetails cacheServiceResult) {
         // Found jwtClientDetails only in database
         if (repositoryResult.isPresent() && null == cacheServiceResult) {
             verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));

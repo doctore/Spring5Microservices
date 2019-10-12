@@ -14,7 +14,7 @@ import java.util.Map;
 @Builder
 @Data
 @NoArgsConstructor
-public class TokenRawInformationDto {
+public class RawTokenInformationDto {
 
     Map<String, Object> accessTokenInformation;
     Map<String, Object> refreshTokenInformation;

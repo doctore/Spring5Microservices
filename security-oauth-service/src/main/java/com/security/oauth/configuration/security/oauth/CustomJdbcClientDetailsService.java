@@ -47,6 +47,20 @@ public class CustomJdbcClientDetailsService extends JdbcClientDetailsService {
         initSQL();
     }
 
+
+    @Override
+    public ClientDetails loadClientByClientId(String clientId) throws InvalidClientException {
+        return (ClientDetails) cacheService.get(cacheName, clientId)
+                .orElseGet(() -> {
+                    ClientDetails clientDetails = super.loadClientByClientId(clientId);
+                    cacheService.put(cacheName, clientId, clientDetails);
+                    return clientDetails;
+                });
+    }
+
+    /**
+     * Add the required SQL commands for every database operation.
+     */
     private void initSQL() {
         this.setDeleteClientDetailsSql(DEFAULT_DELETE_STATEMENT);
         this.setFindClientDetailsSql(DEFAULT_FIND_STATEMENT);
@@ -54,17 +68,6 @@ public class CustomJdbcClientDetailsService extends JdbcClientDetailsService {
         this.setSelectClientDetailsSql(DEFAULT_SELECT_STATEMENT);
         this.setUpdateClientDetailsSql(DEFAULT_UPDATE_STATEMENT);
         this.setUpdateClientSecretSql(DEFAULT_UPDATE_SECRET_STATEMENT);
-    }
-
-
-    @Override
-    public ClientDetails loadClientByClientId(String clientId) throws InvalidClientException {
-        return (ClientDetails) cacheService.get(cacheName, clientId)
-                                           .orElseGet(() -> {
-                                               ClientDetails clientDetails = super.loadClientByClientId(clientId);
-                                               cacheService.put(cacheName, clientId, clientDetails);
-                                               return clientDetails;
-                                           });
     }
 
 }

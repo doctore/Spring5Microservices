@@ -1,10 +1,7 @@
 package com.security.jwt.service.jwt;
 
 import com.security.jwt.dto.TokenInformationDto;
-import com.security.jwt.dto.TokenRawInformationDto;
 import com.security.jwt.enums.JwtGenerationEnum;
-import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.interfaces.ITokenInformation;
 import com.security.jwt.model.JwtClientDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

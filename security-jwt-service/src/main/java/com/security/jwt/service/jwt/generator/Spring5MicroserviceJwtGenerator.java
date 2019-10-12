@@ -1,6 +1,6 @@
-package com.security.jwt.service.jwt;
+package com.security.jwt.service.jwt.generator;
 
-import com.security.jwt.dto.TokenRawInformationDto;
+import com.security.jwt.dto.RawTokenInformationDto;
 import com.security.jwt.enums.TokenKeyEnum;
 import com.security.jwt.interfaces.ITokenInformation;
 import com.security.jwt.service.UserService;
@@ -26,9 +26,9 @@ public class Spring5MicroserviceJwtGenerator implements ITokenInformation {
     }
 
     @Override
-    public TokenRawInformationDto getTokenInformation(String username) {
+    public RawTokenInformationDto getTokenInformation(String username) {
         UserDetails user = userService.loadUserByUsername(username);
-        return TokenRawInformationDto.builder()
+        return RawTokenInformationDto.builder()
                 .accessTokenInformation(getAccessTokenInformation(user))
                 .refreshTokenInformation(getRefreshTokenInformation(user))
                 .additionalTokenInformation(getAdditionalTokenInformation(user))

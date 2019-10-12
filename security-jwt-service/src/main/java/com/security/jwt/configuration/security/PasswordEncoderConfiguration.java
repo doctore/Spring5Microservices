@@ -1,4 +1,4 @@
-package com.security.oauth.configuration.security;
+package com.security.jwt.configuration.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

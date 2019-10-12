@@ -1,5 +1,11 @@
 package com.security.jwt.exception;
 
+import com.security.jwt.model.JwtClientDetails;
+import com.security.jwt.service.jwt.JwtClientDetailsService;
+
+/**
+ * Thrown if an {@link JwtClientDetailsService} implementation cannot locate a {@link JwtClientDetails} by its clientId.
+ */
 public class ClientNotFoundException extends RuntimeException {
 
     public ClientNotFoundException() {
