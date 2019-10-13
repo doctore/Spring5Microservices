@@ -1,8 +1,8 @@
 package com.security.jwt.service.jwt;
 
-import com.security.jwt.dto.TokenInformationDto;
 import com.security.jwt.enums.JwtGenerationEnum;
 import com.security.jwt.model.JwtClientDetails;
+import com.spring5microservices.common.dto.TokenInformationDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
@@ -63,17 +63,19 @@ public class JwtGeneratorService {
 /*
 // FINAL TOKEN
 {
-    "access_token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhZG1pbiIsImV4cCI6MTU3MDYzOTA0OCwiYXV0aG9yaXRpZXMiOlsiVVNFUiIsIkFETUlOIl0sImp0aSI6IjY0MTA5MGUxLWY0YzQtNDUyOS05YjljLTJhMjYwOGI5ZTg1OCIsImNsaWVudF9pZCI6IlNwcmluZzVNaWNyb3NlcnZpY2VzIn0.Od0VwpxBx8ZbXnSnJqoemgodxgCejfgNu2thbL-xVKuDupblQe-Ei0nt6bgPRDYcPCZXzplj9z5dXUIlj1i6NA",
+    "access_token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhZG1pbiIsImV4cCI6MTU3MDk2MjI0MywiYXV0aG9yaXRpZXMiOlsiVVNFUiIsIkFETUlOIl0sImp0aSI6IjU0ZjczMmEyLTRjODMtNDJjOC1iNjg0LTZkMGU2NGI1MWY4MSIsImNsaWVudF9pZCI6IlNwcmluZzVNaWNyb3NlcnZpY2VzIn0.5--ZTwe52aeO6vzhCo9smXvoFrv1lThoboi8ih-COXGCe9TkGShaWnid_A77Nt8yTbKAuzxqUHuLv0XXblvsMg",
     "token_type": "bearer",
-    "refresh_token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhZG1pbiIsImF0aSI6IjY0MTA5MGUxLWY0YzQtNDUyOS05YjljLTJhMjYwOGI5ZTg1OCIsImV4cCI6MTU3MDY0MTc0OCwianRpIjoiYjM3Njg0ZjMtMzRjYy00NDdiLThkMzAtYmEzMzgwNjVhZWY4IiwiY2xpZW50X2lkIjoiU3ByaW5nNU1pY3Jvc2VydmljZXMifQ.XeYzAlB1j5LVOic-E5axXHcrFFQ86pn1H2bE8s2lYK0fXPdVGF4vR1hrSihUbTCbRSytKgGy7wmhclC8GfThqQ",
+    "refresh_token": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhZG1pbiIsImF0aSI6IjU0ZjczMmEyLTRjODMtNDJjOC1iNjg0LTZkMGU2NGI1MWY4MSIsImV4cCI6MTU3MDk2NDk0MywianRpIjoiNzY3MGExNjgtOGVkMi00YjNjLTg4NGUtYTExNzM4YjEyYTVhIiwiY2xpZW50X2lkIjoiU3ByaW5nNU1pY3Jvc2VydmljZXMifQ.-YpUKUQsw6qTre6W_Zas31jgVc-JjFyBoLpk-zFi1bj-LaPcqBDosjED9njVz9fs5Rg0_Rlr1aesgzA1GomQBg",
     "expires_in": 899,
     "scope": "read",
-    "jti": "641090e1-f4c4-4529-9b9c-2a2608b9e858",
-    "authorities": [
-        "USER",
-        "ADMIN"
-    ],
-    "username": "admin"
+    "jti": "54f732a2-4c83-42c8-b684-6d0e64b51f81",
+    "additionalInfo": {
+        "authorities": [
+            "USER",
+            "ADMIN"
+        ],
+        "username": "admin"
+    }
 }
  */
 

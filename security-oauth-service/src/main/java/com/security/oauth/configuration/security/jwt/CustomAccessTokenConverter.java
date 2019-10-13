@@ -20,6 +20,8 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     private static final String SCOPE = "scope";
     private static final String USER_NAME = "user_name";
     private static final String USERNAME = "username";
+    private static final String ADDITIONAL_INFO = "additionalInfo";
+
 
     public CustomAccessTokenConverter() {
         super();
@@ -29,7 +31,7 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         OAuth2AccessToken result = super.enhance(accessToken, authentication);
-        result.getAdditionalInformation().putAll(oAuth2AccessTokenAdditionalInformation);
+        result.getAdditionalInformation().putAll(getAdditionalInformation());
         return result;
     }
 
@@ -47,7 +49,7 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     private Map<String, ?> getAccessTokenInformation(Map<String, Object> sourceInformation) {
         Map<String, Object> accessTokenInformation = new HashMap<>(sourceInformation);
         accessTokenInformation.keySet().removeIf(k -> asList(SCOPE).contains(k));
-        addTokenAdditionalInformation(sourceInformation);
+        updateAdditionalInformation(sourceInformation);
         return accessTokenInformation;
     }
 
@@ -63,9 +65,18 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     /**
      * Extra information included in the returned {@link OAuth2AccessToken}
      */
-    private void addTokenAdditionalInformation(Map<String, Object> sourceInformation) {
-        oAuth2AccessTokenAdditionalInformation.put(USERNAME, sourceInformation.get(USER_NAME));
-        oAuth2AccessTokenAdditionalInformation.put(AUTHORITIES, sourceInformation.get(AUTHORITIES));
+    private void updateAdditionalInformation(Map<String, Object> accessTokenInformation) {
+        oAuth2AccessTokenAdditionalInformation.put(USERNAME, accessTokenInformation.get(USER_NAME));
+        oAuth2AccessTokenAdditionalInformation.put(AUTHORITIES, accessTokenInformation.get(AUTHORITIES));
+    }
+
+    /**
+     * Include an specific section with extra information in the returned {@link OAuth2AccessToken}
+     */
+    private Map<String, Object> getAdditionalInformation() {
+        Map<String, Object> additionalInformation = new HashMap<>();
+        additionalInformation.put(ADDITIONAL_INFO, oAuth2AccessTokenAdditionalInformation);
+        return additionalInformation;
     }
 
 }

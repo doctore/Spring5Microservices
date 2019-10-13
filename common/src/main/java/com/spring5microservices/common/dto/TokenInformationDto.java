@@ -1,4 +1,4 @@
-package com.security.jwt.dto;
+package com.spring5microservices.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -32,10 +32,11 @@ public class TokenInformationDto implements Serializable {
     @JsonProperty(value = "token_type")
     private String tokenType;
 
+    private String scope;
+
     @JsonProperty(value = "jti")
     private String JwtId;
 
-    // TODO: Create an specific Json serializer to include key-values as specific property-value of the final Json
     private Map<String, Object> additionalInfo;
 
 }
