@@ -166,7 +166,6 @@ public class JwtUtil {
         }
     }
 
-
     /**
      * Get from the given token the required information from its payload
      *
@@ -187,11 +186,9 @@ public class JwtUtil {
         Assert.hasText(token, "token cannot be null or empty");
         Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
         Assert.hasText(jwtSecretKey, "jwtSecretKey cannot be null or empty");
-
         final Claims claims = getAllClaimsFromToken(token, signatureAlgorithm, jwtSecretKey);
         return claimsResolver.apply(claims);
     }
-
 
     /**
      * Extracts from the given token all the information included in the payload
@@ -212,6 +209,16 @@ public class JwtUtil {
                 .getBody();
     }
 
+    /**
+     * Generates the information required to encrypt/decrypt the Jwt token
+     *
+     * @param signatureAlgorithm
+     *    {@link SignatureAlgorithm} used to encrypt the JWT token
+     * @param jwtSecretKey
+     *    String used to encrypt the JWT token
+     *
+     * @return {@link Key}
+     */
     private Key getSigningKey(SignatureAlgorithm signatureAlgorithm, String jwtSecretKey) {
         return new SecretKeySpec(jwtSecretKey.getBytes(), signatureAlgorithm.getJcaName());
     }

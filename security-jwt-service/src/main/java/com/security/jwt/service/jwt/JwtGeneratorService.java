@@ -40,6 +40,7 @@ public class JwtGeneratorService {
                     RawTokenInformationDto jwtRawInformation = generator.getTokenInformation(username);
                     String jti = UUID.randomUUID().toString();
 
+                    // TODO: Include the clientId in the information to send as access token
 
 
 
