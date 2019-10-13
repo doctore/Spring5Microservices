@@ -1,14 +1,18 @@
 package com.security.jwt.service.jwt;
 
-import com.security.jwt.enums.JwtGenerationEnum;
+import com.security.jwt.dto.RawTokenInformationDto;
+import com.security.jwt.enums.JwtGeneratorConfigurationEnum;
+import com.security.jwt.interfaces.ITokenInformation;
 import com.security.jwt.model.JwtClientDetails;
 import com.spring5microservices.common.dto.TokenInformationDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.lang.String.format;
 
@@ -17,22 +21,30 @@ public class JwtGeneratorService {
 
     private ApplicationContext applicationContext;
     private JwtClientDetailsService jwtClientDetailsService;
+    private TextEncryptor encryptor;
 
     @Autowired
-    public JwtGeneratorService(@Lazy ApplicationContext applicationContext, @Lazy JwtClientDetailsService jwtClientDetailsService) {
+    public JwtGeneratorService(@Lazy ApplicationContext applicationContext, @Lazy JwtClientDetailsService jwtClientDetailsService,
+                               @Lazy TextEncryptor encryptor) {
         this.applicationContext = applicationContext;
         this.jwtClientDetailsService = jwtClientDetailsService;
+        this.encryptor = encryptor;
     }
 
 
     public Optional<TokenInformationDto> generateTokenResponse(String clientId, String username) {
-        return JwtGenerationEnum.getByClientId(clientId)
-                .map(generator -> applicationContext.getBean(generator.getJwtGeneratorClass()))
-                .map(tokenInformation -> {
+        return JwtGeneratorConfigurationEnum.getByClientId(clientId)
+                .map(generatorConfiguration -> applicationContext.getBean(generatorConfiguration.getJwtGeneratorClass()))
+                .map(generator -> {
                     JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+                    RawTokenInformationDto jwtRawInformation = generator.getTokenInformation(username);
+                    String jti = UUID.randomUUID().toString();
 
-                    // TODO: Include the functionality to add information to TokenInformationDto
-                    //TokenRawInformationDto rawInformation = tokenInformation.getTokenInformation(username);
+
+
+
+
+
 
                     return new TokenInformationDto();
                 });
@@ -42,8 +54,13 @@ public class JwtGeneratorService {
 /*
 // Access token
 {
-  "exp": 1570638836,
-  "jti": "7565113e-85a7-47f6-b184-c9025814bcc4",
+  "user_name": "admin",
+  "exp": 1570962243,
+  "authorities": [
+    "USER",
+    "ADMIN"
+  ],
+  "jti": "54f732a2-4c83-42c8-b684-6d0e64b51f81",
   "client_id": "Spring5Microservices"
 }
 */
@@ -52,9 +69,10 @@ public class JwtGeneratorService {
 /*
 // Refresh token
 {
-  "ati": "7565113e-85a7-47f6-b184-c9025814bcc4",
-  "exp": 1570641536,
-  "jti": "b91f82ff-3353-486f-8868-9cc502b6cfb2",
+  "user_name": "admin",
+  "ati": "54f732a2-4c83-42c8-b684-6d0e64b51f81",
+  "exp": 1570964943,
+  "jti": "7670a168-8ed2-4b3c-884e-a11738b12a5a",
   "client_id": "Spring5Microservices"
 }
  */

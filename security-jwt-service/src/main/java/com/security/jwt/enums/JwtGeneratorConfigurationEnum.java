@@ -13,13 +13,13 @@ import static java.util.Optional.ofNullable;
 /**
  * Manage the configuration of existing Jwt token providers
  */
-public enum JwtGenerationEnum {
+public enum JwtGeneratorConfigurationEnum {
     SPRING5_MICROSERVICES ("Spring5Microservices", Spring5MicroserviceJwtGenerator.class);
 
     private String clientId;
     private Class<? extends ITokenInformation> jwtGeneratorClass;
 
-    JwtGenerationEnum(String clientId, Class<? extends ITokenInformation> jwtGeneratorClass) {
+    JwtGeneratorConfigurationEnum(String clientId, Class<? extends ITokenInformation> jwtGeneratorClass) {
         this.jwtGeneratorClass = jwtGeneratorClass;
     }
 
@@ -31,16 +31,16 @@ public enum JwtGenerationEnum {
     }
 
     /**
-     * Get the {@link JwtGenerationEnum} which clientId matches with the given one.
+     * Get the {@link JwtGeneratorConfigurationEnum} which clientId matches with the given one.
      *
      * @param clientId
      *    ClientId to search
      *
      * @return {@link Optional} of {@link JwtClientDetails} is exists, {@link Optional#empty()} otherwise
      */
-    public static Optional<JwtGenerationEnum> getByClientId(@Nullable String clientId) {
+    public static Optional<JwtGeneratorConfigurationEnum> getByClientId(@Nullable String clientId) {
         return ofNullable(clientId)
-                .flatMap(id -> Arrays.stream(JwtGenerationEnum.values()).filter(e -> clientId.equals(e.clientId)).findFirst());
+                .flatMap(id -> Arrays.stream(JwtGeneratorConfigurationEnum.values()).filter(e -> clientId.equals(e.clientId)).findFirst());
     }
 
 }

@@ -21,4 +21,18 @@ public interface ITokenInformation {
      */
     RawTokenInformationDto getTokenInformation(String username);
 
+    /**
+     * Return the key in the access token used to store the username information.
+     *
+     * @return {@link String}
+     */
+    String getUsernameKey();
+
+    /**
+     * Return the key in the access token used to store the roles information.
+     *
+     * @return {@link String}
+     */
+    String getRolesKey();
+
 }
