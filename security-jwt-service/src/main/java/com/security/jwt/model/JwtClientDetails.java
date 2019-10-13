@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 @AllArgsConstructor
 @Builder
@@ -23,8 +24,10 @@ import javax.validation.constraints.Size;
 @EqualsAndHashCode(of = {"clientId"})
 @NoArgsConstructor
 @Table(schema = Constants.DATABASE_SCHEMA.SECURITY)
-public class JwtClientDetails {
+public class JwtClientDetails implements Serializable {
 
+    private static final long serialVersionUID = -171319389828209358L;
+    
     @Id
     @NotNull
     @Size(min=1,max=128)

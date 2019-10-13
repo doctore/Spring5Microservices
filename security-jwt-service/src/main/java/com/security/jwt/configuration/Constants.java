@@ -22,4 +22,7 @@ public class Constants {
         public static final String COMMON = "com.spring5microservices.common";
     }
 
+    // Global cache configuration
+    public static final String CACHE_INSTANCE_NAME = "CacheInstance";
+
 }

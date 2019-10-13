@@ -10,9 +10,9 @@ public class SecurityJwtServiceApplication {
         SpringApplication.run(SecurityJwtServiceApplication.class, args);
 
         /*
-        ConfigurableApplicationContext context = SpringApplication.run(SecurityServiceApplication.class, args);
-        PasswordEncoder passwordEncoder = context.getBean(PasswordEncoder.class);
-        System.out.println("------------- PASSWORD " + passwordEncoder.encode("Spring5Microservices"));
+        ConfigurableApplicationContext context = SpringApplication.run(SecurityJwtServiceApplication.class, args);
+        JwtClientDetailsService jwtClientDetailsService = context.getBean(JwtClientDetailsService.class);
+        System.out.println("------------- CACHE VALUE " + jwtClientDetailsService.findByClientId("Spring5Microservices"));
          */
     }
 

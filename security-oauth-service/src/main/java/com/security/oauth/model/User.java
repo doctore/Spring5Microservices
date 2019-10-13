@@ -37,6 +37,8 @@ import static java.util.stream.Collectors.toSet;
 @Table(schema = Constants.DATABASE_SCHEMA.EAT)
 public class User implements UserDetails {
 
+    private static final long serialVersionUID = -5881457091221203109L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".user_id_seq")
     private Long id;

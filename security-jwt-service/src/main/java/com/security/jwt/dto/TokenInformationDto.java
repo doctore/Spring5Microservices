@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -15,7 +16,9 @@ import java.util.Map;
 @Builder
 @Data
 @NoArgsConstructor
-public class TokenInformationDto {
+public class TokenInformationDto implements Serializable {
+
+    private static final long serialVersionUID = -4007535195077048326L;
 
     @JsonProperty(value = "access_token")
     private String accessToken;

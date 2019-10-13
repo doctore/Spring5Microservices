@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @AllArgsConstructor
 @Builder
@@ -24,7 +25,9 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(of = {"name"})
 @NoArgsConstructor
 @Table(schema = Constants.DATABASE_SCHEMA.EAT)
-public class Role {
+public class Role implements Serializable {
+
+    private static final long serialVersionUID = 4833183317359581882L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".role_id_seq")

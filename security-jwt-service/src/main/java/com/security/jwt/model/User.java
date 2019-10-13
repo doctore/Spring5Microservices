@@ -21,6 +21,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +37,8 @@ import static java.util.stream.Collectors.toSet;
 @NoArgsConstructor
 @Table(schema = Constants.DATABASE_SCHEMA.EAT)
 public class User implements UserDetails {
+
+    private static final long serialVersionUID = -2635894377988063111L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".user_id_seq")
