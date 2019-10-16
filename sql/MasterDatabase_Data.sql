@@ -88,9 +88,11 @@ VALUES ('Spring5Microservices', '{bcrypt}$2a$10$NlKX/TyTk41qraDjxg98L.xFdu7IQYRo
        ,null, true);
 
 
-INSERT INTO security.jwt_client_details (client_id, jwt_secret
+INSERT INTO security.jwt_client_details (client_id
+                                        ,jwt_secret
                                         ,jwt_algorithm, jwt_configuration, token_type
                                         ,access_token_validity, refresh_token_validity)
-VALUES ('Spring5Microservices', '{cipher}7e9b01f3b8e8d24c4cf490b14dab9ef8690654856be8f0104ebb6936fe28512a248e64d54195acd2e62b79d551a317c1'   -- Raw password: Spring5Microservices
+VALUES ('Spring5Microservices'
+       ,'{cipher}c2b65ee6e1ae69d00ae8ad1933b9a5e50c9a94fc06b9debba0199d2e158c0d67594a3cfb18399808e67d26114699aac74273ffe7a264b09b9be42e8a1c603128'   -- Raw password: Spring5Microservices_jwtSecretKey
        ,'HS512', 'SPRING5_MICROSERVICES', 'Bearer'
        ,900, 3600);

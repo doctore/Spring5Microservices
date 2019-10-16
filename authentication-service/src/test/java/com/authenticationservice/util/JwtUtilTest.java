@@ -142,11 +142,6 @@ public class JwtUtilTest {
     }
 
 
-
-
-
-
-
     @Test(expected = IllegalArgumentException.class)
     public void getUsernameFromToken_whenNullTokenIsGiven_thenIllegalArgumentExceptionIsThrown() {
         // When/Then

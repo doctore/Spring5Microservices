@@ -4,13 +4,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Collection;
 import java.util.Date;
@@ -54,7 +54,7 @@ public class JwtUtil {
                             .setClaims(informationToInclude)
                             .setIssuedAt(now)
                             .setExpiration(expirationDate)
-                            .signWith(getSigningKey(signatureAlgorithm, jwtSecretKey))
+                            .signWith(getSigningKey(jwtSecretKey), signatureAlgorithm)
                             .compact();
                 });
     }
@@ -65,18 +65,16 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to validate
-     * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      *
      * @return {@code false} if the given token is expired or is not valid, {@code true} otherwise.
      *
-     * @throws IllegalArgumentException if {@code token}, {@code signatureAlgorithm} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public boolean isTokenValid(String token, SignatureAlgorithm signatureAlgorithm, String jwtSecretKey) {
+    public boolean isTokenValid(String token, String jwtSecretKey) {
         try {
-            return getExpirationDateFromToken(token, signatureAlgorithm, jwtSecretKey)
+            return getExpirationDateFromToken(token, jwtSecretKey)
                     .map(exp -> exp.after(new Date()))
                     .orElse(false);
 
@@ -92,8 +90,6 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      * @param usernameKeyInToken
@@ -101,12 +97,11 @@ public class JwtUtil {
      *
      * @return {@link Optional} with {@link UserDetails#getUsername()}
      *
-     * @throws IllegalArgumentException if {@code token}, {@code signatureAlgorithm} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public Optional<String> getUsernameFromToken(String token, SignatureAlgorithm signatureAlgorithm, String jwtSecretKey,
-                                                 String usernameKeyInToken) {
+    public Optional<String> getUsernameFromToken(String token, String jwtSecretKey, String usernameKeyInToken) {
         try {
-            return Optional.ofNullable(getClaimFromToken(token, signatureAlgorithm, jwtSecretKey,
+            return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey,
                     (claims) -> claims.get(usernameKeyInToken, String.class)));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the username of token %s", token), ex);
@@ -120,8 +115,6 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      * @param rolesKeyInToken
@@ -129,12 +122,11 @@ public class JwtUtil {
      *
      * @return {@link UserDetails#getAuthorities()}
      *
-     * @throws IllegalArgumentException if {@code token}, {@code signatureAlgorithm} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public Collection<? extends GrantedAuthority> getRolesFromToken(String token, SignatureAlgorithm signatureAlgorithm, String jwtSecretKey,
-                                                                    String rolesKeyInToken) {
+    public Collection<? extends GrantedAuthority> getRolesFromToken(String token, String jwtSecretKey, String rolesKeyInToken) {
         try {
-            return getClaimFromToken(token, signatureAlgorithm, jwtSecretKey,
+            return getClaimFromToken(token, jwtSecretKey,
                     (claims) -> new HashSet<>((Collection)claims.computeIfAbsent(rolesKeyInToken, k -> new HashSet<>())));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the roles of token %s", token), ex);
@@ -148,18 +140,16 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      *
      * @return {@link Optional} with {@link Date}
      *
-     * @throws IllegalArgumentException if {@code token}, {@code signatureAlgorithm} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    private Optional<Date> getExpirationDateFromToken(String token, SignatureAlgorithm signatureAlgorithm, String jwtSecretKey) {
+    private Optional<Date> getExpirationDateFromToken(String token, String jwtSecretKey) {
         try {
-            return Optional.ofNullable(getClaimFromToken(token, signatureAlgorithm, jwtSecretKey, Claims::getExpiration));
+            return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the expiration date of token %s", token), ex);
             return Optional.empty();
@@ -171,8 +161,6 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      * @param claimsResolver
@@ -180,13 +168,12 @@ public class JwtUtil {
      *
      * @return {@link T} with the wanted part of the payload
      *
-     * @throws IllegalArgumentException if {@code token}, {@code signatureAlgorithm} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    private <T> T getClaimFromToken(String token, SignatureAlgorithm signatureAlgorithm, String jwtSecretKey, Function<Claims, T> claimsResolver) {
+    private <T> T getClaimFromToken(String token, String jwtSecretKey, Function<Claims, T> claimsResolver) {
         Assert.hasText(token, "token cannot be null or empty");
-        Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
         Assert.hasText(jwtSecretKey, "jwtSecretKey cannot be null or empty");
-        final Claims claims = getAllClaimsFromToken(token, signatureAlgorithm, jwtSecretKey);
+        final Claims claims = getAllClaimsFromToken(token, jwtSecretKey);
         return claimsResolver.apply(claims);
     }
 
@@ -195,32 +182,29 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      *
      * @return {@link Claims}
      */
-    private Claims getAllClaimsFromToken(String token, SignatureAlgorithm signatureAlgorithm, String jwtSecretKey) {
+    private Claims getAllClaimsFromToken(String token, String jwtSecretKey) {
         return Jwts.parser()
-                .setSigningKey(getSigningKey(signatureAlgorithm, jwtSecretKey))
+                .setSigningKey(getSigningKey(jwtSecretKey))
                 .parseClaimsJws(token)
                 .getBody();
     }
 
+
     /**
      * Generates the information required to encrypt/decrypt the Jwt token
      *
-     * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
      *    String used to encrypt the JWT token
      *
      * @return {@link Key}
      */
-    private Key getSigningKey(SignatureAlgorithm signatureAlgorithm, String jwtSecretKey) {
-        return new SecretKeySpec(jwtSecretKey.getBytes(), signatureAlgorithm.getJcaName());
+    private Key getSigningKey(String jwtSecretKey) {
+        return Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
     }
 
 }
