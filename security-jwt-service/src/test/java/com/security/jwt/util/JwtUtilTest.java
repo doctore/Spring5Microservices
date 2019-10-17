@@ -26,7 +26,7 @@ public class JwtUtilTest {
 
 
     static Stream<Arguments> generateJwtTokenTestCases() {
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS512;
+        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
         Map<String, Object> informationToInclude = new HashMap<>();
         String secretKey = "Spring5Microservices_jwtSecretKey";
         return Stream.of(
@@ -38,7 +38,6 @@ public class JwtUtilTest {
                 Arguments.of( informationToInclude,   signatureAlgorithm,   secretKey,         90,                       null,                             true )
         ); //@formatter:on
     }
-
 
     @ParameterizedTest
     @MethodSource("generateJwtTokenTestCases")
@@ -54,5 +53,35 @@ public class JwtUtilTest {
         }
     }
 
+
+    static Stream<Arguments> isTokenValidTestCases() {
+        String expiredJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VybmFtZSIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJVU0VSIn1dLCJ"
+                               + "pYXQiOjEwMDAwMDAwMDAsImV4cCI6MTAwMDAwMDAwMH0.bqHsralkKGy06yQkkM3B3rIkn--AF3cxiXYDOFcCLbg";
+        String notExpiredJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VybmFtZSIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJVU0VSIn1dLCJ"
+                                  + "pYXQiOjUwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMH0.AvYhkUHQtHQ3bXdf_lUar1iXHR025iWxsTeSLNKi3Ms";
+        String jwtSecretKey = "secretKey_ForTestingPurpose@12345#";
+        return Stream.of(
+                //@formatter:off
+                //            token,                jwtSecretKey,          expectedException,                expectedResult
+                Arguments.of( null,                 "ItDoesNotCare",       IllegalArgumentException.class,   false ),
+                Arguments.of( "ItDoesNotCare",      null,                  IllegalArgumentException.class,   false ),
+                Arguments.of( "NotValidToken",      "ItDoesNotCare",       null,                             false ),
+                Arguments.of( expiredJwtToken,      jwtSecretKey + "V2",   null,                             false ),
+                Arguments.of( expiredJwtToken,      jwtSecretKey,          null,                             false ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          null,                             true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("isTokenValidTestCases")
+    @DisplayName("isTokenValid: test cases")
+    public void isTokenValid_testCases(String token, String jwtSecretKey, Class<? extends Exception> expectedException, boolean expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> jwtUtil.isTokenValid(token, jwtSecretKey));
+        }
+        else {
+            assertEquals(expectedResult, jwtUtil.isTokenValid(token, jwtSecretKey));
+        }
+    }
 
 }

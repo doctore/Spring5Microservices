@@ -6,18 +6,21 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.security.Key;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+
+import static java.util.Optional.empty;
+import static java.util.stream.Collectors.toMap;
 
 @Component
 @Log4j2
@@ -86,7 +89,7 @@ public class JwtUtil {
 
 
     /**
-     * Gets the {@link UserDetails#getUsername()} included in the given JWT token.
+     * Gets the {@code username} included in the given JWT token.
      *
      * @param token
      *    JWT token to extract the required information
@@ -95,23 +98,23 @@ public class JwtUtil {
      * @param usernameKeyInToken
      *    Key in the given token used to store username information
      *
-     * @return {@link Optional} with {@link UserDetails#getUsername()}
+     * @return {@link Optional} with {@code username} if exists, {@link Optional#empty()} otherwise
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public Optional<String> getUsernameFromToken(String token, String jwtSecretKey, String usernameKeyInToken) {
+    public Optional<String> getUsername(String token, String jwtSecretKey, String usernameKeyInToken) {
         try {
             return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey,
                     (claims) -> claims.get(usernameKeyInToken, String.class)));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the username of token %s", token), ex);
-            return Optional.empty();
+            return empty();
         }
     }
 
 
     /**
-     * Gets the {@link UserDetails#getAuthorities()} included in the given JWT token.
+     * Gets the {@code roles} included in the given JWT token.
      *
      * @param token
      *    JWT token to extract the required information
@@ -120,17 +123,45 @@ public class JwtUtil {
      * @param rolesKeyInToken
      *    Key in the given token used to store roles information
      *
-     * @return {@link UserDetails#getAuthorities()}
+     * @return  {@link Set} with {@code roles}
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public Collection<? extends GrantedAuthority> getRolesFromToken(String token, String jwtSecretKey, String rolesKeyInToken) {
+    public Set<String> getRoles(String token, String jwtSecretKey, String rolesKeyInToken) {
         try {
             return getClaimFromToken(token, jwtSecretKey,
                     (claims) -> new HashSet<>((Collection)claims.computeIfAbsent(rolesKeyInToken, k -> new HashSet<>())));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the roles of token %s", token), ex);
             return new HashSet<>();
+        }
+    }
+
+
+    /**
+     * Gets the information included in the given JWT token except the given {@code claimsToExclude}.
+     *
+     * @param token
+     *    JWT token to extract the required information
+     * @param jwtSecretKey
+     *    String used to encrypt the JWT token
+     * @param claimsToExclude
+     *    {@link Set} of {@link String} with the {@code claim}s to exclude from Jwt token
+     *
+     * @return {@link Map} of {@link String} - {@link Object} with the remaining information
+     *
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
+     */
+    public Map<String, Object> getInformationExceptGivenClaims(String token, String jwtSecretKey, Set<String> claimsToExclude) {
+        try {
+            return getAllClaimsFromToken(token, jwtSecretKey)
+                    .entrySet().stream()
+                    .filter(e -> !claimsToExclude.contains(e.getKey()))
+                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        } catch (JwtException ex) {
+            log.error(String.format("There was an error filtering the information of token %s", token), ex);
+            return new HashMap<>();
         }
     }
 
@@ -152,7 +183,7 @@ public class JwtUtil {
             return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the expiration date of token %s", token), ex);
-            return Optional.empty();
+            return empty();
         }
     }
 
@@ -193,7 +224,6 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
 
     /**
      * Generates the information required to encrypt/decrypt the Jwt token

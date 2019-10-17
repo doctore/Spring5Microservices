@@ -8,6 +8,7 @@ public enum TokenKeyEnum {
     EXPIRATION_TIME("exp"),
     EXPIRES_IN("expires_in"),
     JWT_ID("jti"),
+    NAME("name"),
     REFRESH_JWT_ID("ati"),
     REFRESH_TOKEN("refresh_token"),
     TOKEN_TYPE("token_type"),

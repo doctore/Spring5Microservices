@@ -11,7 +11,13 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
 
 @SpringBootApplication
 public class SecurityJwtServiceApplication {
@@ -31,13 +37,22 @@ public class SecurityJwtServiceApplication {
         JwtUtil jwtUtil = context.getBean(JwtUtil.class);
 
         JwtClientDetails jwtClientDetails = jwtClientDetailsService.findByClientId("Spring5Microservices");
-        //String jwtSecret = encryptor.decrypt(jwtClientDetails.getJwtSecret().replace("{cipher}", ""));
+        String jwtSecret = encryptor.decrypt(jwtClientDetails.getJwtSecret().replace("{cipher}", ""));
+        Map<String, Object> informationToInclude = new HashMap<>();
+        informationToInclude.put("username", "username_value");
+        informationToInclude.put("name", "name_value");
+        informationToInclude.put("age", 21);
+        informationToInclude.put("roles", asList("admin", "user"));
 
-        // TODO: Increment the size of jwt secret keys in database
-        String jwtSecret = "Spring5Microservices_jwtSecretKehkjhkjhkhkvhsdkhviufediyfiugfkjdvnkdfhkuehk34873894798327498732hfdkjhfkdshfksdhjkfhdsy";
-
-        Optional<String> jwtToken = jwtUtil.generateJwtToken(new HashMap<>(), jwtClientDetails.getJwtAlgorithm(),
+        Optional<String> jwtToken = jwtUtil.generateJwtToken(informationToInclude, jwtClientDetails.getJwtAlgorithm(),
                 jwtSecret, jwtClientDetails.getAccessTokenValidity());
+
+        Set<String> informationToExclude = new HashSet<>();
+        informationToExclude.add("username");
+
+        Map<String, Object> finalClaims = jwtUtil.getInformationExceptGivenClaims(jwtToken.get(), jwtSecret, informationToExclude);
+        System.out.println((List)finalClaims.get("roles"));
+
 
         // TODO: REVISAR UTILIZACION DEL ALGORITMO. ESTA FALLANDO
         boolean isValid = jwtUtil.isTokenValid(jwtToken.get(), jwtSecret);

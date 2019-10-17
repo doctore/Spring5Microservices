@@ -16,6 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.HashSet;
 
 import static com.security.jwt.enums.TokenKeyEnum.AUTHORITIES;
+import static com.security.jwt.enums.TokenKeyEnum.NAME;
 import static com.security.jwt.enums.TokenKeyEnum.USERNAME;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
@@ -43,7 +44,7 @@ public class Spring5MicroserviceJwtGeneratorTest {
     public void getTokenInformation_whenAnExistentUsernameIsGiven_thenRelatedInformationIsReturned() {
         // Given
         Role role = Role.builder().name(RoleEnum.ADMIN).build();
-        User user = User.builder().username("test username").roles(new HashSet<>(asList(role))).build();
+        User user = User.builder().username("test username").name("test name").roles(new HashSet<>(asList(role))).build();
 
         // When
         when(mockUserService.loadUserByUsername(user.getUsername())).thenReturn(user);
@@ -60,6 +61,7 @@ public class Spring5MicroserviceJwtGeneratorTest {
         assertNotNull(rawTokenInformation.getAdditionalTokenInformation());
 
         assertEquals(user.getUsername(), rawTokenInformation.getAccessTokenInformation().get(USERNAME.getKey()));
+        assertEquals(user.getName(), rawTokenInformation.getAccessTokenInformation().get(NAME.getKey()));
         assertEquals(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()),
                 rawTokenInformation.getAccessTokenInformation().get(AUTHORITIES.getKey()));
 
