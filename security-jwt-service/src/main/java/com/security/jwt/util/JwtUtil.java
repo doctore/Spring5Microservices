@@ -45,14 +45,12 @@ public class JwtUtil {
      */
     public Optional<String> generateJwtToken(Map<String, Object> informationToInclude, SignatureAlgorithm signatureAlgorithm,
                                              String jwtSecretKey, long expirationTimeInSeconds) {
-
         Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
         Assert.notNull(jwtSecretKey, "jwtSecretKey cannot be null");
         return Optional.ofNullable(informationToInclude)
                 .map(ud -> {
                     Date now = new Date();
                     Date expirationDate = new Date(now.getTime() + (expirationTimeInSeconds * 1000));
-
                     return Jwts.builder()
                             .setClaims(informationToInclude)
                             .setIssuedAt(now)
@@ -153,6 +151,8 @@ public class JwtUtil {
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
     public Map<String, Object> getInformationExceptGivenClaims(String token, String jwtSecretKey, Set<String> claimsToExclude) {
+        Assert.hasText(token, "token cannot be null or empty");
+        Assert.hasText(jwtSecretKey, "jwtSecretKey cannot be null or empty");
         try {
             return getAllClaimsFromToken(token, jwtSecretKey)
                     .entrySet().stream()

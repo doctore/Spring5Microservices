@@ -53,12 +53,11 @@ public class CacheConfiguration {
     private Config hazelCastConfig(){
         Config config = new Config();
         config.setInstanceName(CACHE_INSTANCE_NAME)
-                .addMapConfig(
-                        new MapConfig()
-                                .setName(jwtConfigurationCacheName)
-                                .setMaxSizeConfig(new MaxSizeConfig(jwtConfigurationCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
-                                .setEvictionPolicy(EvictionPolicy.LRU)
-                                .setTimeToLiveSeconds(jwtConfigurationCacheExpireInSeconds));
+                .addMapConfig(new MapConfig()
+                        .setName(jwtConfigurationCacheName)
+                        .setMaxSizeConfig(new MaxSizeConfig(jwtConfigurationCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
+                        .setEvictionPolicy(EvictionPolicy.LRU)
+                        .setTimeToLiveSeconds(jwtConfigurationCacheExpireInSeconds));
         return config;
     }
 
