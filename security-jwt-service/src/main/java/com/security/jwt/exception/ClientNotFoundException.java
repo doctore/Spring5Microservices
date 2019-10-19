@@ -1,7 +1,7 @@
 package com.security.jwt.exception;
 
 import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.service.jwt.JwtClientDetailsService;
+import com.security.jwt.service.JwtClientDetailsService;
 
 /**
  * Thrown if an {@link JwtClientDetailsService} implementation cannot locate a {@link JwtClientDetails} by its clientId.

@@ -1,7 +1,7 @@
-package com.security.jwt.service.jwt.generator;
+package com.security.jwt.service.authentication.generator;
 
 import com.security.jwt.dto.RawAuthenticationInformationDto;
-import com.security.jwt.interfaces.ITokenInformation;
+import com.security.jwt.interfaces.IAuthenticationGenerator;
 import com.security.jwt.model.User;
 import com.security.jwt.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +18,18 @@ import static com.security.jwt.enums.TokenKeyEnum.USERNAME;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class Spring5MicroserviceJwtGenerator implements ITokenInformation {
+public class Spring5MicroserviceAuthenticationGenerator implements IAuthenticationGenerator {
 
     private UserService userService;
 
     @Autowired
-    public Spring5MicroserviceJwtGenerator(@Lazy UserService userService) {
+    public Spring5MicroserviceAuthenticationGenerator(@Lazy UserService userService) {
         this.userService = userService;
     }
 
 
     @Override
-    public RawAuthenticationInformationDto getTokenInformation(String username) {
+    public RawAuthenticationInformationDto getRawAuthenticationInformation(String username) {
         User user = (User) userService.loadUserByUsername(username);
         return RawAuthenticationInformationDto.builder()
                 .accessTokenInformation(getAccessTokenInformation(user))

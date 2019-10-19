@@ -97,11 +97,11 @@ create table security.oauth_client_details (
 
 
 create table security.jwt_client_details (
-  client_id                 varchar(64)    constraint jwt_client_details_pk primary key,
-  jwt_secret                varchar(256)   not null,
-  jwt_algorithm             varchar(16)    not null,
-  jwt_configuration         varchar(128)   not null,
-  token_type                varchar(32)    not null,
-  access_token_validity     int            not null,
-  refresh_token_validity    int            not null
+  client_id                  varchar(64)    constraint jwt_client_details_pk primary key,
+  jwt_secret                 varchar(256)   not null,
+  jwt_algorithm              varchar(16)    not null,
+  authentication_generator   varchar(128)   not null,
+  token_type                 varchar(32)    not null,
+  access_token_validity      int            not null,
+  refresh_token_validity     int            not null
 );

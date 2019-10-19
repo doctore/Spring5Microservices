@@ -1,5 +1,6 @@
 package com.security.jwt.service;
 
+import com.security.jwt.model.User;
 import com.security.jwt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -23,14 +24,14 @@ public class UserService implements UserDetailsService {
 
 
     /**
-     * Gets {@link UserDetails} information in database related with the given {@link User#username}
+     * Gets {@link UserDetails} information in database related with the given {@link User#getUsername()}
      *
      * @param username
-     *    Username to search a coincidence in {@link User#username}
+     *    Username to search a coincidence in {@link User#getUsername()}
      *
      * @return {@link UserDetails}
      *
-     * @throws UsernameNotFoundException if the given username does not exists in database.
+     * @throws UsernameNotFoundException if the given {@code username} does not exists in database.
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override

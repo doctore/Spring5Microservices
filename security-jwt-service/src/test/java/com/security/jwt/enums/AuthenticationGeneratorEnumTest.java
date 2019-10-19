@@ -15,7 +15,7 @@ import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
-public class JwtGeneratorConfigurationEnumTest {
+public class AuthenticationGeneratorEnumTest {
 
 
     static Stream<Arguments> getByClientIdTestCases() {
@@ -24,15 +24,15 @@ public class JwtGeneratorConfigurationEnumTest {
                 //            clientId,                                                            expectedResult
                 Arguments.of( null,                                                                empty() ),
                 Arguments.of( "NotFoundClientId",                                                  empty() ),
-                Arguments.of( JwtGeneratorConfigurationEnum.SPRING5_MICROSERVICES.getClientId(),   of(JwtGeneratorConfigurationEnum.SPRING5_MICROSERVICES) )
+                Arguments.of( AuthenticationGeneratorEnum.SPRING5_MICROSERVICES.getClientId(),   of(AuthenticationGeneratorEnum.SPRING5_MICROSERVICES) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getByClientIdTestCases")
     @DisplayName("getByClientId: test cases")
-    public void getByClientId_testCases(String clientId, Optional<JwtGeneratorConfigurationEnum> expectedResult) {
-        assertEquals(expectedResult, JwtGeneratorConfigurationEnum.getByClientId(clientId));
+    public void getByClientId_testCases(String clientId, Optional<AuthenticationGeneratorEnum> expectedResult) {
+        assertEquals(expectedResult, AuthenticationGeneratorEnum.getByClientId(clientId));
     }
 
 }

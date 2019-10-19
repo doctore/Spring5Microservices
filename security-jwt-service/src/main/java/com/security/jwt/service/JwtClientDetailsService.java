@@ -1,4 +1,4 @@
-package com.security.jwt.service.jwt;
+package com.security.jwt.service;
 
 import com.security.jwt.configuration.cache.CacheConfiguration;
 import com.security.jwt.exception.ClientNotFoundException;
@@ -38,7 +38,7 @@ public class JwtClientDetailsService {
      *
      * @return {@link Optional} of {@link JwtClientDetails} is exists, {@link Optional#empty()} otherwise
      *
-     * @throws ClientNotFoundException if the given username does not exists in database.
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database.
      */
     public JwtClientDetails findByClientId(String clientId) {
         return ofNullable(clientId)

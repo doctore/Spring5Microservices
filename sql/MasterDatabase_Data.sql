@@ -90,7 +90,7 @@ VALUES ('Spring5Microservices', '{bcrypt}$2a$10$NlKX/TyTk41qraDjxg98L.xFdu7IQYRo
 
 INSERT INTO security.jwt_client_details (client_id
                                         ,jwt_secret
-                                        ,jwt_algorithm, jwt_configuration, token_type
+                                        ,jwt_algorithm, authentication_generator, token_type
                                         ,access_token_validity, refresh_token_validity)
 VALUES ('Spring5Microservices'
         -- Raw password: Spring5Microservices_999#secret#789(jwt)$3411781_GTDSAET-569016310k

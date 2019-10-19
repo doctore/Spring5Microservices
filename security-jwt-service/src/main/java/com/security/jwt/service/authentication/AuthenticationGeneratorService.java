@@ -1,16 +1,19 @@
-package com.security.jwt.service.jwt;
+package com.security.jwt.service.authentication;
 
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
-import com.security.jwt.enums.JwtGeneratorConfigurationEnum;
+import com.security.jwt.enums.AuthenticationGeneratorEnum;
 import com.security.jwt.enums.TokenKeyEnum;
+import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.model.User;
+import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.util.JwtUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class JwtGeneratorService {
+public class AuthenticationGeneratorService {
 
     private ApplicationContext applicationContext;
     private JwtClientDetailsService jwtClientDetailsService;
@@ -28,8 +31,8 @@ public class JwtGeneratorService {
     private TextEncryptor encryptor;
 
     @Autowired
-    public JwtGeneratorService(@Lazy ApplicationContext applicationContext, @Lazy JwtClientDetailsService jwtClientDetailsService,
-                               @Lazy JwtUtil jwtUtil, @Lazy TextEncryptor encryptor) {
+    public AuthenticationGeneratorService(@Lazy ApplicationContext applicationContext, @Lazy JwtClientDetailsService jwtClientDetailsService,
+                                          @Lazy JwtUtil jwtUtil, @Lazy TextEncryptor encryptor) {
         this.applicationContext = applicationContext;
         this.jwtClientDetailsService = jwtClientDetailsService;
         this.jwtUtil = jwtUtil;
@@ -47,13 +50,16 @@ public class JwtGeneratorService {
      *    {@link User#getUsername()} who is trying to authenticate
      *
      * @return {@link Optional} of {@link AuthenticationInformationDto}
+     *
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database.
+     * @throws UsernameNotFoundException if the given {@code username} does not exists in database.
      */
-    public Optional<AuthenticationInformationDto> generateTokenResponse(String clientId, String username) {
-        return JwtGeneratorConfigurationEnum.getByClientId(clientId)
-                .map(generatorConfiguration -> applicationContext.getBean(generatorConfiguration.getJwtGeneratorClass()))
+    public Optional<AuthenticationInformationDto> getAuthenticationInformation(String clientId, String username) {
+        return AuthenticationGeneratorEnum.getByClientId(clientId)
+                .map(generatorConfiguration -> applicationContext.getBean(generatorConfiguration.getAuthenticationGeneratorClass()))
                 .map(generator -> {
                     JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-                    RawAuthenticationInformationDto jwtRawInformation = generator.getTokenInformation(username);
+                    RawAuthenticationInformationDto jwtRawInformation = generator.getRawAuthenticationInformation(username);
                     return buildAuthenticationInformation(clientDetails, jwtRawInformation, UUID.randomUUID().toString());
                 });
     }
@@ -80,7 +86,7 @@ public class JwtGeneratorService {
                 .tokenType(clientDetails.getTokenType())
                 .jwtId(jti)
                 .expiresIn(clientDetails.getAccessTokenValidity())
-                .additionalInfo(jwtRawInformation.getAdditionalTokenInformation())
+                .additionalInfo(null != jwtRawInformation ? jwtRawInformation.getAdditionalTokenInformation() : null)
                 .build();
     }
 
@@ -99,8 +105,9 @@ public class JwtGeneratorService {
      */
     private String buildAccessToken(JwtClientDetails clientDetails, RawAuthenticationInformationDto jwtRawInformation,
                                     String jti) {
-        Map<String, Object> tokenInformation = new HashMap<>(jwtRawInformation.getAccessTokenInformation());
-        tokenInformation.putAll(addToAccessToken(clientDetails.getClientId(), jti));
+        Map<String, Object> tokenInformation = new HashMap<>(addToAccessToken(clientDetails.getClientId(), jti));
+        if (null != jwtRawInformation)
+            tokenInformation.putAll(jwtRawInformation.getAccessTokenInformation());
 
         return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getJwtAlgorithm(),
                                         decryptJwtSecret(clientDetails.getJwtSecret()), clientDetails.getAccessTokenValidity())
@@ -122,8 +129,9 @@ public class JwtGeneratorService {
      */
     private String buildRefreshToken(JwtClientDetails clientDetails, RawAuthenticationInformationDto jwtRawInformation,
                                      String jti) {
-        Map<String, Object> tokenInformation = new HashMap<>(jwtRawInformation.getRefreshTokenInformation());
-        tokenInformation.putAll(addToRefreshToken(clientDetails.getClientId(), jti));
+        Map<String, Object> tokenInformation = new HashMap<>(addToRefreshToken(clientDetails.getClientId(), jti));
+        if (null != jwtRawInformation)
+            tokenInformation.putAll(jwtRawInformation.getRefreshTokenInformation());
 
         return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getJwtAlgorithm(),
                                         decryptJwtSecret(clientDetails.getJwtSecret()), clientDetails.getRefreshTokenValidity())

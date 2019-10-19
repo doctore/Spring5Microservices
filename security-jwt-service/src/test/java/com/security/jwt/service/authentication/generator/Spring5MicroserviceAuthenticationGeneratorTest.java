@@ -1,10 +1,11 @@
-package com.security.jwt.service.jwt.generator;
+package com.security.jwt.service.authentication.generator;
 
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.RoleEnum;
 import com.security.jwt.model.Role;
 import com.security.jwt.model.User;
 import com.security.jwt.service.UserService;
+import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,30 +26,30 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-public class Spring5MicroserviceJwtGeneratorTest {
+public class Spring5MicroserviceAuthenticationGeneratorTest {
 
     @Mock
     private UserService mockUserService;
 
-    private Spring5MicroserviceJwtGenerator spring5MicroserviceJwtGenerator;
+    private Spring5MicroserviceAuthenticationGenerator spring5MicroserviceAuthenticationGenerator;
 
 
     @BeforeEach
     public void init() {
-        spring5MicroserviceJwtGenerator = new Spring5MicroserviceJwtGenerator(mockUserService);
+        spring5MicroserviceAuthenticationGenerator = new Spring5MicroserviceAuthenticationGenerator(mockUserService);
     }
 
 
     @Test
-    @DisplayName("getTokenInformation: when an existent username is given then related information is returned")
-    public void getTokenInformation_whenAnExistentUsernameIsGiven_thenRelatedInformationIsReturned() {
+    @DisplayName("getRawAuthenticationInformation: when an existent username is given then related information is returned")
+    public void getRawAuthenticationInformation_whenAnExistentUsernameIsGiven_thenRelatedInformationIsReturned() {
         // Given
         Role role = Role.builder().name(RoleEnum.ADMIN).build();
         User user = User.builder().username("test username").name("test name").roles(new HashSet<>(asList(role))).build();
 
         // When
         when(mockUserService.loadUserByUsername(user.getUsername())).thenReturn(user);
-        RawAuthenticationInformationDto rawTokenInformation = spring5MicroserviceJwtGenerator.getTokenInformation(user.getUsername());
+        RawAuthenticationInformationDto rawTokenInformation = spring5MicroserviceAuthenticationGenerator.getRawAuthenticationInformation(user.getUsername());
 
         // Then
         checkTokenInformation(rawTokenInformation, user);
