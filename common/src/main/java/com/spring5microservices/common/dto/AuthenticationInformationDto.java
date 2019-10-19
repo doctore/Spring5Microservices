@@ -16,7 +16,7 @@ import java.util.Map;
 @Builder
 @Data
 @NoArgsConstructor
-public class TokenInformationDto implements Serializable {
+public class AuthenticationInformationDto implements Serializable {
 
     private static final long serialVersionUID = -4007535195077048326L;
 
@@ -24,7 +24,7 @@ public class TokenInformationDto implements Serializable {
     private String accessToken;
 
     @JsonProperty(value = "expires_in")
-    private String expiresIn;
+    private int expiresIn;
 
     @JsonProperty(value = "refresh_token")
     private String refreshToken;
@@ -35,7 +35,7 @@ public class TokenInformationDto implements Serializable {
     private String scope;
 
     @JsonProperty(value = "jti")
-    private String JwtId;
+    private String jwtId;
 
     private Map<String, Object> additionalInfo;
 

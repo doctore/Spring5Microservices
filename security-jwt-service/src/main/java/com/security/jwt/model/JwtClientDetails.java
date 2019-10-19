@@ -31,7 +31,7 @@ public class JwtClientDetails implements Serializable {
     
     @Id
     @NotNull
-    @Size(min=1,max=128)
+    @Size(min=1,max=64)
     private String clientId;
 
     @NotNull

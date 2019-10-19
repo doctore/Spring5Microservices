@@ -1,6 +1,6 @@
 package com.security.jwt.interfaces;
 
-import com.security.jwt.dto.RawTokenInformationDto;
+import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.model.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
@@ -15,11 +15,11 @@ public interface ITokenInformation {
      * @param username
      *    {@link User} identifier use to get the information to fill the tokens
      *
-     * @return {@link RawTokenInformationDto} with information to include
+     * @return {@link RawAuthenticationInformationDto} with information to include
      *
      * @throws UsernameNotFoundException if the given username does not exists.
      */
-    RawTokenInformationDto getTokenInformation(String username);
+    RawAuthenticationInformationDto getTokenInformation(String username);
 
     /**
      * Return the key in the access token used to store the username information.

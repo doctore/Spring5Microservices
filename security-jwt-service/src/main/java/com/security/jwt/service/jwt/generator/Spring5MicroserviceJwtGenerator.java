@@ -1,6 +1,6 @@
 package com.security.jwt.service.jwt.generator;
 
-import com.security.jwt.dto.RawTokenInformationDto;
+import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.interfaces.ITokenInformation;
 import com.security.jwt.model.User;
 import com.security.jwt.service.UserService;
@@ -29,9 +29,9 @@ public class Spring5MicroserviceJwtGenerator implements ITokenInformation {
 
 
     @Override
-    public RawTokenInformationDto getTokenInformation(String username) {
+    public RawAuthenticationInformationDto getTokenInformation(String username) {
         User user = (User) userService.loadUserByUsername(username);
-        return RawTokenInformationDto.builder()
+        return RawAuthenticationInformationDto.builder()
                 .accessTokenInformation(getAccessTokenInformation(user))
                 .refreshTokenInformation(getRefreshTokenInformation(user))
                 .additionalTokenInformation(getAdditionalTokenInformation(user))
@@ -50,25 +50,26 @@ public class Spring5MicroserviceJwtGenerator implements ITokenInformation {
         return AUTHORITIES.getKey();
     }
 
+
     private Map<String, Object> getAccessTokenInformation(User user) {
-        Map<String, Object> accessTokenInformation = new HashMap<>();
-        accessTokenInformation.put(USERNAME.getKey(), user.getUsername());
-        accessTokenInformation.put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
-        accessTokenInformation.put(NAME.getKey(), user.getName());
-        return accessTokenInformation;
+        return new HashMap<String, Object>() {{
+            put(USERNAME.getKey(), user.getUsername());
+            put(NAME.getKey(), user.getName());
+            put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
+        }};
     }
 
     private Map<String, Object> getRefreshTokenInformation(User user) {
-        Map<String, Object> refreshTokenInformation = new HashMap<>();
-        refreshTokenInformation.put(USERNAME.getKey(), user.getUsername());
-        return refreshTokenInformation;
+        return new HashMap<String, Object>() {{
+            put(USERNAME.getKey(), user.getUsername());
+        }};
     }
 
     private Map<String, Object> getAdditionalTokenInformation(User user) {
-        Map<String, Object> additionalTokenInformation = new HashMap<>();
-        additionalTokenInformation.put(USERNAME.getKey(), user.getUsername());
-        additionalTokenInformation.put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
-        return additionalTokenInformation;
+        return new HashMap<String, Object>() {{
+            put(USERNAME.getKey(), user.getUsername());
+            put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
+        }};
     }
 
 }

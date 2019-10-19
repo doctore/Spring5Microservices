@@ -1,6 +1,6 @@
 package com.security.jwt.service.jwt.generator;
 
-import com.security.jwt.dto.RawTokenInformationDto;
+import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.RoleEnum;
 import com.security.jwt.model.Role;
 import com.security.jwt.model.User;
@@ -48,13 +48,13 @@ public class Spring5MicroserviceJwtGeneratorTest {
 
         // When
         when(mockUserService.loadUserByUsername(user.getUsername())).thenReturn(user);
-        RawTokenInformationDto rawTokenInformation = spring5MicroserviceJwtGenerator.getTokenInformation(user.getUsername());
+        RawAuthenticationInformationDto rawTokenInformation = spring5MicroserviceJwtGenerator.getTokenInformation(user.getUsername());
 
         // Then
         checkTokenInformation(rawTokenInformation, user);
     }
 
-    private void checkTokenInformation(RawTokenInformationDto rawTokenInformation, User user) {
+    private void checkTokenInformation(RawAuthenticationInformationDto rawTokenInformation, User user) {
         assertNotNull(rawTokenInformation);
         assertNotNull(rawTokenInformation.getAccessTokenInformation());
         assertNotNull(rawTokenInformation.getRefreshTokenInformation());

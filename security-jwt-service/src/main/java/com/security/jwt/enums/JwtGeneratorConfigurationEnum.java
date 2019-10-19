@@ -20,6 +20,7 @@ public enum JwtGeneratorConfigurationEnum {
     private Class<? extends ITokenInformation> jwtGeneratorClass;
 
     JwtGeneratorConfigurationEnum(String clientId, Class<? extends ITokenInformation> jwtGeneratorClass) {
+        this.clientId = clientId;
         this.jwtGeneratorClass = jwtGeneratorClass;
     }
 
