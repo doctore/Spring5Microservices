@@ -24,7 +24,6 @@
         <spring-security-jwt.version>1.0.10.RELEASE</spring-security-jwt.version>
         <spring-security-oauth2.version>2.3.6.RELEASE</spring-security-oauth2.version>
         <spring5-microservices-common.version>0.0.1</spring5-microservices-common.version>
-        <springfox-swagger.version>2.9.2</springfox-swagger.version>
     </properties>
 
     <dependencies>
@@ -105,17 +104,6 @@
             <groupId>org.cache2k</groupId>
             <artifactId>cache2k-spring</artifactId>
             <version>${cache2k.version}</version>
-        </dependency>
-        <!--Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
         </dependency>
         <!-- Required if we are using JDK >= 9 to avoid:
                 java.lang.ClassNotFoundException: com.sun.xml.internal.bind.v2.ContextFactory -->

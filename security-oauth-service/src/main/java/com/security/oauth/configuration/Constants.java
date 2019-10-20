@@ -5,12 +5,6 @@ package com.security.oauth.configuration;
  */
 public class Constants {
 
-    // Documentation API version
-    public static final String DOCUMENTATION_API_VERSION = "1.0";
-
-    // Default charset for plain text
-    public static final String TEXT_PLAIN_UTF8_VALUE = "text/plain;charset=UTF-8";
-
     // Database schemas on which the entities have been included
     public static final class DATABASE_SCHEMA {
         public static final String EAT = "eat";

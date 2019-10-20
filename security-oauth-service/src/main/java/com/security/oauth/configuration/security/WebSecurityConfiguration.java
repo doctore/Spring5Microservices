@@ -1,6 +1,5 @@
 package com.security.oauth.configuration.security;
 
-import com.security.oauth.configuration.documentation.DocumentationConfiguration;
 import com.security.oauth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,14 +13,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 
 import javax.servlet.http.HttpServletResponse;
 
-import static org.springframework.http.HttpMethod.GET;
-
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private DocumentationConfiguration documentationConfiguration;
 
     @Autowired
     private UserService userService;
@@ -51,8 +45,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             // Authorization requests config
             .authorizeRequests()
-            // List of services do not require authentication
-            .antMatchers(GET, documentationConfiguration.getDocumentationPath()).permitAll()
             // Any other request must be authenticated
             .anyRequest().authenticated();
     }
