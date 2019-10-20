@@ -21,6 +21,7 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <junit.jupiter-platform.version>1.5.2</junit.jupiter-platform.version>
         <mapstruct-processor.version>1.3.0.Final</mapstruct-processor.version>
+        <springfox-swagger.version>2.9.2</springfox-swagger.version>
     </properties>
 
     <dependencies>
@@ -62,6 +63,12 @@
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct-processor.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!--Swagger -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${springfox-swagger.version}</version>
         </dependency>
         <!-- Work with Json -->
         <dependency>

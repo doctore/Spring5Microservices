@@ -42,7 +42,7 @@ public class UserService implements UserDetailsService {
                     new AccountStatusUserDetailsChecker().check(u);
                     return u;
                 })
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("User %s not found in database", username)));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("Username: %s not found in database", username)));
     }
 
 }

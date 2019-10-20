@@ -1,20 +1,22 @@
-package com.security.jwt.service.authentication.generator;
+package com.security.jwt.service.generator;
 
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.RoleEnum;
 import com.security.jwt.model.Role;
 import com.security.jwt.model.User;
 import com.security.jwt.service.UserService;
-import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
+import com.security.jwt.service.generator.Spring5MicroserviceAuthenticationGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
+import java.util.Optional;
 
 import static com.security.jwt.enums.TokenKeyEnum.AUTHORITIES;
 import static com.security.jwt.enums.TokenKeyEnum.NAME;
@@ -23,6 +25,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -31,28 +34,35 @@ public class Spring5MicroserviceAuthenticationGeneratorTest {
     @Mock
     private UserService mockUserService;
 
+    @Mock
+    private PasswordEncoder mockPasswordEncoder;
+
     private Spring5MicroserviceAuthenticationGenerator spring5MicroserviceAuthenticationGenerator;
 
 
     @BeforeEach
     public void init() {
-        spring5MicroserviceAuthenticationGenerator = new Spring5MicroserviceAuthenticationGenerator(mockUserService);
+        spring5MicroserviceAuthenticationGenerator = new Spring5MicroserviceAuthenticationGenerator(mockUserService, mockPasswordEncoder);
     }
 
 
+    // TODO: REWRITE TESTS
+
+
     @Test
-    @DisplayName("getRawAuthenticationInformation: when an existent username is given then related information is returned")
-    public void getRawAuthenticationInformation_whenAnExistentUsernameIsGiven_thenRelatedInformationIsReturned() {
+    @DisplayName("refreshRawAuthenticationInformation: when an existent username is given then related information is returned")
+    public void refreshRawAuthenticationInformation_whenAnExistentUsernameIsGiven_thenRelatedInformationIsReturned() {
         // Given
         Role role = Role.builder().name(RoleEnum.ADMIN).build();
         User user = User.builder().username("test username").name("test name").roles(new HashSet<>(asList(role))).build();
 
         // When
         when(mockUserService.loadUserByUsername(user.getUsername())).thenReturn(user);
-        RawAuthenticationInformationDto rawTokenInformation = spring5MicroserviceAuthenticationGenerator.getRawAuthenticationInformation(user.getUsername());
+        Optional<RawAuthenticationInformationDto> rawTokenInformation = spring5MicroserviceAuthenticationGenerator.refreshRawAuthenticationInformation(user.getUsername());
 
         // Then
-        checkTokenInformation(rawTokenInformation, user);
+        assertTrue(rawTokenInformation.isPresent());
+        checkTokenInformation(rawTokenInformation.get(), user);
     }
 
     private void checkTokenInformation(RawAuthenticationInformationDto rawTokenInformation, User user) {

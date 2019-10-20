@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
 @Component
@@ -47,7 +48,7 @@ public class JwtUtil {
                                              String jwtSecretKey, long expirationTimeInSeconds) {
         Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
         Assert.notNull(jwtSecretKey, "jwtSecretKey cannot be null");
-        return Optional.ofNullable(informationToInclude)
+        return ofNullable(informationToInclude)
                 .map(ud -> {
                     Date now = new Date();
                     Date expirationDate = new Date(now.getTime() + (expirationTimeInSeconds * 1000));
@@ -78,7 +79,6 @@ public class JwtUtil {
             return getExpirationDateFromToken(token, jwtSecretKey)
                     .map(exp -> exp.after(new Date()))
                     .orElse(false);
-
         } catch (JwtException ex) {
             log.error(String.format("There was an error checking if the token %s is valid", token), ex);
             return false;
@@ -102,7 +102,7 @@ public class JwtUtil {
      */
     public Optional<String> getUsername(String token, String jwtSecretKey, String usernameKeyInToken) {
         try {
-            return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey,
+            return ofNullable(getClaimFromToken(token, jwtSecretKey,
                     (claims) -> claims.get(usernameKeyInToken, String.class)));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the username of token %s", token), ex);
@@ -158,7 +158,6 @@ public class JwtUtil {
                     .entrySet().stream()
                     .filter(e -> !claimsToExclude.contains(e.getKey()))
                     .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-
         } catch (JwtException ex) {
             log.error(String.format("There was an error filtering the information of token %s", token), ex);
             return new HashMap<>();
@@ -180,7 +179,7 @@ public class JwtUtil {
      */
     private Optional<Date> getExpirationDateFromToken(String token, String jwtSecretKey) {
         try {
-            return Optional.ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
+            return ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
         } catch (JwtException ex) {
             log.error(String.format("There was an error getting the expiration date of token %s", token), ex);
             return empty();

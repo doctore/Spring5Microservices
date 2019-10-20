@@ -1,11 +1,10 @@
-package com.security.jwt.service.authentication;
+package com.security.jwt.service;
 
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationGeneratorEnum;
 import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.service.JwtClientDetailsService;
-import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
+import com.security.jwt.service.generator.Spring5MicroserviceAuthenticationGenerator;
 import com.security.jwt.util.JwtUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -28,6 +27,7 @@ import java.util.stream.Stream;
 import static com.security.jwt.enums.TokenKeyEnum.AUTHORITIES;
 import static com.security.jwt.enums.TokenKeyEnum.NAME;
 import static com.security.jwt.enums.TokenKeyEnum.USERNAME;
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-public class AuthenticationGeneratorServiceTest {
+public class SecurityServiceTest {
 
     @Mock
     private ApplicationContext mockApplicationContext;
@@ -56,38 +56,39 @@ public class AuthenticationGeneratorServiceTest {
     @Mock
     private TextEncryptor mockEncryptor;
 
-    private AuthenticationGeneratorService authenticationGeneratorService;
+    private SecurityService securityService;
 
 
     @BeforeEach
     public void init() {
-        authenticationGeneratorService = new AuthenticationGeneratorService(mockApplicationContext, mockJwtClientDetailsService, mockJwtUtil, mockEncryptor);
+        securityService = new SecurityService(mockApplicationContext, mockJwtClientDetailsService, mockJwtUtil, mockEncryptor);
     }
 
 
-    static Stream<Arguments> getAuthenticationInformationTestCases() {
+    static Stream<Arguments> loginTestCases() {
         String clientId = AuthenticationGeneratorEnum.SPRING5_MICROSERVICES.getClientId();
         String username = "username value";
+        String password = "password value";
         Spring5MicroserviceAuthenticationGenerator authenticationGenerator = Mockito.mock(Spring5MicroserviceAuthenticationGenerator.class);
         JwtClientDetails clientDetails = buildDefaultClientDetails(clientId);
-        RawAuthenticationInformationDto rawAuthenticationInformation = buildDefaultRawAuthenticationInformation();
+        Optional<RawAuthenticationInformationDto> rawAuthenticationInformation = of(buildDefaultRawAuthenticationInformation());
         return Stream.of(
                 //@formatter:off
-                //            clientId,   username,   authenticationGenerator,   clientDetailsResult,   rawAuthenticationInformation,   isResultEmpty
-                Arguments.of( null,       null,       null,                      clientDetails,         null,                           true ),
-                Arguments.of( clientId,   null,       null,                      clientDetails,         null,                           true ),
-                Arguments.of( clientId,   username,   null,                      clientDetails,         null,                           true ),
-                Arguments.of( clientId,   username,   authenticationGenerator,   clientDetails,         null,                           false ),
-                Arguments.of( clientId,   username,   authenticationGenerator,   clientDetails,         rawAuthenticationInformation,   false )
+                //            clientId,   username,   password,   authenticationGenerator,   clientDetailsResult,   rawAuthenticationInformation,   isResultEmpty
+                Arguments.of( null,       null,       null,       null,                      clientDetails,         empty(),                        true ),
+                Arguments.of( clientId,   null,       null,       null,                      clientDetails,         empty(),                        true ),
+                Arguments.of( clientId,   username,   null,       null,                      clientDetails,         empty(),                        true ),
+                Arguments.of( clientId,   username,   password,   authenticationGenerator,   clientDetails,         empty(),                        true ),
+                Arguments.of( clientId,   username,   password,   authenticationGenerator,   clientDetails,         rawAuthenticationInformation,   false )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("getAuthenticationInformationTestCases")
-    @DisplayName("getAuthenticationInformation: test cases")
-    public void getAuthenticationInformation_testCases(String clientId, String username, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
-                                                       JwtClientDetails clientDetailsResult, RawAuthenticationInformationDto rawAuthenticationInformation,
-                                                       boolean isResultEmpty) {
+    @MethodSource("loginTestCases")
+    @DisplayName("login: test cases")
+    public void login_testCases(String clientId, String username, String password, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+                                JwtClientDetails clientDetailsResult, Optional<RawAuthenticationInformationDto> rawAuthenticationInformation,
+                                boolean isResultEmpty) {
         Optional<String> jwtToken = of("JWT token");
         String jwtSecret = "secretKey";
 
@@ -96,18 +97,18 @@ public class AuthenticationGeneratorServiceTest {
         when(mockEncryptor.decrypt(anyString())).thenReturn(jwtSecret);
 
         if (null != authenticationGenerator){
-            when(authenticationGenerator.getRawAuthenticationInformation(username)).thenReturn(rawAuthenticationInformation);
+            when(authenticationGenerator.getRawAuthenticationInformation(username, password)).thenReturn(rawAuthenticationInformation);
         }
         if (null != clientDetailsResult) {
             when(mockJwtUtil.generateJwtToken(anyMap(), eq(clientDetailsResult.getJwtAlgorithm()), anyString(), anyInt())).thenReturn(jwtToken);
         }
-        Optional<AuthenticationInformationDto> result = authenticationGeneratorService.getAuthenticationInformation(clientId, username);
-        verifyGetAuthenticationInformationResult(clientDetailsResult, rawAuthenticationInformation, result, isResultEmpty);
+        Optional<AuthenticationInformationDto> result = securityService.login(clientId, username, password);
+        verifyloginResult(clientDetailsResult, rawAuthenticationInformation, result, isResultEmpty);
     }
 
 
-    private void verifyGetAuthenticationInformationResult(JwtClientDetails clientDetailsResult, RawAuthenticationInformationDto rawAuthenticationInformation,
-                                                          Optional<AuthenticationInformationDto> result, boolean isResultEmpty) {
+    private void verifyloginResult(JwtClientDetails clientDetailsResult, Optional<RawAuthenticationInformationDto> rawAuthenticationInformation,
+                                   Optional<AuthenticationInformationDto> result, boolean isResultEmpty) {
         if (isResultEmpty)
             assertFalse(result.isPresent());
         else {
@@ -118,11 +119,11 @@ public class AuthenticationGeneratorServiceTest {
             assertEquals(clientDetailsResult.getTokenType(), result.get().getTokenType());
             assertNull(result.get().getScope());
             assertFalse(result.get().getJwtId().isEmpty());
-            if (null == rawAuthenticationInformation) {
+            if (!rawAuthenticationInformation.isPresent()) {
                 assertNull(result.get().getAdditionalInfo());
             }
             else {
-                assertEquals(rawAuthenticationInformation.getAdditionalTokenInformation(), result.get().getAdditionalInfo());
+                assertEquals(rawAuthenticationInformation.get().getAdditionalTokenInformation(), result.get().getAdditionalInfo());
             }
         }
     }
