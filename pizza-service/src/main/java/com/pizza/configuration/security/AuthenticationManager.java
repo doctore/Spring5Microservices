@@ -74,7 +74,6 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
      * @return {@link UsernamePasswordAuthenticationToken}
      */
     private UsernamePasswordAuthenticationToken getFromUsernameAuthoritiesDto(UsernameAuthoritiesDto usernameAuthoritiesDto) {
-
         Collection<? extends GrantedAuthority> authorities = usernameAuthoritiesDto.getAuthorities()
                                                                                    .stream()
                                                                                    .map(a -> new SimpleGrantedAuthority(a))

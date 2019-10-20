@@ -7,6 +7,7 @@ public final class RestRoutes {
 
     public static final class SECURITY {
         public static final String ROOT = "/security";
+        public static final String LOGIN = "/login";
     }
 
 }
