@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
@@ -29,12 +30,15 @@ public class UserServiceTest {
     @Mock
     private UserRepository mockUserRepository;
 
+    @Mock
+    private PasswordEncoder mockPasswordEncoder;
+
     private UserService userService;
 
 
     @BeforeEach
     public void init() {
-        userService = new UserService(mockUserRepository);
+        userService = new UserService(mockUserRepository, mockPasswordEncoder);
     }
 
 
@@ -63,6 +67,27 @@ public class UserServiceTest {
         else {
             assertEquals(expectedResult, userService.loadUserByUsername(username));
         }
+    }
+
+
+    static Stream<Arguments> passwordsMatchTestCases() {
+        return Stream.of(
+                //@formatter:off
+                //            rawPassword,     encodedPassword,     passwordEncoderResult,   expectedResult
+                Arguments.of( null,            null,                false,                   false ),
+                Arguments.of( "",              null,                false,                   false ),
+                Arguments.of( "",              "",                  false,                   false ),
+                Arguments.of( "rawPassword",   "encodedPassword",   false,                   false ),
+                Arguments.of( "rawPassword",   "encodedPassword",   true,                    true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("passwordsMatchTestCases")
+    @DisplayName("passwordsMatch: test cases")
+    public void passwordsMatch_testCases(String rawPassword, String encodedPassword, boolean passwordEncoderResult, boolean expectedResult) {
+        when(mockPasswordEncoder.matches(rawPassword, encodedPassword)).thenReturn(passwordEncoderResult);
+        assertEquals(expectedResult, userService.passwordsMatch(rawPassword, encodedPassword));
     }
 
 }

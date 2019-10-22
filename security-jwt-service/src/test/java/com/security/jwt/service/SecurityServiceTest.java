@@ -1,49 +1,19 @@
 package com.security.jwt.service;
 
-import com.security.jwt.configuration.Constants;
-import com.security.jwt.dto.RawAuthenticationInformationDto;
-import com.security.jwt.enums.AuthenticationGeneratorEnum;
-import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.service.generator.Spring5MicroserviceAuthenticationGenerator;
-import com.security.jwt.util.JwtUtil;
-import com.spring5microservices.common.dto.AuthenticationInformationDto;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.context.ApplicationContext;
-import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static com.security.jwt.enums.TokenKeyEnum.AUTHORITIES;
-import static com.security.jwt.enums.TokenKeyEnum.NAME;
-import static com.security.jwt.enums.TokenKeyEnum.USERNAME;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 public class SecurityServiceTest {
 
+    /*
     @Mock
     private ApplicationContext mockApplicationContext;
 
@@ -153,5 +123,7 @@ public class SecurityServiceTest {
                 }})
                 .build();
     }
+
+     */
 
 }

@@ -55,9 +55,10 @@ public class SecurityController {
             response = AuthenticationInformationDto.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful operation with the authentication information in the response", response = AuthenticationInformationDto.class),
-            @ApiResponse(code = 400, message = "Invalid username/password/clientId supplied taking into account included format validations"),
-            @ApiResponse(code = 401, message = "User with given username/password or clientId does not exist"),
-            @ApiResponse(code = 500, message = "There is a problem in the user account or any other internal server error")})
+            @ApiResponse(code = 400, message = "Invalid username, password or clientId supplied taking into account included format validations"),
+            @ApiResponse(code = 401, message = "The user is not active or the given password does not belongs to the username"),
+            @ApiResponse(code = 404, message = "The given username or clientId does not exist"),
+            @ApiResponse(code = 500, message = "Any other internal server error")})
     @PostMapping(value = RestRoutes.SECURITY.LOGIN + "/{clientId}")
     public ResponseEntity<AuthenticationInformationDto> login(
               @ApiParam(value = "Username and password used to login the user", required = true)
@@ -87,10 +88,10 @@ public class SecurityController {
             response = AuthenticationInformationDto.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful operation with the authentication information in the response", response = AuthenticationInformationDto.class),
-            @ApiResponse(code = 400, message = "Given token/clientId does not verify included format validations"),
-            @ApiResponse(code = 401, message = "Refresh token is not valid or not belongs to given clientId"),
+            @ApiResponse(code = 400, message = "Given token or clientId does not verify included format validations"),
+            @ApiResponse(code = 401, message = "The user is not active, refresh token is not valid or not belongs to given clientId"),
             @ApiResponse(code = 440, message = "Refresh token has expired"),
-            @ApiResponse(code = 500, message = "There is a problem in the user account or any other internal server error")})
+            @ApiResponse(code = 500, message = "Any other internal server error")})
     @PostMapping(value = RestRoutes.SECURITY.REFRESH_TOKEN + "/{clientId}")
     public ResponseEntity<AuthenticationInformationDto> refreshToken(
               @ApiParam(value = "Refresh token used to generate a new authentication information", required = true)
@@ -120,12 +121,12 @@ public class SecurityController {
             response = UsernameAuthoritiesDto.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Successful operation with the authorization information in the response", response = UsernameAuthoritiesDto.class),
-            @ApiResponse(code = 400, message = "Given token/clientId does not verify included format validations"),
-            @ApiResponse(code = 401, message = "Access token is not valid or not belongs to given clientId"),
+            @ApiResponse(code = 400, message = "Given token or clientId does not verify included format validations"),
+            @ApiResponse(code = 401, message = "The user is not active, access token is not valid or not belongs to given clientId"),
             @ApiResponse(code = 440, message = "Access token has expired"),
-            @ApiResponse(code = 500, message = "There is a problem in the user account or any other internal server error")})
-    @GetMapping(RestRoutes.SECURITY.AUTHENTICATION_INFO + "/{clientId}" + "/{accessToken}")
-    public ResponseEntity<UsernameAuthoritiesDto> getAuthenticationInformation(
+            @ApiResponse(code = 500, message = "Any other internal server error")})
+    @GetMapping(RestRoutes.SECURITY.AUTHORIZATION_INFO + "/{clientId}" + "/{accessToken}")
+    public ResponseEntity<UsernameAuthoritiesDto> authorizationInformation(
             @ApiParam(value = "Access token used to get the authorization information", required = true)
             @PathVariable @Size(min = 1) String accessToken,
             @ApiParam(value = "Client identifier used to know what is the application the user belongs", required = true)

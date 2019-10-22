@@ -1,7 +1,7 @@
 package com.security.jwt.model;
 
 import com.security.jwt.configuration.Constants;
-import com.security.jwt.enums.AuthenticationGeneratorEnum;
+import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,7 +44,7 @@ public class JwtClientDetails implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private AuthenticationGeneratorEnum authenticationGenerator;
+    private AuthenticationConfigurationEnum authenticationGenerator;
 
     @NotNull
     @Size(min=1,max=32)
