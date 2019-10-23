@@ -178,8 +178,10 @@ public class JwtUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            token,                     jwtSecretKey,          expectedException,                keysToExclude,   expectedResult
-                Arguments.of( null,                      "ItDoesNotCare",       IllegalArgumentException.class,   null,            null ),
-                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   null,            null ),
+                Arguments.of( null,                      "ItDoesNotCare",       IllegalArgumentException.class,   keysToExclude,   null ),
+                Arguments.of( null,                      "ItDoesNotCare",       null,                             null,            new HashMap<>() ),
+                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   keysToExclude,   null ),
+                Arguments.of( "ItDoesNotCare",           null,                  null,                             null,            new HashMap<>() ),
                 Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   keysToExclude,   null ),
                 Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             null,            new HashMap<>() ),
                 Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             keysToExclude,   new HashMap<>() ),

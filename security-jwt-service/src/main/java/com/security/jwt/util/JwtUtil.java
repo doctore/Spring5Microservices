@@ -182,10 +182,12 @@ public class JwtUtil {
      */
     public Map<String, Object> getExceptGivenKeys(String token, String jwtSecretKey, Set<String> keysToExclude) {
         try {
-            return getAllClaimsFromToken(token, jwtSecretKey)
-                    .entrySet().stream()
-                    .filter(e -> !keysToExclude.contains(e.getKey()))
-                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+            return ofNullable(keysToExclude)
+                    .map(toExclude -> getAllClaimsFromToken(token, jwtSecretKey)
+                                         .entrySet().stream()
+                                         .filter(e -> !toExclude.contains(e.getKey()))
+                                         .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)))
+                    .orElse(new HashMap<>());
         } catch (JwtException ex) {
             log.error(format("There was an error filtering the information of token: %s", token), ex);
             return new HashMap<>();
