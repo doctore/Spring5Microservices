@@ -12,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -161,7 +162,7 @@ public class JwtUtilTest {
     }
 
 
-    static Stream<Arguments> getInformationExceptGivenClaimsTestCases() {
+    static Stream<Arguments> getExceptGivenClaimsTestCases() {
         String expiredJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIHZhbHVlIiwicm9sZXMiOlsiYWRtaW4iLCJ1c2VyIl0sIm5hbWUiOiJuYW1lI"
                                + "HZhbHVlIiwiYWdlIjoyMywiaWF0IjoxMDAwMDAwMDAwLCJleHAiOjEwMDAwMDAwMDB9.u1xbNQTk1Z_fq6FMK6qyKSmhwhU1MLvvBSMAfYM3FDs";
         String notExpiredEmptyJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI4Y2JjY2ZlMS04ZDg5LTRmNGYtODRmMS0yMGY5MGEyNjg5ODYiLCJpY"
@@ -169,36 +170,77 @@ public class JwtUtilTest {
         String notExpiredJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIHZhbHVlIiwicm9sZXMiOlsiYWRtaW4iLCJ1c2VyIl0sIm5hbWUiOiJuYW1lI"
                                   + "HZhbHVlIiwiYWdlIjoyMywiaWF0Ijo1MDAwMDAwMDAwLCJleHAiOjUwMDAwMDAwMDB9.mLy5Kf1HX20YFiFpTCz6birHbDtmMXGGw3h9Q9xMHAs";
         String jwtSecretKey = "secretKey_ForTestingPurpose@12345#";
-        Set<String> claimsToExclude = new HashSet<>(asList("username", "roles", "iat", "exp", "jti"));
+        Set<String> keysToExclude = new HashSet<>(asList("username", "roles", "iat", "exp", "jti"));
         Map<String, Object> expectedResultClaims = new HashMap<String, Object>() {{
             put("name", "name value");
             put("age", 23);
         }};
         return Stream.of(
                 //@formatter:off
-                //            token,                     jwtSecretKey,          expectedException,                claimsToExclude,   expectedResult
-                Arguments.of( null,                      "ItDoesNotCare",       IllegalArgumentException.class,   null,              null ),
-                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   null,              null ),
-                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   claimsToExclude,   null ),
-                Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             null,              new HashMap<>() ),
-                Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             claimsToExclude,   new HashMap<>() ),
-                Arguments.of( expiredJwtToken,           jwtSecretKey + "V2",   null,                             claimsToExclude,   new HashMap<>() ),
-                Arguments.of( expiredJwtToken,           jwtSecretKey,          null,                             claimsToExclude,   new HashMap<>() ),
-                Arguments.of( notExpiredEmptyJwtToken,   jwtSecretKey,          null,                             claimsToExclude,   new HashMap<>() ),
-                Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             claimsToExclude,   expectedResultClaims )
+                //            token,                     jwtSecretKey,          expectedException,                keysToExclude,   expectedResult
+                Arguments.of( null,                      "ItDoesNotCare",       IllegalArgumentException.class,   null,            null ),
+                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   null,            null ),
+                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   keysToExclude,   null ),
+                Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             null,            new HashMap<>() ),
+                Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             keysToExclude,   new HashMap<>() ),
+                Arguments.of( expiredJwtToken,           jwtSecretKey + "V2",   null,                             keysToExclude,   new HashMap<>() ),
+                Arguments.of( expiredJwtToken,           jwtSecretKey,          null,                             keysToExclude,   new HashMap<>() ),
+                Arguments.of( notExpiredEmptyJwtToken,   jwtSecretKey,          null,                             keysToExclude,   new HashMap<>() ),
+                Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             keysToExclude,   expectedResultClaims )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("getInformationExceptGivenClaimsTestCases")
-    @DisplayName("getInformationExceptGivenClaims: test cases")
-    public void getInformationExceptGivenClaims_testCases(String token, String jwtSecretKey, Class<? extends Exception> expectedException,
-                                                          Set<String> claimsToExclude, Map<String, Object> expectedResult) {
+    @MethodSource("getExceptGivenClaimsTestCases")
+    @DisplayName("getExceptGivenClaims: test cases")
+    public void getExceptGivenClaims_testCases(String token, String jwtSecretKey, Class<? extends Exception> expectedException,
+                                                          Set<String> keysToExclude, Map<String, Object> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwtUtil.getInformationExceptGivenClaims(token, jwtSecretKey, claimsToExclude));
+            assertThrows(expectedException, () -> jwtUtil.getExceptGivenKeys(token, jwtSecretKey, keysToExclude));
         }
         else {
-            assertEquals(expectedResult, jwtUtil.getInformationExceptGivenClaims(token, jwtSecretKey, claimsToExclude));
+            assertEquals(expectedResult, jwtUtil.getExceptGivenKeys(token, jwtSecretKey, keysToExclude));
+        }
+    }
+
+
+    static Stream<Arguments> getKeyTestCases() {
+        String expiredJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIHZhbHVlIiwicm9sZXMi"
+                               + "OlsiYWRtaW4iLCJ1c2VyIl0sIm5hbWUiOiJuYW1lIHZhbHVlIiwiYWdlIjoyMywiZXhwIjoxMDAwMDAwMDAwf"
+                               + "Q.sWzGvgQ4WmKSZywhERz0hcDXJtMd-SU9qS_tYC3DDs8";
+        String notExpiredJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIHZhbHVlIiwicm9sZ"
+                                  + "XMiOlsiYWRtaW4iLCJ1c2VyIl0sIm5hbWUiOiJuYW1lIHZhbHVlIiwiYWdlIjoyMywiZXhwIjo1MDAwMDA"
+                                  + "wMDAwfQ.vho0aXdvrfGADAuYI89WU_adwocDAX3SlOKJ6i4qqCc";
+        String jwtSecretKey = "Jwt_Secret_Password_12345_ForTest";
+        return Stream.of(
+                //@formatter:off
+                //            token,                jwtSecretKey,          keyToSeach,        expectedValueClass,   expectedException,                expectedResult
+                Arguments.of( null,                 "ItDoesNotCare",       "ItDoesNotCare",   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 "ItDoesNotCare",       null,              null,                 null,                             empty() ),
+                Arguments.of( "ItDoesNotCare",      null,                  "ItDoesNotCare",   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( "ItDoesNotCare",      null,                  null,              null,                 null,                             empty() ),
+                Arguments.of( "NotValidToken",      "ItDoesNotCare",       null,              null,                 null,                             empty() ),
+                Arguments.of( "NotValidToken",      "ItDoesNotCare",       "ItDoesNotCare",   null,                 null,                             empty() ),
+                Arguments.of( expiredJwtToken,      jwtSecretKey + "V2",   "ItDoesNotCare",   null,                 null,                             empty() ),
+                Arguments.of( expiredJwtToken,      jwtSecretKey,          "ItDoesNotCare",   null,                 null,                             empty() ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "ItDoesNotCare",   null,                 null,                             empty() ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "NotFoundKey",     String.class,         null,                             empty() ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "username",        String.class,         null,                             of("username value") ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "age",             Integer.class,        null,                             of(23) ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "roles",           List.class,           null,                             of(asList("admin", "user")) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getKeyTestCases")
+    @DisplayName("getKey: test cases")
+    public <T> void getKey_testCases(String token, String jwtSecretKey, String keyToSearch, Class<T> expectedValueClass,
+                                     Class<? extends Exception> expectedException, T expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> jwtUtil.getKey(token, jwtSecretKey, keyToSearch, expectedValueClass));
+        }
+        else {
+            assertEquals(expectedResult, jwtUtil.getKey(token, jwtSecretKey, keyToSearch, expectedValueClass));
         }
     }
 

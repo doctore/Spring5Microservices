@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
@@ -36,7 +37,7 @@ public class JwtUtil {
      * @param signatureAlgorithm
      *    {@link SignatureAlgorithm} used to encrypt the JWT token
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     *    {@link String} used to encrypt the JWT token
      * @param expirationTimeInSeconds
      *    How many seconds the JWT toke will be valid
      *
@@ -63,12 +64,12 @@ public class JwtUtil {
 
 
     /**
-     * Checks if the given token is valid or not taking into account the secret key and expiration date.
+     * Check if the given token is valid or not taking into account the secret key and expiration date.
      *
      * @param token
      *    JWT token to validate
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     *    {@link String} used to encrypt the JWT token
      *
      * @return {@code false} if the given token is expired or is not valid, {@code true} otherwise.
      *
@@ -80,19 +81,19 @@ public class JwtUtil {
                     .map(exp -> exp.after(new Date()))
                     .orElse(false);
         } catch (JwtException ex) {
-            log.error(String.format("There was an error checking if the token %s is valid", token), ex);
+            log.error(format("There was an error checking if the token: %s is valid", token), ex);
             return false;
         }
     }
 
 
     /**
-     * Gets the {@code username} included in the given JWT token.
+     * Get the {@code username} included in the given JWT token.
      *
      * @param token
      *    JWT token to extract the required information
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     *    {@link String} used to encrypt the JWT token
      * @param usernameKeyInToken
      *    Key in the given token used to store username information
      *
@@ -102,22 +103,22 @@ public class JwtUtil {
      */
     public Optional<String> getUsername(String token, String jwtSecretKey, String usernameKeyInToken) {
         try {
-            return ofNullable(getClaimFromToken(token, jwtSecretKey,
-                    (claims) -> claims.get(usernameKeyInToken, String.class)));
+            return ofNullable(usernameKeyInToken)
+                    .map(uKey -> getClaimFromToken(token, jwtSecretKey, (claims) -> claims.get(uKey, String.class)));
         } catch (JwtException ex) {
-            log.error(String.format("There was an error getting the username of token %s", token), ex);
+            log.error(format("There was an error getting the username of token: %s using the key: %s", token, usernameKeyInToken), ex);
             return empty();
         }
     }
 
 
     /**
-     * Gets the {@code roles} included in the given JWT token.
+     * Get the {@code roles} included in the given JWT token.
      *
      * @param token
      *    JWT token to extract the required information
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     *    {@link String} used to encrypt the JWT token
      * @param rolesKeyInToken
      *    Key in the given token used to store roles information
      *
@@ -127,51 +128,78 @@ public class JwtUtil {
      */
     public Set<String> getRoles(String token, String jwtSecretKey, String rolesKeyInToken) {
         try {
-            return getClaimFromToken(token, jwtSecretKey,
-                    (claims) -> new HashSet<>((Collection)claims.computeIfAbsent(rolesKeyInToken, k -> new HashSet<>())));
+            return ofNullable(rolesKeyInToken)
+                    .map(rKey -> getClaimFromToken(token, jwtSecretKey,
+                            (claims) -> new HashSet<>((Collection)claims.computeIfAbsent(rKey, k -> new HashSet<>()))))
+                    .orElse(new HashSet());
         } catch (JwtException ex) {
-            log.error(String.format("There was an error getting the roles of token %s", token), ex);
+            log.error(format("There was an error getting the roles of token: %s using the key: %s", token, rolesKeyInToken), ex);
             return new HashSet<>();
         }
     }
 
 
     /**
-     * Gets the information included in the given JWT token except the given {@code claimsToExclude}.
+     * Get the given {@code keyToSearch} included in the given JWT token.
      *
      * @param token
      *    JWT token to extract the required information
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
-     * @param claimsToExclude
-     *    {@link Set} of {@link String} with the {@code claim}s to exclude from Jwt token
+     *    {@link String} used to encrypt the JWT token
+     * @param keyToSearch
+     *    Information to get from the given token
+     * @param valueClazz
+     *    {@link Class} of the returned data related with given {@code key}
+     *
+     * @return {@link Optional} if a value related with the given {@code key} exists, {@link Optional#empty()} otherwise
+     *
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
+     */
+    public <T> Optional<T> getKey(String token, String jwtSecretKey, String keyToSearch, Class<T> valueClazz) {
+        try {
+            return ofNullable(keyToSearch)
+                    .map(key -> getClaimFromToken(token, jwtSecretKey, (claims) -> claims.get(key, valueClazz)));
+        } catch (JwtException ex) {
+            log.error(format("There was an error getting the key: %s of token %s", keyToSearch, token), ex);
+            return empty();
+        }
+    }
+
+
+    /**
+     * Get the information included in the given JWT token except the given {@code claimsToExclude}.
+     *
+     * @param token
+     *    JWT token to extract the required information
+     * @param jwtSecretKey
+     *    {@link String} used to encrypt the JWT token
+     * @param keysToExclude
+     *    {@link Set} of {@link String} with the {@code key}s to exclude from Jwt token
      *
      * @return {@link Map} of {@link String} - {@link Object} with the remaining information
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public Map<String, Object> getInformationExceptGivenClaims(String token, String jwtSecretKey, Set<String> claimsToExclude) {
-        Assert.hasText(token, "token cannot be null or empty");
-        Assert.hasText(jwtSecretKey, "jwtSecretKey cannot be null or empty");
+    public Map<String, Object> getExceptGivenKeys(String token, String jwtSecretKey, Set<String> keysToExclude) {
         try {
             return getAllClaimsFromToken(token, jwtSecretKey)
                     .entrySet().stream()
-                    .filter(e -> !claimsToExclude.contains(e.getKey()))
+                    .filter(e -> !keysToExclude.contains(e.getKey()))
                     .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
         } catch (JwtException ex) {
-            log.error(String.format("There was an error filtering the information of token %s", token), ex);
+            log.error(format("There was an error filtering the information of token: %s", token), ex);
             return new HashMap<>();
         }
     }
 
 
     /**
-     * Gets the {@link Date} from which the given token is no longer valid.
+     * Get the {@link Date} from which the given token is no longer valid.
      *
      * @param token
      *    JWT token to extract the required information
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     *    {@link String} used to encrypt the JWT token
      *
      * @return {@link Optional} with {@link Date}
      *
@@ -181,7 +209,7 @@ public class JwtUtil {
         try {
             return ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
         } catch (JwtException ex) {
-            log.error(String.format("There was an error getting the expiration date of token %s", token), ex);
+            log.error(format("There was an error getting the expiration date of token: %s", token), ex);
             return empty();
         }
     }
@@ -201,23 +229,25 @@ public class JwtUtil {
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
     private <T> T getClaimFromToken(String token, String jwtSecretKey, Function<Claims, T> claimsResolver) {
-        Assert.hasText(token, "token cannot be null or empty");
-        Assert.hasText(jwtSecretKey, "jwtSecretKey cannot be null or empty");
         final Claims claims = getAllClaimsFromToken(token, jwtSecretKey);
         return claimsResolver.apply(claims);
     }
 
     /**
-     * Extracts from the given token all the information included in the payload
+     * Extract from the given token all the information included in the payload
      *
      * @param token
      *    JWT token to extract the required information
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     *    {@link String} used to encrypt the JWT token
      *
      * @return {@link Claims}
+     *
+     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
     private Claims getAllClaimsFromToken(String token, String jwtSecretKey) {
+        Assert.hasText(token, "token cannot be null or empty");
+        Assert.hasText(jwtSecretKey, "jwtSecretKey cannot be null or empty");
         return Jwts.parser()
                 .setSigningKey(getSigningKey(jwtSecretKey))
                 .parseClaimsJws(token)
@@ -225,10 +255,10 @@ public class JwtUtil {
     }
 
     /**
-     * Generates the information required to encrypt/decrypt the Jwt token
+     * Generate the information required to encrypt/decrypt the Jwt token.
      *
      * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     *    {@link String} used to encrypt the JWT token
      *
      * @return {@link Key}
      */
