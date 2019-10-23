@@ -188,6 +188,7 @@ public class JwtUtilTest {
                 Arguments.of( expiredJwtToken,           jwtSecretKey + "V2",   null,                             keysToExclude,   new HashMap<>() ),
                 Arguments.of( expiredJwtToken,           jwtSecretKey,          null,                             keysToExclude,   new HashMap<>() ),
                 Arguments.of( notExpiredEmptyJwtToken,   jwtSecretKey,          null,                             keysToExclude,   new HashMap<>() ),
+                Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             null,            new HashMap<>() ),
                 Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             keysToExclude,   expectedResultClaims )
         ); //@formatter:on
     }
