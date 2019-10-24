@@ -1,10 +1,18 @@
 package com.security.jwt.util;
 
+import com.security.jwt.enums.TokenKeyEnum;
+import com.security.jwt.enums.TokenVerificationEnum;
+import io.jsonwebtoken.ClaimJwtException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.InvalidKeyException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -19,6 +27,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import static com.security.jwt.enums.TokenVerificationEnum.CORRECT_TOKEN;
+import static com.security.jwt.enums.TokenVerificationEnum.EXPIRED_TOKEN;
+import static com.security.jwt.enums.TokenVerificationEnum.INVALID_SECRET_KEY;
+import static com.security.jwt.enums.TokenVerificationEnum.INVALID_TOKEN;
+import static com.security.jwt.enums.TokenVerificationEnum.UNKNOWN_ERROR;
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -64,25 +77,34 @@ public class JwtUtil {
 
 
     /**
-     * Check if the given token is valid or not taking into account the secret key and expiration date.
+     * Check if the given {@code token} is valid or not taking into account the secret key and expiration date.
      *
      * @param token
      *    JWT token to validate
      * @param jwtSecretKey
      *    {@link String} used to encrypt the JWT token
      *
-     * @return {@code false} if the given token is expired or is not valid, {@code true} otherwise.
+     * @return {@link TokenKeyEnum} with the verification result
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
-    public boolean isTokenValid(String token, String jwtSecretKey) {
+    public TokenVerificationEnum isTokenValid(String token, String jwtSecretKey) {
         try {
             return getExpirationDateFromToken(token, jwtSecretKey)
-                    .map(exp -> exp.after(new Date()))
-                    .orElse(false);
+                    .map(exp -> exp.after(new Date()) ? CORRECT_TOKEN : EXPIRED_TOKEN)
+                    .orElse(UNKNOWN_ERROR);
+
         } catch (JwtException ex) {
             log.error(format("There was an error checking if the token: %s is valid", token), ex);
-            return false;
+
+            if (ex instanceof ExpiredJwtException)
+                return EXPIRED_TOKEN;
+            if (ex instanceof InvalidKeyException || ex instanceof SignatureException || ex instanceof UnsupportedJwtException)
+                return INVALID_SECRET_KEY;
+            if (ex instanceof MalformedJwtException || ex instanceof ClaimJwtException)
+                return INVALID_TOKEN;
+
+            return UNKNOWN_ERROR;
         }
     }
 
@@ -208,12 +230,7 @@ public class JwtUtil {
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
     private Optional<Date> getExpirationDateFromToken(String token, String jwtSecretKey) {
-        try {
-            return ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
-        } catch (JwtException ex) {
-            log.error(format("There was an error getting the expiration date of token: %s", token), ex);
-            return empty();
-        }
+        return ofNullable(getClaimFromToken(token, jwtSecretKey, Claims::getExpiration));
     }
 
     /**

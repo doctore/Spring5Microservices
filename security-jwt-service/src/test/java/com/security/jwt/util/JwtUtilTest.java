@@ -1,5 +1,6 @@
 package com.security.jwt.util;
 
+import com.security.jwt.enums.TokenVerificationEnum;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.security.jwt.enums.TokenVerificationEnum.CORRECT_TOKEN;
+import static com.security.jwt.enums.TokenVerificationEnum.EXPIRED_TOKEN;
+import static com.security.jwt.enums.TokenVerificationEnum.INVALID_SECRET_KEY;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -70,19 +74,20 @@ public class JwtUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            token,                jwtSecretKey,          expectedException,                expectedResult
-                Arguments.of( null,                 "ItDoesNotCare",       IllegalArgumentException.class,   false ),
-                Arguments.of( "ItDoesNotCare",      null,                  IllegalArgumentException.class,   false ),
-                Arguments.of( "NotValidToken",      "ItDoesNotCare",       null,                             false ),
-                Arguments.of( expiredJwtToken,      jwtSecretKey + "V2",   null,                             false ),
-                Arguments.of( expiredJwtToken,      jwtSecretKey,          null,                             false ),
-                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          null,                             true )
+                Arguments.of( null,                 "ItDoesNotCare",       IllegalArgumentException.class,   null ),
+                Arguments.of( "ItDoesNotCare",      null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( "NotValidToken",      "ItDoesNotCare",       null,                             INVALID_SECRET_KEY ),
+                Arguments.of( expiredJwtToken,      jwtSecretKey + "V2",   null,                             INVALID_SECRET_KEY ),
+                Arguments.of( expiredJwtToken,      jwtSecretKey,          null,                             EXPIRED_TOKEN ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey + "V2",   null,                             INVALID_SECRET_KEY ),
+                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          null,                             CORRECT_TOKEN )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("isTokenValidTestCases")
     @DisplayName("isTokenValid: test cases")
-    public void isTokenValid_testCases(String token, String jwtSecretKey, Class<? extends Exception> expectedException, boolean expectedResult) {
+    public void isTokenValid_testCases(String token, String jwtSecretKey, Class<? extends Exception> expectedException, TokenVerificationEnum expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> jwtUtil.isTokenValid(token, jwtSecretKey));
         }
