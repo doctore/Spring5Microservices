@@ -35,7 +35,7 @@ public class UserService implements IUserService {
      *
      * @return {@link UserDetails}
      *
-     * @throws UsernameNotFoundException if the given {@code username} does not exists in database.
+     * @throws UsernameNotFoundException if the given {@code username} does not exists in database
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override

@@ -47,7 +47,7 @@ public enum AuthenticationConfigurationEnum {
      *
      * @return {@link AuthenticationConfigurationEnum}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in the {@code enum}.
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in the {@code enum}
      */
     public static AuthenticationConfigurationEnum getByClientId(@Nullable String clientId) {
         return ofNullable(clientId)

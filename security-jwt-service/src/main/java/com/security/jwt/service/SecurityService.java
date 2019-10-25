@@ -48,9 +48,9 @@ public class SecurityService {
      * @return {@link Optional} of {@link AuthenticationInformationDto}
      *
      * @throws AccountStatusException if the given {@link UserDetails} related with the given {@code username} is disabled
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database.
-     * @throws UnAuthorizedException if the given {@code password} does not mismatch with exists one related with given {@code username}.
-     * @throws UsernameNotFoundException if the given {@code username} does not exists in database.
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws UnAuthorizedException if the given {@code password} does not mismatch with exists one related with given {@code username}
+     * @throws UsernameNotFoundException if the given {@code username} does not exists in database
      */
     public Optional<AuthenticationInformationDto> login(String clientId, String username, String password) {
         return of(AuthenticationConfigurationEnum.getByClientId(clientId))
@@ -65,42 +65,17 @@ public class SecurityService {
     }
 
 
-
     public Optional<AuthenticationInformationDto> refreshToken(String refreshToken, String clientId) {
+
         return null;
 
-        /*
-        return ofNullable(refreshToken)
-                .
-
-
-         */
     }
 
 
     public Optional<UsernameAuthoritiesDto> getAuthorizationInformation(String accessToken, String clientId) {
 
         return null;
-    }
-
-
-
-
-    /*
-    private boolean isAccessToken(String token, String jwtSecretKey) {
-        try {
-            return
-
-
-                    ofNullable(getClaimFromToken(token, jwtSecretKey,
-                    (claims) -> claims.get(usernameKeyInToken, String.class)));
-        } catch (JwtException ex) {
-            log.error(String.format("There was an error checking in the given token: %s is an access one", token), ex);
-            return empty();
-        }
 
     }
-
-     */
 
 }

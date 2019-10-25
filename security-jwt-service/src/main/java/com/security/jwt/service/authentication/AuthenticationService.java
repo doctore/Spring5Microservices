@@ -4,7 +4,10 @@ import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.enums.TokenKeyEnum;
+import com.security.jwt.enums.TokenVerificationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
+import com.security.jwt.exception.TokenExpiredException;
+import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.util.JwtUtil;
@@ -22,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
+import static java.lang.String.format;
 
 @Service
 public class AuthenticationService {
@@ -52,7 +56,7 @@ public class AuthenticationService {
      *
      * @return {@link Optional} of {@link AuthenticationInformationDto}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database.
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
      */
     public Optional<AuthenticationInformationDto> getAuthenticationInformation(String clientId, UserDetails userDetails) {
         return ofNullable(userDetails)
@@ -63,6 +67,60 @@ public class AuthenticationService {
                     JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
                     return buildAuthenticationInformation(clientDetails, authInfo, UUID.randomUUID().toString());
                 });
+    }
+
+
+    /**
+     * Check if the given {@code token} related with the given {@link JwtClientDetails#getClientId()} is an access one.
+     *
+     * @param clientId
+     *    {@link JwtClientDetails#getClientId()} used to know the details to include
+     * @param accessToken
+     *    {@link String} with the access token to check
+     *
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws UnAuthorizedException if the given {@code token} is not a valid one
+     * @throws TokenExpiredException if the given {@code token} has expired
+     */
+    public void checkAccessToken(String clientId, String accessToken) {
+        JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+        String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
+
+        TokenVerificationEnum verificationResult = jwtUtil.isTokenValid(accessToken, decryptedJwtSecret);
+        verificationResult.throwRelatedExceptionIfRequired(
+                format("The validation of the token: %s related with clientId: %s returns the following result: %s",
+                        accessToken, clientId, verificationResult.name()));
+
+        if (!isAccessToken(accessToken, decryptedJwtSecret))
+            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an access one",
+                    accessToken, clientId));
+    }
+
+
+    /**
+     * Check if the given {@code token} related with the given {@link JwtClientDetails#getClientId()} is a refresh one.
+     *
+     * @param clientId
+     *    {@link JwtClientDetails#getClientId()} used to know the details to include
+     * @param refreshToken
+     *    {@link String} with the refresh token to check
+     *
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws UnAuthorizedException if the given {@code token} is not a valid one
+     * @throws TokenExpiredException if the given {@code token} has expired
+     */
+    public void checkRefreshToken(String clientId, String refreshToken) {
+        JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+        String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
+
+        TokenVerificationEnum verificationResult = jwtUtil.isTokenValid(refreshToken, decryptedJwtSecret);
+        verificationResult.throwRelatedExceptionIfRequired(
+                format("The validation of the token: %s related with clientId: %s returns the following result: %s",
+                        refreshToken, clientId, verificationResult.name()));
+
+        if (isAccessToken(refreshToken, decryptedJwtSecret))
+            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is an access one",
+                    refreshToken, clientId));
     }
 
 
@@ -159,6 +217,21 @@ public class AuthenticationService {
             put(TokenKeyEnum.REFRESH_JWT_ID.getKey(), jti);
         }};
     }
+
+    /**
+     * Check if the given Jwt token is or not an access one.
+     *
+     * @param token
+     *    JWT token to extract the required information
+     * @param jwtSecretKey
+     *    {@link String} used to encrypt the JWT token
+     *
+     * @return {@code true} if the token is an access one, {@code false} otherwise
+     */
+    private boolean isAccessToken(String token, String jwtSecretKey) {
+        return !jwtUtil.getKey(token, jwtSecretKey, TokenKeyEnum.REFRESH_JWT_ID.getKey(), String.class).isPresent();
+    }
+
 
     private String decryptJwtSecret(String jwtSecret) {
         return encryptor.decrypt(jwtSecret.replace(Constants.JWT_SECRET_PREFIX, ""));

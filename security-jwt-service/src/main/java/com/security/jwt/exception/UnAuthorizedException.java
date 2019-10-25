@@ -5,6 +5,8 @@ package com.security.jwt.exception;
  */
 public class UnAuthorizedException extends RuntimeException {
 
+    private static final long serialVersionUID = 3939493371098418268L;
+
     public UnAuthorizedException() {
         super();
     }

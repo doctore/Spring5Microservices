@@ -8,6 +8,8 @@ import com.security.jwt.service.JwtClientDetailsService;
  */
 public class ClientNotFoundException extends RuntimeException {
 
+    private static final long serialVersionUID = 338648360450595760L;
+
     public ClientNotFoundException() {
         super();
     }
