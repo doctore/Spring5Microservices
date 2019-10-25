@@ -67,6 +67,7 @@ public class SecurityService {
 
     public Optional<AuthenticationInformationDto> refreshToken(String refreshToken, String clientId) {
 
+        // TODO:
         return null;
 
     }
@@ -74,6 +75,7 @@ public class SecurityService {
 
     public Optional<UsernameAuthoritiesDto> getAuthorizationInformation(String accessToken, String clientId) {
 
+        // TODO:
         return null;
 
     }

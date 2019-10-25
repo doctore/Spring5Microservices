@@ -119,7 +119,7 @@ public class AuthenticationService {
                         refreshToken, clientId, verificationResult.name()));
 
         if (isAccessToken(refreshToken, decryptedJwtSecret))
-            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is an access one",
+            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not a refresh one",
                     refreshToken, clientId));
     }
 
