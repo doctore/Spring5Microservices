@@ -110,7 +110,7 @@ public class JwtUtil {
 
 
     /**
-     * Get the {@code username} included in the given JWT token.
+     * Get the {@code username} included in the given JWT {@code token}.
      *
      * @param token
      *    JWT token to extract the required information
@@ -135,7 +135,7 @@ public class JwtUtil {
 
 
     /**
-     * Get the {@code roles} included in the given JWT token.
+     * Get the {@code roles} included in the given JWT {@code token}.
      *
      * @param token
      *    JWT token to extract the required information
@@ -144,7 +144,7 @@ public class JwtUtil {
      * @param rolesKeyInToken
      *    Key in the given token used to store roles information
      *
-     * @return  {@link Set} with {@code roles}
+     * @return {@link Set} with {@code roles}
      *
      * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
      */
@@ -162,7 +162,7 @@ public class JwtUtil {
 
 
     /**
-     * Get the given {@code keyToSearch} included in the given JWT token.
+     * Get the given {@code keyToSearch} included in the given JWT {@code token}.
      *
      * @param token
      *    JWT token to extract the required information
@@ -189,7 +189,7 @@ public class JwtUtil {
 
 
     /**
-     * Get the information included in the given JWT token except the given {@code claimsToExclude}.
+     * Get the information included in the given JWT {@code token} except the given {@code claimsToExclude}.
      *
      * @param token
      *    JWT token to extract the required information

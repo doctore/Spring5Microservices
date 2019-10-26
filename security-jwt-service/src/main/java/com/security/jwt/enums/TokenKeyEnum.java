@@ -4,6 +4,8 @@ public enum TokenKeyEnum {
 
     AUTHORITIES("authorities"),
     CLIENT_ID("clientId"),
+    EXPIRATION_TIME("exp"),
+    ISSUED_AT("iat"),
     JWT_ID("jti"),
     NAME("name"),
     REFRESH_JWT_ID("ati"),

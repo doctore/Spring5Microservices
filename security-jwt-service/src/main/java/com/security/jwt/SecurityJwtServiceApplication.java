@@ -17,8 +17,9 @@ public class SecurityJwtServiceApplication {
 
         /*
         ConfigurableApplicationContext context = SpringApplication.run(SecurityJwtServiceApplication.class, args);
-        AuthenticationGeneratorService jwtGeneratorService = context.getBean(AuthenticationGeneratorService.class);
-        Optional<AuthenticationInformationDto> authenticationInfo = jwtGeneratorService.getAuthenticationInformation("Spring5Microservices", "admin");
+        SecurityService securityService = context.getBean(SecurityService.class);
+        Optional<AuthenticationInformationDto> authenticationInfo = securityService.login("Spring5Microservices", "admin", "admin");
+        UsernameAuthoritiesDto usernameAuthorities = securityService.getAuthorizationInformation(authenticationInfo.get().getAccessToken(), "Spring5Microservices");
         int a = 1;
          */
     }

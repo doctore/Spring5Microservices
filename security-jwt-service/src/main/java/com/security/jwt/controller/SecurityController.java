@@ -90,6 +90,7 @@ public class SecurityController {
             @ApiResponse(code = 200, message = "Successful operation with the authentication information in the response", response = AuthenticationInformationDto.class),
             @ApiResponse(code = 400, message = "Given token or clientId does not verify included format validations"),
             @ApiResponse(code = 401, message = "The user is not active, refresh token is not valid or not belongs to given clientId"),
+            @ApiResponse(code = 404, message = "The username included in the token or clientId does not exist"),
             @ApiResponse(code = 440, message = "Refresh token has expired"),
             @ApiResponse(code = 500, message = "Any other internal server error")})
     @PostMapping(value = RestRoutes.SECURITY.REFRESH_TOKEN + "/{clientId}")
@@ -123,6 +124,7 @@ public class SecurityController {
             @ApiResponse(code = 200, message = "Successful operation with the authorization information in the response", response = UsernameAuthoritiesDto.class),
             @ApiResponse(code = 400, message = "Given token or clientId does not verify included format validations"),
             @ApiResponse(code = 401, message = "The user is not active, access token is not valid or not belongs to given clientId"),
+            @ApiResponse(code = 404, message = "The username included in the token or clientId does not exist"),
             @ApiResponse(code = 440, message = "Access token has expired"),
             @ApiResponse(code = 500, message = "Any other internal server error")})
     @GetMapping(RestRoutes.SECURITY.AUTHORIZATION_INFO + "/{clientId}" + "/{accessToken}")
@@ -132,9 +134,7 @@ public class SecurityController {
             @ApiParam(value = "Client identifier used to know what is the application the user belongs", required = true)
             @PathVariable @Size(min = 1, max = 64) String clientId) {
 
-        return securityService.getAuthorizationInformation(accessToken, clientId)
-                .map(ai -> new ResponseEntity<>(ai, HttpStatus.OK))
-                .orElse(new ResponseEntity(HttpStatus.UNAUTHORIZED));
+        return new ResponseEntity<>(securityService.getAuthorizationInformation(accessToken, clientId), HttpStatus.OK);
     }
 
 }
