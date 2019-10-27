@@ -33,7 +33,7 @@ public class AuthenticationInformationDto implements Serializable {
     @JsonProperty(value = "expires_in")
     private int expiresIn;
 
-    @ApiModelProperty(position = 2, required = true, value = "roles of the logged user containing only lowercase letters")
+    @ApiModelProperty(position = 2, required = true, value = "roles of the logged user")
     @JsonProperty(value = "refresh_token")
     private String refreshToken;
 
