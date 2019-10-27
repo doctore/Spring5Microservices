@@ -29,7 +29,6 @@ public class Spring5MicroserviceAuthenticationGeneratorTest {
 
     private Spring5MicroserviceAuthenticationGenerator authenticationGenerator;
 
-
     @BeforeEach
     public void init() {
         authenticationGenerator = new Spring5MicroserviceAuthenticationGenerator();

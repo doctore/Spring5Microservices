@@ -188,9 +188,8 @@ public class AuthenticationService {
      */
     public Map<String, Object> getAdditionalInformation(String token, String clientId) {
         return ofNullable(token)
-                .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
-                .map(authConfig -> {
-                    JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+                .map(t -> jwtClientDetailsService.findByClientId(clientId))
+                .map(clientDetails -> {
                     Set<String> keysToFilter = new HashSet<>(asList(
                             TokenKeyEnum.AUTHORITIES.getKey(),
                             TokenKeyEnum.CLIENT_ID.getKey(),

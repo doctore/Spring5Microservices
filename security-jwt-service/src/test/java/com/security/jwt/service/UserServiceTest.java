@@ -35,7 +35,6 @@ public class UserServiceTest {
 
     private UserService userService;
 
-
     @BeforeEach
     public void init() {
         userService = new UserService(mockUserRepository, mockPasswordEncoder);

@@ -4,7 +4,6 @@ import com.security.jwt.configuration.cache.CacheConfiguration;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.repository.JwtClientDetailsRepository;
-import com.security.jwt.service.JwtClientDetailsService;
 import com.spring5microservices.common.service.CacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +41,6 @@ public class JwtClientDetailsServiceTest {
     private JwtClientDetailsRepository mockJwtClientDetailsRepository;
 
     private JwtClientDetailsService jwtClientDetailsService;
-
 
     @BeforeEach
     public void init() {
