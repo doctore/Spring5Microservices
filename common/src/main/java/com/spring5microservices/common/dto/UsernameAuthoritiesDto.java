@@ -23,7 +23,7 @@ public class UsernameAuthoritiesDto {
     @ApiModelProperty(required = true)
     private String username;
 
-    @ApiModelProperty(position = 1, required = true, value = "roles of the logged user containing only lowercase letters")
+    @ApiModelProperty(position = 1, required = true, value = "roles of the logged user")
     private Set<String> authorities;
 
     @ApiModelProperty(position = 2, value = "data extra returned by security service")
