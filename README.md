@@ -5,7 +5,8 @@
     - [registry-server](#registry-server)
     - [config-server](#config-server)
     - [gateway-server](#gateway-server)
-    - [authorization-service](#authorization-service)
+    - [security-oauth-service](#security-oauth-service)
+    - [security-jwt-service](#security-jwt-service)
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
     - [common](#common)
@@ -67,13 +68,43 @@ Using Zuul, this is the gateway implementation used by the other microservices i
 is present, if the JWT token is valid or not, in that way we will be able to verify if the logged user is using a valid token in every web service invocation.  
 <br>
 
-### authorization-service
+### security-oauth-service
 
-Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. The technologies used are the following ones:
+Full integration with Oauth 2.0 + Jwt functionality provided by Spring, used to have an option to manage authentication/authorization functionalities through access and refresh
+tokens. With this microservice working as Oauth server we will be able to configure the details of every allowed application using the table in database:
+**security.oauth_client_details**. On the other hand, several customizations have been included to the manage the creation of both JWT tokens and how to append additional
+information too.
+ 
+The technologies used are the following ones:
 
 * **Hibernate** as ORM to deal with the PostgreSQL database.
 * **JPA** for accessing, persisting, and managing data between Java objects and database.
 * **Lombok** to reduce the code development in entities and DTOs.
+* **Cache2k** as cache to reduce the invocations to the database.
+
+In this subproject the layer's division is:
+
+* **repository** layer used to access to the database.
+* **service** containing the business logic.
+
+On the other hand, there are other "important folders": 
+
+* **configuration** with several classes used to manage several areas such: security, exception handlers, cache, etc.
+* **model** to store the entities.
+* **dto** custom objects to contain specific data.
+<br><br>
+
+### security-jwt-service
+
+Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provide a completely multi-application
+platform to generate/manage their own access and refresh tokens (including additional information). Every application will be able to manage its own token configuration/generation
+adding a new row in the database base: **security.jwt_client_details** and implementing the interface `IAuthenticationGenerator`. The technologies used are the following ones:
+
+* **Hibernate** as ORM to deal with the PostgreSQL database.
+* **JPA** for accessing, persisting, and managing data between Java objects and database.
+* **Lombok** to reduce the code development in entities and DTOs.
+* **Hazelcast** as cache to reduce the invocations to the database.
+* **JsonWebToken** to work with JWT tokens.
 * **MVC** a traditional Spring MVC Rest API to manage the authentication/authorization requests.
 
 In this subproject the layer's division is:
@@ -84,7 +115,7 @@ In this subproject the layer's division is:
 
 On the other hand, there are other "important folders": 
 
-* **configuration** with several classes used to manage several areas such: security, exception handlers, etc.
+* **configuration** with several classes used to manage several areas such: security, exception handlers, cache, etc.
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
 * **util** to manage the JWT functionality.
@@ -208,5 +239,5 @@ From now, using the **gateway-server** URL, we can read the Swagger documentatio
 
 ## Future additions
 
-- Documentation of the REST Api with Swagger, when this library provides a more stable way to work with Webflux. **gateway-server** and **authorization-service** are currently
+- Documentation of the REST Api with Swagger, when this library provides a more stable way to work with Webflux. **gateway-server** and **security-jwt-service** are currently
 configured.
