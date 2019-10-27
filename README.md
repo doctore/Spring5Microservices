@@ -72,7 +72,8 @@ is present, if the JWT token is valid or not, in that way we will be able to ver
 
 Full integration with Oauth 2.0 + Jwt functionality provided by Spring, used to have an option to manage authentication/authorization functionalities through access and refresh
 tokens. With this microservice working as Oauth server we will be able to configure the details of every allowed application using the table in database:
-**security.oauth_client_details**. 
+**security.oauth_client_details**.
+<br>
 On the other hand, several customizations have been included to the manage the creation of both JWT tokens and how to append additional information too.
  
 The technologies used are the following ones:
@@ -97,7 +98,8 @@ On the other hand, there are other "important folders":
 ### security-jwt-service
 
 Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provide a completely multi-application
-platform to generate/manage their own access and refresh tokens (including additional information). 
+platform to generate/manage their own access and refresh tokens (including additional information).
+<br> 
 Every application will be able to manage its own token configuration/generation adding a new row in the database base: **security.jwt_client_details** and implementing the interface
 `IAuthenticationGenerator`. The technologies used are the following ones:
 
