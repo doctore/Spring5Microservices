@@ -7,11 +7,14 @@ import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.model.Role;
 import com.security.jwt.model.User;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
+import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.experimental.UtilityClass;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static com.security.jwt.enums.TokenKeyEnum.AUTHORITIES;
@@ -78,6 +81,15 @@ public class ObjectGeneratorForTest {
                 .roles(new HashSet<>(asList(
                         Role.builder().id(1).name(RoleEnum.ADMIN).build(),
                         Role.builder().id(2).name(RoleEnum.USER).build())))
+                .build();
+    }
+
+
+    public static UsernameAuthoritiesDto buildUsernameAuthorities(String username, Set<String> authorities, Map<String, Object> additionalInfo) {
+        return UsernameAuthoritiesDto.builder()
+                .username(username)
+                .authorities(authorities)
+                .additionalInfo(additionalInfo)
                 .build();
     }
 

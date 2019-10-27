@@ -166,6 +166,7 @@ public class AuthenticationServiceTest {
         else {
             when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
         }
+
         if (null != expectedException) {
             assertThrows(expectedException, () -> authenticationService.checkAccessToken(accessToken, clientId));
         }
@@ -181,13 +182,13 @@ public class AuthenticationServiceTest {
         return Stream.of(
                 //@formatter:off
                 //            refreshToken,      clientId,   clientDetailsResult,   isTokenValidResult,   isRefreshToken,   expectedException
-                Arguments.of( null,              null,       null,                  null,                 false,            ClientNotFoundException.class),
-                Arguments.of( "ItDoesNotCare",   null,       null,                  null,                 false,            ClientNotFoundException.class),
-                Arguments.of( "ItDoesNotCare",   clientId,   null,                  null,                 false,            ClientNotFoundException.class),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         EXPIRED_TOKEN,        false,            TokenExpiredException.class),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         UNKNOWN_ERROR,        false,            UnAuthorizedException.class),
-                Arguments.of( "InvalidToken",    clientId,   clientDetails,         CORRECT_TOKEN,        false,            UnAuthorizedException.class),
-                Arguments.of( "ValidToken",      clientId,   clientDetails,         CORRECT_TOKEN,        true,             null)
+                Arguments.of( null,              null,       null,                  null,                 false,            ClientNotFoundException.class ),
+                Arguments.of( "ItDoesNotCare",   null,       null,                  null,                 false,            ClientNotFoundException.class ),
+                Arguments.of( "ItDoesNotCare",   clientId,   null,                  null,                 false,            ClientNotFoundException.class ),
+                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         EXPIRED_TOKEN,        false,            TokenExpiredException.class ),
+                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         UNKNOWN_ERROR,        false,            UnAuthorizedException.class ),
+                Arguments.of( "InvalidToken",    clientId,   clientDetails,         CORRECT_TOKEN,        false,            UnAuthorizedException.class ),
+                Arguments.of( "ValidToken",      clientId,   clientDetails,         CORRECT_TOKEN,        true,             null )
         ); //@formatter:on
     }
 
@@ -207,6 +208,7 @@ public class AuthenticationServiceTest {
         else {
             when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
         }
+
         if (null != expectedException) {
             assertThrows(expectedException, () -> authenticationService.checkRefreshToken(refreshToken, clientId));
         }
@@ -250,6 +252,7 @@ public class AuthenticationServiceTest {
             when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
             when(mockJwtUtil.getUsername(token, decryptedJwtSecret, authenticationGenerator.getUsernameKey())).thenReturn(getUsernameResult);
         }
+
         if (null != expectedException) {
             assertThrows(expectedException, () -> authenticationService.getUsername(token, clientId));
         }
@@ -294,6 +297,7 @@ public class AuthenticationServiceTest {
             when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
             when(mockJwtUtil.getRoles(token, decryptedJwtSecret, authenticationGenerator.getRolesKey())).thenReturn(getRolesResult);
         }
+
         if (null != expectedException) {
             assertThrows(expectedException, () -> authenticationService.getRoles(token, clientId));
         }
@@ -338,6 +342,7 @@ public class AuthenticationServiceTest {
             when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
             when(mockJwtUtil.getExceptGivenKeys(eq(token), eq(decryptedJwtSecret), anySet())).thenReturn(getExceptGivenKeysResult);
         }
+
         if (null != expectedException) {
             assertThrows(expectedException, () -> authenticationService.getAdditionalInformation(token, clientId));
         }
