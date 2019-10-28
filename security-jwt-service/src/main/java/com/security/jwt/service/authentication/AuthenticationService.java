@@ -4,7 +4,6 @@ import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.enums.TokenKeyEnum;
-import com.security.jwt.enums.TokenVerificationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.UnAuthorizedException;
@@ -12,6 +11,8 @@ import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.util.JwtUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
@@ -81,22 +82,25 @@ public class AuthenticationService {
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      *
+     * @return {@link Map} with the {@code payload} of the given token
+     *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
      * @throws UnAuthorizedException if the given {@code token} is not a valid one
      * @throws TokenExpiredException if the given {@code token} has expired
      */
-    public void checkAccessToken(String accessToken, String clientId) {
-        JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-        String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
+    public Map<String, Object> checkAccessToken(String accessToken, String clientId) {
+        try {
+            JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
 
-        TokenVerificationEnum verificationResult = jwtUtil.isTokenValid(accessToken, decryptedJwtSecret);
-        verificationResult.throwRelatedExceptionIfRequired(
-                format("The validation of the token: %s related with clientId: %s returns the following result: %s",
-                        accessToken, clientId, verificationResult.name()));
+            Map<String, Object> payload = jwtUtil.getExceptGivenKeys(accessToken, decryptedJwtSecret, new HashSet<>());
+            if (!isAccessToken(payload))
+                throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an access one", accessToken, clientId));
 
-        if (!isAccessToken(accessToken, decryptedJwtSecret))
-            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an access one",
-                    accessToken, clientId));
+            return payload;
+        } catch (JwtException ex) {
+            throw throwRelatedExceptionIfRequired(ex, format("There was an error checking the access token: %s related with clientId: %s", accessToken, clientId));
+        }
     }
 
 
@@ -108,22 +112,25 @@ public class AuthenticationService {
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      *
+     * @return {@link Map} with the {@code payload} of the given token
+     *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
      * @throws UnAuthorizedException if the given {@code token} is not a valid one
      * @throws TokenExpiredException if the given {@code token} has expired
      */
-    public void checkRefreshToken(String refreshToken, String clientId) {
-        JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-        String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
+    public Map<String, Object> checkRefreshToken(String refreshToken, String clientId) {
+        try {
+            JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
 
-        TokenVerificationEnum verificationResult = jwtUtil.isTokenValid(refreshToken, decryptedJwtSecret);
-        verificationResult.throwRelatedExceptionIfRequired(
-                format("The validation of the token: %s related with clientId: %s returns the following result: %s",
-                        refreshToken, clientId, verificationResult.name()));
+            Map<String, Object> payload = jwtUtil.getExceptGivenKeys(refreshToken, decryptedJwtSecret, new HashSet<>());
+            if (!isAccessToken(payload))
+                throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an refresh one", refreshToken, clientId));
 
-        if (isAccessToken(refreshToken, decryptedJwtSecret))
-            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not a refresh one",
-                    refreshToken, clientId));
+            return payload;
+        } catch (JwtException ex) {
+            throw throwRelatedExceptionIfRequired(ex, format("There was an error checking the refresh token: %s related with clientId: %s", refreshToken, clientId));
+        }
     }
 
 
@@ -298,17 +305,17 @@ public class AuthenticationService {
     }
 
     /**
-     * Check if the given Jwt token is or not an access one.
+     * Check if the given {@code payload} contains information related with an JWT access token.
      *
-     * @param token
-     *    JWT token to extract the required information
-     * @param jwtSecretKey
-     *    {@link String} used to encrypt the JWT token
+     * @param payload
+     *    JWT token payload information
      *
-     * @return {@code true} if the token is an access one, {@code false} otherwise
+     * @return {@code true} if the {@code payload} comes from an access token, {@code false} otherwise
      */
-    private boolean isAccessToken(String token, String jwtSecretKey) {
-        return !jwtUtil.getKey(token, jwtSecretKey, TokenKeyEnum.REFRESH_JWT_ID.getKey(), String.class).isPresent();
+    private boolean isAccessToken(Map<String, Object> payload) {
+        return ofNullable(payload)
+                .map(p -> null == p.get(TokenKeyEnum.REFRESH_JWT_ID.getKey()))
+                .orElse(true);
     }
 
     /**
@@ -316,6 +323,23 @@ public class AuthenticationService {
      */
     private String decryptJwtSecret(String jwtSecret) {
         return encryptor.decrypt(jwtSecret.replace(Constants.JWT_SECRET_PREFIX, ""));
+    }
+
+    /**
+     * Convert the given {@link JwtException} in another one managed by the application.
+     *
+     * @param exception
+     *    {@link JwtException} to transform
+     * @param errorMessage
+     *
+     * @throws TokenExpiredException if the given {@link JwtException} is a {@link ExpiredJwtException} one
+     * @throws UnAuthorizedException for the other uses cases
+     */
+    private RuntimeException throwRelatedExceptionIfRequired(JwtException exception, String errorMessage) {
+        if (exception instanceof ExpiredJwtException)
+            return new TokenExpiredException(errorMessage, exception);
+
+        return new UnAuthorizedException(errorMessage, exception);
     }
 
 }
