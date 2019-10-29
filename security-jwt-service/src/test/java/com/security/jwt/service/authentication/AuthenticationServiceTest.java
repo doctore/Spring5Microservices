@@ -3,7 +3,6 @@ package com.security.jwt.service.authentication;
 import com.security.jwt.ObjectGeneratorForTest;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.JwtClientDetailsService;
@@ -24,11 +23,20 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.security.jwt.enums.TokenKeyEnum.AUTHORITIES;
+import static com.security.jwt.enums.TokenKeyEnum.CLIENT_ID;
+import static com.security.jwt.enums.TokenKeyEnum.EXPIRATION_TIME;
+import static com.security.jwt.enums.TokenKeyEnum.ISSUED_AT;
+import static com.security.jwt.enums.TokenKeyEnum.JWT_ID;
+import static com.security.jwt.enums.TokenKeyEnum.NAME;
+import static com.security.jwt.enums.TokenKeyEnum.REFRESH_JWT_ID;
+import static com.security.jwt.enums.TokenKeyEnum.USERNAME;
 import static java.util.Arrays.asList;
 import static com.security.jwt.enums.AuthenticationConfigurationEnum.SPRING5_MICROSERVICES;
 import static java.util.Optional.empty;
@@ -41,7 +49,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -130,32 +137,46 @@ public class AuthenticationServiceTest {
     }
 
 
-    static Stream<Arguments> checkAccessTokenTestCases() {
-        String clientId = SPRING5_MICROSERVICES.getClientId();
+    static Stream<Arguments> getPayloadOfTokenTestCases() {
+        String clientId = "clientId";
         JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
+        Map<String, Object> payloadFromAccessToken = new HashMap<String, Object>() {{
+            put(AUTHORITIES.getKey(), asList("admin"));
+            put(JWT_ID.getKey(), "jti value");
+            put(USERNAME.getKey(), "name value");
+        }};
+        Map<String, Object> payloadFromRefreshToken = new HashMap<String, Object>() {{
+            put(AUTHORITIES.getKey(), asList("admin"));
+            put(REFRESH_JWT_ID.getKey(), "ati value");
+            put(USERNAME.getKey(), "name value");
+        }};
         return Stream.of(
                 //@formatter:off
-                //            accessToken,       clientId,   clientDetailsResult,   isTokenValidResult,   isAccessToken,   expectedException
-                Arguments.of( null,              null,       null,                  null,                 false,           ClientNotFoundException.class ),
-                Arguments.of( "ItDoesNotCare",   null,       null,                  null,                 false,           ClientNotFoundException.class ),
-                Arguments.of( "ItDoesNotCare",   clientId,   null,                  null,                 false,           ClientNotFoundException.class ),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         EXPIRED_TOKEN,        false,           TokenExpiredException.class ),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         UNKNOWN_ERROR,        false,           UnAuthorizedException.class ),
-                Arguments.of( "InvalidToken",    clientId,   clientDetails,         CORRECT_TOKEN,        false,           UnAuthorizedException.class ),
-                Arguments.of( "ValidToken",      clientId,   clientDetails,         CORRECT_TOKEN,        true,            null )
+                //            token,             clientId,   isAccessToken,   clientDetailsResult,   payload,                   expectedException,               expectedResult
+                Arguments.of( null,              null,       false,           null,                  null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( null,              null,       true,            null,                  null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( "ItDoesNotCare",   null,       false,           null,                  null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( "ItDoesNotCare",   null,       true,            null,                  null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           null,                  null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            null,                  null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetails,         null,                      UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetails,         null,                      null,                            null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetails,         payloadFromAccessToken,    UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetails,         payloadFromAccessToken,    null,                            payloadFromAccessToken ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetails,         payloadFromRefreshToken,   null,                            payloadFromRefreshToken ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetails,         payloadFromRefreshToken,   UnAuthorizedException.class,     null )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("checkAccessTokenTestCases")
-    @DisplayName("checkAccessToken: test cases")
-    public void checkAccessToken_testCases(String accessToken, String clientId, JwtClientDetails clientDetailsResult, TokenVerificationEnum isTokenValidResult,
-                                           boolean isAccessToken, Class<? extends Exception> expectedException) {
+    @MethodSource("getPayloadOfTokenTestCases")
+    @DisplayName("getPayloadOfToken: test cases")
+    public void getPayloadOfToken_testCases(String token, String clientId, boolean isAccessToken, JwtClientDetails clientDetailsResult,
+                                            Map<String, Object> payload, Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
         String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
 
         when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
-        when(mockJwtUtil.isTokenValid(accessToken, decryptedJwtSecret)).thenReturn(isTokenValidResult);
-        when(mockJwtUtil.getKey(eq(accessToken), eq(decryptedJwtSecret), anyString(), eq(String.class))).thenReturn(isAccessToken ? empty() : of(""));
+        when(mockJwtUtil.getExceptGivenKeys(token, decryptedJwtSecret, new HashSet<>())).thenReturn(payload);
         if (null == clientDetailsResult) {
             when(mockJwtClientDetailsService.findByClientId(clientId)).thenThrow(ClientNotFoundException.class);
         }
@@ -164,52 +185,10 @@ public class AuthenticationServiceTest {
         }
 
         if (null != expectedException) {
-            assertThrows(expectedException, () -> authenticationService.checkAccessToken(accessToken, clientId));
+            assertThrows(expectedException, () -> authenticationService.getPayloadOfToken(token, clientId, isAccessToken));
         }
         else {
-            authenticationService.checkAccessToken(accessToken, clientId);
-        }
-    }
-
-
-    static Stream<Arguments> checkRefreshTokenTestCases() {
-        String clientId = SPRING5_MICROSERVICES.getClientId();
-        JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
-        return Stream.of(
-                //@formatter:off
-                //            refreshToken,      clientId,   clientDetailsResult,   isTokenValidResult,   isRefreshToken,   expectedException
-                Arguments.of( null,              null,       null,                  null,                 false,            ClientNotFoundException.class ),
-                Arguments.of( "ItDoesNotCare",   null,       null,                  null,                 false,            ClientNotFoundException.class ),
-                Arguments.of( "ItDoesNotCare",   clientId,   null,                  null,                 false,            ClientNotFoundException.class ),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         EXPIRED_TOKEN,        false,            TokenExpiredException.class ),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         UNKNOWN_ERROR,        false,            UnAuthorizedException.class ),
-                Arguments.of( "InvalidToken",    clientId,   clientDetails,         CORRECT_TOKEN,        false,            UnAuthorizedException.class ),
-                Arguments.of( "ValidToken",      clientId,   clientDetails,         CORRECT_TOKEN,        true,             null )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("checkRefreshTokenTestCases")
-    @DisplayName("checkRefreshToken: test cases")
-    public void checkRefreshToken_testCases(String refreshToken, String clientId, JwtClientDetails clientDetailsResult, TokenVerificationEnum isTokenValidResult,
-                                            boolean isRefreshToken, Class<? extends Exception> expectedException) {
-        String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
-
-        when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
-        when(mockJwtUtil.isTokenValid(refreshToken, decryptedJwtSecret)).thenReturn(isTokenValidResult);
-        when(mockJwtUtil.getKey(eq(refreshToken), eq(decryptedJwtSecret), anyString(), eq(String.class))).thenReturn(isRefreshToken ? of("") : empty());
-        if (null == clientDetailsResult) {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenThrow(ClientNotFoundException.class);
-        }
-        else {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
-        }
-
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> authenticationService.checkRefreshToken(refreshToken, clientId));
-        }
-        else {
-            authenticationService.checkRefreshToken(refreshToken, clientId);
+            assertEquals(payload, authenticationService.getPayloadOfToken(token, clientId, isAccessToken));
         }
     }
 
@@ -217,43 +196,41 @@ public class AuthenticationServiceTest {
     static Stream<Arguments> getUsernameTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
-        JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
-        Optional<String> getUsernameResult = of("username value");
+        String username = "username value";
+        Map<String, Object> payloadWithUsername = new HashMap<String, Object>() {{
+            put(USERNAME.getKey(), username);
+        }};
+        Map<String, Object> payloadWithoutUsername = new HashMap<String, Object>() {{
+            put(NAME.getKey(), "name value");
+        }};
         return Stream.of(
                 //@formatter:off
-                //            token,             clientId,   authenticationGenerator,   clientDetailsResult,   getUsernameResult,   expectedException,               expectedResult
-                Arguments.of( null,              null,       null,                      null,                  null,                null,                            empty() ),
-                Arguments.of( "ItDoesNotCare",   null,       null,                      null,                  null,                ClientNotFoundException.class,   empty() ),
-                Arguments.of( "ItDoesNotCare",   clientId,   null,                      null,                  null,                null,                            empty() ),
-                Arguments.of( "ItDoesNotCare",   clientId,   authenticationGenerator,   null,                  null,                ClientNotFoundException.class,   empty() ),
-                Arguments.of( "ItDoesNotCare",   clientId,   authenticationGenerator,   clientDetails,         empty(),             null,                            empty() ),
-                Arguments.of( "ItDoesNotCare",   clientId,   authenticationGenerator,   clientDetails,         getUsernameResult,   null,                            getUsernameResult )
+                //            payload,                  clientId,   authenticationGenerator,   expectedException,               expectedResult
+                Arguments.of( null,                     null,       null,                      null,                            empty() ),
+                Arguments.of( new HashMap<>(),          null,       null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( new HashMap<>(),          clientId,   null,                      null,                            empty() ),
+                Arguments.of( new HashMap<>(),          clientId,   authenticationGenerator,   null,                            empty() ),
+                Arguments.of( payloadWithoutUsername,   clientId,   authenticationGenerator,   null,                            empty() ),
+                Arguments.of( payloadWithUsername,      clientId,   authenticationGenerator,   null,                            of(username) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getUsernameTestCases")
     @DisplayName("getUsername: test cases")
-    public void getUsername_testCases(String token, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
-                                      JwtClientDetails clientDetailsResult, Optional<String> getUsernameResult, Class<? extends Exception> expectedException,
-                                      Optional<String> expectedResult) {
-        String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
+    public void getUsername_testCases(Map<String, Object> payload, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+                                      Class<? extends Exception> expectedException, Optional<String> expectedResult) {
 
         when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
-        when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
-        if (null == clientDetailsResult) {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenThrow(ClientNotFoundException.class);
-        }
-        else {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
-            when(mockJwtUtil.getUsername(token, decryptedJwtSecret, authenticationGenerator.getUsernameKey())).thenReturn(getUsernameResult);
+        if (null != authenticationGenerator) {
+            when(authenticationGenerator.getUsernameKey()).thenReturn(USERNAME.getKey());
         }
 
         if (null != expectedException) {
-            assertThrows(expectedException, () -> authenticationService.getUsername(token, clientId));
+            assertThrows(expectedException, () -> authenticationService.getUsername(payload, clientId));
         }
         else {
-            Optional<String> result = authenticationService.getUsername(token, clientId);
+            Optional<String> result = authenticationService.getUsername(payload, clientId);
             assertEquals(expectedResult, result);
         }
     }
@@ -262,88 +239,90 @@ public class AuthenticationServiceTest {
     static Stream<Arguments> getRolesTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
-        JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
-        Set<String> getRolesResult = new HashSet<>(asList("admin"));
+        List<String> roles = asList("admin", "user");
+        Map<String, Object> payloadWithRoles = new HashMap<String, Object>() {{
+            put(AUTHORITIES.getKey(), roles);
+        }};
+        Map<String, Object> payloadWithoutRoles = new HashMap<String, Object>() {{
+            put(NAME.getKey(), "name value");
+        }};
         return Stream.of(
                 //@formatter:off
-                //            token,             clientId,   authenticationGenerator,   clientDetailsResult,   getRolesResult,    expectedException,               expectedResult
-                Arguments.of( null,              null,       null,                      null,                  null,              null,                            new HashSet<>() ),
-                Arguments.of( "ItDoesNotCare",   null,       null,                      null,                  null,              ClientNotFoundException.class,   null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   null,                      null,                  null,              null,                            new HashSet<>() ),
-                Arguments.of( "ItDoesNotCare",   clientId,   authenticationGenerator,   null,                  null,              ClientNotFoundException.class,   null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   authenticationGenerator,   clientDetails,         new HashSet<>(),   null,                            new HashSet<>() ),
-                Arguments.of( "ItDoesNotCare",   clientId,   authenticationGenerator,   clientDetails,         getRolesResult,    null,                            getRolesResult )
+                //            payload,               clientId,   authenticationGenerator,   expectedException,               expectedResult
+                Arguments.of( null,                  null,       null,                      null,                            new HashSet<>() ),
+                Arguments.of( new HashMap<>(),       null,       null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( new HashMap<>(),       clientId,   null,                      null,                            new HashSet<>() ),
+                Arguments.of( new HashMap<>(),       clientId,   authenticationGenerator,   null,                            new HashSet<>() ),
+                Arguments.of( payloadWithoutRoles,   clientId,   authenticationGenerator,   null,                            new HashSet<>() ),
+                Arguments.of( payloadWithRoles,      clientId,   authenticationGenerator,   null,                            new HashSet<>(roles) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getRolesTestCases")
     @DisplayName("getRoles: test cases")
-    public void getRoles_testCases(String token, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
-                                      JwtClientDetails clientDetailsResult, Set<String> getRolesResult, Class<? extends Exception> expectedException,
-                                      Set<String> expectedResult) {
-        String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
+    public void getRoles_testCases(Map<String, Object> payload, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+                                   Class<? extends Exception> expectedException, Set<String> expectedResult) {
 
         when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
-        when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
-        if (null == clientDetailsResult) {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenThrow(ClientNotFoundException.class);
-        }
-        else {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
-            when(mockJwtUtil.getRoles(token, decryptedJwtSecret, authenticationGenerator.getRolesKey())).thenReturn(getRolesResult);
+        if (null != authenticationGenerator) {
+            when(authenticationGenerator.getRolesKey()).thenReturn(AUTHORITIES.getKey());
         }
 
         if (null != expectedException) {
-            assertThrows(expectedException, () -> authenticationService.getRoles(token, clientId));
+            assertThrows(expectedException, () -> authenticationService.getRoles(payload, clientId));
         }
         else {
-            Set<String> result = authenticationService.getRoles(token, clientId);
+            Set<String> result = authenticationService.getRoles(payload, clientId);
             assertEquals(expectedResult, result);
         }
     }
 
 
     static Stream<Arguments> getAdditionalInformationTestCases() {
-        String clientId = "clientId value";
-        JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
-        Map<String, Object> getExceptGivenKeysResult = new HashMap<String, Object>() {{
-            put("username", "username value");
-            put("roles", asList("admin"));
-            put("age", 23);
+        String clientId = SPRING5_MICROSERVICES.getClientId();
+        Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
+        Map<String, Object> sourcePayload = new HashMap<String, Object>() {{
+            put("age", 32);
+            put(AUTHORITIES.getKey(), asList("admin", "user"));
+            put(CLIENT_ID.getKey(), clientId);
+            put(EXPIRATION_TIME.getKey(), 123456789);
+            put(ISSUED_AT.getKey(), "iat value");
+            put(JWT_ID.getKey(), "jti value");
+            put(NAME.getKey(), "name value");
+            put(USERNAME.getKey(), "username value");
+        }};
+        Map<String, Object> finalPayload = new HashMap<String, Object>() {{
+            put("age", 32);
+            put(NAME.getKey(), "name value");
         }};
         return Stream.of(
                 //@formatter:off
-                //            token,             clientId,   clientDetailsResult,   getExceptGivenKeysResult,    expectedException,               expectedResult
-                Arguments.of( null,              null,       null,                  null,                        null,                            new HashMap<>() ),
-                Arguments.of( "ItDoesNotCare",   null,       null,                  null,                        ClientNotFoundException.class,   null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   null,                  null,                        ClientNotFoundException.class,   null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         new HashMap<>(),             null,                            new HashMap<>() ),
-                Arguments.of( "ItDoesNotCare",   clientId,   clientDetails,         getExceptGivenKeysResult,    null,                            getExceptGivenKeysResult )
+                //            payload,           clientId,   authenticationGenerator,   expectedException,               expectedResult
+                Arguments.of( null,              null,       null,                      null,                            new HashMap<>() ),
+                Arguments.of( new HashMap<>(),   null,       null,                      ClientNotFoundException.class,   null ),
+                Arguments.of( new HashMap<>(),   clientId,   null,                      null,                            new HashMap<>() ),
+                Arguments.of( new HashMap<>(),   clientId,   authenticationGenerator,   null,                            new HashMap<>() ),
+                Arguments.of( sourcePayload,     clientId,   authenticationGenerator,   null,                            finalPayload )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getAdditionalInformationTestCases")
     @DisplayName("getAdditionalInformation: test cases")
-    public void getAdditionalInformation_testCases(String token, String clientId, JwtClientDetails clientDetailsResult,Map<String, Object> getExceptGivenKeysResult,
+    public void getAdditionalInformation_testCases(Map<String, Object> payload, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
                                                    Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
-        String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
-
-        when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
-        if (null == clientDetailsResult) {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenThrow(ClientNotFoundException.class);
-        }
-        else {
-            when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
-            when(mockJwtUtil.getExceptGivenKeys(eq(token), eq(decryptedJwtSecret), anySet())).thenReturn(getExceptGivenKeysResult);
+        when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
+        if (null != authenticationGenerator) {
+            when(authenticationGenerator.getUsernameKey()).thenReturn(USERNAME.getKey());
+            when(authenticationGenerator.getRolesKey()).thenReturn(AUTHORITIES.getKey());
         }
 
         if (null != expectedException) {
-            assertThrows(expectedException, () -> authenticationService.getAdditionalInformation(token, clientId));
+            assertThrows(expectedException, () -> authenticationService.getAdditionalInformation(payload, clientId));
         }
         else {
-            Map<String, Object> result = authenticationService.getAdditionalInformation(token, clientId);
+            Map<String, Object> result = authenticationService.getAdditionalInformation(payload, clientId);
             assertEquals(expectedResult, result);
         }
     }

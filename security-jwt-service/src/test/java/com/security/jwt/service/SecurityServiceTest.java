@@ -54,6 +54,7 @@ public class SecurityServiceTest {
     }
 
 
+    /*
     static Stream<Arguments> loginTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         String username = "username value";
@@ -188,5 +189,6 @@ public class SecurityServiceTest {
             assertEquals(expectedResult, result);
         }
     }
+     */
 
 }

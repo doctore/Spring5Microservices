@@ -3,7 +3,6 @@ package com.security.jwt.service.authentication;
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
-import com.security.jwt.enums.TokenKeyEnum;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.UnAuthorizedException;
@@ -28,6 +27,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.security.jwt.enums.TokenKeyEnum.CLIENT_ID;
+import static com.security.jwt.enums.TokenKeyEnum.EXPIRATION_TIME;
+import static com.security.jwt.enums.TokenKeyEnum.ISSUED_AT;
+import static com.security.jwt.enums.TokenKeyEnum.JWT_ID;
+import static com.security.jwt.enums.TokenKeyEnum.REFRESH_JWT_ID;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static java.lang.String.format;
@@ -169,10 +173,11 @@ public class AuthenticationService {
                     Set<String> keysToFilter = new HashSet<>(asList(
                             authGen.getUsernameKey(),
                             authGen.getRolesKey(),
-                            TokenKeyEnum.CLIENT_ID.getKey(),
-                            TokenKeyEnum.EXPIRATION_TIME.getKey(),
-                            TokenKeyEnum.ISSUED_AT.getKey(),
-                            TokenKeyEnum.JWT_ID.getKey()));
+                            CLIENT_ID.getKey(),
+                            EXPIRATION_TIME.getKey(),
+                            ISSUED_AT.getKey(),
+                            JWT_ID.getKey(),
+                            REFRESH_JWT_ID.getKey()));
 
                     return payload.entrySet().stream()
                             .filter(e -> !keysToFilter.contains(e.getKey()))
@@ -260,8 +265,8 @@ public class AuthenticationService {
      */
     private Map<String, Object> addToAccessToken(String clientId, String jti) {
         return new HashMap<String, Object>() {{
-            put(TokenKeyEnum.CLIENT_ID.getKey(), clientId);
-            put(TokenKeyEnum.JWT_ID.getKey(), jti);
+            put(CLIENT_ID.getKey(), clientId);
+            put(JWT_ID.getKey(), jti);
         }};
     }
 
@@ -270,9 +275,9 @@ public class AuthenticationService {
      */
     private Map<String, Object> addToRefreshToken(String clientId, String jti) {
         return new HashMap<String, Object>() {{
-            put(TokenKeyEnum.CLIENT_ID.getKey(), clientId);
-            put(TokenKeyEnum.JWT_ID.getKey(), UUID.randomUUID().toString());
-            put(TokenKeyEnum.REFRESH_JWT_ID.getKey(), jti);
+            put(CLIENT_ID.getKey(), clientId);
+            put(JWT_ID.getKey(), UUID.randomUUID().toString());
+            put(REFRESH_JWT_ID.getKey(), jti);
         }};
     }
 
@@ -286,7 +291,7 @@ public class AuthenticationService {
      */
     private boolean isAccessToken(Map<String, Object> payload) {
         return ofNullable(payload)
-                .map(p -> null == p.get(TokenKeyEnum.REFRESH_JWT_ID.getKey()))
+                .map(p -> null == p.get(REFRESH_JWT_ID.getKey()))
                 .orElse(true);
     }
 
