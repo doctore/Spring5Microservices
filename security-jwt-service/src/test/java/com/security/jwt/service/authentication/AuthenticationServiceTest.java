@@ -2,7 +2,6 @@ package com.security.jwt.service.authentication;
 
 import com.security.jwt.ObjectGeneratorForTest;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
-import com.security.jwt.enums.TokenVerificationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.UnAuthorizedException;
@@ -32,9 +31,6 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static com.security.jwt.enums.AuthenticationConfigurationEnum.SPRING5_MICROSERVICES;
-import static com.security.jwt.enums.TokenVerificationEnum.CORRECT_TOKEN;
-import static com.security.jwt.enums.TokenVerificationEnum.EXPIRED_TOKEN;
-import static com.security.jwt.enums.TokenVerificationEnum.UNKNOWN_ERROR;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertFalse;

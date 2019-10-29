@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +31,7 @@ import java.util.UUID;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toMap;
 
 @Service
 public class AuthenticationService {
@@ -75,136 +77,106 @@ public class AuthenticationService {
 
 
     /**
-     * Check if the given {@code token} related with the given {@link JwtClientDetails#getClientId()} is an access one.
-     *
-     * @param accessToken
-     *    {@link String} with the access token to check
-     * @param clientId
-     *    {@link JwtClientDetails#getClientId()} used to know the details to include
-     *
-     * @return {@link Map} with the {@code payload} of the given token
-     *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
-     * @throws UnAuthorizedException if the given {@code token} is not a valid one
-     * @throws TokenExpiredException if the given {@code token} has expired
-     */
-    public Map<String, Object> checkAccessToken(String accessToken, String clientId) {
-        try {
-            JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
-
-            Map<String, Object> payload = jwtUtil.getExceptGivenKeys(accessToken, decryptedJwtSecret, new HashSet<>());
-            if (!isAccessToken(payload))
-                throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an access one", accessToken, clientId));
-
-            return payload;
-        } catch (JwtException ex) {
-            throw throwRelatedExceptionIfRequired(ex, format("There was an error checking the access token: %s related with clientId: %s", accessToken, clientId));
-        }
-    }
-
-
-    /**
-     * Check if the given {@code token} related with the given {@link JwtClientDetails#getClientId()} is a refresh one.
-     *
-     * @param refreshToken
-     *    {@link String} with the refresh token to check
-     * @param clientId
-     *    {@link JwtClientDetails#getClientId()} used to know the details to include
-     *
-     * @return {@link Map} with the {@code payload} of the given token
-     *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
-     * @throws UnAuthorizedException if the given {@code token} is not a valid one
-     * @throws TokenExpiredException if the given {@code token} has expired
-     */
-    public Map<String, Object> checkRefreshToken(String refreshToken, String clientId) {
-        try {
-            JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
-
-            Map<String, Object> payload = jwtUtil.getExceptGivenKeys(refreshToken, decryptedJwtSecret, new HashSet<>());
-            if (!isAccessToken(payload))
-                throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an refresh one", refreshToken, clientId));
-
-            return payload;
-        } catch (JwtException ex) {
-            throw throwRelatedExceptionIfRequired(ex, format("There was an error checking the refresh token: %s related with clientId: %s", refreshToken, clientId));
-        }
-    }
-
-
-    /**
-     * Get the {@code username} included in the given JWT {@code token}.
+     * Get the {@code payload} included in the given {@code token} related with the given {@link JwtClientDetails#getClientId()}.
      *
      * @param token
-     *    JWT token to extract the required information
+     *    {@link String} with the token of which to extract the payload
+     * @param clientId
+     *    {@link JwtClientDetails#getClientId()} used to know the details to include
+     * @param isAccessToken
+     *    {@code true} if {@code token} is an access one, {@code false} if it is a refresh token
+     *
+     * @return {@link Map} with the {@code payload} of the given token
+     *
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws UnAuthorizedException if the given {@code token} is not a valid one
+     * @throws TokenExpiredException if the given {@code token} has expired
+     */
+    public Map<String, Object> getPayloadOfToken(String token, String clientId, boolean isAccessToken) {
+        try {
+            JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
+
+            Map<String, Object> payload = jwtUtil.getExceptGivenKeys(token, decryptedJwtSecret, new HashSet<>());
+            if (isAccessToken != isAccessToken(payload))
+                throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an "
+                                                    + (isAccessToken ? "access " : "refresh ") + "one", token, clientId));
+            return payload;
+        } catch (JwtException ex) {
+            throw throwRelatedExceptionIfRequired(ex, format("There was an error checking the token: %s related with clientId: %s", token, clientId));
+        }
+    }
+
+
+    /**
+     * Get the {@code username} included in the given {@code payload}.
+     *
+     * @param payload
+     *    {@link Map} with the content of a Jwt token
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      *
      * @return {@link Optional} with {@code username} if exists, {@link Optional#empty()} otherwise
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database or {@link AuthenticationConfigurationEnum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
      */
-    public Optional<String> getUsername(String token, String clientId) {
-        return ofNullable(token)
+    public Optional<String> getUsername(Map<String, Object> payload, String clientId) {
+        return ofNullable(payload)
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
-                .flatMap(authGen -> {
-                    JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-                    return jwtUtil.getUsername(token, decryptJwtSecret(clientDetails.getJwtSecret()), authGen.getUsernameKey());
-                });
+                .map(authGen -> (String)payload.get(authGen.getUsernameKey()));
     }
 
 
     /**
-     * Get the {@code roles} included in the given JWT {@code token}.
+     * Get the {@code roles} included in the given {@code payload}.
      *
-     * @param token
-     *    JWT token to extract the required information
+     * @param payload
+     *    {@link Map} with the content of a Jwt token
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      *
      * @return {@link Set} with {@code roles}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database or {@link AuthenticationConfigurationEnum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
      */
-    public Set<String> getRoles(String token, String clientId) {
-        return ofNullable(token)
+    public Set<String> getRoles(Map<String, Object> payload, String clientId) {
+        return ofNullable(payload)
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
-                .map(authGen -> {
-                    JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-                    return jwtUtil.getRoles(token, decryptJwtSecret(clientDetails.getJwtSecret()), authGen.getRolesKey());
-                })
+                .map(authGen -> null == payload.get(authGen.getRolesKey()) ? null : new HashSet<>((List<String>)payload.get(authGen.getRolesKey())))
                 .orElse(new HashSet<>());
     }
 
 
     /**
-     * Get the additional information (included in the given {@code token} but not related with standard JWT)
+     * Get the additional information included in the given {@code payload} but not related with standard JWT
      *
-     * @param token
-     *    JWT token to extract the required information
+     * @param payload
+     *    {@link Map} with the content of a Jwt token
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      *
      * @return {@link Map}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database or {@link AuthenticationConfigurationEnum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
      */
-    public Map<String, Object> getAdditionalInformation(String token, String clientId) {
-        return ofNullable(token)
-                .map(t -> jwtClientDetailsService.findByClientId(clientId))
-                .map(clientDetails -> {
+    public Map<String, Object> getAdditionalInformation(Map<String, Object> payload, String clientId) {
+        return ofNullable(payload)
+                .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
+                .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
+                .map(authGen -> {
                     Set<String> keysToFilter = new HashSet<>(asList(
-                            TokenKeyEnum.AUTHORITIES.getKey(),
+                            authGen.getUsernameKey(),
+                            authGen.getRolesKey(),
                             TokenKeyEnum.CLIENT_ID.getKey(),
                             TokenKeyEnum.EXPIRATION_TIME.getKey(),
                             TokenKeyEnum.ISSUED_AT.getKey(),
-                            TokenKeyEnum.JWT_ID.getKey(),
-                            TokenKeyEnum.USERNAME.getKey()));
-                    return jwtUtil.getExceptGivenKeys(token, decryptJwtSecret(clientDetails.getJwtSecret()), keysToFilter);
+                            TokenKeyEnum.JWT_ID.getKey()));
+
+                    return payload.entrySet().stream()
+                            .filter(e -> !keysToFilter.contains(e.getKey()))
+                            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
                 })
                 .orElse(new HashMap<>());
     }
@@ -256,7 +228,7 @@ public class AuthenticationService {
 
         return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getJwtAlgorithm(),
                                         decryptJwtSecret(clientDetails.getJwtSecret()), clientDetails.getAccessTokenValidity())
-                .orElse("");
+                      .orElse("");
     }
 
     /**
@@ -280,7 +252,7 @@ public class AuthenticationService {
 
         return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getJwtAlgorithm(),
                                         decryptJwtSecret(clientDetails.getJwtSecret()), clientDetails.getRefreshTokenValidity())
-                .orElse("");
+                      .orElse("");
     }
 
     /**
@@ -331,6 +303,7 @@ public class AuthenticationService {
      * @param exception
      *    {@link JwtException} to transform
      * @param errorMessage
+     *    {@link String} with the message that should be included in the returned {@link Exception}
      *
      * @throws TokenExpiredException if the given {@link JwtException} is a {@link ExpiredJwtException} one
      * @throws UnAuthorizedException for the other uses cases
@@ -338,7 +311,6 @@ public class AuthenticationService {
     private RuntimeException throwRelatedExceptionIfRequired(JwtException exception, String errorMessage) {
         if (exception instanceof ExpiredJwtException)
             return new TokenExpiredException(errorMessage, exception);
-
         return new UnAuthorizedException(errorMessage, exception);
     }
 

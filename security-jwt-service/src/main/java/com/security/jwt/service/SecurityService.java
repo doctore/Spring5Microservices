@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -84,8 +85,8 @@ public class SecurityService {
      * @throws TokenExpiredException if the given {@code refreshToken} has expired
      */
     public Optional<AuthenticationInformationDto> refreshToken(String refreshToken, String clientId) {
-        authenticationService.checkRefreshToken(refreshToken, clientId);
-        String username = getUsernameFromToken(refreshToken, clientId);
+        Map<String, Object> payload = authenticationService.getPayloadOfToken(refreshToken, clientId, false);
+        String username = getUsernameFromPayload(payload, clientId);
 
         return of(AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getUserServiceClass()))
@@ -115,33 +116,34 @@ public class SecurityService {
      * @throws TokenExpiredException if the given {@code accessToken} has expired
      */
     public UsernameAuthoritiesDto getAuthorizationInformation(String accessToken, String clientId) {
-        authenticationService.checkAccessToken(accessToken, clientId);
-        String username = getUsernameFromToken(accessToken, clientId);
+        Map<String, Object> payload = authenticationService.getPayloadOfToken(accessToken, clientId, true);
+        String username = getUsernameFromPayload(payload, clientId);
 
         return UsernameAuthoritiesDto.builder()
                 .username(username)
-                .authorities(authenticationService.getRoles(accessToken, clientId))
-                .additionalInfo(authenticationService.getAdditionalInformation(accessToken, clientId))
+                .authorities(authenticationService.getRoles(payload, clientId))
+                .additionalInfo(authenticationService.getAdditionalInformation(payload, clientId))
                 .build();
     }
 
 
     /**
-     * Extract the {@code username} included in the given {@code token}
+     * Extract the {@code username} included in the given {@code payload}
      *
-     * @param token
-     *    {@link String} with token to use
+     * @param payload
+     *    {@link Map} with the content of a Jwt token
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      *
      * @return {@link String}
      *
-     * @throws UsernameNotFoundException if the {@code token} does not contain a {@code username}
+     * @throws UsernameNotFoundException if the {@code payload} does not contain a {@code username}
      */
-    private String getUsernameFromToken(String token, String clientId) {
-        Optional<String> username = authenticationService.getUsername(token, clientId);
+    private String getUsernameFromPayload(Map<String, Object> payload, String clientId) {
+        Optional<String> username = authenticationService.getUsername(payload, clientId);
         if (!username.isPresent())
-            throw new UsernameNotFoundException(format("In the token: %s related with the clientId: %s, there is no a username", token, clientId));
+            // TODO: INCLUDE STRING REPRESENTATION OF THE PAYLOAD
+            throw new UsernameNotFoundException(format("In the given payload related with the clientId: %s, there is no a username", clientId));
 
         return username.get();
     }
