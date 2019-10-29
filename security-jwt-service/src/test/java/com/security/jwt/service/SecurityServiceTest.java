@@ -54,7 +54,6 @@ public class SecurityServiceTest {
     }
 
 
-    /*
     static Stream<Arguments> loginTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         String username = "username value";
@@ -106,34 +105,36 @@ public class SecurityServiceTest {
     static Stream<Arguments> refreshTokenTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         String username = "username value";
-        UserDetails userDetails = ObjectGeneratorForTest.buildDefaultUser();
+
         UserService userService = mock(UserService.class);
         Optional<AuthenticationInformationDto> authenticationInformation = of(ObjectGeneratorForTest.buildDefaultAuthenticationInformation());
         return Stream.of(
                 //@formatter:off
-                //            refreshToken,      clientId,     usernameResult,   userService,   userDetails,   expectedException,                 authenticationInformation,   expectedResult
-                Arguments.of( null,              null,         null,             null,          null,          UsernameNotFoundException.class,   null,                        null ),
-                Arguments.of( null,              "NotFound",   null,             null,          null,          UsernameNotFoundException.class,   null,                        null ),
-                Arguments.of( null,              clientId,     null,             null,          null,          UsernameNotFoundException.class,   null,                        null ),
-                Arguments.of( "ItDoesNotCare",   null,         username,         null,          null,          ClientNotFoundException.class,     null,                        null ),
-                Arguments.of( "ItDoesNotCare",   "NotFound",   username,         null,          null,          ClientNotFoundException.class,     null,                        null ),
-                Arguments.of( "ItDoesNotCare",   clientId,     username,         null,          null,          null,                              empty(),                     empty() ),
-                Arguments.of( "ItDoesNotCare",   clientId,     username,         userService,   null,          null,                              empty(),                     empty() ),
-                Arguments.of( "ItDoesNotCare",   clientId,     username,         userService,   userDetails,   null,                              empty(),                     empty() ),
-                Arguments.of( "ItDoesNotCare",   clientId,     username,         userService,   userDetails,   null,                              authenticationInformation,   authenticationInformation )
+                //            refreshToken,      clientId,     usernameResult,   userService,   expectedException,                 authenticationInformation,   expectedResult
+                Arguments.of( null,              null,         null,             null,          UsernameNotFoundException.class,   null,                        null ),
+                Arguments.of( null,              "NotFound",   null,             null,          UsernameNotFoundException.class,   null,                        null ),
+                Arguments.of( null,              clientId,     null,             null,          UsernameNotFoundException.class,   null,                        null ),
+                Arguments.of( "ItDoesNotCare",   null,         username,         null,          ClientNotFoundException.class,     null,                        null ),
+                Arguments.of( "ItDoesNotCare",   "NotFound",   username,         null,          ClientNotFoundException.class,     null,                        null ),
+                Arguments.of( "ItDoesNotCare",   clientId,     username,         null,          null,                              empty(),                     empty() ),
+                Arguments.of( "ItDoesNotCare",   clientId,     username,         userService,   null,                              empty(),                     empty() ),
+                Arguments.of( "ItDoesNotCare",   clientId,     username,         userService,   null,                              authenticationInformation,   authenticationInformation )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("refreshTokenTestCases")
     @DisplayName("refreshToken: test cases")
-    public void refreshToken_testCases(String refreshToken, String clientId, String usernameResult, UserService userService, UserDetails userDetails,
-                                       Class<? extends Exception> expectedException,
-                                       Optional<AuthenticationInformationDto> authenticationInformation, Optional<AuthenticationInformationDto> expectedResult) {
+    public void refreshToken_testCases(String refreshToken, String clientId, String usernameResult, UserService userService,
+                                       Class<? extends Exception> expectedException, Optional<AuthenticationInformationDto> authenticationInformation,
+                                       Optional<AuthenticationInformationDto> expectedResult) {
+        UserDetails userDetails = ObjectGeneratorForTest.buildDefaultUser();
+        Map<String, Object> payload = new HashMap<>();
 
-        when(mockApplicationContext.getBean(UserService.class)).thenReturn(userService);
-        when(mockAuthenticationService.getUsername(refreshToken, clientId)).thenReturn(ofNullable(usernameResult));
+        when(mockAuthenticationService.getPayloadOfToken(refreshToken, clientId, false)).thenReturn(payload);
+        when(mockAuthenticationService.getUsername(payload, clientId)).thenReturn(ofNullable(usernameResult));
         when(mockAuthenticationService.getAuthenticationInformation(clientId, userDetails)).thenReturn(authenticationInformation);
+        when(mockApplicationContext.getBean(UserService.class)).thenReturn(userService);
         if (null != userService) {
             if (null == usernameResult) {
                 when(userService.loadUserByUsername(usernameResult)).thenThrow(UsernameNotFoundException.class);
@@ -178,9 +179,12 @@ public class SecurityServiceTest {
     public void getAuthorizationInformation_testCases(String accessToken, String clientId, String usernameResult, Set<String> rolesResult,
                                                       Map<String, Object> additionalInfoResult, Class<? extends Exception> expectedException,
                                                       UsernameAuthoritiesDto expectedResult) {
-        when(mockAuthenticationService.getUsername(accessToken, clientId)).thenReturn(ofNullable(usernameResult));
-        when(mockAuthenticationService.getRoles(accessToken, clientId)).thenReturn(rolesResult);
-        when(mockAuthenticationService.getAdditionalInformation(accessToken, clientId)).thenReturn(additionalInfoResult);
+        Map<String, Object> payload = new HashMap<>();
+
+        when(mockAuthenticationService.getPayloadOfToken(accessToken, clientId, true)).thenReturn(payload);
+        when(mockAuthenticationService.getUsername(payload, clientId)).thenReturn(ofNullable(usernameResult));
+        when(mockAuthenticationService.getRoles(payload, clientId)).thenReturn(rolesResult);
+        when(mockAuthenticationService.getAdditionalInformation(payload, clientId)).thenReturn(additionalInfoResult);
         if (null != expectedException) {
             assertThrows(expectedException, () -> securityService.getAuthorizationInformation(accessToken, clientId));
         }
@@ -189,6 +193,5 @@ public class SecurityServiceTest {
             assertEquals(expectedResult, result);
         }
     }
-     */
 
 }

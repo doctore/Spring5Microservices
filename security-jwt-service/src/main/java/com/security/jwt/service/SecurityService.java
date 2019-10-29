@@ -17,6 +17,7 @@ import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Map;
 import java.util.Optional;
@@ -142,9 +143,8 @@ public class SecurityService {
     private String getUsernameFromPayload(Map<String, Object> payload, String clientId) {
         Optional<String> username = authenticationService.getUsername(payload, clientId);
         if (!username.isPresent())
-            // TODO: INCLUDE STRING REPRESENTATION OF THE PAYLOAD
-            throw new UsernameNotFoundException(format("In the given payload related with the clientId: %s, there is no a username", clientId));
-
+            throw new UsernameNotFoundException(format("In the given payload with the keys: %s and related with the clientId: %s, there is no a username",
+                                                       null == payload ? "null" : StringUtils.collectionToCommaDelimitedString(payload.keySet()), clientId));
         return username.get();
     }
 
