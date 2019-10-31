@@ -85,7 +85,7 @@ public class SecurityService {
      * @throws UsernameNotFoundException if the {@code refreshToken} does not contain a {@code username} or the included one does not exists in database
      * @throws TokenExpiredException if the given {@code refreshToken} has expired
      */
-    public Optional<AuthenticationInformationDto> refreshToken(String refreshToken, String clientId) {
+    public Optional<AuthenticationInformationDto> refresh(String refreshToken, String clientId) {
         Map<String, Object> payload = authenticationService.getPayloadOfToken(refreshToken, clientId, false);
         String username = getUsernameFromPayload(payload, clientId);
 

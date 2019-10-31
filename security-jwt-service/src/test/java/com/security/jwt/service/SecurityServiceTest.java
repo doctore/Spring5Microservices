@@ -102,7 +102,7 @@ public class SecurityServiceTest {
     }
 
 
-    static Stream<Arguments> refreshTokenTestCases() {
+    static Stream<Arguments> refreshTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         String username = "username value";
 
@@ -123,11 +123,11 @@ public class SecurityServiceTest {
     }
 
     @ParameterizedTest
-    @MethodSource("refreshTokenTestCases")
-    @DisplayName("refreshToken: test cases")
-    public void refreshToken_testCases(String refreshToken, String clientId, String usernameResult, UserService userService,
-                                       Class<? extends Exception> expectedException, Optional<AuthenticationInformationDto> authenticationInformation,
-                                       Optional<AuthenticationInformationDto> expectedResult) {
+    @MethodSource("refreshTestCases")
+    @DisplayName("refresh: test cases")
+    public void refresh_testCases(String refreshToken, String clientId, String usernameResult, UserService userService,
+                                  Class<? extends Exception> expectedException, Optional<AuthenticationInformationDto> authenticationInformation,
+                                  Optional<AuthenticationInformationDto> expectedResult) {
         UserDetails userDetails = ObjectGeneratorForTest.buildDefaultUser();
         Map<String, Object> payload = new HashMap<>();
 
@@ -145,10 +145,10 @@ public class SecurityServiceTest {
         }
 
         if (null != expectedException) {
-            assertThrows(expectedException, () -> securityService.refreshToken(refreshToken, clientId));
+            assertThrows(expectedException, () -> securityService.refresh(refreshToken, clientId));
         }
         else {
-            Optional<AuthenticationInformationDto> result = securityService.refreshToken(refreshToken, clientId);
+            Optional<AuthenticationInformationDto> result = securityService.refresh(refreshToken, clientId);
             assertEquals(expectedResult, result);
         }
     }

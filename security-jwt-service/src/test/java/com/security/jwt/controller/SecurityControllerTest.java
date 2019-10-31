@@ -1,129 +1,132 @@
 package com.security.jwt.controller;
 
-import com.security.jwt.ObjectGeneratorForTest;
-import com.security.jwt.TestUtil;
-import com.security.jwt.configuration.rest.GlobalErrorWebExceptionHandler;
 import com.security.jwt.configuration.rest.RestRoutes;
 import com.security.jwt.dto.AuthenticationRequestDto;
 import com.security.jwt.service.SecurityService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
-import org.junit.jupiter.api.BeforeEach;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.springframework.http.MediaType;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
-import static org.hamcrest.Matchers.is;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static com.security.jwt.ObjectGeneratorForTest.buildDefaultAuthenticationInformation;
+import static com.security.jwt.ObjectGeneratorForTest.buildDefaultAuthenticationRequest;
+import static com.security.jwt.TestUtil.fromJson;
+import static com.security.jwt.TestUtil.toJson;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @ExtendWith(SpringExtension.class)
+@WebMvcTest(value = SecurityController.class)
 public class SecurityControllerTest {
 
-    @Mock
+    @MockBean
     private SecurityService mockSecurityService;
 
-    MockMvc mockMvc;
-
-    private SecurityController securityController;
-
-    @BeforeEach
-    public void init() {
-        securityController = new SecurityController(mockSecurityService);
-        mockMvc = standaloneSetup(securityController)
-                     .setControllerAdvice(GlobalErrorWebExceptionHandler.class)
-                     .build();
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
 
     @Test
+    @SneakyThrows
     @DisplayName("login: when no content is given then internal server error is returned")
-    public void login_whenNoContentIsGiven_thenInternalServerErrorHttpCodeAndGenericErrorMessageAreReturned() throws Exception {
-        // Given
-        String clientId = "ItDoesNotCare";
-
-        // When/Then
-        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/" + clientId))
+    public void login_whenNoContentIsGiven_thenInternalServerErrorHttpCodeAndGenericErrorMessageAreReturned() {
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/ItDoesNotCare"))
                .andExpect(status().isInternalServerError())
-               .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+               .andExpect(content().contentType(TEXT_PLAIN))
                .andExpect(content().string("Internal error in the application"));
     }
 
 
-    @Test
+    static Stream<Arguments> login_invalidAuthenticationRequestDtoTestCases() {
+        String errorMessagePrefix = "Error in the given parameters: ";
+        String longString = String.join("", Collections.nCopies(150, "a"));
+        return Stream.of(
+                //@formatter:off
+                //            invalidAuthenticationRequestDto,                                expectedError
+                Arguments.of( buildDefaultAuthenticationRequest().withUsername(null),         errorMessagePrefix + "[Field error in object 'authenticationRequestDto' "
+                                                                                                                 + "on field 'username' due to: must not be null]" ),
+                Arguments.of( buildDefaultAuthenticationRequest().withPassword(null),         errorMessagePrefix + "[Field error in object 'authenticationRequestDto' "
+                                                                                                                 + "on field 'password' due to: must not be null]" ),
+                Arguments.of( buildDefaultAuthenticationRequest().withUsername(longString),   errorMessagePrefix + "[Field error in object 'authenticationRequestDto' "
+                                                                                                                 + "on field 'username' due to: size must be between 1 and 64]" ),
+                Arguments.of( buildDefaultAuthenticationRequest().withPassword(longString),   errorMessagePrefix + "[Field error in object 'authenticationRequestDto' "
+                                                                                                                 + "on field 'password' due to: size must be between 1 and 128]" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @SneakyThrows
+    @MethodSource("login_invalidAuthenticationRequestDtoTestCases")
     @DisplayName("login: when given information does not verify validations then bad request error is returned with validation errors")
-    public void login_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned() throws Exception {
-        // Given
-        String clientId = "ItDoesNotCare";
-        AuthenticationRequestDto requestDto = AuthenticationRequestDto.builder().username("username").build();
-        String jsonRequestDto = TestUtil.mapToJson(requestDto);
-
-        // When/Then
-        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/" + clientId)
-               .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
-               .content(jsonRequestDto))
-               .andExpect(status().isUnprocessableEntity())
-               .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-               .andExpect(content().string("Error in the given parameters: [Field error in object 'authenticationRequestDto' "
-                                         + "on field 'password' due to: must not be null]"));
-    }
-
-
-    @Test
-    @DisplayName("login: when no authentication information is generated then bad request error is returned")
-    public void login_whenNoAuthenticationInformationDtoIsGenerated_thenBadRequestHttpCodeAndEmptyBodyAreReturned() throws Exception {
-        // Given
-        String clientId = "ItDoesNotCare";
-        AuthenticationRequestDto requestDto = AuthenticationRequestDto.builder().username("username").password("password").build();
-        String jsonRequestDto = TestUtil.mapToJson(requestDto);
-
-        // When
-        when(mockSecurityService.login(clientId, requestDto.getUsername(), requestDto.getPassword())).thenReturn(empty());
-
-        // Then
-        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/" + clientId)
-               .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
-               .content(jsonRequestDto))
+    public void login_whenGivenEmailRequestDoesNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(AuthenticationRequestDto invalidAuthenticationRequestDto,
+                                                                                                                         String expectedErrors) {
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/ItDoesNotCare")
+               .contentType(APPLICATION_JSON_UTF8_VALUE)
+               .content(toJson(invalidAuthenticationRequestDto)))
                .andExpect(status().isBadRequest())
-               .andExpect(content().string(""));
+               .andExpect(content().contentType(TEXT_PLAIN))
+               .andExpect(content().string(expectedErrors));
+
+        verifyZeroInteractions(mockSecurityService);
     }
 
 
-    @Test
-    @DisplayName("login: when authentication information is generated then Ok Http code and authentication information are returned")
-    public void login_whenAuthenticationInformationDtoIsGenerated_thenOkHttpCodeAndAuthenticationInformationAreReturned() throws Exception {
-        // Given
+    static Stream<Arguments> login_validAuthenticationRequestDtoTestCases() {
+        AuthenticationInformationDto authenticationInformation = buildDefaultAuthenticationInformation();
+        return Stream.of(
+                //@formatter:off
+                //            securityServiceResult,           expectedResultHttpCode,   expectedBodyResult
+                Arguments.of( empty(),                         UNPROCESSABLE_ENTITY,     null ),
+                Arguments.of( of(authenticationInformation),   OK,                       authenticationInformation )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @SneakyThrows
+    @MethodSource("login_validAuthenticationRequestDtoTestCases")
+    @DisplayName("login: when given authentication request verifies the validations then the suitable Http code is returned")
+    public void login_whenGivenEmailRequestVerifiersValidations_thenSuitableHttpCodeIsReturned(Optional<AuthenticationInformationDto> authenticationInformation,
+                                                                                               HttpStatus expectedResultHttpCode,
+                                                                                               AuthenticationInformationDto expectedBodyResult) {
         String clientId = "ItDoesNotCare";
-        AuthenticationRequestDto requestDto = AuthenticationRequestDto.builder().username("username").password("password").build();
-        String jsonRequestDto = TestUtil.mapToJson(requestDto);
-        AuthenticationInformationDto expectedAuthenticationInfo = ObjectGeneratorForTest.buildDefaultAuthenticationInformation();
+        AuthenticationRequestDto authenticationRequestDto = buildDefaultAuthenticationRequest();
 
-        // When
-        when(mockSecurityService.login(clientId, requestDto.getUsername(), requestDto.getPassword())).thenReturn(of(expectedAuthenticationInfo));
+        when(mockSecurityService.login(clientId, authenticationRequestDto.getUsername(), authenticationRequestDto.getPassword())).thenReturn(authenticationInformation);
 
-        // Then
-        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/" + clientId)
-               .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
-               .content(jsonRequestDto))
-               .andExpect(status().isOk())
-               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-               .andExpect(jsonPath("$.access_token", is(expectedAuthenticationInfo.getAccessToken())))
-               .andExpect(jsonPath("$.token_type", is(expectedAuthenticationInfo.getTokenType())))
-               .andExpect(jsonPath("$.refresh_token", is(expectedAuthenticationInfo.getRefreshToken())))
-               .andExpect(jsonPath("$.expires_in", is(expectedAuthenticationInfo.getExpiresIn())))
-               .andExpect(jsonPath("$.jti", is(expectedAuthenticationInfo.getJwtId())))
-               .andExpect(jsonPath("$.scope", is(expectedAuthenticationInfo.getScope())))
-               .andExpect(jsonPath("$.additionalInfo", is(expectedAuthenticationInfo.getAdditionalInfo())));
+        ResultActions result = mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/ItDoesNotCare")
+                                      .contentType(APPLICATION_JSON_UTF8_VALUE)
+                                      .content(toJson(authenticationRequestDto)))
+                                      .andExpect(status().is(expectedResultHttpCode.value()));
+
+        assertEquals(expectedBodyResult, fromJson(result.andReturn().getResponse().getContentAsString(), AuthenticationInformationDto.class));
+        verify(mockSecurityService, times(1)).login(clientId, authenticationRequestDto.getUsername(), authenticationRequestDto.getPassword());
     }
 
 }

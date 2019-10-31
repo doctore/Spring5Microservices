@@ -1,6 +1,7 @@
 package com.security.jwt;
 
 import com.security.jwt.configuration.Constants;
+import com.security.jwt.dto.AuthenticationRequestDto;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.RoleEnum;
 import com.security.jwt.model.JwtClientDetails;
@@ -39,6 +40,14 @@ public class ObjectGeneratorForTest {
                 .additionalInfo(new HashMap<String, Object>() {{
                     put(NAME.getKey(), "name value");
                 }})
+                .build();
+    }
+
+
+    public static AuthenticationRequestDto buildDefaultAuthenticationRequest() {
+        return AuthenticationRequestDto.builder()
+                .username("username value")
+                .password("password value")
                 .build();
     }
 

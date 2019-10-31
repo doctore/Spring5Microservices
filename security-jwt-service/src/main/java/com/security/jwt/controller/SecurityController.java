@@ -58,17 +58,18 @@ public class SecurityController {
             @ApiResponse(code = 400, message = "Invalid username, password or clientId supplied taking into account included format validations"),
             @ApiResponse(code = 401, message = "The user is not active or the given password does not belongs to the username"),
             @ApiResponse(code = 404, message = "The given username or clientId does not exist"),
+            @ApiResponse(code = 422, message = "The generated response is empty"),
             @ApiResponse(code = 500, message = "Any other internal server error")})
     @PostMapping(value = RestRoutes.SECURITY.LOGIN + "/{clientId}")
     public ResponseEntity<AuthenticationInformationDto> login(
-              @ApiParam(value = "Username and password used to login the user", required = true)
-              @RequestBody @Valid AuthenticationRequestDto authenticationRequestDto,
-              @ApiParam(value = "Client identifier used to know what is the application the user belongs", required = true)
-              @PathVariable @Size(min = 1, max = 64) String clientId) {
+            @ApiParam(value = "Client identifier used to know what is the application the user belongs", required = true)
+            @PathVariable @Size(min = 1, max = 64) String clientId,
+            @ApiParam(value = "Username and password used to login the user", required = true)
+            @RequestBody @Valid AuthenticationRequestDto authenticationRequestDto) {
 
         return securityService.login(clientId, authenticationRequestDto.getUsername(), authenticationRequestDto.getPassword())
                 .map(ai -> new ResponseEntity<>(ai, HttpStatus.OK))
-                .orElse(new ResponseEntity(HttpStatus.BAD_REQUEST));
+                .orElse(new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY));
     }
 
 
@@ -93,21 +94,21 @@ public class SecurityController {
             @ApiResponse(code = 404, message = "The username included in the token or clientId does not exist"),
             @ApiResponse(code = 440, message = "Refresh token has expired"),
             @ApiResponse(code = 500, message = "Any other internal server error")})
-    @PostMapping(value = RestRoutes.SECURITY.REFRESH_TOKEN + "/{clientId}")
-    public ResponseEntity<AuthenticationInformationDto> refreshToken(
-              @ApiParam(value = "Refresh token used to generate a new authentication information", required = true)
-              @RequestBody @Size(min = 1) String refreshToken,
-              @ApiParam(value = "Client identifier used to know what is the application the user belongs", required = true)
-              @PathVariable @Size(min = 1, max = 64) String clientId) {
+    @PostMapping(value = RestRoutes.SECURITY.REFRESH + "/{clientId}")
+    public ResponseEntity<AuthenticationInformationDto> refresh(
+            @ApiParam(value = "Client identifier used to know what is the application the user belongs", required = true)
+            @PathVariable @Size(min = 1, max = 64) String clientId,
+            @ApiParam(value = "Refresh token used to generate a new authentication information", required = true)
+            @RequestBody @Size(min = 1) String refreshToken) {
 
-        return securityService.refreshToken(refreshToken, clientId)
+        return securityService.refresh(refreshToken, clientId)
                 .map(ai -> new ResponseEntity<>(ai, HttpStatus.OK))
                 .orElse(new ResponseEntity(HttpStatus.UNAUTHORIZED));
     }
 
 
     /**
-     * Using the given JWT token returns the {@link UsernameAuthoritiesDto} without {@code password} information.
+     * Using the given JWT {@code access token} returns the {@link UsernameAuthoritiesDto} without {@code password} information.
      *
      * @param accessToken
      *    Access token used to extract the authorization information
@@ -127,12 +128,12 @@ public class SecurityController {
             @ApiResponse(code = 404, message = "The username included in the token or clientId does not exist"),
             @ApiResponse(code = 440, message = "Access token has expired"),
             @ApiResponse(code = 500, message = "Any other internal server error")})
-    @GetMapping(RestRoutes.SECURITY.AUTHORIZATION_INFO + "/{clientId}" + "/{accessToken}")
+    @PostMapping(RestRoutes.SECURITY.AUTHORIZATION_INFO + "/{clientId}")
     public ResponseEntity<UsernameAuthoritiesDto> authorizationInformation(
-            @ApiParam(value = "Access token used to get the authorization information", required = true)
-            @PathVariable @Size(min = 1) String accessToken,
             @ApiParam(value = "Client identifier used to know what is the application the user belongs", required = true)
-            @PathVariable @Size(min = 1, max = 64) String clientId) {
+            @PathVariable @Size(min = 1, max = 64) String clientId,
+            @ApiParam(value = "Access token used to get the authorization information", required = true)
+            @RequestBody @Size(min = 1) String accessToken) {
 
         return new ResponseEntity<>(securityService.getAuthorizationInformation(accessToken, clientId), HttpStatus.OK);
     }

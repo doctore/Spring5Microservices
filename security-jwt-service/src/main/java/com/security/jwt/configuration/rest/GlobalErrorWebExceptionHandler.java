@@ -64,7 +64,7 @@ public class GlobalErrorWebExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> methodArgumentNotValidException(MethodArgumentNotValidException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildListOfValidationErrorsResponse("Error in the given parameters: ", exception, UNPROCESSABLE_ENTITY);
+        return buildListOfValidationErrorsResponse("Error in the given parameters: ", exception, BAD_REQUEST);
     }
 
 
