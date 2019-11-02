@@ -2,8 +2,9 @@ package com.security.jwt;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jwt.SignedJWT;
+import com.security.jwt.util.JweUtil;
+import com.security.jwt.util.JwsUtil;
 import com.security.jwt.util.JwtUtil;
-import com.security.jwt.util.JwtUtil2;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,8 +33,8 @@ public class SecurityJwtServiceApplication {
 
 
         ConfigurableApplicationContext context = SpringApplication.run(SecurityJwtServiceApplication.class, args);
-        JwtUtil jwtUtil = context.getBean(JwtUtil.class);
-        JwtUtil2 jwtUtil2 = context.getBean(JwtUtil2.class);
+        JwsUtil jwsUtil = context.getBean(JwsUtil.class);
+        JweUtil jweUtil = context.getBean(JweUtil.class);
 
         String jwtSignatureSecret = "secretKey_ForTestingPurpose@12345#";
         Map<String, Object> toInclude = new HashMap<String, Object>() {{

@@ -2,6 +2,7 @@ package com.security.jwt.configuration.rest;
 
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.TokenExpiredException;
+import com.security.jwt.exception.TokenInvalidException;
 import com.security.jwt.exception.UnAuthorizedException;
 import com.spring5microservices.common.enums.ExtendedHttpStatus;
 import lombok.extern.log4j.Log4j2;
@@ -30,7 +31,6 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 /**
  * Global exception handler to manage unhandled errors in the Rest layer (Controllers)
@@ -100,6 +100,13 @@ public class GlobalErrorWebExceptionHandler {
     public ResponseEntity<String> tokenExpiredException(TokenExpiredException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("The provided token has expired", ExtendedHttpStatus.TOKEN_EXPIRED);
+    }
+
+
+    @ExceptionHandler(TokenInvalidException.class)
+    public ResponseEntity<String> tokenInvalidException(TokenInvalidException exception, WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildPlainTextResponse("The provided token is invalid", FORBIDDEN);
     }
 
 
