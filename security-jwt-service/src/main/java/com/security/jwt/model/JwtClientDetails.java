@@ -36,11 +36,11 @@ public class JwtClientDetails implements Serializable {
 
     @NotNull
     @Size(min=1,max=256)
-    private String jwtSecret;
+    private String signatureSecret;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private SignatureAlgorithm jwtAlgorithm;
+    private SignatureAlgorithm signatureAlgorithm;
 
     @NotNull
     @Enumerated(EnumType.STRING)

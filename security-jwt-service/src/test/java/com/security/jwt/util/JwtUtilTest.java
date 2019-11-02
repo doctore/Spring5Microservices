@@ -38,10 +38,10 @@ public class JwtUtilTest {
     static Stream<Arguments> generateJwtTokenTestCases() {
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
         Map<String, Object> informationToInclude = new HashMap<>();
-        String secretKey = "Spring5Microservices_jwtSecretKey";
+        String secretKey = "Spring5Microservices_signatureSecret";
         return Stream.of(
                 //@formatter:off
-                //            informationToInclude,   signatureAlgorithm,   jwtSecretKey,      expirationTimeInSeconds,  expectedException,                isTokenGenerated
+                //            informationToInclude,   signatureAlgorithm,   signatureSecret,   expirationTimeInSeconds,  expectedException,                isTokenGenerated
                 Arguments.of( null,                   signatureAlgorithm,   "ItDoesNotCare",   90,                       null,                             false ),
                 Arguments.of( informationToInclude,   null,                 "ItDoesNotCare",   90,                       IllegalArgumentException.class,   false ),
                 Arguments.of( informationToInclude,   signatureAlgorithm,   null,              90,                       IllegalArgumentException.class,   false ),
@@ -53,13 +53,13 @@ public class JwtUtilTest {
     @MethodSource("generateJwtTokenTestCases")
     @DisplayName("generateJwtToken: test cases")
     public void generateJwtToken_testCases(Map<String, Object> informationToInclude, SignatureAlgorithm signatureAlgorithm,
-                                           String jwtSecretKey, long expirationTimeInSeconds, Class<? extends Exception> expectedException,
+                                           String signatureSecret, long expirationTimeInSeconds, Class<? extends Exception> expectedException,
                                            boolean isTokenGenerated) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwtUtil.generateJwtToken(informationToInclude, signatureAlgorithm, jwtSecretKey, expirationTimeInSeconds));
+            assertThrows(expectedException, () -> jwtUtil.generateJwtToken(informationToInclude, signatureAlgorithm, signatureSecret, expirationTimeInSeconds));
         }
         else {
-            assertEquals(isTokenGenerated, jwtUtil.generateJwtToken(informationToInclude, signatureAlgorithm, jwtSecretKey, expirationTimeInSeconds).isPresent());
+            assertEquals(isTokenGenerated, jwtUtil.generateJwtToken(informationToInclude, signatureAlgorithm, signatureSecret, expirationTimeInSeconds).isPresent());
         }
     }
 
@@ -71,36 +71,36 @@ public class JwtUtilTest {
         String notExpiredJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIHZhbHVlIiwicm9sZ"
                                   + "XMiOlsiYWRtaW4iLCJ1c2VyIl0sIm5hbWUiOiJuYW1lIHZhbHVlIiwiYWdlIjoyMywiZXhwIjo1MDAwMDA"
                                   + "wMDAwfQ.vho0aXdvrfGADAuYI89WU_adwocDAX3SlOKJ6i4qqCc";
-        String jwtSecretKey = "Jwt_Secret_Password_12345_ForTest";
+        String signatureSecret = "Jwt_Secret_Password_12345_ForTest";
         return Stream.of(
                 //@formatter:off
-                //            token,                jwtSecretKey,          keyToSeach,        expectedValueClass,   expectedException,                expectedResult
-                Arguments.of( null,                 "ItDoesNotCare",       "ItDoesNotCare",   null,                 IllegalArgumentException.class,   null ),
-                Arguments.of( null,                 "ItDoesNotCare",       null,              null,                 null,                             empty() ),
-                Arguments.of( "ItDoesNotCare",      null,                  "ItDoesNotCare",   null,                 IllegalArgumentException.class,   null ),
-                Arguments.of( "ItDoesNotCare",      null,                  null,              null,                 null,                             empty() ),
-                Arguments.of( "NotValidToken",      "ItDoesNotCare",       null,              null,                 null,                             empty() ),
-                Arguments.of( "NotValidToken",      "ItDoesNotCare",       "ItDoesNotCare",   null,                 WeakKeyException.class,           null ),
-                Arguments.of( expiredJwtToken,      jwtSecretKey + "V2",   "ItDoesNotCare",   null,                 SignatureException.class,         null ),
-                Arguments.of( expiredJwtToken,      jwtSecretKey,          "ItDoesNotCare",   null,                 ExpiredJwtException.class,        null ),
-                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "ItDoesNotCare",   null,                 null,                             empty() ),
-                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "NotFoundKey",     String.class,         null,                             empty() ),
-                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "username",        String.class,         null,                             of("username value") ),
-                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "age",             Integer.class,        null,                             of(23) ),
-                Arguments.of( notExpiredJwtToken,   jwtSecretKey,          "roles",           List.class,           null,                             of(asList("admin", "user")) )
+                //            token,                signatureSecret,          keyToSeach,        expectedValueClass,   expectedException,                expectedResult
+                Arguments.of( null,                 "ItDoesNotCare",          "ItDoesNotCare",   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 "ItDoesNotCare",          null,              null,                 null,                             empty() ),
+                Arguments.of( "ItDoesNotCare",      null,                     "ItDoesNotCare",   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( "ItDoesNotCare",      null,                     null,              null,                 null,                             empty() ),
+                Arguments.of( "NotValidToken",      "ItDoesNotCare",          null,              null,                 null,                             empty() ),
+                Arguments.of( "NotValidToken",      "ItDoesNotCare",          "ItDoesNotCare",   null,                 WeakKeyException.class,           null ),
+                Arguments.of( expiredJwtToken,      signatureSecret + "V2",   "ItDoesNotCare",   null,                 SignatureException.class,         null ),
+                Arguments.of( expiredJwtToken,      signatureSecret,          "ItDoesNotCare",   null,                 ExpiredJwtException.class,        null ),
+                Arguments.of( notExpiredJwtToken,   signatureSecret,          "ItDoesNotCare",   null,                 null,                             empty() ),
+                Arguments.of( notExpiredJwtToken,   signatureSecret,          "NotFoundKey",     String.class,         null,                             empty() ),
+                Arguments.of( notExpiredJwtToken,   signatureSecret,          "username",        String.class,         null,                             of("username value") ),
+                Arguments.of( notExpiredJwtToken,   signatureSecret,          "age",             Integer.class,        null,                             of(23) ),
+                Arguments.of( notExpiredJwtToken,   signatureSecret,          "roles",           List.class,           null,                             of(asList("admin", "user")) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getKeyTestCases")
     @DisplayName("getKey: test cases")
-    public <T> void getKey_testCases(String token, String jwtSecretKey, String keyToSearch, Class<T> expectedValueClass,
+    public <T> void getKey_testCases(String token, String signatureSecret, String keyToSearch, Class<T> expectedValueClass,
                                      Class<? extends Exception> expectedException, T expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwtUtil.getKey(token, jwtSecretKey, keyToSearch, expectedValueClass));
+            assertThrows(expectedException, () -> jwtUtil.getKey(token, signatureSecret, keyToSearch, expectedValueClass));
         }
         else {
-            assertEquals(expectedResult, jwtUtil.getKey(token, jwtSecretKey, keyToSearch, expectedValueClass));
+            assertEquals(expectedResult, jwtUtil.getKey(token, signatureSecret, keyToSearch, expectedValueClass));
         }
     }
 
@@ -112,7 +112,7 @@ public class JwtUtilTest {
                                        + "XQiOjUwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMH0.E1OZCZ-e2nDJ9J5EoDgU7xdnjidKdv28LATNXpLJNhc";
         String notExpiredJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIHZhbHVlIiwicm9sZXMiOlsiYWRtaW4iLCJ1c2VyIl0sIm5hbWUiOiJuYW1lI"
                                   + "HZhbHVlIiwiYWdlIjoyMywiaWF0Ijo1MDAwMDAwMDAwLCJleHAiOjUwMDAwMDAwMDB9.mLy5Kf1HX20YFiFpTCz6birHbDtmMXGGw3h9Q9xMHAs";
-        String jwtSecretKey = "secretKey_ForTestingPurpose@12345#";
+        String signatureSecret = "secretKey_ForTestingPurpose@12345#";
         Set<String> keysToInclude = new HashSet<>(asList("username", "roles", "age"));
         Map<String, Object> expectedResultClaims = new HashMap<String, Object>() {{
             put("username", "username value");
@@ -121,32 +121,32 @@ public class JwtUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            token,                     jwtSecretKey,          expectedException,                keysToInclude,   expectedResult
-                Arguments.of( null,                      "ItDoesNotCare",       IllegalArgumentException.class,   keysToInclude,   null ),
-                Arguments.of( null,                      "ItDoesNotCare",       null,                             null,            new HashMap<>() ),
-                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   keysToInclude,   null ),
-                Arguments.of( "ItDoesNotCare",           null,                  null,                             null,            new HashMap<>() ),
-                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   keysToInclude,   null ),
-                Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             null,            new HashMap<>() ),
-                Arguments.of( "NotValidToken",           "ItDoesNotCare",       WeakKeyException.class,           keysToInclude,   null ),
-                Arguments.of( expiredJwtToken,           jwtSecretKey + "V2",   SignatureException.class,         keysToInclude,   null ),
-                Arguments.of( expiredJwtToken,           jwtSecretKey,          ExpiredJwtException.class,        keysToInclude,   null ),
-                Arguments.of( notExpiredEmptyJwtToken,   jwtSecretKey,          null,                             keysToInclude,   new HashMap<>() ),
-                Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             null,            new HashMap<>() ),
-                Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             keysToInclude,   expectedResultClaims )
+                //            token,                     signatureSecret,          expectedException,                keysToInclude,   expectedResult
+                Arguments.of( null,                      "ItDoesNotCare",          IllegalArgumentException.class,   keysToInclude,   null ),
+                Arguments.of( null,                      "ItDoesNotCare",          null,                             null,            new HashMap<>() ),
+                Arguments.of( "ItDoesNotCare",           null,                     IllegalArgumentException.class,   keysToInclude,   null ),
+                Arguments.of( "ItDoesNotCare",           null,                     null,                             null,            new HashMap<>() ),
+                Arguments.of( "ItDoesNotCare",           null,                     IllegalArgumentException.class,   keysToInclude,   null ),
+                Arguments.of( "NotValidToken",           "ItDoesNotCare",          null,                             null,            new HashMap<>() ),
+                Arguments.of( "NotValidToken",           "ItDoesNotCare",          WeakKeyException.class,           keysToInclude,   null ),
+                Arguments.of( expiredJwtToken,           signatureSecret + "V2",   SignatureException.class,         keysToInclude,   null ),
+                Arguments.of( expiredJwtToken,           signatureSecret,          ExpiredJwtException.class,        keysToInclude,   null ),
+                Arguments.of( notExpiredEmptyJwtToken,   signatureSecret,          null,                             keysToInclude,   new HashMap<>() ),
+                Arguments.of( notExpiredJwtToken,        signatureSecret,          null,                             null,            new HashMap<>() ),
+                Arguments.of( notExpiredJwtToken,        signatureSecret,          null,                             keysToInclude,   expectedResultClaims )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getKeysTestCases")
     @DisplayName("getKeys: test cases")
-    public void getKeys_testCases(String token, String jwtSecretKey, Class<? extends Exception> expectedException,
+    public void getKeys_testCases(String token, String signatureSecret, Class<? extends Exception> expectedException,
                                              Set<String> keysToInclude, Map<String, Object> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwtUtil.getKeys(token, jwtSecretKey, keysToInclude));
+            assertThrows(expectedException, () -> jwtUtil.getKeys(token, signatureSecret, keysToInclude));
         }
         else {
-            assertEquals(expectedResult, jwtUtil.getKeys(token, jwtSecretKey, keysToInclude));
+            assertEquals(expectedResult, jwtUtil.getKeys(token, signatureSecret, keysToInclude));
         }
     }
 
@@ -158,7 +158,7 @@ public class JwtUtilTest {
                                        + "XQiOjUwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMH0.E1OZCZ-e2nDJ9J5EoDgU7xdnjidKdv28LATNXpLJNhc";
         String notExpiredJwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIHZhbHVlIiwicm9sZXMiOlsiYWRtaW4iLCJ1c2VyIl0sIm5hbWUiOiJuYW1lI"
                                   + "HZhbHVlIiwiYWdlIjoyMywiaWF0Ijo1MDAwMDAwMDAwLCJleHAiOjUwMDAwMDAwMDB9.mLy5Kf1HX20YFiFpTCz6birHbDtmMXGGw3h9Q9xMHAs";
-        String jwtSecretKey = "secretKey_ForTestingPurpose@12345#";
+        String signatureSecret = "secretKey_ForTestingPurpose@12345#";
         Set<String> keysToExclude = new HashSet<>(asList("username", "roles", "iat", "exp", "jti"));
         Map<String, Object> expectedResultClaims = new HashMap<String, Object>() {{
             put("name", "name value");
@@ -166,32 +166,32 @@ public class JwtUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            token,                     jwtSecretKey,          expectedException,                keysToExclude,   expectedResult
-                Arguments.of( null,                      "ItDoesNotCare",       IllegalArgumentException.class,   keysToExclude,   null ),
-                Arguments.of( null,                      "ItDoesNotCare",       null,                             null,            new HashMap<>() ),
-                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   keysToExclude,   null ),
-                Arguments.of( "ItDoesNotCare",           null,                  null,                             null,            new HashMap<>() ),
-                Arguments.of( "ItDoesNotCare",           null,                  IllegalArgumentException.class,   keysToExclude,   null ),
-                Arguments.of( "NotValidToken",           "ItDoesNotCare",       null,                             null,            new HashMap<>() ),
-                Arguments.of( "NotValidToken",           "ItDoesNotCare",       WeakKeyException.class,           keysToExclude,   null ),
-                Arguments.of( expiredJwtToken,           jwtSecretKey + "V2",   SignatureException.class,         keysToExclude,   null ),
-                Arguments.of( expiredJwtToken,           jwtSecretKey,          ExpiredJwtException.class,        keysToExclude,   null ),
-                Arguments.of( notExpiredEmptyJwtToken,   jwtSecretKey,          null,                             keysToExclude,   new HashMap<>() ),
-                Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             null,            new HashMap<>() ),
-                Arguments.of( notExpiredJwtToken,        jwtSecretKey,          null,                             keysToExclude,   expectedResultClaims )
+                //            token,                     signatureSecret,          expectedException,                keysToExclude,   expectedResult
+                Arguments.of( null,                      "ItDoesNotCare",          IllegalArgumentException.class,   keysToExclude,   null ),
+                Arguments.of( null,                      "ItDoesNotCare",          null,                             null,            new HashMap<>() ),
+                Arguments.of( "ItDoesNotCare",           null,                     IllegalArgumentException.class,   keysToExclude,   null ),
+                Arguments.of( "ItDoesNotCare",           null,                     null,                             null,            new HashMap<>() ),
+                Arguments.of( "ItDoesNotCare",           null,                     IllegalArgumentException.class,   keysToExclude,   null ),
+                Arguments.of( "NotValidToken",           "ItDoesNotCare",          null,                             null,            new HashMap<>() ),
+                Arguments.of( "NotValidToken",           "ItDoesNotCare",          WeakKeyException.class,           keysToExclude,   null ),
+                Arguments.of( expiredJwtToken,           signatureSecret + "V2",   SignatureException.class,         keysToExclude,   null ),
+                Arguments.of( expiredJwtToken,           signatureSecret,          ExpiredJwtException.class,        keysToExclude,   null ),
+                Arguments.of( notExpiredEmptyJwtToken,   signatureSecret,          null,                             keysToExclude,   new HashMap<>() ),
+                Arguments.of( notExpiredJwtToken,        signatureSecret,          null,                             null,            new HashMap<>() ),
+                Arguments.of( notExpiredJwtToken,        signatureSecret,          null,                             keysToExclude,   expectedResultClaims )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getExceptGivenKeysTestCases")
     @DisplayName("getExceptGivenKeys: test cases")
-    public void getExceptGivenKeys_testCases(String token, String jwtSecretKey, Class<? extends Exception> expectedException,
+    public void getExceptGivenKeys_testCases(String token, String signatureSecret, Class<? extends Exception> expectedException,
                                              Set<String> keysToExclude, Map<String, Object> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwtUtil.getExceptGivenKeys(token, jwtSecretKey, keysToExclude));
+            assertThrows(expectedException, () -> jwtUtil.getExceptGivenKeys(token, signatureSecret, keysToExclude));
         }
         else {
-            assertEquals(expectedResult, jwtUtil.getExceptGivenKeys(token, jwtSecretKey, keysToExclude));
+            assertEquals(expectedResult, jwtUtil.getExceptGivenKeys(token, signatureSecret, keysToExclude));
         }
     }
 

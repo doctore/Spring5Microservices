@@ -32,28 +32,28 @@ public class JwtUtil {
      *    {@link Map} with the information to include in the returned JWT token
      * @param signatureAlgorithm
      *    {@link SignatureAlgorithm} used to encrypt the JWT token
-     * @param jwtSecretKey
-     *    {@link String} used to encrypt the JWT token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWT token
      * @param expirationTimeInSeconds
      *    How many seconds the JWT toke will be valid
      *
      * @return {@link Optional} of {@link String} with the JWT
      *
-     * @throws IllegalArgumentException if {@code signatureAlgorithm} or {@code jwtSecretKey} are {@code null}
+     * @throws IllegalArgumentException if {@code signatureAlgorithm} or {@code jwtSignatureSecret} are {@code null}
      */
     public Optional<String> generateJwtToken(Map<String, Object> informationToInclude, SignatureAlgorithm signatureAlgorithm,
-                                             String jwtSecretKey, long expirationTimeInSeconds) {
+                                             String signatureSecret, long expirationTimeInSeconds) {
         Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
-        Assert.notNull(jwtSecretKey, "jwtSecretKey cannot be null");
+        Assert.hasText(signatureSecret, "signatureSecret cannot be null or empty");
         return ofNullable(informationToInclude)
-                .map(ud -> {
+                .map(toInclude -> {
                     Date now = new Date();
                     Date expirationDate = new Date(now.getTime() + (expirationTimeInSeconds * 1000));
                     return Jwts.builder()
-                            .setClaims(informationToInclude)
+                            .setClaims(toInclude)
                             .setIssuedAt(now)
                             .setExpiration(expirationDate)
-                            .signWith(getSigningKey(jwtSecretKey), signatureAlgorithm)
+                            .signWith(getSigningKey(signatureSecret), signatureAlgorithm)
                             .compact();
                 });
     }
@@ -64,8 +64,8 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param jwtSecretKey
-     *    {@link String} used to encrypt the JWT token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWT token
      * @param keyToSearch
      *    Information to get from the given token
      * @param valueClazz
@@ -73,12 +73,12 @@ public class JwtUtil {
      *
      * @return {@link Optional} if a value related with the given {@code key} exists, {@link Optional#empty()} otherwise
      *
-     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code signatureSecret} are null or empty
      * @throws JwtException if an error occurs parsing the given {@code token}
      */
-    public <T> Optional<T> getKey(String token, String jwtSecretKey, String keyToSearch, Class<T> valueClazz) {
+    public <T> Optional<T> getKey(String token, String signatureSecret, String keyToSearch, Class<T> valueClazz) {
         return ofNullable(keyToSearch)
-                .map(key -> getClaimFromToken(token, jwtSecretKey, (claims) -> claims.get(key, valueClazz)));
+                .map(key -> getClaimFromToken(token, signatureSecret, (claims) -> claims.get(key, valueClazz)));
     }
 
 
@@ -87,19 +87,19 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param jwtSecretKey
-     *    {@link String} used to encrypt the JWT token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWT token
      * @param keysToInclude
      *    {@link Set} of {@link String} with the {@code key}s to extract from Jwt token
      *
      * @return {@link Map} of {@link String} - {@link Object} with the requested information
      *
-     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code signatureSecret} are null or empty
      * @throws JwtException if an error occurs parsing the given {@code token}
      */
-    public Map<String, Object> getKeys(String token, String jwtSecretKey, Set<String> keysToInclude) {
+    public Map<String, Object> getKeys(String token, String signatureSecret, Set<String> keysToInclude) {
         return ofNullable(keysToInclude)
-                .map(toInclude -> getAllClaimsFromToken(token, jwtSecretKey)
+                .map(toInclude -> getAllClaimsFromToken(token, signatureSecret)
                                      .entrySet().stream()
                                      .filter(e -> keysToInclude.contains(e.getKey()))
                                      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)))
@@ -112,19 +112,19 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param jwtSecretKey
-     *    {@link String} used to encrypt the JWT token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWT token
      * @param keysToExclude
      *    {@link Set} of {@link String} with the {@code key}s to exclude from Jwt token
      *
      * @return {@link Map} of {@link String} - {@link Object} with the remaining information
      *
-     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code signatureSecret} are null or empty
      * @throws JwtException if an error occurs parsing the given {@code token}
      */
-    public Map<String, Object> getExceptGivenKeys(String token, String jwtSecretKey, Set<String> keysToExclude) {
+    public Map<String, Object> getExceptGivenKeys(String token, String signatureSecret, Set<String> keysToExclude) {
         return ofNullable(keysToExclude)
-                .map(toExclude -> getAllClaimsFromToken(token, jwtSecretKey)
+                .map(toExclude -> getAllClaimsFromToken(token, signatureSecret)
                                      .entrySet().stream()
                                      .filter(e -> !toExclude.contains(e.getKey()))
                                      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)))
@@ -137,18 +137,18 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param jwtSecretKey
-     *    String used to encrypt the JWT token
+     * @param signatureSecret
+     *    String used to sign the JWT token
      * @param claimsResolver
      *    {@link Function} used to know how to get the information
      *
      * @return {@link T} with the wanted part of the payload
      *
-     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code signatureSecret} are null or empty
      * @throws JwtException if an error occurs parsing the given {@code token}
      */
-    private <T> T getClaimFromToken(String token, String jwtSecretKey, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token, jwtSecretKey);
+    private <T> T getClaimFromToken(String token, String signatureSecret, Function<Claims, T> claimsResolver) {
+        final Claims claims = getAllClaimsFromToken(token, signatureSecret);
         return claimsResolver.apply(claims);
     }
 
@@ -157,33 +157,33 @@ public class JwtUtil {
      *
      * @param token
      *    JWT token to extract the required information
-     * @param jwtSecretKey
-     *    {@link String} used to encrypt the JWT token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWT token
      *
      * @return {@link Claims}
      *
-     * @throws IllegalArgumentException if {@code token} or {@code jwtSecretKey} are null or empty
+     * @throws IllegalArgumentException if {@code token} or {@code signatureSecret} are null or empty
      * @throws JwtException if an error occurs parsing the given {@code token}
      */
-    private Claims getAllClaimsFromToken(String token, String jwtSecretKey) {
+    private Claims getAllClaimsFromToken(String token, String signatureSecret) {
         Assert.hasText(token, "token cannot be null or empty");
-        Assert.hasText(jwtSecretKey, "jwtSecretKey cannot be null or empty");
+        Assert.hasText(signatureSecret, "signatureSecret cannot be null or empty");
         return Jwts.parser()
-                .setSigningKey(getSigningKey(jwtSecretKey))
+                .setSigningKey(getSigningKey(signatureSecret))
                 .parseClaimsJws(token)
                 .getBody();
     }
 
     /**
-     * Generate the information required to encrypt/decrypt the Jwt token.
+     * Generate the information required to sign the Jwt token.
      *
-     * @param jwtSecretKey
-     *    {@link String} used to encrypt the JWT token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWT token
      *
      * @return {@link Key}
      */
-    private Key getSigningKey(String jwtSecretKey) {
-        return Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
+    private Key getSigningKey(String signatureSecret) {
+        return Keys.hmacShaKeyFor(signatureSecret.getBytes());
     }
 
 }

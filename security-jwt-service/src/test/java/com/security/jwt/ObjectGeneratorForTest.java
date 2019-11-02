@@ -55,8 +55,8 @@ public class ObjectGeneratorForTest {
     public static JwtClientDetails buildDefaultJwtClientDetails(String clientId) {
         return JwtClientDetails.builder()
                 .clientId(clientId)
-                .jwtAlgorithm(SignatureAlgorithm.HS256)
-                .jwtSecret(Constants.JWT_SECRET_PREFIX + "secretKey_ForTestingPurpose@12345#")
+                .signatureAlgorithm(SignatureAlgorithm.HS256)
+                .signatureSecret(Constants.JWT_SECRET_PREFIX + "secretKey_ForTestingPurpose@12345#")
                 .accessTokenValidity(250)
                 .refreshTokenValidity(500)
                 .tokenType("Bearer")

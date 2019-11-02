@@ -110,7 +110,7 @@ public class AuthenticationServiceTest {
             when(authenticationGenerator.getRawAuthenticationInformation(userDetails)).thenReturn(rawAuthenticationInformation);
         }
         if (null != clientDetailsResult) {
-            when(mockJwtUtil.generateJwtToken(anyMap(), eq(clientDetailsResult.getJwtAlgorithm()), anyString(), anyInt())).thenReturn(of("JWT token"));
+            when(mockJwtUtil.generateJwtToken(anyMap(), eq(clientDetailsResult.getSignatureAlgorithm()), anyString(), anyInt())).thenReturn(of("JWT token"));
         }
         Optional<AuthenticationInformationDto> result = authenticationService.getAuthenticationInformation(clientId, userDetails);
         verifyGetAuthenticationInformationResult(clientDetailsResult, rawAuthenticationInformation, result, isResultEmpty);

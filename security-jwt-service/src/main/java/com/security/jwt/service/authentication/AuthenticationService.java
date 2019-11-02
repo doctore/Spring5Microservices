@@ -99,7 +99,7 @@ public class AuthenticationService {
     public Map<String, Object> getPayloadOfToken(String token, String clientId, boolean isAccessToken) {
         try {
             JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getJwtSecret());
+            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getSignatureSecret());
 
             Map<String, Object> payload = jwtUtil.getExceptGivenKeys(token, decryptedJwtSecret, new HashSet<>());
             if (isAccessToken != isAccessToken(payload))
@@ -231,8 +231,8 @@ public class AuthenticationService {
         if (null != jwtRawInformation)
             tokenInformation.putAll(jwtRawInformation.getAccessTokenInformation());
 
-        return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getJwtAlgorithm(),
-                                        decryptJwtSecret(clientDetails.getJwtSecret()), clientDetails.getAccessTokenValidity())
+        return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getSignatureAlgorithm(),
+                                        decryptJwtSecret(clientDetails.getSignatureSecret()), clientDetails.getAccessTokenValidity())
                       .orElse("");
     }
 
@@ -255,8 +255,8 @@ public class AuthenticationService {
         if (null != jwtRawInformation)
             tokenInformation.putAll(jwtRawInformation.getRefreshTokenInformation());
 
-        return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getJwtAlgorithm(),
-                                        decryptJwtSecret(clientDetails.getJwtSecret()), clientDetails.getRefreshTokenValidity())
+        return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getSignatureAlgorithm(),
+                                        decryptJwtSecret(clientDetails.getSignatureSecret()), clientDetails.getRefreshTokenValidity())
                       .orElse("");
     }
 
