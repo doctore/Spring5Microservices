@@ -102,6 +102,7 @@ create table security.jwt_client_details (
   signature_algorithm        varchar(16)    not null,
   authentication_generator   varchar(128)   not null,
   token_type                 varchar(32)    not null,
+  use_jwe                    boolean        not null,
   access_token_validity      int            not null,
   refresh_token_validity     int            not null
 );

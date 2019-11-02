@@ -51,6 +51,9 @@ public class JwtClientDetails implements Serializable {
     private String tokenType;
 
     @NotNull
+    private boolean useJwe;
+
+    @NotNull
     private int accessTokenValidity;
 
     @NotNull

@@ -1,5 +1,8 @@
 package com.security.jwt.service.authentication;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.KeyException;
+import com.nimbusds.jose.proc.BadJOSEException;
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
@@ -106,8 +109,10 @@ public class AuthenticationService {
                 throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an "
                                                     + (isAccessToken ? "access " : "refresh ") + "one", token, clientId));
             return payload;
-        } catch (JwtException ex) {
-            throw throwRelatedExceptionIfRequired(ex, format("There was an error checking the token: %s related with clientId: %s", token, clientId));
+        // TODO: MODIFICAR
+        //} catch (BadJOSEException | JOSEException ex) {
+        } catch (Exception ex) {
+            throw new UnAuthorizedException(format("There was an error checking the token: %s related with clientId: %s", token, clientId), ex);
         }
     }
 
@@ -300,23 +305,6 @@ public class AuthenticationService {
      */
     private String decryptJwtSecret(String jwtSecret) {
         return encryptor.decrypt(jwtSecret.replace(Constants.JWT_SECRET_PREFIX, ""));
-    }
-
-    /**
-     * Convert the given {@link JwtException} in another one managed by the application.
-     *
-     * @param exception
-     *    {@link JwtException} to transform
-     * @param errorMessage
-     *    {@link String} with the message that should be included in the returned {@link Exception}
-     *
-     * @throws TokenExpiredException if the given {@link JwtException} is a {@link ExpiredJwtException} one
-     * @throws UnAuthorizedException for the other uses cases
-     */
-    private RuntimeException throwRelatedExceptionIfRequired(JwtException exception, String errorMessage) {
-        if (exception instanceof ExpiredJwtException)
-            return new TokenExpiredException(errorMessage, exception);
-        return new UnAuthorizedException(errorMessage, exception);
     }
 
 }

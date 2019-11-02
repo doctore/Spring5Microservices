@@ -91,9 +91,9 @@ VALUES ('Spring5Microservices', '{bcrypt}$2a$10$NlKX/TyTk41qraDjxg98L.xFdu7IQYRo
 INSERT INTO security.jwt_client_details (client_id
                                         ,signature_secret
                                         ,signature_algorithm, authentication_generator, token_type
-                                        ,access_token_validity, refresh_token_validity)
+                                        ,use_jwe, access_token_validity, refresh_token_validity)
 VALUES ('Spring5Microservices'
         -- Raw password: Spring5Microservices_999#secret#789(jwt)$3411781_GTDSAET-569016310k
        ,'{cipher}4d86b22f3dfe617c6714141651b864035be7ac2d1c2b4bd13abf3704c0ed7a635c88734a18bdde7aea08189eb9ee0d7ed5d953d84d312aa70c4a1fb2a034abbe8fc1d0815a9d709f6b1477dc36c899299025bcfa3bc540d03303ed3b7ad69f51'
        ,'HS512', 'SPRING5_MICROSERVICES', 'Bearer'
-       ,900, 3600);
+       ,true, 900, 3600);

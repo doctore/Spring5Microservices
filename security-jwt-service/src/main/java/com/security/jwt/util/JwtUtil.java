@@ -25,13 +25,13 @@ import static java.util.stream.Collectors.toMap;
 public class JwtUtil {
 
     /**
-     *    Using the given {@code informationToInclude} generates a valid JWT token encrypted with the selected
+     *    Using the given {@code informationToInclude} generates a valid JWT token singed with the selected
      * {@link SignatureAlgorithm}
      *
      * @param informationToInclude
      *    {@link Map} with the information to include in the returned JWT token
      * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to encrypt the JWT token
+     *    {@link SignatureAlgorithm} used to sign the JWT token
      * @param signatureSecret
      *    {@link String} used to sign the JWT token
      * @param expirationTimeInSeconds

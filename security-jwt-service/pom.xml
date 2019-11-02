@@ -84,6 +84,14 @@
             <version>${jsonwebtoken-jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
+
+<!-- Testing this library -->
+<dependency>
+    <groupId>com.nimbusds</groupId>
+    <artifactId>nimbus-jose-jwt</artifactId>
+    <version>8.2</version>
+</dependency>
+
         <!-- Database related -->
         <dependency>
             <groupId>org.postgresql</groupId>
