@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.security.jwt.enums.TokenKeyEnum.CLIENT_ID;
+import static com.security.jwt.enums.TokenKeyEnum.AUDIENCE;
 import static com.security.jwt.enums.TokenKeyEnum.EXPIRATION_TIME;
 import static com.security.jwt.enums.TokenKeyEnum.ISSUED_AT;
 import static com.security.jwt.enums.TokenKeyEnum.JWT_ID;
@@ -173,7 +173,7 @@ public class AuthenticationService {
                     Set<String> keysToFilter = new HashSet<>(asList(
                             authGen.getUsernameKey(),
                             authGen.getRolesKey(),
-                            CLIENT_ID.getKey(),
+                            AUDIENCE.getKey(),
                             EXPIRATION_TIME.getKey(),
                             ISSUED_AT.getKey(),
                             JWT_ID.getKey(),
@@ -265,7 +265,7 @@ public class AuthenticationService {
      */
     private Map<String, Object> addToAccessToken(String clientId, String jti) {
         return new HashMap<String, Object>() {{
-            put(CLIENT_ID.getKey(), clientId);
+            put(AUDIENCE.getKey(), clientId);
             put(JWT_ID.getKey(), jti);
         }};
     }
@@ -275,7 +275,7 @@ public class AuthenticationService {
      */
     private Map<String, Object> addToRefreshToken(String clientId, String jti) {
         return new HashMap<String, Object>() {{
-            put(CLIENT_ID.getKey(), clientId);
+            put(AUDIENCE.getKey(), clientId);
             put(JWT_ID.getKey(), UUID.randomUUID().toString());
             put(REFRESH_JWT_ID.getKey(), jti);
         }};

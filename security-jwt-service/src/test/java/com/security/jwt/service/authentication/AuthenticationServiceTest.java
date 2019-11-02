@@ -29,8 +29,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.security.jwt.enums.TokenKeyEnum.AUDIENCE;
 import static com.security.jwt.enums.TokenKeyEnum.AUTHORITIES;
-import static com.security.jwt.enums.TokenKeyEnum.CLIENT_ID;
 import static com.security.jwt.enums.TokenKeyEnum.EXPIRATION_TIME;
 import static com.security.jwt.enums.TokenKeyEnum.ISSUED_AT;
 import static com.security.jwt.enums.TokenKeyEnum.JWT_ID;
@@ -285,7 +285,7 @@ public class AuthenticationServiceTest {
         Map<String, Object> sourcePayload = new HashMap<String, Object>() {{
             put("age", 32);
             put(AUTHORITIES.getKey(), asList("admin", "user"));
-            put(CLIENT_ID.getKey(), clientId);
+            put(AUDIENCE.getKey(), clientId);
             put(EXPIRATION_TIME.getKey(), 123456789);
             put(ISSUED_AT.getKey(), "iat value");
             put(JWT_ID.getKey(), "jti value");
