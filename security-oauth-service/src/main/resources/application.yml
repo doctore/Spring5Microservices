@@ -15,13 +15,6 @@ eureka:
     # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
 
-springfox:
-  documentation:
-    swagger:
-      v2:
-        # Api docs path properties
-        path: /authentication/v2/api-docs
-
 
 
 
@@ -48,11 +41,6 @@ spring:
 security:
   jwt:
     token:
-      # Http authentication scheme
-      authorizationPrefix: 'Bearer '
-      # Currently 5 hours
-      expirationTimeInMilliseconds: 18000000
-      # Same behaviour as spring.datasource.password configuration value
       # Raw secretKey: 72=83eH97$7f408adAC
       secretKey: "{cipher}7e18a5fe94eb7e2f193a861add30d3f5982ae5f8929e3c45974153944cbee08e102c54c76ccac789943d1ab8452226e6"
       signatureAlgorithm: "HMACSHA512"

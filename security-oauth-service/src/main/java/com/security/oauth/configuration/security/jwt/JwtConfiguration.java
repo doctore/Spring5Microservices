@@ -21,12 +21,6 @@ import javax.crypto.spec.SecretKeySpec;
 @Configuration
 public class JwtConfiguration {
 
-    @Value("${security.jwt.token.authorizationPrefix}")
-    private String authorizationPrefix;
-
-    @Value("${security.jwt.token.expirationTimeInMilliseconds}")
-    private long expirationTimeInMilliseconds;
-
     @Value("${security.jwt.token.secretKey}")
     private String secretKey;
 
