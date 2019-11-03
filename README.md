@@ -120,7 +120,7 @@ On the other hand, there are other "important folders":
 * **configuration** with several classes used to manage several areas such: security, exception handlers, cache, etc.
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
-* **util** to manage the JWT functionality.
+* **util** to manage the JWS/JWE functionality.
 <br><br>
 
 ### pizza-service
