@@ -1,15 +1,16 @@
 package com.security.jwt;
 
+import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.AuthenticationRequestDto;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.RoleEnum;
+import com.security.jwt.enums.SignatureAlgorithmEnum;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.model.Role;
 import com.security.jwt.model.User;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.experimental.UtilityClass;
 
 import java.util.HashMap;
@@ -55,8 +56,8 @@ public class ObjectGeneratorForTest {
     public static JwtClientDetails buildDefaultJwtClientDetails(String clientId) {
         return JwtClientDetails.builder()
                 .clientId(clientId)
-                .signatureAlgorithm(SignatureAlgorithm.HS256)
-                .signatureSecret(Constants.JWT_SECRET_PREFIX + "secretKey_ForTestingPurpose@12345#")
+                .signatureAlgorithm(SignatureAlgorithmEnum.HS256)
+                .signatureSecret(Constants.CIPHER_SECRET_PREFIX + "secretKey_ForTestingPurpose@12345#")
                 .accessTokenValidity(250)
                 .refreshTokenValidity(500)
                 .tokenType("Bearer")

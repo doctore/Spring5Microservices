@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 
 @Component
@@ -225,7 +226,7 @@ public class JwsUtil {
             SignedJWT signedJWT = SignedJWT.parse(jwsToken);
             if (verifyToken) {
                 Assert.hasText(signatureSecret, "signatureSecret cannot be null or empty");
-                JWSVerifier verifier = new MACVerifier(signatureSecret);
+                JWSVerifier verifier = getSuitableVerifier(signedJWT, signatureSecret);
                 if (!signedJWT.verify(verifier))
                     throw new TokenInvalidException(format("The JWS token: %s does not match the provided signatureSecret", jwsToken));
 
@@ -238,6 +239,27 @@ public class JwsUtil {
         } catch (JOSEException | ParseException e) {
             throw new TokenInvalidException(format("The was an error getting information included in JWS token: %s", jwsToken), e);
         }
+    }
+
+
+    /**
+     * Return the suitable {@link JWSVerifier} taking into account the {@link JWSAlgorithm} used to sing the given JWS token.
+     *
+     * @param signedJWT
+     *    {@link SignedJWT} with JWS token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWS token
+     *
+     * @return {@link JWSVerifier}
+     *
+     * @throws IllegalArgumentException if it was not possible to find a suitable {@link JWSVerifier}
+     */
+    private JWSVerifier getSuitableVerifier(SignedJWT signedJWT, String signatureSecret) throws JOSEException {
+        JWSAlgorithm signatureAlgorithm = signedJWT.getHeader().getAlgorithm();
+        if (asList(JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512).contains(signatureAlgorithm))
+            return new MACVerifier(signatureSecret);
+
+        throw new IllegalArgumentException(format("It was not possible to find a suitable verifier for the signature algorithm: %s ", signatureAlgorithm));
     }
 
 }

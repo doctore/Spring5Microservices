@@ -25,8 +25,8 @@ public class Constants {
     }
 
     /**
-     * Prefix used to store the JWT secret key of all {@link JwtClientDetails}
+     * Prefix used to store the cipher passwords in database
      */
-    public static final String JWT_SECRET_PREFIX = "{cipher}";
+    public static final String CIPHER_SECRET_PREFIX = "{cipher}";
 
 }

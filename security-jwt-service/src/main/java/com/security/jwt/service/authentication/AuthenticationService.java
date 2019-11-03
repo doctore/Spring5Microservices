@@ -289,10 +289,10 @@ public class AuthenticationService {
     }
 
     /**
-     * Decrypt the given {@code secret}.
+     * Decrypt the given {@code signatureSecret} related with a {@link JwtClientDetails}.
      */
-    private String decryptSecret(String secret) {
-        return encryptor.decrypt(secret.replace(Constants.JWT_SECRET_PREFIX, ""));
+    private String decryptSignatureSecret(String signatureSecret) {
+        return encryptor.decrypt(signatureSecret.replace(Constants.CIPHER_SECRET_PREFIX, ""));
     }
 
     /**
@@ -309,12 +309,12 @@ public class AuthenticationService {
      */
     private String generateToken(Map<String, Object> informationToInclude, JwtClientDetails clientDetails, int tokenValidityInSeconds) {
         if (clientDetails.isUseJwe())
-            return jweUtil.generateToken(informationToInclude, clientDetails.signatureAlgorithmEquivalence(),
-                    decryptSecret(clientDetails.getSignatureSecret()), decryptSecret(jweConfiguration.getEncryptionSecret()),
+            return jweUtil.generateToken(informationToInclude, clientDetails.getSignatureAlgorithm().getAlgorithm(),
+                    decryptSignatureSecret(clientDetails.getSignatureSecret()), jweConfiguration.getEncryptionSecret(),
                     tokenValidityInSeconds);
         else
-            return jwsUtil.generateToken(informationToInclude, clientDetails.signatureAlgorithmEquivalence(),
-                    decryptSecret(clientDetails.getSignatureSecret()), tokenValidityInSeconds);
+            return jwsUtil.generateToken(informationToInclude, clientDetails.getSignatureAlgorithm().getAlgorithm(),
+                    decryptSignatureSecret(clientDetails.getSignatureSecret()), tokenValidityInSeconds);
     }
 
     /**
@@ -329,10 +329,10 @@ public class AuthenticationService {
      */
     private Map<String, Object> getVerifiedPayloadOfToken(String token, JwtClientDetails clientDetails) {
         if (clientDetails.isUseJwe())
-            return jweUtil.getPayloadExceptGivenKeys(token, decryptSecret(clientDetails.getSignatureSecret()),
-                    decryptSecret(jweConfiguration.getEncryptionSecret()),new HashSet<>());
+            return jweUtil.getPayloadExceptGivenKeys(token, decryptSignatureSecret(clientDetails.getSignatureSecret()),
+                    jweConfiguration.getEncryptionSecret(),new HashSet<>());
         else
-            return jwsUtil.getPayloadExceptGivenKeys(token, decryptSecret(clientDetails.getSignatureSecret()), new HashSet<>());
+            return jwsUtil.getPayloadExceptGivenKeys(token, decryptSignatureSecret(clientDetails.getSignatureSecret()), new HashSet<>());
     }
 
 }

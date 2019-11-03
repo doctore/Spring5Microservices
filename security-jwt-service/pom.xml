@@ -18,9 +18,9 @@
         <hamcrest.version>2.1</hamcrest.version>
         <hazelcast.version>3.12.3</hazelcast.version>
         <java.version>1.8</java.version>
-        <junit.jupiter.version>5.5.2</junit.jupiter.version>
-        <junit.jupiter-platform.version>1.5.2</junit.jupiter-platform.version>
-        <jsonwebtoken-jjwt.version>0.10.7</jsonwebtoken-jjwt.version>
+        <junit-jupiter.version>5.5.2</junit-jupiter.version>
+        <junit-jupiter-platform.version>1.5.2</junit-jupiter-platform.version>
+        <nimbus-jose-jwt.version>8.2</nimbus-jose-jwt.version>
         <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
         <spring5-microservices-common.version>0.0.1</spring5-microservices-common.version>
         <springfox-swagger.version>2.9.2</springfox-swagger.version>
@@ -68,30 +68,10 @@
         </dependency>
         <!-- JWT -->
         <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>${jsonwebtoken-jjwt.version}</version>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jose-jwt.version}</version>
         </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>${jsonwebtoken-jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>${jsonwebtoken-jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-<!-- Testing this library -->
-<dependency>
-    <groupId>com.nimbusds</groupId>
-    <artifactId>nimbus-jose-jwt</artifactId>
-    <version>8.2</version>
-</dependency>
-
         <!-- Database related -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -158,30 +138,30 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-commons</artifactId>
-            <version>${junit.jupiter-platform.version}</version>
+            <version>${junit-jupiter-platform.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-engine</artifactId>
-            <version>${junit.jupiter-platform.version}</version>
+            <version>${junit-jupiter-platform.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

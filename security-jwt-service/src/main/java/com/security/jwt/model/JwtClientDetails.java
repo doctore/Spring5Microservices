@@ -1,8 +1,8 @@
 package com.security.jwt.model;
 
-import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
+import com.security.jwt.enums.SignatureAlgorithmEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,7 +39,8 @@ public class JwtClientDetails implements Serializable {
     private String signatureSecret;
 
     @NotNull
-    private String signatureAlgorithm;
+    @Enumerated(EnumType.STRING)
+    private SignatureAlgorithmEnum signatureAlgorithm;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -57,9 +58,5 @@ public class JwtClientDetails implements Serializable {
 
     @NotNull
     private int refreshTokenValidity;
-
-    public JWSAlgorithm signatureAlgorithmEquivalence() {
-        return JWSAlgorithm.parse(signatureAlgorithm);
-    }
 
 }

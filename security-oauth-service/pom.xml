@@ -18,8 +18,8 @@
         <cache2k.version>1.2.4.Final</cache2k.version>
         <hamcrest.version>2.1</hamcrest.version>
         <java.version>1.8</java.version>
-        <junit.jupiter.version>5.5.2</junit.jupiter.version>
-        <junit.jupiter-platform.version>1.5.2</junit.jupiter-platform.version>
+        <junit-jupiter.version>5.5.2</junit-jupiter.version>
+        <junit-jupiter-platform.version>1.5.2</junit-jupiter-platform.version>
         <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
         <spring-security-jwt.version>1.0.10.RELEASE</spring-security-jwt.version>
         <spring-security-oauth2.version>2.3.6.RELEASE</spring-security-oauth2.version>
@@ -137,30 +137,30 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-commons</artifactId>
-            <version>${junit.jupiter-platform.version}</version>
+            <version>${junit-jupiter-platform.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-engine</artifactId>
-            <version>${junit.jupiter-platform.version}</version>
+            <version>${junit-jupiter-platform.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

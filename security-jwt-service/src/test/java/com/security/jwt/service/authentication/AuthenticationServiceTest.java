@@ -1,5 +1,6 @@
 package com.security.jwt.service.authentication;
 
+import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.ObjectGeneratorForTest;
 import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
@@ -10,7 +11,6 @@ import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
 import com.security.jwt.util.JweUtil;
 import com.security.jwt.util.JwsUtil;
-import com.security.jwt.util.JwtUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,11 +47,11 @@ import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -84,6 +84,7 @@ public class AuthenticationServiceTest {
     public void init() {
         authenticationService = new AuthenticationService(mockApplicationContext, mockJwtClientDetailsService, mockJweConfiguration,
                 mockJweUtil, mockJwsUtil, mockEncryptor);
+        when(mockJweConfiguration.getEncryptionSecret()).thenReturn("EncryptionSecret");
     }
 
 
@@ -115,12 +116,13 @@ public class AuthenticationServiceTest {
         when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
         when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
-
         if (null != authenticationGenerator) {
             when(authenticationGenerator.getRawAuthenticationInformation(userDetails)).thenReturn(rawAuthenticationInformation);
         }
         if (null != clientDetailsResult) {
-            when(mockJwtUtil.generateJwtToken(anyMap(), eq(clientDetailsResult.getSignatureAlgorithm()), anyString(), anyInt())).thenReturn(of("JWT token"));
+            JWSAlgorithm algorithm = clientDetailsResult.getSignatureAlgorithm().getAlgorithm();
+            when(mockJweUtil.generateToken(anyMap(), eq(algorithm), anyString(), anyString(), anyInt())).thenReturn("JWE token");
+            when(mockJwsUtil.generateToken(anyMap(), eq(algorithm), anyString(), anyInt())).thenReturn("JWS token");
         }
         Optional<AuthenticationInformationDto> result = authenticationService.getAuthenticationInformation(clientId, userDetails);
         verifyGetAuthenticationInformationResult(clientDetailsResult, rawAuthenticationInformation, result, isResultEmpty);
@@ -132,8 +134,6 @@ public class AuthenticationServiceTest {
             assertFalse(result.isPresent());
         else {
             assertTrue(result.isPresent());
-            assertNotNull(result.get().getAccessToken());
-            assertNotNull(result.get().getRefreshToken());
             assertEquals(clientDetailsResult.getAccessTokenValidity(), result.get().getExpiresIn());
             assertEquals(clientDetailsResult.getTokenType(), result.get().getTokenType());
             assertNull(result.get().getScope());
@@ -149,7 +149,10 @@ public class AuthenticationServiceTest {
 
     static Stream<Arguments> getPayloadOfTokenTestCases() {
         String clientId = "clientId";
-        JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
+        JwtClientDetails clientDetailsJWE = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
+        clientDetailsJWE.setUseJwe(true);
+        JwtClientDetails clientDetailsJWS = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
+        clientDetailsJWS.setUseJwe(false);
         Map<String, Object> payloadFromAccessToken = new HashMap<String, Object>() {{
             put(AUTHORITIES.getKey(), asList("admin"));
             put(JWT_ID.getKey(), "jti value");
@@ -169,12 +172,18 @@ public class AuthenticationServiceTest {
                 Arguments.of( "ItDoesNotCare",   null,       true,            null,                  null,                      ClientNotFoundException.class,   null ),
                 Arguments.of( "ItDoesNotCare",   clientId,   false,           null,                  null,                      ClientNotFoundException.class,   null ),
                 Arguments.of( "ItDoesNotCare",   clientId,   true,            null,                  null,                      ClientNotFoundException.class,   null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetails,         null,                      UnAuthorizedException.class,     null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetails,         null,                      null,                            null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetails,         payloadFromAccessToken,    UnAuthorizedException.class,     null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetails,         payloadFromAccessToken,    null,                            payloadFromAccessToken ),
-                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetails,         payloadFromRefreshToken,   null,                            payloadFromRefreshToken ),
-                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetails,         payloadFromRefreshToken,   UnAuthorizedException.class,     null )
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      null,                      UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      null,                      UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWS,      null,                      null,                            null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWE,      null,                      null,                            null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      payloadFromAccessToken,    UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      payloadFromAccessToken,    UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWS,      payloadFromAccessToken,    null,                            payloadFromAccessToken ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWE,      payloadFromAccessToken,    null,                            payloadFromAccessToken ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      payloadFromRefreshToken,   null,                            payloadFromRefreshToken ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      payloadFromRefreshToken,   null,                            payloadFromRefreshToken ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWS,      payloadFromRefreshToken,   UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWE,      payloadFromRefreshToken,   UnAuthorizedException.class,     null )
         ); //@formatter:on
     }
 
@@ -183,10 +192,11 @@ public class AuthenticationServiceTest {
     @DisplayName("getPayloadOfToken: test cases")
     public void getPayloadOfToken_testCases(String token, String clientId, boolean isAccessToken, JwtClientDetails clientDetailsResult,
                                             Map<String, Object> payload, Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
-        String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
+        String decryptedJwsSecret = "secretKey_ForTestingPurpose@12345#";
 
-        when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
-        when(mockJwtUtil.getExceptGivenKeys(token, decryptedJwtSecret, new HashSet<>())).thenReturn(payload);
+        when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwsSecret);
+        when(mockJwsUtil.getPayloadExceptGivenKeys(token, decryptedJwsSecret, new HashSet<>())).thenReturn(payload);
+        when(mockJweUtil.getPayloadExceptGivenKeys(eq(token), eq(decryptedJwsSecret), anyString(), anySet())).thenReturn(payload);
         if (null == clientDetailsResult) {
             when(mockJwtClientDetailsService.findByClientId(clientId)).thenThrow(ClientNotFoundException.class);
         }
