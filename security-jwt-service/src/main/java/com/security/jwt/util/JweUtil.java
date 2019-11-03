@@ -9,6 +9,7 @@ import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.KeyException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.DirectDecrypter;
 import com.nimbusds.jose.crypto.DirectEncrypter;
@@ -120,7 +121,7 @@ public class JweUtil {
      * @throws TokenInvalidException if {@code token} is not a JWS one or was not signed using {@code signatureSecret}
      * @throws TokenExpiredException if {@code token} has expired
      */
-    public Map<String, Object> getExceptGivenKeys(String jweToken, String signatureSecret, String encryptionSecret, Set<String> keysToExclude) {
+    public Map<String, Object> getPayloadExceptGivenKeys(String jweToken, String signatureSecret, String encryptionSecret, Set<String> keysToExclude) {
         Assert.hasText(encryptionSecret, "encryptionSecret cannot be null or empty");
         String jwsToken = decryptJweToken(jweToken, encryptionSecret);
         return jwsUtil.getPayloadExceptGivenKeys(jwsToken, signatureSecret, keysToExclude);
@@ -216,7 +217,9 @@ public class JweUtil {
             JWEObject jweObject = JWEObject.parse(jweToken);
             jweObject.decrypt(new DirectDecrypter(encryptionSecret.getBytes()));
             return jweObject.getPayload().toSignedJWT().serialize();
-        } catch (JOSEException |ParseException e) {
+        } catch (JOSEException | ParseException e) {
+            if (e instanceof KeyException)
+                throw new IllegalArgumentException(format("The was a problem with the given encryptionSecret"), e);
             throw new TokenInvalidException(format("The was a problem trying to decrypt the JWE token: %s", jweToken), e);
         }
     }

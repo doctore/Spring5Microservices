@@ -44,14 +44,11 @@ public class SecurityJwtServiceApplication {
             put("roles", asList("admin", "user"));
             put("age", 23);
         }};
-        Map<String, Object> toInclude2 = new HashMap<String, Object>() {{
-            put("username", "username value");
-        }};
         try {
             String jwt = jwtUtil.generateJwtToken(toInclude, SignatureAlgorithm.HS256, jwtSignatureSecret, 600).get();
             String jws = jwsUtil.generateToken(toInclude, JWSAlgorithm.HS256, jwtSignatureSecret, 600);
 
-            String jwe = jweUtil.generateToken(toInclude2, JWSAlgorithm.HS256, jwtSignatureSecret, "841d8A6C80C#A4FcAf32D5367t1!C53b", 100);
+            String jwe = jweUtil.generateToken(toInclude, JWSAlgorithm.HS256, jwtSignatureSecret, "11111111111111111111111111111111", 100);
 
             /*
             String jwtTokenJwtUtil = jwtUtil.generateJwtToken(toInclude, SignatureAlgorithm.HS256, jwtSignatureSecret, 100).get();

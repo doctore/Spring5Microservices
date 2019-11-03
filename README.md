@@ -97,8 +97,8 @@ On the other hand, there are other "important folders":
 ### security-jwt-service
 
 Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provide a completely multi-application
-platform to generate/manage their own access and refresh tokens (including additional information). Every application will be able to manage its own token configuration/generation
-adding a new row in the database base: **security.jwt_client_details** and implementing the interface `IAuthenticationGenerator`.
+platform to generate/manage their own access and refresh tokens (including additional information), choosing between JWS or JWE token type. Every application will be able to manage
+its own token configuration/generation adding a new row in the database base: **security.jwt_client_details** and implementing the interface `IAuthenticationGenerator`.
  
 The technologies used are the following ones:
 

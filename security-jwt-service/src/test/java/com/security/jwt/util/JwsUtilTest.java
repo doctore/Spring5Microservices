@@ -81,7 +81,7 @@ public class JwsUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            token,                     signatureSecret,          expectedException,                keysToInclude,   expectedResult
+                //            jwsToken,                  signatureSecret,          expectedException,                keysToInclude,   expectedResult
                 Arguments.of( null,                      "ItDoesNotCare",          IllegalArgumentException.class,   keysToInclude,   null ),
                 Arguments.of( "",                        "ItDoesNotCare",          IllegalArgumentException.class,   keysToInclude,   null ),
                 Arguments.of( null,                      "ItDoesNotCare",          null,                             null,            new HashMap<>() ),
@@ -102,13 +102,13 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("getPayloadKeysTestCases")
     @DisplayName("getPayloadKeys: test cases")
-    public void getPayloadKeys_testCases(String token, String signatureSecret, Class<? extends Exception> expectedException,
+    public void getPayloadKeys_testCases(String jwsToken, String signatureSecret, Class<? extends Exception> expectedException,
                                          Set<String> keysToInclude, Map<String, Object> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwsUtil.getPayloadKeys(token, signatureSecret, keysToInclude));
+            assertThrows(expectedException, () -> jwsUtil.getPayloadKeys(jwsToken, signatureSecret, keysToInclude));
         }
         else {
-            assertEquals(expectedResult, jwsUtil.getPayloadKeys(token, signatureSecret, keysToInclude));
+            assertEquals(expectedResult, jwsUtil.getPayloadKeys(jwsToken, signatureSecret, keysToInclude));
         }
     }
 
@@ -131,7 +131,7 @@ public class JwsUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            token,                     signatureSecret,          expectedException,                keysToExclude,   expectedResult
+                //            jwsToken,                  signatureSecret,          expectedException,                keysToExclude,   expectedResult
                 Arguments.of( null,                      "ItDoesNotCare",          IllegalArgumentException.class,   keysToExclude,   null ),
                 Arguments.of( "",                        "ItDoesNotCare",          IllegalArgumentException.class,   keysToExclude,   null ),
                 Arguments.of( null,                      "ItDoesNotCare",          null,                             null,            new HashMap<>() ),
@@ -152,13 +152,13 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("getPayloadExceptGivenKeysTestCases")
     @DisplayName("getPayloadExceptGivenKeys: test cases")
-    public void getPayloadExceptGivenKeys_testCases(String token, String signatureSecret, Class<? extends Exception> expectedException,
+    public void getPayloadExceptGivenKeys_testCases(String jwsToken, String signatureSecret, Class<? extends Exception> expectedException,
                                                     Set<String> keysToExclude, Map<String, Object> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwsUtil.getPayloadExceptGivenKeys(token, signatureSecret, keysToExclude));
+            assertThrows(expectedException, () -> jwsUtil.getPayloadExceptGivenKeys(jwsToken, signatureSecret, keysToExclude));
         }
         else {
-            assertEquals(expectedResult, jwsUtil.getPayloadExceptGivenKeys(token, signatureSecret, keysToExclude));
+            assertEquals(expectedResult, jwsUtil.getPayloadExceptGivenKeys(jwsToken, signatureSecret, keysToExclude));
         }
     }
 
@@ -184,7 +184,7 @@ public class JwsUtilTest {
         expectedNotExpiredTokenClaims.put("exp", new Date((long)5000000000L*1000));
         return Stream.of(
                 //@formatter:off
-                //            token,                expectedException,                expectedResult
+                //            jwsToken,             expectedException,                expectedResult
                 Arguments.of( null,                 IllegalArgumentException.class,   null ),
                 Arguments.of( "",                   IllegalArgumentException.class,   null ),
                 Arguments.of( "ItDoesNotCare",      IllegalArgumentException.class,   null ),
@@ -197,12 +197,12 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("getRawPayloadTestCases")
     @DisplayName("getRawPayload: test cases")
-    public void getRawPayload_testCases(String token, Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
+    public void getRawPayload_testCases(String jwsToken, Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwsUtil.getRawPayload(token));
+            assertThrows(expectedException, () -> jwsUtil.getRawPayload(jwsToken));
         }
         else {
-            assertEquals(expectedResult, jwsUtil.getRawPayload(token));
+            assertEquals(expectedResult, jwsUtil.getRawPayload(jwsToken));
         }
     }
 
@@ -217,7 +217,7 @@ public class JwsUtilTest {
                            + "EU3ZPGofPNxa1E-HJvs7rsYbjCsgzw5sHaLuIZDIgpES_pVYntdUHK4RlY3jHCqsu8_asM7Gxsmo-RVGPuvg._FJDglnteTQWNFbunQ0aYg";
         return Stream.of(
                 //@formatter:off
-                //            token,                expectedException,                expectedResult
+                //            jwsToken,             expectedException,                expectedResult
                 Arguments.of( null,                 IllegalArgumentException.class,   null ),
                 Arguments.of( "",                   IllegalArgumentException.class,   null ),
                 Arguments.of( "ItDoesNotCare",      IllegalArgumentException.class,   null ),
@@ -230,12 +230,12 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("isJwsTokenTestCases")
     @DisplayName("isJwsToken: test cases")
-    public void isJwsToken_testCases(String token, Class<? extends Exception> expectedException, Boolean expectedResult) {
+    public void isJwsToken_testCases(String jwsToken, Class<? extends Exception> expectedException, Boolean expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwsUtil.isJwsToken(token));
+            assertThrows(expectedException, () -> jwsUtil.isJwsToken(jwsToken));
         }
         else {
-            assertEquals(expectedResult, jwsUtil.isJwsToken(token));
+            assertEquals(expectedResult, jwsUtil.isJwsToken(jwsToken));
         }
     }
 
