@@ -17,7 +17,6 @@ import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.TokenInvalidException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,7 @@ public class JweUtil {
 
     /**
      *    Using the given {@code informationToInclude} generates a valid nested JWS and JWE token (signed + encrypted JWT),
-     * signed with the selected {@link SignatureAlgorithm} and {@code signatureSecret}.
+     * signed with the selected {@link JWSAlgorithm} and {@code signatureSecret}.
      *
      *    For the encryption process, the algorithm is AES using a direct encryption with a shared symmetric key provided
      * in {@code encryptionSecret}.
@@ -57,7 +56,7 @@ public class JweUtil {
      * @param informationToInclude
      *    {@link Map} with the information to include in the returned JWS token
      * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to sign the JWS token
+     *    {@link JWSAlgorithm} used to sign the JWS token
      * @param signatureSecret
      *    {@link String} used to sign the JWS token
      * @param encryptionSecret

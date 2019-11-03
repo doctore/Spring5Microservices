@@ -1,9 +1,7 @@
 package com.security.jwt.service.authentication;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.KeyException;
-import com.nimbusds.jose.proc.BadJOSEException;
 import com.security.jwt.configuration.Constants;
+import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
@@ -11,10 +9,9 @@ import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.JwtClientDetailsService;
-import com.security.jwt.util.JwtUtil;
+import com.security.jwt.util.JweUtil;
+import com.security.jwt.util.JwsUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
@@ -45,15 +42,20 @@ public class AuthenticationService {
 
     private ApplicationContext applicationContext;
     private JwtClientDetailsService jwtClientDetailsService;
-    private JwtUtil jwtUtil;
+    private JweConfiguration jweConfiguration;
+    private JweUtil jweUtil;
+    private JwsUtil jwsUtil;
     private TextEncryptor encryptor;
 
     @Autowired
     public AuthenticationService(@Lazy ApplicationContext applicationContext, @Lazy JwtClientDetailsService jwtClientDetailsService,
-                                 @Lazy JwtUtil jwtUtil, @Lazy TextEncryptor encryptor) {
+                                 @Lazy JweConfiguration jweConfiguration, @Lazy JweUtil jweUtil, JwsUtil jwsUtil,
+                                 @Lazy TextEncryptor encryptor) {
         this.applicationContext = applicationContext;
         this.jwtClientDetailsService = jwtClientDetailsService;
-        this.jwtUtil = jwtUtil;
+        this.jweConfiguration = jweConfiguration;
+        this.jweUtil = jweUtil;
+        this.jwsUtil = jwsUtil;
         this.encryptor = encryptor;
     }
 
@@ -100,20 +102,12 @@ public class AuthenticationService {
      * @throws TokenExpiredException if the given {@code token} has expired
      */
     public Map<String, Object> getPayloadOfToken(String token, String clientId, boolean isAccessToken) {
-        try {
-            JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-            String decryptedJwtSecret = decryptJwtSecret(clientDetails.getSignatureSecret());
-
-            Map<String, Object> payload = jwtUtil.getExceptGivenKeys(token, decryptedJwtSecret, new HashSet<>());
-            if (isAccessToken != isAccessToken(payload))
-                throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an "
-                                                    + (isAccessToken ? "access " : "refresh ") + "one", token, clientId));
-            return payload;
-        // TODO: MODIFICAR
-        //} catch (BadJOSEException | JOSEException ex) {
-        } catch (Exception ex) {
-            throw new UnAuthorizedException(format("There was an error checking the token: %s related with clientId: %s", token, clientId), ex);
-        }
+        JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
+        Map<String, Object> payload = getVerifiedPayloadOfToken(token, clientDetails);
+        if (isAccessToken != isAccessToken(payload))
+            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an "
+                                                + (isAccessToken ? "access " : "refresh ") + "one", token, clientId));
+        return payload;
     }
 
 
@@ -197,11 +191,11 @@ public class AuthenticationService {
      * ({@link JwtClientDetails}).
      *
      * @param clientDetails
-     *    {@link JwtClientDetails} with the details about how to generate JWT tokens
+     *    {@link JwtClientDetails} with the details about how to generate JWS/JWE tokens
      * @param jwtRawInformation
      *    {@link RawAuthenticationInformationDto} with the information that should be included
      * @param jti
-     *    JWT token identifier
+     *    JWS/JWE token identifier
      *
      * @return {@link AuthenticationInformationDto}
      */
@@ -218,55 +212,49 @@ public class AuthenticationService {
     }
 
     /**
-     *    Return the access JWT token, merging the information should be included in this one with the given {@link JwtClientDetails}
+     *    Return the access JWS/JWE token, merging the information should be included in this one with the given {@link JwtClientDetails}
      * wants to be include on it (stored in {@link RawAuthenticationInformationDto#getAccessTokenInformation()}).
      *
      * @param clientDetails
-     *    {@link JwtClientDetails} with the details about how to generate JWT tokens
+     *    {@link JwtClientDetails} with the details about how to generate JWS/JWE tokens
      * @param jwtRawInformation
      *    {@link RawAuthenticationInformationDto} with the information that should be included
      * @param jti
-     *    JWT token identifier
+     *    JWS/JWE token identifier
      *
-     * @return JWT access token
+     * @return JWS/JWE access token
      */
     private String buildAccessToken(JwtClientDetails clientDetails, RawAuthenticationInformationDto jwtRawInformation,
                                     String jti) {
         Map<String, Object> tokenInformation = new HashMap<>(addToAccessToken(clientDetails.getClientId(), jti));
         if (null != jwtRawInformation)
             tokenInformation.putAll(jwtRawInformation.getAccessTokenInformation());
-
-        return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getSignatureAlgorithm(),
-                                        decryptJwtSecret(clientDetails.getSignatureSecret()), clientDetails.getAccessTokenValidity())
-                      .orElse("");
+        return generateToken(tokenInformation, clientDetails, clientDetails.getAccessTokenValidity());
     }
 
     /**
-     *    Return the refresh JWT token, merging the information should be included in this one with the given {@link JwtClientDetails}
+     *    Return the refresh JWS/JWE token, merging the information should be included in this one with the given {@link JwtClientDetails}
      * wants to be include on it (stored in {@link RawAuthenticationInformationDto#getRefreshTokenInformation()}).
      *
      * @param clientDetails
-     *    {@link JwtClientDetails} with the details about how to generate JWT tokens
+     *    {@link JwtClientDetails} with the details about how to generate JWS/JWE tokens
      * @param jwtRawInformation
      *    {@link RawAuthenticationInformationDto} with the information that should be included
      * @param jti
-     *    JWT token identifier
+     *    JWS/JWE token identifier
      *
-     * @return JWT refresh token
+     * @return JWS/JWE refresh token
      */
     private String buildRefreshToken(JwtClientDetails clientDetails, RawAuthenticationInformationDto jwtRawInformation,
                                      String jti) {
         Map<String, Object> tokenInformation = new HashMap<>(addToRefreshToken(clientDetails.getClientId(), jti));
         if (null != jwtRawInformation)
             tokenInformation.putAll(jwtRawInformation.getRefreshTokenInformation());
-
-        return jwtUtil.generateJwtToken(tokenInformation, clientDetails.getSignatureAlgorithm(),
-                                        decryptJwtSecret(clientDetails.getSignatureSecret()), clientDetails.getRefreshTokenValidity())
-                      .orElse("");
+        return generateToken(tokenInformation, clientDetails, clientDetails.getRefreshTokenValidity());
     }
 
     /**
-     * Return the standard information should be included in JWT access token.
+     * Return the standard information should be included in JWS/JWE access token.
      */
     private Map<String, Object> addToAccessToken(String clientId, String jti) {
         return new HashMap<String, Object>() {{
@@ -276,7 +264,7 @@ public class AuthenticationService {
     }
 
     /**
-     * Return the standard information should be included in JWT refresh token.
+     * Return the standard information should be included in JWS/JWE refresh token.
      */
     private Map<String, Object> addToRefreshToken(String clientId, String jti) {
         return new HashMap<String, Object>() {{
@@ -287,10 +275,10 @@ public class AuthenticationService {
     }
 
     /**
-     * Check if the given {@code payload} contains information related with an JWT access token.
+     * Check if the given {@code payload} contains information related with an JWS/JWE access token.
      *
      * @param payload
-     *    JWT token payload information
+     *    JWS/JWE token payload information
      *
      * @return {@code true} if the {@code payload} comes from an access token, {@code false} otherwise
      */
@@ -301,10 +289,50 @@ public class AuthenticationService {
     }
 
     /**
-     * Decrypt the given {@code jwtSecret} related with a {@link JwtClientDetails}.
+     * Decrypt the given {@code secret}.
      */
-    private String decryptJwtSecret(String jwtSecret) {
-        return encryptor.decrypt(jwtSecret.replace(Constants.JWT_SECRET_PREFIX, ""));
+    private String decryptSecret(String secret) {
+        return encryptor.decrypt(secret.replace(Constants.JWT_SECRET_PREFIX, ""));
+    }
+
+    /**
+     * Generate JWS or JWE token taking into account the information included in {@link JwtClientDetails#isUseJwe()}
+     *
+     * @param informationToInclude
+     *    {@link Map} with the information to include in the returned JWS token
+     * @param clientDetails
+     *    {@link JwtClientDetails} with the details about how to generate JWS/JWE tokens
+     * @param tokenValidityInSeconds
+     *    How many seconds the JWS toke will be valid
+     *
+     * @return JWS/JWE token
+     */
+    private String generateToken(Map<String, Object> informationToInclude, JwtClientDetails clientDetails, int tokenValidityInSeconds) {
+        if (clientDetails.isUseJwe())
+            return jweUtil.generateToken(informationToInclude, clientDetails.signatureAlgorithmEquivalence(),
+                    decryptSecret(clientDetails.getSignatureSecret()), decryptSecret(jweConfiguration.getEncryptionSecret()),
+                    tokenValidityInSeconds);
+        else
+            return jwsUtil.generateToken(informationToInclude, clientDetails.signatureAlgorithmEquivalence(),
+                    decryptSecret(clientDetails.getSignatureSecret()), tokenValidityInSeconds);
+    }
+
+    /**
+     * Get from the given JWS or JWE token its verified payload information.
+     *
+     * @param token
+     *    {@link String} with the token of which to extract the payload
+     * @param clientDetails
+     *    {@link JwtClientDetails} with the details about if this one is using JWS or JWE tokens
+     *
+     * @return {@link Map} with the {@code payload} of the given token
+     */
+    private Map<String, Object> getVerifiedPayloadOfToken(String token, JwtClientDetails clientDetails) {
+        if (clientDetails.isUseJwe())
+            return jweUtil.getPayloadExceptGivenKeys(token, decryptSecret(clientDetails.getSignatureSecret()),
+                    decryptSecret(jweConfiguration.getEncryptionSecret()),new HashSet<>());
+        else
+            return jwsUtil.getPayloadExceptGivenKeys(token, decryptSecret(clientDetails.getSignatureSecret()), new HashSet<>());
     }
 
 }

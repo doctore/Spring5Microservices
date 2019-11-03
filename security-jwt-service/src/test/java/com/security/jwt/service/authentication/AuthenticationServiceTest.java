@@ -1,12 +1,15 @@
 package com.security.jwt.service.authentication;
 
 import com.security.jwt.ObjectGeneratorForTest;
+import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
+import com.security.jwt.util.JweUtil;
+import com.security.jwt.util.JwsUtil;
 import com.security.jwt.util.JwtUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +67,13 @@ public class AuthenticationServiceTest {
     private JwtClientDetailsService mockJwtClientDetailsService;
 
     @Mock
-    private JwtUtil mockJwtUtil;
+    private JweConfiguration mockJweConfiguration;
+
+    @Mock
+    private JweUtil mockJweUtil;
+
+    @Mock
+    private JwsUtil mockJwsUtil;
 
     @Mock
     private TextEncryptor mockEncryptor;
@@ -73,7 +82,8 @@ public class AuthenticationServiceTest {
 
     @BeforeEach
     public void init() {
-        authenticationService = new AuthenticationService(mockApplicationContext, mockJwtClientDetailsService, mockJwtUtil, mockEncryptor);
+        authenticationService = new AuthenticationService(mockApplicationContext, mockJwtClientDetailsService, mockJweConfiguration,
+                mockJweUtil, mockJwsUtil, mockEncryptor);
     }
 
 

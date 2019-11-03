@@ -15,7 +15,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.TokenInvalidException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -36,12 +35,12 @@ public class JwsUtil {
 
     /**
      *    Using the given {@code informationToInclude} generates a valid JWS token (signed JWT) signed with the selected
-     * {@link SignatureAlgorithm} and {@code signatureSecret}.
+     * {@link JWSAlgorithm} and {@code signatureSecret}.
      *
      * @param informationToInclude
      *    {@link Map} with the information to include in the returned JWS token
      * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to sign the JWS token
+     *    {@link JWSAlgorithm} used to sign the JWS token
      * @param signatureSecret
      *    {@link String} used to sign the JWS token
      * @param expirationTimeInSeconds
@@ -180,7 +179,7 @@ public class JwsUtil {
      * Generate the signed JWT token (a JWS one).
      *
      * @param signatureAlgorithm
-     *    {@link SignatureAlgorithm} used to sign the JWS token
+     *    {@link JWSAlgorithm} used to sign the JWS token
      * @param signatureSecret
      *    {@link String} used to sign the JWS token
      * @param claimsSet
