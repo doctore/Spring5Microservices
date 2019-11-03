@@ -70,7 +70,7 @@ public class JweUtil {
      *                                  are {@code null}
      */
     public String generateToken(Map<String, Object> informationToInclude, JWSAlgorithm signatureAlgorithm,
-                                   String signatureSecret, String encryptionSecret, long expirationTimeInSeconds) {
+                                String signatureSecret, String encryptionSecret, long expirationTimeInSeconds) {
         Assert.hasText(encryptionSecret, "encryptionSecret cannot be null or empty");
         String jwsToken = jwsUtil.generateToken(informationToInclude, signatureAlgorithm, signatureSecret, expirationTimeInSeconds);
         return encryptJwsToken(jwsToken, encryptionSecret);
@@ -120,10 +120,52 @@ public class JweUtil {
      * @throws TokenInvalidException if {@code token} is not a JWS one or was not signed using {@code signatureSecret}
      * @throws TokenExpiredException if {@code token} has expired
      */
-    public Map<String, Object> getJweExceptGivenKeys(String jweToken, String signatureSecret, String encryptionSecret, Set<String> keysToExclude) {
+    public Map<String, Object> getExceptGivenKeys(String jweToken, String signatureSecret, String encryptionSecret, Set<String> keysToExclude) {
         Assert.hasText(encryptionSecret, "encryptionSecret cannot be null or empty");
         String jwsToken = decryptJweToken(jweToken, encryptionSecret);
-        return jwsUtil.getJwtPayloadExceptGivenKeys(jwsToken, signatureSecret, keysToExclude);
+        return jwsUtil.getPayloadExceptGivenKeys(jwsToken, signatureSecret, keysToExclude);
+    }
+
+
+    /**
+     * Get the information included in the given JWE {@code jweToken} WITHOUT ANY VERIFICATION.
+     *
+     * @param jweToken
+     *    JWE token to extract the required information
+     * @param encryptionSecret
+     *    {@link String} used to encrypt the JWS token
+     *
+     * @return {@link Map} of {@link String} - {@link Object}
+     *
+     * @throws IllegalArgumentException if {@code jweToken} or {@code encryptionSecret} are {@code null} or empty
+     */
+    public Map<String, Object> getRawPayload(String jweToken, String encryptionSecret) {
+        Assert.hasText(jweToken, "encryptionSecret cannot be null or empty");
+        String jwsToken = decryptJweToken(jweToken, encryptionSecret);
+        return jwsUtil.getRawPayload(jwsToken);
+    }
+
+
+    /**
+     * Return if the given {@code token} is a JWE one.
+     *
+     * @param token
+     *    {@link String} with the {@code token} to check
+     *
+     * @return {@code true} if the {@code token} is an JWE one, {@code false} otherwise
+     *
+     * @throws IllegalArgumentException if {@code token} is {@code null} or empty or there was a problem checking it
+     */
+    public boolean isJweToken(String token) {
+        Assert.hasText(token, "token cannot be null or empty");
+        try {
+            Base64URL[] parts = JOSEObject.split(token);
+            JSONObject jsonObject = JSONObjectUtils.parse(parts[0].decodeToString());
+            Algorithm alg = Header.parseAlgorithm(jsonObject);
+            return (alg instanceof JWEAlgorithm);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(format("The was a problem trying to figure out the type of token:", token), e);
+        }
     }
 
 
@@ -140,6 +182,8 @@ public class JweUtil {
      * @throws IllegalArgumentException it there was a problem encrypting the JWS token
      */
     private String encryptJwsToken(String jwsToken, String encryptionSecret) {
+        if (!jwsUtil.isJwsToken(jwsToken))
+            throw new TokenInvalidException(format("The token: %s is not a JWS one", jwsToken));
         try {
             JWEObject jweObject = new JWEObject(
                     new JWEHeader.Builder(jweAlgorithm, encryptionMethod)
@@ -174,28 +218,6 @@ public class JweUtil {
             return jweObject.getPayload().toSignedJWT().serialize();
         } catch (JOSEException |ParseException e) {
             throw new TokenInvalidException(format("The was a problem trying to decrypt the JWE token: %s", jweToken), e);
-        }
-    }
-
-    /**
-     * Return if the given {@code token} is a JWE one.
-     *
-     * @param token
-     *    {@link String} with the {@code token} to check
-     *
-     * @return {@code true} if the {@code token} is an JWE one, {@code false} otherwise
-     *
-     * @throws IllegalArgumentException if {@code token} is {@code null} or empty or there was a problem checking it
-     */
-    private boolean isJweToken(String token) {
-        Assert.hasText(token, "token cannot be null or empty");
-        try {
-            Base64URL[] parts = JOSEObject.split(token);
-            JSONObject jsonObject = JSONObjectUtils.parse(parts[0].decodeToString());
-            Algorithm alg = Header.parseAlgorithm(jsonObject);
-            return (alg instanceof JWEAlgorithm);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(format("The was a problem trying to figure out the type of token:", token), e);
         }
     }
 

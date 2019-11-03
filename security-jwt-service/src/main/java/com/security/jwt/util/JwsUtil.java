@@ -104,7 +104,7 @@ public class JwsUtil {
      * @throws TokenInvalidException if {@code jwsToken} is not a JWS one or was not signed using {@code signatureSecret}
      * @throws TokenExpiredException if {@code jwsToken} has expired
      */
-    public Map<String, Object> getJwtPayloadExceptGivenKeys(String jwsToken, String signatureSecret, Set<String> keysToExclude) {
+    public Map<String, Object> getPayloadExceptGivenKeys(String jwsToken, String signatureSecret, Set<String> keysToExclude) {
         if (null == keysToExclude)
             return new HashMap<>();
 
@@ -127,6 +127,29 @@ public class JwsUtil {
      */
     public Map<String, Object> getRawPayload(String jwsToken) {
         return getAllClaimsFromToken(jwsToken, null, false);
+    }
+
+
+    /**
+     * Return if the given {@code token} is a JWS one.
+     *
+     * @param token
+     *    {@link String} with the {@code token} to check
+     *
+     * @return {@code true} if the {@code token} is an JWS one, {@code false} otherwise
+     *
+     * @throws IllegalArgumentException if {@code token} is {@code null} or empty or there was a problem checking it
+     */
+    public boolean isJwsToken(String token) {
+        Assert.hasText(token, "token cannot be null or empty");
+        try {
+            Base64URL[] parts = JOSEObject.split(token);
+            JSONObject jsonObject = JSONObjectUtils.parse(parts[0].decodeToString());
+            Algorithm alg = Header.parseAlgorithm(jsonObject);
+            return (alg instanceof JWSAlgorithm);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(format("The was a problem trying to figure out the type of token:", token), e);
+        }
     }
 
 
@@ -174,28 +197,6 @@ public class JwsUtil {
             return signedJWT;
         } catch (JOSEException e) {
             throw new IllegalArgumentException("The was a problem trying to create a new JWS token", e);
-        }
-    }
-
-    /**
-     * Return if the given {@code token} is a JWS one.
-     *
-     * @param token
-     *    {@link String} with the {@code token} to check
-     *
-     * @return {@code true} if the {@code token} is an JWS one, {@code false} otherwise
-     *
-     * @throws IllegalArgumentException if {@code token} is {@code null} or empty or there was a problem checking it
-     */
-    private boolean isJwsToken(String token) {
-        Assert.hasText(token, "token cannot be null or empty");
-        try {
-            Base64URL[] parts = JOSEObject.split(token);
-            JSONObject jsonObject = JSONObjectUtils.parse(parts[0].decodeToString());
-            Algorithm alg = Header.parseAlgorithm(jsonObject);
-            return (alg instanceof JWSAlgorithm);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(format("The was a problem trying to figure out the type of token:", token), e);
         }
     }
 
