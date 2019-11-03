@@ -106,7 +106,7 @@ The technologies used are the following ones:
 * **JPA** for accessing, persisting, and managing data between Java objects and database.
 * **Lombok** to reduce the code development in entities and DTOs.
 * **Hazelcast** as cache to reduce the invocations to the database.
-* **JsonWebToken** to work with JWT tokens.
+* **NimbusJoseJwt** to work with JWS/JWE tokens.
 * **MVC** a traditional Spring MVC Rest API to manage the authentication/authorization requests.
 
 In this subproject the layer's division is:
