@@ -1,6 +1,5 @@
 package com.security.jwt;
 
-import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.AuthenticationRequestDto;
 import com.security.jwt.dto.RawAuthenticationInformationDto;

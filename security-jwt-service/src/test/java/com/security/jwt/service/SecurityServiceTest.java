@@ -34,6 +34,7 @@ import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -89,7 +90,7 @@ public class SecurityServiceTest {
             else {
                 when(userService.loadUserByUsername(username)).thenReturn(userDetails);
             }
-            when(userService.passwordsMatch(anyString(), anyString())).thenReturn(passwordsMatch);
+            when(userService.passwordsMatch(anyString(), eq(userDetails))).thenReturn(passwordsMatch);
         }
 
         if (null != expectedException) {

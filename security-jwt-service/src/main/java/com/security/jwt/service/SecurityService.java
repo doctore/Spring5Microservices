@@ -60,7 +60,7 @@ public class SecurityService {
                 .map(authConfig -> applicationContext.getBean(authConfig.getUserServiceClass()))
                 .flatMap(userService -> {
                     UserDetails userDetails = userService.loadUserByUsername(username);
-                    if (!userService.passwordsMatch(password, userDetails.getPassword()))
+                    if (!userService.passwordsMatch(password, userDetails))
                         throw new UnAuthorizedException(format("The password given for the username: %s does not mismatch", username));
 
                     return authenticationService.getAuthenticationInformation(clientId, userDetails);

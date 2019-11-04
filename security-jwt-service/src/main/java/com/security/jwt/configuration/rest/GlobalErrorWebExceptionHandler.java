@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,9 +24,9 @@ import org.springframework.web.server.ServerWebExchange;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -57,7 +58,14 @@ public class GlobalErrorWebExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<String> constraintViolationException(ConstraintViolationException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse(format("The following constraints have failed: %s", exception.getMessage()), BAD_REQUEST);
+        return buildListOfValidationErrorsResponse("The following constraints have failed: ", exception, BAD_REQUEST);
+    }
+
+
+    @ExceptionHandler(HttpMessageConversionException.class)
+    public ResponseEntity<String> httpMessageConversionException(HttpMessageConversionException exception, WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildPlainTextResponse("The was a problem in the parameters of the current request", BAD_REQUEST);
     }
 
 
@@ -170,24 +178,39 @@ public class GlobalErrorWebExceptionHandler {
      * @param responseMessage
      *    Information included in the returned response
      * @param exception
-     *    {@link MethodArgumentNotValidException} with the "not verified" validations
+     *    {@link Exception} with the "not verified" validations or constraint exceptions
      * @param httpStatus
      *    {@link HttpStatus} used in the Http response
      *
      * @return {@link ResponseEntity} with the suitable Http response
      */
-    private ResponseEntity<String> buildListOfValidationErrorsResponse(String responseMessage, MethodArgumentNotValidException exception,
+    private ResponseEntity<String> buildListOfValidationErrorsResponse(String responseMessage, Exception exception,
                                                                        HttpStatus httpStatus) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        responseMessage += exception.getBindingResult()
-                .getFieldErrors().stream()
-                .map(fe -> "Field error in object '" + fe.getObjectName()
-                         + "' on field '" + fe.getField()
-                         + "' due to: " + fe.getDefaultMessage())
-                .collect(Collectors.toList());
+
+        if (exception instanceof MethodArgumentNotValidException)
+            responseMessage += getErrors((MethodArgumentNotValidException) exception);
+        if (exception instanceof ConstraintViolationException)
+            responseMessage += getErrors((ConstraintViolationException)exception);
 
         return new ResponseEntity<>(responseMessage, headers, httpStatus);
+    }
+
+    private List<String> getErrors(MethodArgumentNotValidException exception) {
+        return exception.getBindingResult().getFieldErrors().stream()
+                .map(fe -> "Field error in object '" + fe.getObjectName()
+                        + "' on field '" + fe.getField()
+                        + "' due to: " + fe.getDefaultMessage())
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getErrors(ConstraintViolationException exception) {
+        return exception.getConstraintViolations().stream()
+                .map(ce -> "Error in path '" + ce.getPropertyPath()
+                        + "' due to: " + ce.getMessage()
+                )
+                .collect(Collectors.toList());
     }
 
 }

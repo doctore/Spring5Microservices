@@ -51,11 +51,10 @@ public class UserService implements IUserService {
 
 
     @Override
-    public boolean passwordsMatch(String rawPassword, String encodedPassword) {
-        if (StringUtils.isEmpty(rawPassword) || StringUtils.isEmpty(encodedPassword))
+    public boolean passwordsMatch(String passwordToVerify, UserDetails userDetails) {
+        if (StringUtils.isEmpty(passwordToVerify) || (null == userDetails || StringUtils.isEmpty(userDetails.getPassword())))
             return false;
-
-        return passwordEncoder.matches(rawPassword, encodedPassword);
+        return passwordEncoder.matches(passwordToVerify, userDetails.getPassword());
     }
 
 }

@@ -1,5 +1,6 @@
 package com.security.jwt.interfaces;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
@@ -8,15 +9,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public interface IUserService extends UserDetailsService {
 
     /**
-     * Verify if the given passwords are equals.
+     * Verify if the given password matches with the one belongs to {@code userDetails}.
      *
-     * @param rawPassword
-     *    Not encoded password
-     * @param encodedPassword
-     *    Encoded password
+     * @param passwordToVerify
+     *    Password to veryfy
+     * @param userDetails
+     *    {@link UserDetails} which password will be compare
      *
-     * @return {@code true} if both passwords are equals, {@code false} otherwise.
+     * @return {@code true} if {@code passwordToVerify} matches with {@link UserDetails#getPassword()}, {@code false} otherwise.
      */
-    boolean passwordsMatch(String rawPassword, String encodedPassword);
+    boolean passwordsMatch(String passwordToVerify, UserDetails userDetails);
 
 }

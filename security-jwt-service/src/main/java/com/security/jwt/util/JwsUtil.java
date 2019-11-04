@@ -6,7 +6,9 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObject;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.util.Base64URL;
@@ -193,7 +195,7 @@ public class JwsUtil {
     private SignedJWT getSignedJWT(JWSAlgorithm signatureAlgorithm, String signatureSecret, JWTClaimsSet claimsSet) {
         try {
             SignedJWT signedJWT = new SignedJWT(new JWSHeader(signatureAlgorithm), claimsSet);
-            signedJWT.sign(new MACSigner(signatureSecret));
+            signedJWT.sign(getSuitableSigner(signatureAlgorithm, signatureSecret));
             return signedJWT;
         } catch (JOSEException e) {
             throw new IllegalArgumentException("The was a problem trying to create a new JWS token", e);
@@ -241,6 +243,24 @@ public class JwsUtil {
         }
     }
 
+    /**
+     * Return the suitable {@link JWSSigner} taking into account the {@link JWSAlgorithm} used to sing the given JWS token.
+     *
+     * @param signatureAlgorithm
+     *    {@link JWSAlgorithm} used to sign the JWS token
+     * @param signatureSecret
+     *    {@link String} used to sign the JWS token
+     *
+     * @return {@link JWSSigner}
+     *
+     * @throws KeyLengthException if {@code signatureSecret} has not enough length for the given {@code signatureAlgorithm}
+     */
+    private JWSSigner getSuitableSigner(JWSAlgorithm signatureAlgorithm, String signatureSecret) throws KeyLengthException {
+        if (asList(JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512).contains(signatureAlgorithm))
+            return new MACSigner(signatureSecret);
+        throw new IllegalArgumentException(format("It was not possible to find a suitable signer for the signature algorithm: %s ", signatureAlgorithm));
+    }
+
 
     /**
      * Return the suitable {@link JWSVerifier} taking into account the {@link JWSAlgorithm} used to sing the given JWS token.
@@ -258,7 +278,6 @@ public class JwsUtil {
         JWSAlgorithm signatureAlgorithm = signedJWT.getHeader().getAlgorithm();
         if (asList(JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512).contains(signatureAlgorithm))
             return new MACVerifier(signatureSecret);
-
         throw new IllegalArgumentException(format("It was not possible to find a suitable verifier for the signature algorithm: %s ", signatureAlgorithm));
     }
 

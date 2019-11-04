@@ -85,8 +85,9 @@ public class UserServiceTest {
     @MethodSource("passwordsMatchTestCases")
     @DisplayName("passwordsMatch: test cases")
     public void passwordsMatch_testCases(String rawPassword, String encodedPassword, boolean passwordEncoderResult, boolean expectedResult) {
+        User user = User.builder().username("username").active(true).password(encodedPassword).build();
         when(mockPasswordEncoder.matches(rawPassword, encodedPassword)).thenReturn(passwordEncoderResult);
-        assertEquals(expectedResult, userService.passwordsMatch(rawPassword, encodedPassword));
+        assertEquals(expectedResult, userService.passwordsMatch(rawPassword, user));
     }
 
 }
