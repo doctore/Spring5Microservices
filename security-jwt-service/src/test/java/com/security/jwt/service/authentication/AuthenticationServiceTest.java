@@ -299,7 +299,7 @@ public class AuthenticationServiceTest {
     }
 
 
-    static Stream<Arguments> getAdditionalInformationTestCases() {
+    static Stream<Arguments> getCustomInformationIncludedByClientTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
         Map<String, Object> sourcePayload = new HashMap<String, Object>() {{
@@ -328,10 +328,11 @@ public class AuthenticationServiceTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getAdditionalInformationTestCases")
-    @DisplayName("getAdditionalInformation: test cases")
-    public void getAdditionalInformation_testCases(Map<String, Object> payload, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
-                                                   Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
+    @MethodSource("getCustomInformationIncludedByClientTestCases")
+    @DisplayName("getCustomInformationIncludedByClient: test cases")
+    public void getCustomInformationIncludedByClient_testCases(Map<String, Object> payload, String clientId,
+                                                               Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+                                                               Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
         when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         if (null != authenticationGenerator) {
             when(authenticationGenerator.getUsernameKey()).thenReturn(USERNAME.getKey());
@@ -339,10 +340,10 @@ public class AuthenticationServiceTest {
         }
 
         if (null != expectedException) {
-            assertThrows(expectedException, () -> authenticationService.getAdditionalInformation(payload, clientId));
+            assertThrows(expectedException, () -> authenticationService.getCustomInformationIncludedByClient(payload, clientId));
         }
         else {
-            Map<String, Object> result = authenticationService.getAdditionalInformation(payload, clientId);
+            Map<String, Object> result = authenticationService.getCustomInformationIncludedByClient(payload, clientId);
             assertEquals(expectedResult, result);
         }
     }

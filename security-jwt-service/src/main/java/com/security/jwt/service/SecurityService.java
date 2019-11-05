@@ -102,10 +102,10 @@ public class SecurityService {
      * Extract from the given {@code accessToken} the following information:
      *  - Username
      *  - Roles
-     *  - Additional information (included in {@code accessToken} but not related with standard JWT)
-     *
+     *  - Additional information: included in {@code accessToken} but not related with standard JWT and included specifically
+     *                            by every application.
      * @param accessToken
-     *    {@link String} with the refresh token to use
+     *    {@link String} with the access token to use
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      *
@@ -123,7 +123,7 @@ public class SecurityService {
         return UsernameAuthoritiesDto.builder()
                 .username(username)
                 .authorities(authenticationService.getRoles(payload, clientId))
-                .additionalInfo(authenticationService.getAdditionalInformation(payload, clientId))
+                .additionalInfo(authenticationService.getCustomInformationIncludedByClient(payload, clientId))
                 .build();
     }
 

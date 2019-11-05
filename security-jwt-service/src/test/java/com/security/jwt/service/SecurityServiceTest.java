@@ -185,7 +185,7 @@ public class SecurityServiceTest {
         when(mockAuthenticationService.getPayloadOfToken(accessToken, clientId, true)).thenReturn(payload);
         when(mockAuthenticationService.getUsername(payload, clientId)).thenReturn(ofNullable(usernameResult));
         when(mockAuthenticationService.getRoles(payload, clientId)).thenReturn(rolesResult);
-        when(mockAuthenticationService.getAdditionalInformation(payload, clientId)).thenReturn(additionalInfoResult);
+        when(mockAuthenticationService.getCustomInformationIncludedByClient(payload, clientId)).thenReturn(additionalInfoResult);
         if (null != expectedException) {
             assertThrows(expectedException, () -> securityService.getAuthorizationInformation(accessToken, clientId));
         }

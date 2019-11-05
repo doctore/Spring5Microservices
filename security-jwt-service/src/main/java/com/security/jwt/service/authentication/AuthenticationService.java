@@ -12,6 +12,7 @@ import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.util.JweUtil;
 import com.security.jwt.util.JwsUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
+import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
@@ -153,7 +154,9 @@ public class AuthenticationService {
 
 
     /**
-     * Get the additional information included in the given {@code payload} but not related with standard JWT
+     *    Remove from the given payload the standard JWT keys like: aud, authorities, exp, iat, jti, ati or username. This method
+     * is used to fill the {@link UsernameAuthoritiesDto#getAdditionalInfo()} with the specific information included by every
+     * application in the access token.
      *
      * @param payload
      *    {@link Map} with the content of a Jwt token
@@ -164,7 +167,7 @@ public class AuthenticationService {
      *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
      */
-    public Map<String, Object> getAdditionalInformation(Map<String, Object> payload, String clientId) {
+    public Map<String, Object> getCustomInformationIncludedByClient(Map<String, Object> payload, String clientId) {
         return ofNullable(payload)
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
@@ -177,7 +180,7 @@ public class AuthenticationService {
                             ISSUED_AT.getKey(),
                             JWT_ID.getKey(),
                             REFRESH_JWT_ID.getKey()));
-
+                    
                     return payload.entrySet().stream()
                             .filter(e -> !keysToFilter.contains(e.getKey()))
                             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
