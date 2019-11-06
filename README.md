@@ -222,6 +222,9 @@ enter in details about this security service, it is important to know that, for 
 
 ![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
    
+You can see the *raw password* in the SQL file `MasterDatabase_Data.sql`, when the information about this application is included in the table `security.oauth_client_details`.
+In this case, the password is `Spring5Microservices`.    
+   
 So, from now on the list of web services is the following one:
 
 **1.** Get the authentication information:
