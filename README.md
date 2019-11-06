@@ -250,7 +250,7 @@ Regarding to **security-jwt-service**, it has an equivalent web services to prov
 
 **3.** Get authorization information using access token:
 
-![Alt text](/documentation/SecurityJwtService_AuthorizationInfo?raw=true "Authorization information")  
+![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")  
 
 ## How to use it?
 
