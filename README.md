@@ -242,7 +242,8 @@ related with the table `eat.user`).
 
 ![Alt text](/documentation/SecurityOauthService_AuthorizationInfo.png?raw=true "Authorization information")
 
-Regarding to **security-jwt-service**, it has an equivalent web services to provide the same funcionality (however in this case, the credentials information is not required):
+Regarding to **security-jwt-service**, it has an equivalent list of web services to provide the same funcionality (however in this case, the credentials information is not
+required):
 
 **1.** Get the authentication information:
 
