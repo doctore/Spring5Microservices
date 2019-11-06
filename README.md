@@ -244,8 +244,6 @@ Regarding to **security-jwt-service**, it has an equivalent web services to prov
 
 ![Alt text](/documentation/SecurityJwtService_Login.png?raw=true "Login")
 
-In the previous image, I have used for this example `admin/admin`, there is another option included in the SQL files: `user/user`.
-
 **2.** Refresh authentication information after the access token expiration:
 
 ![Alt text](/documentation/SecurityJwtService_Refresh.png?raw=true "Refresh token")
