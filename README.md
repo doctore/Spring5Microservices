@@ -217,8 +217,8 @@ ENCRYPT_KEY=ENCRYPT_KEY
 As you read previously, there are two different microservices you can use to manage the authentication/authorization functionality: **security-oauth-service** and
 **security-jwt-service**, in this proof of concept I have used the first one in **order-service** and the second one to securize **pizza-service**.
 
-Regarding to every one in this section I will explain the web services provided by every one and how to use them, starting by **security-oauth-service**. Before enter in
-details about this security service, it is important to know that, for every request we have to include the Oauth 2.0 credentials:
+Regarding to every microservice, in this section I will explain the web services provided by every one and how to use them, starting by **security-oauth-service**. Before
+enter in details about this security service, it is important to know that, for every request we have to include the Oauth 2.0 credentials:
 
 ![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
    
