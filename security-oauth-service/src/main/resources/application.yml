@@ -14,39 +14,3 @@ eureka:
     # Register the IP of the service rather than the server name (useful when there is no a
     # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
-
-
-
-
-### MOVE TO Config-server files ###
-spring:
-  ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
-  datasource:
-    url: jdbc:postgresql://localhost:5432/microservice
-    username: microservice
-    # Using environment variable ENCRYPT_KEY=ENCRYPT_KEY
-    # Getting the value with POST localhost:8888/encrypt and the password in its body
-    # Raw password: microservice
-    password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL95Dialect
-        jdbc:
-          lob:
-            # With Java >= 9, to avoid:
-            # SQLFeatureNotSupportedException: Method PgConnection.createClob() is not yet implemented
-            non_contextual_creation: true
-
-security:
-  jwt:
-    token:
-      # Raw secretKey: 72=83eH97$7f408adAC
-      secretKey: "{cipher}7e18a5fe94eb7e2f193a861add30d3f5982ae5f8929e3c45974153944cbee08e102c54c76ccac789943d1ab8452226e6"
-      signatureAlgorithm: "HMACSHA512"
-
-cache:
-  oauthClient:
-    entryCapacity: 2
-    expireInMinutes: 30
-    name: oauthClientCache

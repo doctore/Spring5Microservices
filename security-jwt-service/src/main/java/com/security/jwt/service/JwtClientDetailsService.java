@@ -41,20 +41,15 @@ public class JwtClientDetailsService {
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
      */
     public JwtClientDetails findByClientId(String clientId) {
-        return ofNullable(clientId)
-                .map(id -> {
-                    Optional<JwtClientDetails> cacheJwtClientDetails = cacheService.get(cacheConfiguration.getJwtConfigurationCacheName(), clientId);
-                    if (cacheJwtClientDetails.isPresent())
-                        return cacheJwtClientDetails.get();
-
-                    return jwtClientDetailsRepository.findByClientId(clientId)
+        return (JwtClientDetails)cacheService.get(cacheConfiguration.getJwtConfigurationCacheName(), clientId)
+                .orElseGet(() ->
+                    jwtClientDetailsRepository.findByClientId(clientId)
                             .map(c -> {
                                 cacheService.put(cacheConfiguration.getJwtConfigurationCacheName(), clientId, c);
                                 return c;
                             })
-                            .orElse(null);
-                })
-                .orElseThrow(() -> new ClientNotFoundException(format("The given clientId: %s was not found in database", clientId)));
+                            .orElseThrow(() -> new ClientNotFoundException(format("The given clientId: %s was not found in database", clientId)))
+                );
     }
 
 }

@@ -180,7 +180,7 @@ public class AuthenticationService {
                             ISSUED_AT.getKey(),
                             JWT_ID.getKey(),
                             REFRESH_JWT_ID.getKey()));
-                    
+
                     return payload.entrySet().stream()
                             .filter(e -> !keysToFilter.contains(e.getKey()))
                             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));

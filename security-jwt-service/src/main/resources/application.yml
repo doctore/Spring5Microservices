@@ -21,37 +21,3 @@ springfox:
       v2:
         # Api docs path properties
         path: /security-jwt-service/v2/api-docs
-
-
-
-
-### MOVE TO Config-server files ###
-spring:
-  ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
-  datasource:
-    url: jdbc:postgresql://localhost:5432/microservice
-    username: microservice
-    # Using environment variable ENCRYPT_KEY=ENCRYPT_KEY
-    # Getting the value with POST localhost:8888/encrypt and the password in its body
-    # Raw password: microservice
-    password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL95Dialect
-        jdbc:
-          lob:
-            # With Java >= 9, to avoid:
-            # SQLFeatureNotSupportedException: Method PgConnection.createClob() is not yet implemented
-            non_contextual_creation: true
-
-security:
-  jwe:
-    # Raw encryptionSecret: 841d8A6C80C#A4FcAf32D5367t1!C53b
-    encryptionSecret: "{cipher}44cb298248eb034715509add03160cb84b9a8095f8f7a1c240125aac4a2080f48ba8b481aac16a12caae1a0983f8c4f7e26ea2da37368f3ed50d8224c029c48e"
-
-cache:
-  jwtConfiguration:
-    entryCapacity: 2
-    expireInSeconds: 3600
-    name: jwtConfigurationCache

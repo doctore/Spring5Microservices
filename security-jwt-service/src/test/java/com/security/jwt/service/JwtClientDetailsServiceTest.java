@@ -92,9 +92,8 @@ public class JwtClientDetailsServiceTest {
         }
         // Not found jwtClientDetails neither in cache nor database
         if (!repositoryResult.isPresent() && null == cacheServiceResult) {
-            int expectedInvocations = null == clientId ? 0 : 1;
-            verify(mockJwtClientDetailsRepository, times(expectedInvocations)).findByClientId(eq(clientId));
-            verify(mockCacheService, times(expectedInvocations)).get(any(), eq(clientId));
+            verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));
+            verify(mockCacheService, times(1)).get(any(), eq(clientId));
             verify(mockCacheService, times(0)).put(any(), any(), any());
         }
     }
