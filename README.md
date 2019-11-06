@@ -265,7 +265,7 @@ services (following the displayed ordination):
 
 And finally any of the other ones (or both): **pizza-service** and **order-service**.
 
-So, once you have obtained the required JWT token (as I explained you in the previous section), you can use it to invoke the required web services:
+So, once you have obtained the required JWT access token (as I explained you in the previous section), you can use it to invoke the required web services:
 
 ![Alt text](/documentation/PizzaService.png?raw=true "Login")
 
