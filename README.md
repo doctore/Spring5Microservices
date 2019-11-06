@@ -12,6 +12,7 @@
     - [common](#common)
     - [sql](#sql)
 - [Previous steps](#previous-steps)
+- [Security services](#security-services)
 - [How to use it?](#how-to-use-it)
 - [Future additions](#future-additions)
 
@@ -211,6 +212,47 @@ that is passed to the service via an operating system environment variable calle
 ENCRYPT_KEY=ENCRYPT_KEY
 ```
 
+## Security services
+
+As you read previously, there are two different microservices you can use to manage the authentication/authorization functionality: **security-oauth-service** and
+**security-jwt-service**, in this proof of concept I have used the first one in **order-service** and the second one to securize **pizza-service**.
+
+Regarding to every one in this section I will explain the web services provided by every one and how to use them, starting by **security-oauth-service**. Before enter in
+details about this security service, it is important to know that, for every request we have to include the Oauth 2.0 credentials:
+
+![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
+   
+So, from now on the list of web services is the following one:
+
+**1.** Get the authentication information:
+
+![Alt text](/documentation/SecurityOauthService_Login.png?raw=true "Login")
+
+In the previous image, I have used for this example `admin/admin`, there is another option included in the SQL files: `user/user`.
+
+**2.** Refresh authentication information after the access token expiration:
+
+![Alt text](/documentation/SecurityOauthService_Refresh.png?raw=true "Refresh token")
+
+**3.** Get authorization information using access token:
+
+![Alt text](/documentation/SecurityOauthService_AuthorizationInfo.png?raw=true "Authorization information")
+
+Regarding to **security-jwt-service**, it has an equivalent web services to provide the same funcionality (however in this case, the credentials information is not required):
+
+**1.** Get the authentication information:
+
+![Alt text](/documentation/SecurityJwtService_Login.png?raw=true "Login")
+
+In the previous image, I have used for this example `admin/admin`, there is another option included in the SQL files: `user/user`.
+
+**2.** Refresh authentication information after the access token expiration:
+
+![Alt text](/documentation/SecurityJwtService_Refresh.png?raw=true "Refresh token")
+
+**3.** Get authorization information using access token:
+
+![Alt text](/documentation/SecurityJwtService_AuthorizationInfo?raw=true "Authorization information")  
 
 ## How to use it?
 
@@ -220,17 +262,12 @@ services (following the displayed ordination):
 1. **registry-server**
 2. **config-server**
 3. **gateway-server**
-4. **authorization-service**
+4. **security-oauth-service** (if we want to use `order-service`)
+4. **security-jwt-service** (if we want to use `pizza-service`)
 
 And finally any of the other ones (or both): **pizza-service** and **order-service**.
 
-Now, we have to get the JWT token using an existing user in database (as we can see in the next picture):
-
-![Alt text](/documentation/Login.png?raw=true "Login")
-
-In the previous image, I have used for this example `admin/admin`, there is another option included in the SQL files: `user/user`.
-
-Now, we can use the returned token to get the information manages by any microservice:
+So, once you have obtained the required JWT token (as I explained you in the previous section), you can use it to invoke the required web services:
 
 ![Alt text](/documentation/PizzaService.png?raw=true "Login")
 
