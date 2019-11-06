@@ -231,8 +231,8 @@ So, the list of web services is the following one:
 
 ![Alt text](/documentation/SecurityOauthService_Login.png?raw=true "Login")
 
-In the previous image, I have used for this example `admin/admin`, there is another option included in the SQL file: `user/user` (in the inserts related with the table
-`eat.user`).
+In the previous image, I have used for this example `admin/admin`, there is another option: `user/user`, included in the SQL file `MasterDatabase_Data.sql` (in the inserts
+related with the table `eat.user`).
 
 **2.** Refresh authentication information after the access token expiration:
 
