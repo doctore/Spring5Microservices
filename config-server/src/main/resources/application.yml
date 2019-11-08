@@ -7,7 +7,7 @@ spring:
       server:
         git:
           uri: https://github.com/doctore/Spring5Microservices_ConfigServerData
-          searchPaths: authentication-service,gateway-server,pizza-service,order-service,security-jwt-service,security-oauth-service
+          searchPaths: gateway-server,pizza-service,order-service,security-jwt-service,security-oauth-service
 
 eureka:
   client:
