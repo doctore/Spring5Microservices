@@ -60,6 +60,14 @@ private CacheConfiguration cacheConfiguration;
 
     @Override
     public Object run() {
+        return null;
+
+
+        /*
+
+        // TODO: Removes this filter, the security will be managed by every application
+        // There will be only a cache to manage generated token - real one for: security-oauth-service
+
         RequestContext ctx = RequestContext.getCurrentContext();
 
         // If we are dealing with a call to the authentication service, let the call go through without authenticating
@@ -80,6 +88,7 @@ private CacheConfiguration cacheConfiguration;
             return null;
         }
         return null;
+         */
     }
 
 
