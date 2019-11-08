@@ -257,6 +257,8 @@ required):
 
 ![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")  
 
+In the previous examples I have used the internal port of every security microservice, however the gateway one: `5555` should be used to do any request. 
+
 ## How to use it?
 
 The first step is adding in our databases: `main` and `test` ones, the SQL files included in the `sql` folder. Once we have finished, it will be necessary to run the following
