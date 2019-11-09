@@ -27,6 +27,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -128,13 +129,11 @@ public class GlobalErrorWebExceptionHandler {
      */
     private String getErrorMessageUsingHttpRequest(WebRequest request) {
         HttpServletRequest httpRequest = ((ServletWebRequest)request).getRequest();
-
-        return String.format("There was an error trying to execute the request with: %s "
-                           + "Http method = %s %s "
-                           + "Uri = %s",
-                System.lineSeparator(),
-                httpRequest.getMethod(), System.lineSeparator(),
-                httpRequest.getRequestURI());
+        return format("There was an error trying to execute the request with: %s"
+                    + "Http method = %s %s "
+                    + "Uri = %s",
+                System.lineSeparator(), httpRequest.getMethod(),
+                System.lineSeparator(), httpRequest.getRequestURI());
     }
 
     /**

@@ -20,4 +20,4 @@ springfox:
     swagger:
       v2:
         # Api docs path properties
-        path: /security-jwt-service/v2/api-docs
+        path: /security/jwt/v2/api-docs

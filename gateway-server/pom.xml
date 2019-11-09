@@ -40,35 +40,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-sleuth</artifactId>
         </dependency>
-        <!-- Spring5 microservices common -->
-        <dependency>
-            <groupId>com.spring5microservices.common</groupId>
-            <artifactId>spring5-microservices-common</artifactId>
-            <version>${spring5-microservices-common.version}</version>
-        </dependency>
-        <!-- Code generators -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- Cache -->
-        <dependency>
-            <groupId>org.cache2k</groupId>
-            <artifactId>cache2k-api</artifactId>
-            <version>${cache2k.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cache2k</groupId>
-            <artifactId>cache2k-core</artifactId>
-            <version>${cache2k.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cache2k</groupId>
-            <artifactId>cache2k-spring</artifactId>
-            <version>${cache2k.version}</version>
-        </dependency>
         <!--Swagger -->
         <dependency>
             <groupId>io.springfox</groupId>

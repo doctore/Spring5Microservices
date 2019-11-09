@@ -27,6 +27,9 @@ public class DocumentationConfiguration implements SwaggerResourcesProvider {
     @Value("${springfox.documentation.swagger.v2.path}")
     private String documentationPath;
 
+    @Value("#{'${restApi.documentedServices}'.split(',')}")
+    private List<String> documentedRestApis;
+
     @Autowired
     private RouteLocator routeLocator;
 
@@ -35,6 +38,7 @@ public class DocumentationConfiguration implements SwaggerResourcesProvider {
     public List<SwaggerResource> get() {
         return Optional.ofNullable(routeLocator)
                        .map(rl -> routeLocator.getRoutes().stream()
+                                                          .filter(route -> documentedRestApis.contains(route.getId()))
                                                           .map(r -> swaggerResource(r.getId(),
                                                                   r.getFullPath().replace("/**", documentationPath),
                                                                   DOCUMENTATION_API_VERSION))
@@ -42,7 +46,6 @@ public class DocumentationConfiguration implements SwaggerResourcesProvider {
                         )
                        .orElse(new ArrayList<>());
     }
-
 
     /**
      * Carry out the returned {@link SwaggerResource} with the given information.
