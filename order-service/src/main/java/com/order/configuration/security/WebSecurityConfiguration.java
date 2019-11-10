@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 public class WebSecurityConfiguration {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private SecurityManager securityManager;
 
     @Autowired
     private SecurityContextRepository securityContextRepository;
@@ -37,7 +37,7 @@ public class WebSecurityConfiguration {
                    )
                    .and()
                    // Include our custom AuthenticationManager
-                   .authenticationManager(authenticationManager)
+                   .authenticationManager(securityManager)
                    // Include our custom SecurityContextRepository
                    .securityContextRepository(securityContextRepository)
                    .authorizeExchange()

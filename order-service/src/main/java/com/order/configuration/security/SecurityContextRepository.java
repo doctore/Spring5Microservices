@@ -1,5 +1,6 @@
 package com.order.configuration.security;
 
+import com.order.configuration.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -14,13 +15,13 @@ import reactor.core.publisher.Mono;
 
 /**
  *    Gets the token included in {@code Authorization} Http header and
- * forwarded to {@link AuthenticationManager} to verify it.
+ * forwarded to {@link SecurityManager} to verify it.
  */
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private SecurityManager securityManager;
 
 
     @Override
@@ -33,10 +34,10 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
     public Mono<SecurityContext> load(ServerWebExchange swe) {
         ServerHttpRequest request = swe.getRequest();
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-
         if (null != authHeader) {
+            authHeader = authHeader.replace(Constants.TOKEN_PREFIX, "");
             Authentication auth = new UsernamePasswordAuthenticationToken(authHeader, authHeader);
-            return this.authenticationManager.authenticate(auth).map((authentication) -> new SecurityContextImpl(authentication));
+            return this.securityManager.authenticate(auth).map((authentication) -> new SecurityContextImpl(authentication));
         } else {
             return Mono.empty();
         }

@@ -1,9 +1,11 @@
 package com.security.oauth.configuration.security;
 
+import com.security.oauth.configuration.rest.RestRoutes;
 import com.security.oauth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,6 +14,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import javax.servlet.http.HttpServletResponse;
+
+import static org.springframework.http.HttpMethod.GET;
 
 @Configuration
 @EnableWebSecurity
@@ -45,6 +49,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             // Authorization requests config
             .authorizeRequests()
+            // List of services do not require authentication
+            .antMatchers(GET, RestRoutes.SECURITY_OAUTH.ROOT + "/**").permitAll()
             // Any other request must be authenticated
             .anyRequest().authenticated();
     }

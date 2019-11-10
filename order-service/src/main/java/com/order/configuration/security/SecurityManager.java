@@ -3,6 +3,9 @@ package com.order.configuration.security;
 import com.order.dto.UsernameAuthoritiesDto;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
 
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,10 +28,10 @@ import java.util.stream.Collectors;
  */
 @Component
 @Log4j2
-public class AuthenticationManager implements ReactiveAuthenticationManager {
+public class SecurityManager implements ReactiveAuthenticationManager {
 
     @Autowired
-    private AuthenticationConfiguration authenticationConfiguration;
+    private SecurityConfiguration securityConfiguration;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -36,10 +40,10 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         String authToken = authentication.getCredentials().toString();
-        Optional<UsernameAuthoritiesDto> authInformation = getAuthenticationInformation(authenticationConfiguration.getAuthenticationInformation(),
+        Optional<UsernameAuthoritiesDto> authInformation = getAuthenticationInformation(securityConfiguration.getAuthenticationInformationWebService(),
                                                                                         authToken);
         return Mono.justOrEmpty(authInformation.map(au -> getFromUsernameAuthoritiesDto(au))
-                                               .orElse(null));
+                   .orElse(null));
     }
 
 
@@ -55,8 +59,9 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
      */
     private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(String authenticationInformationWebService, String token) {
         try {
-            ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.getForEntity(authenticationInformationWebService,
-                                                                                            UsernameAuthoritiesDto.class, token);
+            HttpEntity<String> request = new HttpEntity<>(createHeaders(securityConfiguration.getClientId(), securityConfiguration.getClientPassword()));
+            ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.exchange(authenticationInformationWebService, HttpMethod.GET,
+                    request, UsernameAuthoritiesDto.class, token);
             return Optional.of(restResponse.getBody());
         } catch(Exception ex) {
             log.error("There was an error trying to validate the authentication token", ex);
@@ -75,10 +80,29 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
      */
     private UsernamePasswordAuthenticationToken getFromUsernameAuthoritiesDto(UsernameAuthoritiesDto usernameAuthoritiesDto) {
         Collection<? extends GrantedAuthority> authorities = usernameAuthoritiesDto.getAuthorities()
-                                                                                   .stream()
-                                                                                   .map(a -> new SimpleGrantedAuthority(a))
-                                                                                   .collect(Collectors.toList());
+                .stream()
+                .map(a -> new SimpleGrantedAuthority(a))
+                .collect(Collectors.toList());
         return new UsernamePasswordAuthenticationToken(usernameAuthoritiesDto.getUsername(), null, authorities);
+    }
+
+    /**
+     * Build the required Basic Authentication to send requests to the Oauth 2.0 security server
+     *
+     * @param username
+     *    Oauth 2.0 server client identifier
+     * @param password
+     *    Oauth 2.0 server client password
+     *
+     * @return {@link HttpHeaders}
+     */
+    private HttpHeaders createHeaders(String username, String password){
+        return new HttpHeaders() {{
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
+            String authHeader = "Basic " + new String(encodedAuth);
+            set("Authorization", authHeader);
+        }};
     }
 
 }

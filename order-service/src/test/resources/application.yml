@@ -9,6 +9,8 @@ spring:
   jooq:
     sql-dialect: POSTGRES_9_5
 
-authentication:
+security:
   restApi:
     authenticationInformation: OnlyToAvoidAFailureLoadingConfigurationClass
+    clientId: TestClient
+    clientPassword: TestPassword

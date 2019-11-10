@@ -272,11 +272,15 @@ And finally any of the other ones (or both): **pizza-service** and **order-servi
 
 So, once you have obtained the required JWT access token (as I explained you in the previous section), you can use it to invoke the required web services:
 
-![Alt text](/documentation/PizzaService.png?raw=true "Login")
+![Alt text](/documentation/PizzaService.png?raw=true "Example of pizza-service")
+
+or:
+
+![Alt text](/documentation/OrderService.png?raw=true "Example of order-service")
 
 From now, using the **gateway-server** URL, we can read the Swagger documentation included in the microservices.  
 
-![Alt text](/documentation/Swagger.png?raw=true "Login")
+![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
 <br><br>
 
 ## Future additions
