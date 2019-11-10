@@ -1,7 +1,9 @@
 package com.pizza.configuration.rest;
 
+import com.spring5microservices.common.exception.TokenExpiredException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
@@ -20,7 +22,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @Log4j2
-@Order(-2)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
 
     @Override
@@ -33,6 +35,9 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         }
         else if (ex instanceof ConstraintViolationException) {
             return constraintViolationException(exchange, (ConstraintViolationException) ex);
+        }
+        else if (ex instanceof TokenExpiredException) {
+            return tokenExpiredException(exchange, (TokenExpiredException) ex);
         }
         else {
             return throwable(exchange, ex);
@@ -92,6 +97,24 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
 
     /**
+     * Method used to manage when a Rest request throws a {@link TokenExpiredException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link TokenExpiredException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> tokenExpiredException(ServerWebExchange exchange, TokenExpiredException exception) {
+        log.error("There was a TokenExpiredException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildPlainTextResponse("The given authorization token has expired", exchange,
+                // The suitable one should be ExtendedHttpStatus.TOKEN_EXPIRED.value (440) but ServerHttpResponse does not allow it
+                HttpStatus.PRECONDITION_FAILED);
+    }
+
+
+    /**
      * Method used to manage when a Rest request throws a {@link Throwable}
      *
      * @param exchange
@@ -142,7 +165,6 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable Http response
      */
     private Mono<Void> buildPlainTextResponse(String responseMessage, ServerWebExchange exchange, HttpStatus httpStatus) {
-
         exchange.getResponse().setStatusCode(httpStatus);
         exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
 

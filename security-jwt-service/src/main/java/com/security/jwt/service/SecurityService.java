@@ -2,13 +2,13 @@ package com.security.jwt.service;
 
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.model.User;
 import com.security.jwt.service.authentication.AuthenticationService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
+import com.spring5microservices.common.exception.TokenExpiredException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

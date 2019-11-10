@@ -2,6 +2,7 @@ package com.order.configuration.rest;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @Log4j2
-@Order(-2)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
 
     @Override

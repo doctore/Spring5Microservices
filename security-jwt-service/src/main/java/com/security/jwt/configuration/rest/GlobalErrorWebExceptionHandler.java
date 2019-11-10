@@ -1,10 +1,10 @@
 package com.security.jwt.configuration.rest;
 
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.exception.TokenExpiredException;
 import com.security.jwt.exception.TokenInvalidException;
 import com.security.jwt.exception.UnAuthorizedException;
 import com.spring5microservices.common.enums.ExtendedHttpStatus;
+import com.spring5microservices.common.exception.TokenExpiredException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

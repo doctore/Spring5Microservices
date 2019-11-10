@@ -19,7 +19,7 @@ spring:
         metadata_builder_contributor: com.pizza.configuration.persistence.SqlFunctionsMetadataBuilderContributor
         show_sql: false
 
-authentication:
+security:
   restApi:
     authenticationInformation: OnlyToAvoidAFailureLoadingConfigurationClass
 

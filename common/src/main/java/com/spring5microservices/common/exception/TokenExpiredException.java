@@ -1,4 +1,4 @@
-package com.security.jwt.exception;
+package com.spring5microservices.common.exception;
 
 /**
  * Thrown when a valid {@code token} has expired.

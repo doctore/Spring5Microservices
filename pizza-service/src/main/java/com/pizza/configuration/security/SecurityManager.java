@@ -1,8 +1,11 @@
 package com.pizza.configuration.security;
 
-import com.pizza.dto.UsernameAuthoritiesDto;
+import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
+import com.spring5microservices.common.enums.ExtendedHttpStatus;
+import com.spring5microservices.common.exception.TokenExpiredException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.UnknownHttpStatusCodeException;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
@@ -24,10 +28,10 @@ import java.util.stream.Collectors;
  */
 @Component
 @Log4j2
-public class AuthenticationManager implements ReactiveAuthenticationManager {
+public class SecurityManager implements ReactiveAuthenticationManager {
 
     @Autowired
-    private AuthenticationConfiguration authenticationConfiguration;
+    private SecurityConfiguration securityConfiguration;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -36,10 +40,10 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         String authToken = authentication.getCredentials().toString();
-        Optional<UsernameAuthoritiesDto> authInformation = getAuthenticationInformation(authenticationConfiguration.getAuthenticationInformation(),
-                                                                                        authToken);
+        Optional<UsernameAuthoritiesDto> authInformation = getAuthenticationInformation(
+                securityConfiguration.getAuthenticationInformationWebService(), authToken);
         return Mono.justOrEmpty(authInformation.map(au -> getFromUsernameAuthoritiesDto(au))
-                                               .orElse(null));
+                .orElse(null));
     }
 
 
@@ -55,11 +59,15 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
      */
     private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(String authenticationInformationWebService, String token) {
         try {
-            ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.getForEntity(authenticationInformationWebService,
-                                                                                            UsernameAuthoritiesDto.class, token);
+            ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.postForEntity(authenticationInformationWebService,
+                    new HttpEntity<>(token), UsernameAuthoritiesDto.class);
             return Optional.of(restResponse.getBody());
         } catch(Exception ex) {
             log.error("There was an error trying to validate the authentication token", ex);
+            if (ex instanceof UnknownHttpStatusCodeException &&
+                    ExtendedHttpStatus.TOKEN_EXPIRED.value() == ((UnknownHttpStatusCodeException)ex).getRawStatusCode()) {
+                throw new TokenExpiredException(ex);
+            }
             return Optional.empty();
         }
     }
@@ -75,10 +83,14 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
      */
     private UsernamePasswordAuthenticationToken getFromUsernameAuthoritiesDto(UsernameAuthoritiesDto usernameAuthoritiesDto) {
         Collection<? extends GrantedAuthority> authorities = usernameAuthoritiesDto.getAuthorities()
-                                                                                   .stream()
-                                                                                   .map(a -> new SimpleGrantedAuthority(a))
-                                                                                   .collect(Collectors.toList());
-        return new UsernamePasswordAuthenticationToken(usernameAuthoritiesDto.getUsername(), null, authorities);
+                .stream()
+                .map(a -> new SimpleGrantedAuthority(a))
+                .collect(Collectors.toList());
+
+        UsernamePasswordAuthenticationToken authenticationInfo = new UsernamePasswordAuthenticationToken(
+                usernameAuthoritiesDto.getUsername(), null, authorities);
+        authenticationInfo.setDetails(usernameAuthoritiesDto.getAdditionalInfo());
+        return authenticationInfo;
     }
 
 }
