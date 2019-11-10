@@ -1,5 +1,6 @@
 package com.order.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,9 +18,9 @@ import java.util.Set;
 @NoArgsConstructor
 public class UsernameAuthoritiesDto {
 
+    @JsonProperty("user_name")
     private String username;
     private Set<String> authorities;
-
 
     @Override
     public boolean equals(Object o) {
