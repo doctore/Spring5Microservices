@@ -65,8 +65,8 @@ the labour of decrypt it. That is the reason to include in their *pom.xml* file,
 
 ### gateway-server
 
-Using Zuul, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a filter to check, when `Authorization` header
-is present, if the JWT token is valid or not, in that way we will be able to verify if the logged user is using a valid token in every web service invocation.  
+Using Zuul, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a filter to registry every web service invoked,
+helping to debug every request.
 <br>
 
 ### security-oauth-service
