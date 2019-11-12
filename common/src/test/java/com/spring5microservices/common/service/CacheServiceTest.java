@@ -30,68 +30,9 @@ public class CacheServiceTest {
 
     private CacheService cacheService;
 
-
     @BeforeEach
     public void init() {
         cacheService = new CacheService(mockCacheManager);
-    }
-
-
-    static Stream<Arguments> putTestCases() {
-        Cache mockCache = Mockito.mock(Cache.class);
-        return Stream.of(
-                //@formatter:off
-                //            cacheName,         key,               value,             cacheManagerResult,    expectedResult
-                Arguments.of( null,              null,              null,              null,                  false ),
-                Arguments.of( null,              "ItDoesNotCare",   "ItDoesNotCare",   mockCache,             false ),
-                Arguments.of( "NotFoundCache",   "ItDoesNotCare",   "ItDoesNotCare",   null,                  false ),
-                Arguments.of( "FoundCache",      "ValidKey",        "ValidValue",      mockCache,             true )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("putTestCases")
-    @DisplayName("put: test cases")
-    public void put_testCases(String cacheName, String key, String value, Cache cacheManagerResult, boolean expectedResult) {
-        // When
-        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
-        if (null != cacheManagerResult)
-            doNothing().when(cacheManagerResult).put(key, value);
-
-        boolean operationResult = cacheService.put(cacheName, key, value);
-
-        // Then
-        assertEquals(expectedResult, operationResult);
-    }
-
-
-    static Stream<Arguments> getTestCases() {
-        Cache mockCache = Mockito.mock(Cache.class);
-        SimpleValueWrapper returnedValue = new SimpleValueWrapper("FoundValue");
-        return Stream.of(
-                //@formatter:off
-                //            cacheName,         key,               cacheManagerResult,   cacheResult,     expectedResult
-                Arguments.of( null,              null,              null,                 null,            empty() ),
-                Arguments.of( null,              "ItDoesNotCare",   mockCache,            returnedValue,   empty() ),
-                Arguments.of( "NotFoundCache",   "ItDoesNotCare",   null,                 null,            empty() ),
-                Arguments.of( "FoundCache",      "NotFoundKey",     mockCache,            null,            empty() ),
-                Arguments.of( "FoundCache",      "FoundKey",        mockCache,            returnedValue,   of(returnedValue.get()) )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("getTestCases")
-    @DisplayName("get: test cases")
-    public void get_testCases(String cacheName, String key, Cache cacheManagerResult, SimpleValueWrapper cacheResult, Optional<String> expectedResult) {
-        // When
-        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
-        if (null != cacheManagerResult)
-           when(cacheManagerResult.get(key)).thenReturn(cacheResult);
-
-        Optional<String> operationResult = cacheService.get(cacheName, key);
-
-        // Then
-        assertEquals(expectedResult, operationResult);
     }
 
 
@@ -119,6 +60,64 @@ public class CacheServiceTest {
             when(cacheManagerResult.get(key)).thenReturn(cacheResult);
 
         boolean operationResult = cacheService.contains(cacheName, key);
+
+        // Then
+        assertEquals(expectedResult, operationResult);
+    }
+
+
+    static Stream<Arguments> getTestCases() {
+        Cache mockCache = Mockito.mock(Cache.class);
+        SimpleValueWrapper returnedValue = new SimpleValueWrapper("FoundValue");
+        return Stream.of(
+                //@formatter:off
+                //            cacheName,         key,               cacheManagerResult,   cacheResult,     expectedResult
+                Arguments.of( null,              null,              null,                 null,            empty() ),
+                Arguments.of( null,              "ItDoesNotCare",   mockCache,            returnedValue,   empty() ),
+                Arguments.of( "NotFoundCache",   "ItDoesNotCare",   null,                 null,            empty() ),
+                Arguments.of( "FoundCache",      "NotFoundKey",     mockCache,            null,            empty() ),
+                Arguments.of( "FoundCache",      "FoundKey",        mockCache,            returnedValue,   of(returnedValue.get()) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getTestCases")
+    @DisplayName("get: test cases")
+    public void get_testCases(String cacheName, String key, Cache cacheManagerResult, SimpleValueWrapper cacheResult, Optional<String> expectedResult) {
+        // When
+        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
+        if (null != cacheManagerResult)
+            when(cacheManagerResult.get(key)).thenReturn(cacheResult);
+
+        Optional<String> operationResult = cacheService.get(cacheName, key);
+
+        // Then
+        assertEquals(expectedResult, operationResult);
+    }
+
+
+    static Stream<Arguments> putTestCases() {
+        Cache mockCache = Mockito.mock(Cache.class);
+        return Stream.of(
+                //@formatter:off
+                //            cacheName,         key,               value,             cacheManagerResult,    expectedResult
+                Arguments.of( null,              null,              null,              null,                  false ),
+                Arguments.of( null,              "ItDoesNotCare",   "ItDoesNotCare",   mockCache,             false ),
+                Arguments.of( "NotFoundCache",   "ItDoesNotCare",   "ItDoesNotCare",   null,                  false ),
+                Arguments.of( "FoundCache",      "ValidKey",        "ValidValue",      mockCache,             true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("putTestCases")
+    @DisplayName("put: test cases")
+    public void put_testCases(String cacheName, String key, String value, Cache cacheManagerResult, boolean expectedResult) {
+        // When
+        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
+        if (null != cacheManagerResult)
+            doNothing().when(cacheManagerResult).put(key, value);
+
+        boolean operationResult = cacheService.put(cacheName, key, value);
 
         // Then
         assertEquals(expectedResult, operationResult);

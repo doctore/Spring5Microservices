@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Common service used by other microservices to deal with a cache.
  */
@@ -18,6 +20,41 @@ public class CacheService {
     @Autowired
     public CacheService(@Lazy CacheManager cacheManager) {
         this.cacheManager = cacheManager;
+    }
+
+
+    /**
+     * Check if exists the given {@code key} inside the given cache.
+     *
+     *    Cache on which the {@code key} will be searched
+     * @param key
+     *    Identifier to search in the cache
+     *
+     * @return {@code true} if the {@code key} exists, {@code false} otherwise
+     */
+    public <K> boolean contains(String cacheName, K key) {
+        return ofNullable(cacheName)
+                .map(cacheManager::getCache)
+                .map(c -> c.get(key))
+                .isPresent();
+    }
+
+
+    /**
+     * Return the {@code value} related with the given {@code key} inside the given cache.
+     *
+     * @param cacheName
+     *    Cache on which the {@code key} will be searched
+     * @param key
+     *    Identifier to search in the cache
+     *
+     * @return {@link Optional} with the {@code value} if it was found, {@link Optional#empty()} otherwise
+     */
+    public <K, V> Optional<V> get(String cacheName, K key) {
+        return ofNullable(cacheName)
+                .map(cacheManager::getCache)
+                .map(c -> c.get(key))
+                .map(v -> (V)v.get());
     }
 
 
@@ -34,48 +71,13 @@ public class CacheService {
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
     public <K, V> boolean put(String cacheName, K key, V value) {
-        return Optional.ofNullable(cacheName)
-                       .map(cacheManager::getCache)
-                       .map(c -> {
-                           c.put(key, value);
-                           return true;
-                       })
-                       .orElse(false) ;
-    }
-
-
-    /**
-     * Return the {@code value} related with the given {@code key} inside the given cache.
-     *
-     * @param cacheName
-     *    Cache on which the {@code key} will be searched
-     * @param key
-     *    Identifier to search in the cache
-     *
-     * @return {@link Optional} with the {@code value} if it was found, {@link Optional#empty()} otherwise
-     */
-    public <K, V> Optional<V> get(String cacheName, K key) {
-        return Optional.ofNullable(cacheName)
-                       .map(cacheManager::getCache)
-                       .map(c -> c.get(key))
-                       .map(v -> (V)v.get());
-    }
-
-
-    /**
-     * Checks if the given {@code key} inside the given cache.
-     *
-     *    Cache on which the {@code key} will be searched
-     * @param key
-     *    Identifier to search in the cache
-     *
-     * @return {@code true} if the {@code key} exits, {@code false} otherwise
-     */
-    public <K> boolean contains(String cacheName, K key) {
-        return Optional.ofNullable(cacheName)
-                       .map(cacheManager::getCache)
-                       .map(c -> c.get(key))
-                       .isPresent();
+        return ofNullable(cacheName)
+                .map(cacheManager::getCache)
+                .map(c -> {
+                    c.put(key, value);
+                    return true;
+                })
+                .orElse(false) ;
     }
 
 }
