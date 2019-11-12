@@ -1,7 +1,7 @@
 package com.security.oauth.configuration.security.oauth;
 
 import com.security.oauth.configuration.Constants;
-import com.spring5microservices.common.service.CacheService;
+import com.security.oauth.service.cache.ClientDetailsCacheService;
 import org.springframework.security.oauth2.common.exceptions.InvalidClientException;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
@@ -36,24 +36,22 @@ public class CustomJdbcClientDetailsService extends JdbcClientDetailsService {
 
     private static final String DEFAULT_DELETE_STATEMENT = "delete from " + OAUTH_CLIENT_TABLE + " where client_id = ?";
 
-    private CacheService cacheService;
-    private String cacheName;
+    private ClientDetailsCacheService clientDetailsCacheService;
 
 
-    public CustomJdbcClientDetailsService(DataSource dataSource, CacheService cacheService, String cacheName) {
+    public CustomJdbcClientDetailsService(DataSource dataSource, ClientDetailsCacheService clientDetailsCacheService) {
         super(dataSource);
-        this.cacheService = cacheService;
-        this.cacheName = cacheName;
+        this.clientDetailsCacheService = clientDetailsCacheService;
         initSQL();
     }
 
 
     @Override
     public ClientDetails loadClientByClientId(String clientId) throws InvalidClientException {
-        return (ClientDetails) cacheService.get(cacheName, clientId)
+        return clientDetailsCacheService.get(clientId)
                 .orElseGet(() -> {
                     ClientDetails clientDetails = super.loadClientByClientId(clientId);
-                    cacheService.put(cacheName, clientId, clientDetails);
+                    clientDetailsCacheService.put(clientId, clientDetails);
                     return clientDetails;
                 });
     }

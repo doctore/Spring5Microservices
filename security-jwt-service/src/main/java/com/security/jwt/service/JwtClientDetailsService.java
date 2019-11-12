@@ -1,10 +1,9 @@
 package com.security.jwt.service;
 
-import com.security.jwt.configuration.cache.CacheConfiguration;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.repository.JwtClientDetailsRepository;
-import com.spring5microservices.common.service.CacheService;
+import com.security.jwt.service.cache.JwtClientDetailsCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -12,20 +11,17 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
 
 @Service
 public class JwtClientDetailsService {
 
-    private CacheConfiguration cacheConfiguration;
-    private CacheService cacheService;
+    private JwtClientDetailsCacheService jwtClientDetailsCacheService;
     private JwtClientDetailsRepository jwtClientDetailsRepository;
 
     @Autowired
-    public JwtClientDetailsService(@Lazy CacheConfiguration cacheConfiguration, @Lazy CacheService cacheService,
+    public JwtClientDetailsService(JwtClientDetailsCacheService jwtClientDetailsCacheService,
                                    @Lazy JwtClientDetailsRepository jwtClientDetailsRepository) {
-        this.cacheConfiguration = cacheConfiguration;
-        this.cacheService = cacheService;
+        this.jwtClientDetailsCacheService = jwtClientDetailsCacheService;
         this.jwtClientDetailsRepository = jwtClientDetailsRepository;
     }
 
@@ -41,11 +37,11 @@ public class JwtClientDetailsService {
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
      */
     public JwtClientDetails findByClientId(String clientId) {
-        return (JwtClientDetails)cacheService.get(cacheConfiguration.getJwtConfigurationCacheName(), clientId)
+        return jwtClientDetailsCacheService.get(clientId)
                 .orElseGet(() ->
                     jwtClientDetailsRepository.findByClientId(clientId)
                             .map(c -> {
-                                cacheService.put(cacheConfiguration.getJwtConfigurationCacheName(), clientId, c);
+                                jwtClientDetailsCacheService.put(clientId, c);
                                 return c;
                             })
                             .orElseThrow(() -> new ClientNotFoundException(format("The given clientId: %s was not found in database", clientId)))

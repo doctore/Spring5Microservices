@@ -33,6 +33,16 @@ public class CacheConfiguration {
     @Getter
     private String jwtConfigurationCacheName;
 
+    @Value("${cache.userBlackList.entryCapacity}")
+    private int userBlackListCacheEntryCapacity;
+
+    @Value("${cache.userBlackList.expireInSeconds}")
+    private int userBlackListCacheExpireInSeconds;
+
+    @Value("${cache.userBlackList.name}")
+    @Getter
+    private String userBlackListCacheName;
+
 
     /**
      * Centralized cache configuration to manage the information we want to cache
@@ -57,7 +67,12 @@ public class CacheConfiguration {
                         .setName(jwtConfigurationCacheName)
                         .setMaxSizeConfig(new MaxSizeConfig(jwtConfigurationCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
                         .setEvictionPolicy(EvictionPolicy.LRU)
-                        .setTimeToLiveSeconds(jwtConfigurationCacheExpireInSeconds));
+                        .setTimeToLiveSeconds(jwtConfigurationCacheExpireInSeconds))
+                .addMapConfig(new MapConfig()
+                        .setName(userBlackListCacheName)
+                        .setMaxSizeConfig(new MaxSizeConfig(userBlackListCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
+                        .setEvictionPolicy(EvictionPolicy.LRU)
+                        .setTimeToLiveSeconds(userBlackListCacheExpireInSeconds));
         return config;
     }
 

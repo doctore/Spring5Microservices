@@ -1,10 +1,9 @@
 package com.security.jwt.service;
 
-import com.security.jwt.configuration.cache.CacheConfiguration;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.repository.JwtClientDetailsRepository;
-import com.spring5microservices.common.service.CacheService;
+import com.security.jwt.service.cache.JwtClientDetailsCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,10 +31,7 @@ import static org.mockito.Mockito.when;
 public class JwtClientDetailsServiceTest {
 
     @Mock
-    private CacheConfiguration mockCacheConfiguration;
-
-    @Mock
-    private CacheService mockCacheService;
+    private JwtClientDetailsCacheService mockJwtClientDetailsCacheService;
 
     @Mock
     private JwtClientDetailsRepository mockJwtClientDetailsRepository;
@@ -44,7 +40,7 @@ public class JwtClientDetailsServiceTest {
 
     @BeforeEach
     public void init() {
-        jwtClientDetailsService = new JwtClientDetailsService(mockCacheConfiguration, mockCacheService, mockJwtClientDetailsRepository);
+        jwtClientDetailsService = new JwtClientDetailsService(mockJwtClientDetailsCacheService, mockJwtClientDetailsRepository);
     }
 
 
@@ -67,7 +63,7 @@ public class JwtClientDetailsServiceTest {
                                          Class<? extends Exception> expectedException, JwtClientDetails expectedResult) {
 
         when(mockJwtClientDetailsRepository.findByClientId(clientId)).thenReturn(repositoryResult);
-        when(mockCacheService.get(any(), eq(clientId))).thenReturn(ofNullable(cacheServiceResult));
+        when(mockJwtClientDetailsCacheService.get(eq(clientId))).thenReturn(ofNullable(cacheServiceResult));
         if (null != expectedException) {
             assertThrows(expectedException, () -> jwtClientDetailsService.findByClientId(clientId));
         }
@@ -81,20 +77,20 @@ public class JwtClientDetailsServiceTest {
         // Found jwtClientDetails only in database
         if (repositoryResult.isPresent() && null == cacheServiceResult) {
             verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));
-            verify(mockCacheService, times(1)).get(any(), eq(clientId));
-            verify(mockCacheService, times(1)).put(any(), eq(clientId), eq(repositoryResult.get()));
+            verify(mockJwtClientDetailsCacheService, times(1)).get(eq(clientId));
+            verify(mockJwtClientDetailsCacheService, times(1)).put(eq(clientId), eq(repositoryResult.get()));
         }
         // Found jwtClientDetails in cache
         if (null != cacheServiceResult) {
             verify(mockJwtClientDetailsRepository, times(0)).findByClientId(eq(clientId));
-            verify(mockCacheService, times(1)).get(any(), eq(clientId));
-            verify(mockCacheService, times(0)).put(any(), any(), any());
+            verify(mockJwtClientDetailsCacheService, times(1)).get(eq(clientId));
+            verify(mockJwtClientDetailsCacheService, times(0)).put(any(), any());
         }
         // Not found jwtClientDetails neither in cache nor database
         if (!repositoryResult.isPresent() && null == cacheServiceResult) {
             verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));
-            verify(mockCacheService, times(1)).get(any(), eq(clientId));
-            verify(mockCacheService, times(0)).put(any(), any(), any());
+            verify(mockJwtClientDetailsCacheService, times(1)).get(eq(clientId));
+            verify(mockJwtClientDetailsCacheService, times(0)).put(any(), any());
         }
     }
 

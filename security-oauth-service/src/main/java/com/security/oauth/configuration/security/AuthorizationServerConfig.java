@@ -1,10 +1,9 @@
 package com.security.oauth.configuration.security;
 
-import com.security.oauth.configuration.cache.CacheConfiguration;
 import com.security.oauth.configuration.rest.RestRoutes;
 import com.security.oauth.configuration.security.oauth.CustomJdbcClientDetailsService;
 import com.security.oauth.service.UserService;
-import com.spring5microservices.common.service.CacheService;
+import com.security.oauth.service.cache.ClientDetailsCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,10 +27,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private AuthenticationManager authManager;
 
     @Autowired
-    private CacheConfiguration cacheConfiguration;
-
-    @Autowired
-    private CacheService cacheService;
+    private ClientDetailsCacheService clientDetailsCacheService;
 
     @Autowired
     private DataSource dataSource;
@@ -71,7 +67,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         clients.jdbc(dataSource)
                .passwordEncoder(passwordEncoder);
 
-        clients.withClientDetails(new CustomJdbcClientDetailsService(dataSource, cacheService, cacheConfiguration.getOauthClientCacheName()));
+        clients.withClientDetails(new CustomJdbcClientDetailsService(dataSource, clientDetailsCacheService));
     }
 
 }

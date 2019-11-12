@@ -1,7 +1,5 @@
 package com.security.jwt.configuration;
 
-import com.security.jwt.model.JwtClientDetails;
-
 /**
  * Global values used in different part of the application
  */
