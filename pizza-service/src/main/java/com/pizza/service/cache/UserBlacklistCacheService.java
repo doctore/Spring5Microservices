@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import static java.util.Optional.ofNullable;
 
 @Service
-public class UserBlackListCacheService {
+public class UserBlacklistCacheService {
 
     private static final boolean DEFAULT_VALUE = true;
 
@@ -17,7 +17,7 @@ public class UserBlackListCacheService {
     private CacheService cacheService;
 
     @Autowired
-    public UserBlackListCacheService(@Lazy CacheConfiguration cacheConfiguration, @Lazy CacheService cacheService) {
+    public UserBlacklistCacheService(@Lazy CacheConfiguration cacheConfiguration, @Lazy CacheService cacheService) {
         this.cacheConfiguration = cacheConfiguration;
         this.cacheService = cacheService;
     }
@@ -33,7 +33,7 @@ public class UserBlackListCacheService {
      */
     public boolean contains(String username) {
         return ofNullable(username)
-                .map(id -> cacheService.contains(cacheConfiguration.getUserBlackListCacheName(), username))
+                .map(id -> cacheService.contains(cacheConfiguration.getUserBlacklistCacheName(), username))
                 .orElse(false);
     }
 
@@ -47,7 +47,7 @@ public class UserBlackListCacheService {
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
     public boolean put(String username) {
-        return cacheService.put(cacheConfiguration.getUserBlackListCacheName(), username, DEFAULT_VALUE);
+        return cacheService.put(cacheConfiguration.getUserBlacklistCacheName(), username, DEFAULT_VALUE);
     }
 
 
@@ -60,7 +60,7 @@ public class UserBlackListCacheService {
      * @return {@code true} if the data was removed, {@code false} otherwise
      */
     public boolean remove(String username) {
-        return cacheService.remove(cacheConfiguration.getUserBlackListCacheName(), username);
+        return cacheService.remove(cacheConfiguration.getUserBlacklistCacheName(), username);
     }
 
 }

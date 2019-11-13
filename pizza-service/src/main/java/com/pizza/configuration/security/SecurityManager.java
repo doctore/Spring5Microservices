@@ -1,8 +1,10 @@
 package com.pizza.configuration.security;
 
+import com.pizza.service.cache.UserBlacklistCacheService;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.enums.ExtendedHttpStatus;
 import com.spring5microservices.common.exception.TokenExpiredException;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -13,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.UnknownHttpStatusCodeException;
 import reactor.core.publisher.Mono;
@@ -20,6 +23,8 @@ import reactor.core.publisher.Mono;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 /**
  *    Manages the validation of the token related with a logged user, using the {@link Authentication}
@@ -32,6 +37,9 @@ public class SecurityManager implements ReactiveAuthenticationManager {
 
     @Autowired
     private SecurityConfiguration securityConfiguration;
+
+    @Autowired
+    private UserBlacklistCacheService userBlacklistCacheService;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -80,8 +88,14 @@ public class SecurityManager implements ReactiveAuthenticationManager {
      *    {@link UsernameAuthoritiesDto} to convert
      *
      * @return {@link UsernamePasswordAuthenticationToken}
+     *
+     * @throws UnauthorizedException is the given {@code username} has been included in the black list.
      */
     private UsernamePasswordAuthenticationToken getFromUsernameAuthoritiesDto(UsernameAuthoritiesDto usernameAuthoritiesDto) {
+        if (userBlacklistCacheService.contains(usernameAuthoritiesDto.getUsername())) {
+            throw new UnauthorizedException(format("The given username: %s has been included in the blacklist",
+                    usernameAuthoritiesDto.getUsername()));
+        }
         Collection<? extends GrantedAuthority> authorities = usernameAuthoritiesDto.getAuthorities()
                 .stream()
                 .map(a -> new SimpleGrantedAuthority(a))

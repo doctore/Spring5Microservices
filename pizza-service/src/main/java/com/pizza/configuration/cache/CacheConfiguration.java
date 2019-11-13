@@ -23,15 +23,15 @@ import static com.pizza.configuration.Constants.CACHE_INSTANCE_NAME;
 @EnableCaching
 public class CacheConfiguration {
 
-    @Value("${cache.userBlackList.entryCapacity}")
-    private int userBlackListCacheEntryCapacity;
+    @Value("${cache.userBlacklist.entryCapacity}")
+    private int userBlacklistCacheEntryCapacity;
 
-    @Value("${cache.userBlackList.expireInSeconds}")
-    private int userBlackListCacheExpireInSeconds;
+    @Value("${cache.userBlacklist.expireInSeconds}")
+    private int userBlacklistCacheExpireInSeconds;
 
-    @Value("${cache.userBlackList.name}")
+    @Value("${cache.userBlacklist.name}")
     @Getter
-    private String userBlackListCacheName;
+    private String userBlacklistCacheName;
 
 
     /**
@@ -54,10 +54,10 @@ public class CacheConfiguration {
         Config config = new Config();
         config.setInstanceName(CACHE_INSTANCE_NAME)
                 .addMapConfig(new MapConfig()
-                        .setName(userBlackListCacheName)
-                        .setMaxSizeConfig(new MaxSizeConfig(userBlackListCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
+                        .setName(userBlacklistCacheName)
+                        .setMaxSizeConfig(new MaxSizeConfig(userBlacklistCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
                         .setEvictionPolicy(EvictionPolicy.LRU)
-                        .setTimeToLiveSeconds(userBlackListCacheExpireInSeconds));
+                        .setTimeToLiveSeconds(userBlacklistCacheExpireInSeconds));
         return config;
     }
 

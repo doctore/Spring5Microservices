@@ -1,6 +1,7 @@
 package com.pizza.configuration.rest;
 
 import com.spring5microservices.common.exception.TokenExpiredException;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
@@ -38,6 +39,9 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         }
         else if (ex instanceof TokenExpiredException) {
             return tokenExpiredException(exchange, (TokenExpiredException) ex);
+        }
+        else if (ex instanceof UnauthorizedException) {
+            return unauthorizedException(exchange, (UnauthorizedException) ex);
         }
         else {
             return throwable(exchange, ex);
@@ -111,6 +115,22 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         return buildPlainTextResponse("The given authorization token has expired", exchange,
                 // The suitable one should be ExtendedHttpStatus.TOKEN_EXPIRED.value (440) but ServerHttpResponse does not allow it
                 HttpStatus.PRECONDITION_FAILED);
+    }
+
+
+    /**
+     * Method used to manage when a Rest request throws a {@link UnauthorizedException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link UnauthorizedException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> unauthorizedException(ServerWebExchange exchange, UnauthorizedException exception) {
+        log.error("There was a TokenExpiredException. " + getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildPlainTextResponse(exception.getMessage(), exchange, HttpStatus.UNAUTHORIZED);
     }
 
 

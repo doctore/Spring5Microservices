@@ -10,4 +10,9 @@ public final class RestRoutes {
         public static final String PAGE_WITH_INGREDIENTS = "/pageWithIngredients";
     }
 
+    public static final class USER {
+        public static final String ROOT = "/user";
+        public static final String BLACKLIST = "/blacklist";
+    }
+
 }
