@@ -23,6 +23,12 @@ security:
   restApi:
     authenticationInformation: OnlyToAvoidAFailureLoadingConfigurationClass
 
+cache:
+  userBlacklist:
+    entryCapacity: 2
+    expireInSeconds: 10
+    name: OnlyToAvoidAFailureLoadingConfigurationClass
+
 #show sql statement
 #logging:
 #  level:

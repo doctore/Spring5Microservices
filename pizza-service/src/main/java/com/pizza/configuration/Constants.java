@@ -6,7 +6,7 @@ package com.pizza.configuration;
 public class Constants {
 
     // Global cache configuration
-    public static final String CACHE_INSTANCE_NAME = "CacheInstance";
+    public static final String CACHE_INSTANCE_NAME = "PizzaServiceCacheInstance";
 
     // Database schema on which the entities have been included
     public static final String DATABASE_SCHEMA = "eat";

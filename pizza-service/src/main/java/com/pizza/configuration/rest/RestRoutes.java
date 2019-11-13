@@ -11,7 +11,7 @@ public final class RestRoutes {
     }
 
     public static final class USER {
-        public static final String ROOT = "/user";
+        public static final String ROOT = PIZZA.ROOT + "/user";
         public static final String BLACKLIST = "/blacklist";
     }
 

@@ -6,7 +6,7 @@ package com.security.jwt.configuration;
 public class Constants {
 
     // Global cache configuration
-    public static final String CACHE_INSTANCE_NAME = "CacheInstance";
+    public static final String CACHE_INSTANCE_NAME = "SecurityJwtCacheInstance";
 
     // Database schemas on which the entities have been included
     public static final class DATABASE_SCHEMA {

@@ -10,8 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -44,9 +44,9 @@ public class UserController {
      * @return if username is not {@code Null}: {@link HttpStatus#OK} and added {@code username}
      *         if username is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
-    @PostMapping(RestRoutes.USER.BLACKLIST)
+    @PostMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
-    public Mono<ResponseEntity<String>> addToBlacklist(@RequestBody @Size(min = 1) String username) {
+    public Mono<ResponseEntity<String>> addToBlacklist(@PathVariable @Size(min = 1) String username) {
         if (userBlackListCacheService.put(username))
             return Mono.just(new ResponseEntity(username, HttpStatus.OK));
         else
@@ -63,9 +63,9 @@ public class UserController {
      * @return if username is not {@code Null}: {@link HttpStatus#OK} and removed {@code username}
      *         if username is {@code Null}: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
-    @DeleteMapping(RestRoutes.USER.BLACKLIST)
+    @DeleteMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
-    public Mono<ResponseEntity<String>> removeFromBlacklist(@RequestBody @Size(min = 1) String username) {
+    public Mono<ResponseEntity<String>> removeFromBlacklist(@PathVariable @Size(min = 1) String username) {
         if (userBlackListCacheService.remove(username))
             return Mono.just(new ResponseEntity(username, HttpStatus.OK));
         else

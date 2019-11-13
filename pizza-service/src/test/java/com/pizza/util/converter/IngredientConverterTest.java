@@ -17,7 +17,7 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = {IngredientConverterImpl.class})
 public class IngredientConverterTest {
 
     @Autowired

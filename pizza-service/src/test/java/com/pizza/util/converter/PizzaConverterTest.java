@@ -5,6 +5,8 @@ import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
+import com.pizza.util.converter.enums.PizzaEnumConverter;
+import com.pizza.util.converter.enums.PizzaEnumConverterImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +26,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = {IngredientConverterImpl.class, PizzaConverterImpl.class, PizzaEnumConverterImpl.class})
 public class PizzaConverterTest {
 
     @Autowired
