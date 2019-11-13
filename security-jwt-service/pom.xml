@@ -16,7 +16,7 @@
 
     <properties>
         <hamcrest.version>2.1</hamcrest.version>
-        <hazelcast.version>3.12.3</hazelcast.version>
+        <hazelcast.version>3.12.4</hazelcast.version>
         <java.version>1.8</java.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <junit-jupiter-platform.version>1.5.2</junit-jupiter-platform.version>

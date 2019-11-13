@@ -50,9 +50,8 @@ public class PizzaControllerTest {
     @MockBean
     private PizzaService mockPizzaService;
 
-
     @Before
-    public void setup() {
+    public void init() {
         this.webTestClient = WebTestClient.bindToApplicationContext(this.context).configureClient().build();
     }
 

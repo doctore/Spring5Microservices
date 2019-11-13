@@ -1,4 +1,4 @@
-package com.security.jwt.configuration.cache;
+package com.pizza.configuration.cache;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.EvictionPolicy;
@@ -7,7 +7,7 @@ import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spring.cache.HazelcastCacheManager;
-import com.security.jwt.configuration.Constants;
+import com.pizza.configuration.Constants;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -16,22 +16,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import static com.security.jwt.configuration.Constants.CACHE_INSTANCE_NAME;
+import static com.pizza.configuration.Constants.CACHE_INSTANCE_NAME;
 
 @Configuration
 @ComponentScan(basePackages = {Constants.EXTERNAL_PATH.COMMON})
 @EnableCaching
 public class CacheConfiguration {
 
-    @Value("${cache.jwtConfiguration.entryCapacity}")
-    private int jwtConfigurationCacheEntryCapacity;
+    @Value("${cache.userBlackList.entryCapacity}")
+    private int userBlackListCacheEntryCapacity;
 
-    @Value("${cache.jwtConfiguration.expireInSeconds}")
-    private int jwtConfigurationCacheExpireInSeconds;
+    @Value("${cache.userBlackList.expireInSeconds}")
+    private int userBlackListCacheExpireInSeconds;
 
-    @Value("${cache.jwtConfiguration.name}")
+    @Value("${cache.userBlackList.name}")
     @Getter
-    private String jwtConfigurationCacheName;
+    private String userBlackListCacheName;
 
 
     /**
@@ -54,10 +54,10 @@ public class CacheConfiguration {
         Config config = new Config();
         config.setInstanceName(CACHE_INSTANCE_NAME)
                 .addMapConfig(new MapConfig()
-                        .setName(jwtConfigurationCacheName)
-                        .setMaxSizeConfig(new MaxSizeConfig(jwtConfigurationCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
+                        .setName(userBlackListCacheName)
+                        .setMaxSizeConfig(new MaxSizeConfig(userBlackListCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
                         .setEvictionPolicy(EvictionPolicy.LRU)
-                        .setTimeToLiveSeconds(jwtConfigurationCacheExpireInSeconds));
+                        .setTimeToLiveSeconds(userBlackListCacheExpireInSeconds));
         return config;
     }
 
