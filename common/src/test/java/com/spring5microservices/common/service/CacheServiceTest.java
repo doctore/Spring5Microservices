@@ -36,6 +36,35 @@ public class CacheServiceTest {
     }
 
 
+    static Stream<Arguments> clearTestCases() {
+        Cache mockCache = Mockito.mock(Cache.class);
+        return Stream.of(
+                //@formatter:off
+                //            cacheName,         cacheManagerResult,   expectedResult
+                Arguments.of( null,              null,                 false ),
+                Arguments.of( null,              mockCache,            false ),
+                Arguments.of( "NotFoundCache",   null,                 false ),
+                Arguments.of( "FoundCache",      mockCache,            true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("clearTestCases")
+    @DisplayName("clear: test cases")
+    public void clear_testCases(String cacheName, Cache cacheManagerResult, boolean expectedResult) {
+        // When
+        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
+        if (null != cacheManagerResult)
+            doNothing().when(cacheManagerResult).clear();
+
+        boolean operationResult = cacheService.clear(cacheName);
+
+        // Then
+        assertEquals(expectedResult, operationResult);
+    }
+
+
+
     static Stream<Arguments> containsTestCases() {
         Cache mockCache = Mockito.mock(Cache.class);
         SimpleValueWrapper returnedValue = new SimpleValueWrapper("FoundValue");
@@ -118,6 +147,31 @@ public class CacheServiceTest {
             doNothing().when(cacheManagerResult).put(key, value);
 
         boolean operationResult = cacheService.put(cacheName, key, value);
+
+        // Then
+        assertEquals(expectedResult, operationResult);
+    }
+
+
+    static Stream<Arguments> removeTestCases() {
+        Cache mockCache = Mockito.mock(Cache.class);
+        return Stream.of(
+                //@formatter:off
+                //            cacheName,         key,               cacheManagerResult,   expectedResult
+                Arguments.of( null,              null,              null,                 false ),
+                Arguments.of( null,              "ItDoesNotCare",   mockCache,            false ),
+                Arguments.of( "NotFoundCache",   "ItDoesNotCare",   null,                 false ),
+                Arguments.of( "FoundCache",      "FoundKey",        mockCache,            true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("removeTestCases")
+    @DisplayName("remove: test cases")
+    public void remove_testCases(String cacheName, String key, Cache cacheManagerResult, boolean expectedResult) {
+        // When
+        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
+        boolean operationResult = cacheService.remove(cacheName, key);
 
         // Then
         assertEquals(expectedResult, operationResult);

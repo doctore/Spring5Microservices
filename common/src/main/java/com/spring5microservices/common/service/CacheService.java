@@ -24,8 +24,28 @@ public class CacheService {
 
 
     /**
-     * Check if exists the given {@code key} inside the given cache.
+     * Remove all the elements included in the given {@code cacheName}
      *
+     * @param cacheName
+     *    Cache to clean
+     *
+     * @return {@code true} if the {@code cacheName} exists and its elements were removed, {@code false} otherwise
+     */
+    public boolean clear(String cacheName) {
+        return ofNullable(cacheName)
+                .map(cacheManager::getCache)
+                .map(c -> {
+                    c.clear();
+                    return true;
+                })
+                .orElse(false);
+    }
+
+
+    /**
+     * Check if exists the given {@code key} inside the cache.
+     *
+     * @param cacheName
      *    Cache on which the {@code key} will be searched
      * @param key
      *    Identifier to search in the cache
@@ -41,7 +61,7 @@ public class CacheService {
 
 
     /**
-     * Return the {@code value} related with the given {@code key} inside the given cache.
+     * Return the {@code value} related with the given {@code key} inside the cache.
      *
      * @param cacheName
      *    Cache on which the {@code key} will be searched
@@ -59,7 +79,7 @@ public class CacheService {
 
 
     /**
-     * Include a pair of {@code key} - {@code value} in the given cache name.
+     * Include a pair of {@code key} - {@code value} inside the cache.
      *
      * @param cacheName
      *    Cache on which the information will be included
@@ -77,7 +97,28 @@ public class CacheService {
                     c.put(key, value);
                     return true;
                 })
-                .orElse(false) ;
+                .orElse(false);
+    }
+
+
+    /**
+     * Remove the given {@code key} of the cache.
+     *
+     * @param cacheName
+     *    Cache on which the information will be removed
+     * @param key
+     *    Identifier of the {@code value} we want to remove
+     *
+     * @return {@code true} if no problem was found during the operation, {@code false} otherwise
+     */
+    public <K, V> boolean remove(String cacheName, K key) {
+        return ofNullable(cacheName)
+                .map(cacheManager::getCache)
+                .map(c -> {
+                    c.evict(key);
+                    return true;
+                })
+                .orElse(false);
     }
 
 }
