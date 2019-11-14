@@ -41,7 +41,9 @@ public class CacheConfiguration {
      */
     @Bean
     public CacheManager cacheManager() {
-        HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(hazelCastConfig());
+        HazelcastInstance existingInstance = Hazelcast.getHazelcastInstanceByName(CACHE_INSTANCE_NAME);
+        HazelcastInstance hazelcastInstance = null != existingInstance ? existingInstance
+                                                                       : Hazelcast.newHazelcastInstance(hazelCastConfig());
         return new HazelcastCacheManager(hazelcastInstance);
     }
 
