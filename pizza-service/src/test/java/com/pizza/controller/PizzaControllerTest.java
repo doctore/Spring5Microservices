@@ -20,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
@@ -31,7 +30,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.springframework.test.annotation.DirtiesContext.MethodMode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,9 +38,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = PizzaServiceApplication.class)
-@DirtiesContext(methodMode = MethodMode.AFTER_METHOD)
-@SpringBootTest
+@DirtiesContext
+@SpringBootTest(classes = PizzaServiceApplication.class)
 public class PizzaControllerTest {
 
     @Autowired
@@ -126,7 +123,7 @@ public class PizzaControllerTest {
 
     @Test
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void create_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaDtoAreReturned() {
+    public void create_whenNotEmptyDtoIsGiven_thenCreatedHttpCodeAndPizzaDtoAreReturned() {
         // Given
         IngredientDto beforeIngredientDto = IngredientDto.builder().name("Cheese").build();
         IngredientDto afterIngredientDto = IngredientDto.builder().id(1).name(beforeIngredientDto.getName()).build();

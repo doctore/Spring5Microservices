@@ -33,4 +33,7 @@ public class Constants {
     // Token configuration
     public static final String TOKEN_PREFIX = "Bearer ";
 
+    // Default charset for plain text
+    public static final String TEXT_PLAIN_UTF8_VALUE = "text/plain;charset=UTF-8";
+
 }
