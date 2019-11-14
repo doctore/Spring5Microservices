@@ -133,6 +133,7 @@ on which I am using the following technologies:
 * **JPA** for accessing, persisting, and managing data between Java objects and database.
 * **QueryDSL** allowing us to create type-safe queries as an alternative to the "potential problematic" ones development with HQL and/or Spring JPA repository. 
 * **Lombok** to reduce the code development in entities and DTOs.
+* **Hazelcast** as cache to store temporary banned users.
 * **MapStruct** used to conversion between Entities <--> DTOs in an easy way.
 * **Webflux** creating a reactive REST Api as alternative to the traditional Spring MVC.
 
@@ -148,6 +149,9 @@ On the other hand, there are other "important folders":
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from entities to dtos and vice versa.
+
+Using **Hazelcast** for that purpose, this microservices provides a way to banned users temporally. That is the way we can use to disable any JWT active token related with a
+user we just disabled in database (through admin web page or similar tool). `UserController` resource provides the required web services.
 <br><br>
 
 ### order-service
