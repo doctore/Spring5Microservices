@@ -1,6 +1,7 @@
 package com.order.controller;
 
-import com.order.configuration.Constants;
+import com.order.annotation.RoleAdmin;
+import com.order.annotation.RoleAdminOrUser;
 import com.order.configuration.rest.RestRoutes;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -55,7 +55,7 @@ public class OrderController {
      */
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
-    @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
+    @RoleAdmin
     public Mono<ResponseEntity<OrderDto>> create(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
@@ -64,16 +64,16 @@ public class OrderController {
 
 
     /**
-     * Return the {@link OrderDto} and its {@link OrderLineDto} information of the given {@link OrderDto#id}.
+     * Return the {@link OrderDto} and its {@link OrderLineDto} information of the given {@link OrderDto#getId()}}.
      *
      * @param id
-     *    {@link Order#id} to find
+     *    {@link Order#getId()}  to find
      *
      * @return if id was found: {@link HttpStatus#OK} and {@link OrderDto} that matches
      *         if id was not found: {@link HttpStatus#NOT_FOUND}
      */
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
-    @PreAuthorize("hasAnyAuthority('" + Constants.ROLE_ADMIN +"','" + Constants.ROLE_USER + "')")
+    @RoleAdminOrUser
     public Mono<ResponseEntity<OrderDto>> findByIdWithOrderLines(@PathVariable @Positive Integer id) {
         return Mono.just(orderService.findByIdWithOrderLines(id)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))
@@ -92,7 +92,7 @@ public class OrderController {
      */
     @PutMapping
     @Transactional(rollbackFor = Exception.class)
-    @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
+    @RoleAdmin
     public Mono<ResponseEntity<OrderDto>> update(@RequestBody @Valid OrderDto orderDto) {
         return Mono.just(orderService.save(orderDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))

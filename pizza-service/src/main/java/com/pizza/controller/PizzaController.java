@@ -1,6 +1,7 @@
 package com.pizza.controller;
 
-import com.pizza.configuration.Constants;
+import com.pizza.annotation.RoleAdmin;
+import com.pizza.annotation.RoleAdminOrUser;
 import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.dto.PizzaDto;
 import com.pizza.model.Ingredient;
@@ -11,7 +12,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +50,7 @@ public class PizzaController {
      */
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
-    @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
+    @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                                      .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
@@ -62,13 +62,13 @@ public class PizzaController {
      * Returns the {@link Pizza} which name matches with the given one.
      *
      * @param name
-     *    Name to search in the current {@link Pizza#name}s
+     *    Name to search in the current {@link Pizza#getName()}s
      *
      * @return if name was found: {@link HttpStatus#OK} and {@link PizzaDto} that matches
      *         if name was not found: {@link HttpStatus#NOT_FOUND}
      */
     @GetMapping("/{name}")
-    @PreAuthorize("hasAnyAuthority('" + Constants.ROLE_ADMIN +"','" + Constants.ROLE_USER + "')")
+    @RoleAdminOrUser
     public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) String name) {
         return Mono.just(pizzaService.findByName(name)
                                      .map(p -> new ResponseEntity(p, HttpStatus.OK))
@@ -87,7 +87,7 @@ public class PizzaController {
      * @return {@link Page} of {@link PizzaDto}
      */
     @GetMapping(RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-    @PreAuthorize("hasAnyAuthority('" + Constants.ROLE_ADMIN +"','" + Constants.ROLE_USER + "')")
+    @RoleAdminOrUser
     public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") @PositiveOrZero int page,
                                                         @RequestParam(value = "size") @Positive int size) {
         return Mono.just(pizzaService.findPageWithIngredients(page, size, null));
@@ -105,7 +105,7 @@ public class PizzaController {
      */
     @PutMapping
     @Transactional(rollbackFor = Exception.class)
-    @PreAuthorize("hasAuthority('" + Constants.ROLE_ADMIN +"')")
+    @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                    .map(p -> new ResponseEntity(p, HttpStatus.OK))
