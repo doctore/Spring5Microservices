@@ -150,8 +150,8 @@ On the other hand, there are other "important folders":
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from entities to dtos and vice versa.
 
-Using **Hazelcast** for that purpose, this microservices provides a way to banned users temporally. That is the way we can use to disable any JWT active token related with a
-user we just disabled in database (through admin web page or similar tool). `UserController` resource provides the required web services.
+Using **Hazelcast** for that purpose, this microservices provides functionality to banned users temporally. That is the way we can use to disable any JWT active token related
+with a user we just disabled in database (through admin web page or similar tool). `UserController` resource provides the required web services.
 <br><br>
 
 ### order-service
@@ -187,6 +187,12 @@ Maven project that includes common code used in several microservices.
 
 With SQL files included in the main database and the one used for testing purpose. In both cases, there is one file with the structure of the tables and another one with the
 information initially included.
+<br><br>
+
+In the nex picture you will see a communication diagram of all microservices described above:
+
+![Alt text](/documentation/CommunitationDiagram.png?raw=true "Communication diagram")
+
 
 ## Previous steps
 
@@ -227,7 +233,7 @@ enter in details about this security service, it is important to know that, for 
 ![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
    
 You can see the *raw password* in the SQL file `MasterDatabase_Data.sql`, when the information about this application is included in the table `security.oauth_client_details`.
-In this case, the password is `Spring5Microservices`.    
+In this case, the password is `Spring5Microservices`.
    
 So, the list of web services is the following one:
 
@@ -259,7 +265,7 @@ required):
 
 **3.** Get authorization information using access token:
 
-![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")  
+![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")
 
 ## How to use it?
 
@@ -282,7 +288,7 @@ or:
 
 ![Alt text](/documentation/OrderService.png?raw=true "Example of order service")
 
-From now, using the **gateway-server** URL, we can read the Swagger documentation included in the microservices.  
+From now, using the **gateway-server** URL, we can read the Swagger documentation included in the microservices.
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
 <br><br>
