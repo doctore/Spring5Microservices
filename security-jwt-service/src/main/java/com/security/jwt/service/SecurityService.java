@@ -2,13 +2,13 @@ package com.security.jwt.service;
 
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.model.User;
 import com.security.jwt.service.authentication.AuthenticationService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.exception.TokenExpiredException;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -52,7 +52,7 @@ public class SecurityService {
      *
      * @throws AccountStatusException if the {@link UserDetails} related with the given {@code username} is disabled
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
-     * @throws UnAuthorizedException if the given {@code password} does not mismatch with exists one related with given {@code username}
+     * @throws UnauthorizedException if the given {@code password} does not mismatch with exists one related with given {@code username}
      * @throws UsernameNotFoundException if the given {@code username} does not exists in database
      */
     public Optional<AuthenticationInformationDto> login(String clientId, String username, String password) {
@@ -61,7 +61,7 @@ public class SecurityService {
                 .flatMap(userService -> {
                     UserDetails userDetails = userService.loadUserByUsername(username);
                     if (!userService.passwordsMatch(password, userDetails))
-                        throw new UnAuthorizedException(format("The password given for the username: %s does not mismatch", username));
+                        throw new UnauthorizedException(format("The password given for the username: %s does not mismatch", username));
 
                     return authenticationService.getAuthenticationInformation(clientId, userDetails);
                 });
@@ -81,7 +81,7 @@ public class SecurityService {
      *
      * @throws AccountStatusException if the {@link UserDetails} related with the given {@code username} included in the token is disabled
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
-     * @throws UnAuthorizedException if the given {@code refreshToken} is not a valid one
+     * @throws UnauthorizedException if the given {@code refreshToken} is not a valid one
      * @throws UsernameNotFoundException if the {@code refreshToken} does not contain a {@code username} or the included one does not exists in database
      * @throws TokenExpiredException if the given {@code refreshToken} has expired
      */
@@ -112,7 +112,7 @@ public class SecurityService {
      * @return {@link UsernameAuthoritiesDto}
      *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
-     * @throws UnAuthorizedException if the given {@code accessToken} is not a valid one
+     * @throws UnauthorizedException if the given {@code accessToken} is not a valid one
      * @throws UsernameNotFoundException if the {@code accessToken} does not contain a {@code username}
      * @throws TokenExpiredException if the given {@code accessToken} has expired
      */

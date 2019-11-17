@@ -2,10 +2,10 @@ package com.security.jwt.service;
 
 import com.security.jwt.ObjectGeneratorForTest;
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.service.authentication.AuthenticationService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,7 +68,7 @@ public class SecurityServiceTest {
                 Arguments.of( null,         null,       null,       null,          null,          false,           ClientNotFoundException.class,     null,                        null ),
                 Arguments.of( "NotFound",   null,       null,       null,          null,          false,           ClientNotFoundException.class,     null,                        null ),
                 Arguments.of( clientId,     null,       null,       userService,   null,          false,           UsernameNotFoundException.class,   null,                        null ),
-                Arguments.of( clientId,     username,   null,       userService,   userDetails,   false,           UnAuthorizedException.class,       null,                        null ),
+                Arguments.of( clientId,     username,   null,       userService,   userDetails,   false,           UnauthorizedException.class,       null,                        null ),
                 Arguments.of( clientId,     username,   password,   userService,   userDetails,   true,            null,                              empty(),                     empty() ),
                 Arguments.of( clientId,     username,   password,   userService,   userDetails,   true,            null,                              authenticationInformation,   authenticationInformation )
         ); //@formatter:on

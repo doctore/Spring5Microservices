@@ -5,7 +5,6 @@ import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.util.JweUtil;
@@ -13,6 +12,7 @@ import com.security.jwt.util.JwsUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.exception.TokenExpiredException;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
@@ -99,14 +99,14 @@ public class AuthenticationService {
      * @return {@link Map} with the {@code payload} of the given token
      *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
-     * @throws UnAuthorizedException if the given {@code token} is not a valid one
+     * @throws UnauthorizedException if the given {@code token} is not a valid one
      * @throws TokenExpiredException if the given {@code token} has expired
      */
     public Map<String, Object> getPayloadOfToken(String token, String clientId, boolean isAccessToken) {
         JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
         Map<String, Object> payload = getVerifiedPayloadOfToken(token, clientDetails);
         if (isAccessToken != isAccessToken(payload))
-            throw new UnAuthorizedException(format("The given token: %s related with clientId: %s is not an "
+            throw new UnauthorizedException(format("The given token: %s related with clientId: %s is not an "
                                                 + (isAccessToken ? "access " : "refresh ") + "one", token, clientId));
         return payload;
     }

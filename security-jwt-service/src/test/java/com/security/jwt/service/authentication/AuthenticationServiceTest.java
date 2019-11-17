@@ -5,13 +5,13 @@ import com.security.jwt.ObjectGeneratorForTest;
 import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.exception.UnAuthorizedException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
 import com.security.jwt.util.JweUtil;
 import com.security.jwt.util.JwsUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -172,18 +172,18 @@ public class AuthenticationServiceTest {
                 Arguments.of( "ItDoesNotCare",   null,       true,            null,                  null,                      ClientNotFoundException.class,   null ),
                 Arguments.of( "ItDoesNotCare",   clientId,   false,           null,                  null,                      ClientNotFoundException.class,   null ),
                 Arguments.of( "ItDoesNotCare",   clientId,   true,            null,                  null,                      ClientNotFoundException.class,   null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      null,                      UnAuthorizedException.class,     null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      null,                      UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      null,                      UnauthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      null,                      UnauthorizedException.class,     null ),
                 Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWS,      null,                      null,                            null ),
                 Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWE,      null,                      null,                            null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      payloadFromAccessToken,    UnAuthorizedException.class,     null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      payloadFromAccessToken,    UnAuthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      payloadFromAccessToken,    UnauthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      payloadFromAccessToken,    UnauthorizedException.class,     null ),
                 Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWS,      payloadFromAccessToken,    null,                            payloadFromAccessToken ),
                 Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWE,      payloadFromAccessToken,    null,                            payloadFromAccessToken ),
                 Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWS,      payloadFromRefreshToken,   null,                            payloadFromRefreshToken ),
                 Arguments.of( "ItDoesNotCare",   clientId,   false,           clientDetailsJWE,      payloadFromRefreshToken,   null,                            payloadFromRefreshToken ),
-                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWS,      payloadFromRefreshToken,   UnAuthorizedException.class,     null ),
-                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWE,      payloadFromRefreshToken,   UnAuthorizedException.class,     null )
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWS,      payloadFromRefreshToken,   UnauthorizedException.class,     null ),
+                Arguments.of( "ItDoesNotCare",   clientId,   true,            clientDetailsJWE,      payloadFromRefreshToken,   UnauthorizedException.class,     null )
         ); //@formatter:on
     }
 

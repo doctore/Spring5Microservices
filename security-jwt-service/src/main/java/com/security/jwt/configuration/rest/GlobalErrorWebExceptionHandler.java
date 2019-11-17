@@ -2,9 +2,9 @@ package com.security.jwt.configuration.rest;
 
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.TokenInvalidException;
-import com.security.jwt.exception.UnAuthorizedException;
 import com.spring5microservices.common.enums.ExtendedHttpStatus;
 import com.spring5microservices.common.exception.TokenExpiredException;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -84,8 +84,8 @@ public class GlobalErrorWebExceptionHandler {
     }
 
 
-    @ExceptionHandler(UnAuthorizedException.class)
-    public ResponseEntity<String> unAuthorizedException(UnAuthorizedException exception, WebRequest request) {
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<String> unAuthorizedException(UnauthorizedException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildPlainTextResponse("The user has no permissions to execute the request", UNAUTHORIZED);
     }
