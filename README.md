@@ -99,7 +99,7 @@ On the other hand, there are other "important folders":
 
 Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provide a completely multi-application
 platform to generate/manage their own access and refresh tokens (including additional information), choosing between JWS or JWE token type. Every application will be able to manage
-its own token configuration/generation adding a new row in the database base: **security.jwt_client_details** and implementing the interface `IAuthenticationGenerator`.
+its own token configuration/generation adding a new row in the database table: **security.jwt_client_details** and implementing the interface `IAuthenticationGenerator`.
  
 The technologies used are the following ones:
 
@@ -189,7 +189,7 @@ With SQL files included in the main database and the one used for testing purpos
 information initially included.
 <br><br>
 
-In the nex picture you will see a communication diagram of all microservices described above:
+In the next picture you will see a communication diagram of all microservices described above:
 
 ![Alt text](/documentation/CommunitationDiagram.png?raw=true "Communication diagram")
 
