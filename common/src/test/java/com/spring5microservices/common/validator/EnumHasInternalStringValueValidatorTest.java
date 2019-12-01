@@ -5,10 +5,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import com.spring5microservices.common.interfaces.IEnumInternalPropertyValue;
-import com.spring5microservices.common.validator.annotation.EnumHasInternalStringValue;
-import lombok.Builder;
-import lombok.Data;
+import com.spring5microservices.common.PizzaDto;
+import com.spring5microservices.common.PizzaEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,30 +61,4 @@ public class EnumHasInternalStringValueValidatorTest {
         assertTrue(violations.isEmpty());
     }
 
-}
-
-
-enum PizzaEnum implements IEnumInternalPropertyValue<String> {
-    MARGUERITA("Margherita"),
-    CARBONARA("Carbonara");
-
-    private String databaseValue;
-
-    PizzaEnum(String databaseValue) {
-        this.databaseValue = databaseValue;
-    }
-
-    @Override
-    public String getInternalPropertyValue() {
-        return this.databaseValue;
-    }
-}
-
-@Builder
-@Data
-class PizzaDto {
-    @EnumHasInternalStringValue(enumClass=PizzaEnum.class)
-    private String name;
-
-    private Double cost;
 }
