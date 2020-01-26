@@ -1,7 +1,7 @@
-package com.security.jwt.model;
+package com.security.jwt.application.spring5microservices.model;
 
 import com.security.jwt.configuration.Constants;
-import com.security.jwt.enums.RoleEnum;
+import com.security.jwt.application.spring5microservices.enums.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

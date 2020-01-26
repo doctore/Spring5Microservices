@@ -1,8 +1,8 @@
-package com.security.jwt.service;
+package com.security.jwt.application.spring5microservices.service;
 
 import com.security.jwt.interfaces.IUserService;
-import com.security.jwt.model.User;
-import com.security.jwt.repository.UserRepository;
+import com.security.jwt.application.spring5microservices.model.User;
+import com.security.jwt.application.spring5microservices.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;

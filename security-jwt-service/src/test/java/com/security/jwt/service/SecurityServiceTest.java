@@ -1,8 +1,8 @@
 package com.security.jwt.service;
 
 import com.security.jwt.ObjectGeneratorForTest;
+import com.security.jwt.application.spring5microservices.service.UserService;
 import com.security.jwt.exception.ClientNotFoundException;
-import com.security.jwt.service.authentication.AuthenticationService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.exception.UnauthorizedException;

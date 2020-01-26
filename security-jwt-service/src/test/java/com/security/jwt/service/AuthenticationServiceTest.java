@@ -1,4 +1,4 @@
-package com.security.jwt.service.authentication;
+package com.security.jwt.service;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.ObjectGeneratorForTest;
@@ -6,8 +6,9 @@ import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
+import com.security.jwt.service.AuthenticationService;
 import com.security.jwt.service.JwtClientDetailsService;
-import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
+import com.security.jwt.application.spring5microservices.service.Spring5MicroserviceAuthenticationGenerator;
 import com.security.jwt.util.JweUtil;
 import com.security.jwt.util.JwsUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;

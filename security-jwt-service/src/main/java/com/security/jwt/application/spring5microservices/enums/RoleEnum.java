@@ -1,4 +1,4 @@
-package com.security.jwt.enums;
+package com.security.jwt.application.spring5microservices.enums;
 
 /**
  * Allowed roles of the users included in the application

@@ -1,5 +1,6 @@
-package com.security.jwt.model;
+package com.security.jwt.application.spring5microservices.model;
 
+import com.security.jwt.application.spring5microservices.model.Role;
 import com.security.jwt.configuration.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;

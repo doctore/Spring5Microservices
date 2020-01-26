@@ -3,8 +3,8 @@ package com.security.jwt.enums;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.interfaces.IAuthenticationGenerator;
 import com.security.jwt.interfaces.IUserService;
-import com.security.jwt.service.UserService;
-import com.security.jwt.service.authentication.generator.Spring5MicroserviceAuthenticationGenerator;
+import com.security.jwt.application.spring5microservices.service.UserService;
+import com.security.jwt.application.spring5microservices.service.Spring5MicroserviceAuthenticationGenerator;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;

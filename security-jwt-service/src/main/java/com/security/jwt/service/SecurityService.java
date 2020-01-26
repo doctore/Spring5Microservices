@@ -3,8 +3,6 @@ package com.security.jwt.service;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.model.User;
-import com.security.jwt.service.authentication.AuthenticationService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.exception.TokenExpiredException;
@@ -46,7 +44,7 @@ public class SecurityService {
      * @param clientId
      *    {@link JwtClientDetails#getClientId()} used to know the details to include
      * @param username
-     *    {@link User#getUsername()} who is trying to authenticate
+     *    Identifier of the user who is trying to authenticate
      *
      * @return {@link Optional} of {@link AuthenticationInformationDto}
      *

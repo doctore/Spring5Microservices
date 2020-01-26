@@ -1,9 +1,10 @@
-package com.security.jwt.service.authentication.generator;
+package com.security.jwt.application.spring5microservices.service;
 
+import com.security.jwt.application.spring5microservices.service.Spring5MicroserviceAuthenticationGenerator;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
-import com.security.jwt.enums.RoleEnum;
-import com.security.jwt.model.Role;
-import com.security.jwt.model.User;
+import com.security.jwt.application.spring5microservices.enums.RoleEnum;
+import com.security.jwt.application.spring5microservices.model.Role;
+import com.security.jwt.application.spring5microservices.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

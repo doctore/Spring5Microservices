@@ -1,6 +1,6 @@
-package com.security.jwt.repository;
+package com.security.jwt.application.spring5microservices.repository;
 
-import com.security.jwt.model.Role;
+import com.security.jwt.application.spring5microservices.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

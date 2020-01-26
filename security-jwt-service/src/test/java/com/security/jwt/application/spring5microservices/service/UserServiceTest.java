@@ -1,7 +1,8 @@
-package com.security.jwt.service;
+package com.security.jwt.application.spring5microservices.service;
 
-import com.security.jwt.model.User;
-import com.security.jwt.repository.UserRepository;
+import com.security.jwt.application.spring5microservices.model.User;
+import com.security.jwt.application.spring5microservices.repository.UserRepository;
+import com.security.jwt.application.spring5microservices.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;

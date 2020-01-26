@@ -1,4 +1,4 @@
-package com.security.jwt.service.authentication;
+package com.security.jwt.service;
 
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.configuration.security.JweConfiguration;

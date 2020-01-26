@@ -1,8 +1,8 @@
-package com.security.jwt.service.authentication.generator;
+package com.security.jwt.application.spring5microservices.service;
 
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.interfaces.IAuthenticationGenerator;
-import com.security.jwt.model.User;
+import com.security.jwt.application.spring5microservices.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
