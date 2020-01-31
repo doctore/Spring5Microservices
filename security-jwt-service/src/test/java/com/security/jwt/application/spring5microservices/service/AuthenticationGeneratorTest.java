@@ -1,6 +1,5 @@
 package com.security.jwt.application.spring5microservices.service;
 
-import com.security.jwt.application.spring5microservices.service.Spring5MicroserviceAuthenticationGenerator;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.application.spring5microservices.enums.RoleEnum;
 import com.security.jwt.application.spring5microservices.model.Role;
@@ -26,13 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
-public class Spring5MicroserviceAuthenticationGeneratorTest {
+public class AuthenticationGeneratorTest {
 
-    private Spring5MicroserviceAuthenticationGenerator authenticationGenerator;
+    private AuthenticationGenerator authenticationGenerator;
 
     @BeforeEach
     public void init() {
-        authenticationGenerator = new Spring5MicroserviceAuthenticationGenerator();
+        authenticationGenerator = new AuthenticationGenerator();
     }
 
 

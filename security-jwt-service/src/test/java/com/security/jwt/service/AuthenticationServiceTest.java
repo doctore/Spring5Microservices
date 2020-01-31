@@ -6,9 +6,7 @@ import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.service.AuthenticationService;
-import com.security.jwt.service.JwtClientDetailsService;
-import com.security.jwt.application.spring5microservices.service.Spring5MicroserviceAuthenticationGenerator;
+import com.security.jwt.application.spring5microservices.service.AuthenticationGenerator;
 import com.security.jwt.util.JweUtil;
 import com.security.jwt.util.JwsUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
@@ -92,7 +90,7 @@ public class AuthenticationServiceTest {
     static Stream<Arguments> getAuthenticationInformationTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         UserDetails userDetails = ObjectGeneratorForTest.buildDefaultUser();
-        Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
+        AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
         JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
         Optional<RawAuthenticationInformationDto> rawAuthenticationInformation = of(ObjectGeneratorForTest.buildDefaultRawAuthenticationInformation());
         return Stream.of(
@@ -109,12 +107,12 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getAuthenticationInformationTestCases")
     @DisplayName("getAuthenticationInformation: test cases")
-    public void getAuthenticationInformation_testCases(String clientId, UserDetails userDetails, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+    public void getAuthenticationInformation_testCases(String clientId, UserDetails userDetails, AuthenticationGenerator authenticationGenerator,
                                                        JwtClientDetails clientDetailsResult, Optional<RawAuthenticationInformationDto> rawAuthenticationInformation,
                                                        boolean isResultEmpty) {
         String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
 
-        when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
+        when(mockApplicationContext.getBean(AuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         when(mockJwtClientDetailsService.findByClientId(clientId)).thenReturn(clientDetailsResult);
         when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwtSecret);
         if (null != authenticationGenerator) {
@@ -216,7 +214,7 @@ public class AuthenticationServiceTest {
 
     static Stream<Arguments> getUsernameTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
-        Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
+        AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
         String username = "username value";
         Map<String, Object> payloadWithUsername = new HashMap<String, Object>() {{
             put(USERNAME.getKey(), username);
@@ -239,10 +237,10 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getUsernameTestCases")
     @DisplayName("getUsername: test cases")
-    public void getUsername_testCases(Map<String, Object> payload, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+    public void getUsername_testCases(Map<String, Object> payload, String clientId, AuthenticationGenerator authenticationGenerator,
                                       Class<? extends Exception> expectedException, Optional<String> expectedResult) {
 
-        when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
+        when(mockApplicationContext.getBean(AuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         if (null != authenticationGenerator) {
             when(authenticationGenerator.getUsernameKey()).thenReturn(USERNAME.getKey());
         }
@@ -259,7 +257,7 @@ public class AuthenticationServiceTest {
 
     static Stream<Arguments> getRolesTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
-        Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
+        AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
         List<String> roles = asList("admin", "user");
         Map<String, Object> payloadWithRoles = new HashMap<String, Object>() {{
             put(AUTHORITIES.getKey(), roles);
@@ -282,10 +280,10 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getRolesTestCases")
     @DisplayName("getRoles: test cases")
-    public void getRoles_testCases(Map<String, Object> payload, String clientId, Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+    public void getRoles_testCases(Map<String, Object> payload, String clientId, AuthenticationGenerator authenticationGenerator,
                                    Class<? extends Exception> expectedException, Set<String> expectedResult) {
 
-        when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
+        when(mockApplicationContext.getBean(AuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         if (null != authenticationGenerator) {
             when(authenticationGenerator.getRolesKey()).thenReturn(AUTHORITIES.getKey());
         }
@@ -302,7 +300,7 @@ public class AuthenticationServiceTest {
 
     static Stream<Arguments> getCustomInformationIncludedByClientTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
-        Spring5MicroserviceAuthenticationGenerator authenticationGenerator = mock(Spring5MicroserviceAuthenticationGenerator.class);
+        AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
         Map<String, Object> sourcePayload = new HashMap<String, Object>() {{
             put("age", 32);
             put(AUTHORITIES.getKey(), asList("admin", "user"));
@@ -332,9 +330,9 @@ public class AuthenticationServiceTest {
     @MethodSource("getCustomInformationIncludedByClientTestCases")
     @DisplayName("getCustomInformationIncludedByClient: test cases")
     public void getCustomInformationIncludedByClient_testCases(Map<String, Object> payload, String clientId,
-                                                               Spring5MicroserviceAuthenticationGenerator authenticationGenerator,
+                                                               AuthenticationGenerator authenticationGenerator,
                                                                Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
-        when(mockApplicationContext.getBean(Spring5MicroserviceAuthenticationGenerator.class)).thenReturn(authenticationGenerator);
+        when(mockApplicationContext.getBean(AuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         if (null != authenticationGenerator) {
             when(authenticationGenerator.getUsernameKey()).thenReturn(USERNAME.getKey());
             when(authenticationGenerator.getRolesKey()).thenReturn(AUTHORITIES.getKey());

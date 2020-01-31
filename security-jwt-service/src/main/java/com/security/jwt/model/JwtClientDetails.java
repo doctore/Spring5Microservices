@@ -24,7 +24,7 @@ import java.io.Serializable;
 @Entity
 @EqualsAndHashCode(of = {"clientId"})
 @NoArgsConstructor
-@Table(schema = Constants.DATABASE_SCHEMA.SECURITY)
+@Table(schema = Constants.DATABASE.SCHEMA.SECURITY)
 public class JwtClientDetails implements Serializable {
 
     private static final long serialVersionUID = -171319389828209358L;

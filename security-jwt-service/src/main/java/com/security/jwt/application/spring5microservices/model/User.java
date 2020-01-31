@@ -1,7 +1,6 @@
 package com.security.jwt.application.spring5microservices.model;
 
-import com.security.jwt.application.spring5microservices.model.Role;
-import com.security.jwt.configuration.Constants;
+import com.security.jwt.application.spring5microservices.configuration.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,13 +34,13 @@ import static java.util.stream.Collectors.toSet;
 @Entity
 @EqualsAndHashCode(of = {"username"})
 @NoArgsConstructor
-@Table(schema = Constants.DATABASE_SCHEMA.EAT)
+@Table(schema = Constants.DATABASE.SCHEMA.EAT)
 public class User implements UserDetails {
 
     private static final long serialVersionUID = -2635894377988063111L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".user_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE.SCHEMA.EAT + ".user_id_seq")
     private Long id;
 
     @NotNull
@@ -60,7 +59,7 @@ public class User implements UserDetails {
     private boolean active;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(schema = Constants.DATABASE_SCHEMA.EAT,
+    @JoinTable(schema = Constants.DATABASE.SCHEMA.EAT,
                name = "user_role",
                inverseJoinColumns = { @JoinColumn(name = "role_id") })
     private Set<Role> roles;

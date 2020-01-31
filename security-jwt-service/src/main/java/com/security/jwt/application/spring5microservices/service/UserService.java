@@ -1,5 +1,6 @@
 package com.security.jwt.application.spring5microservices.service;
 
+import com.security.jwt.application.spring5microservices.configuration.Constants;
 import com.security.jwt.interfaces.IUserService;
 import com.security.jwt.application.spring5microservices.model.User;
 import com.security.jwt.application.spring5microservices.repository.UserRepository;
@@ -14,7 +15,7 @@ import org.springframework.util.StringUtils;
 
 import static java.util.Optional.ofNullable;
 
-@Service(value = "userDetailsService")
+@Service(value = Constants.APPLICATION_NAME + "UserDetailsService")
 public class UserService implements IUserService {
 
     private UserRepository userRepository;

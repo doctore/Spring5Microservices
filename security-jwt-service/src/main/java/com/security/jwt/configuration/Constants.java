@@ -1,30 +1,40 @@
 package com.security.jwt.configuration;
 
 /**
- * Global values used in different part of the application
+ * Global values used in different parts of the application
  */
 public class Constants {
 
+    public static final String APPLICATION_NAME = "SecurityJWT";
+
     // Global cache configuration
     public static final String CACHE_INSTANCE_NAME = "SecurityJwtCacheInstance";
-
-    // Database schemas on which the entities have been included
-    public static final class DATABASE_SCHEMA {
-        public static final String EAT = "eat";
-        public static final String SECURITY = "security";
-    };
-
-    // Documentation API version
-    public static final String DOCUMENTATION_API_VERSION = "1.0";
-
-    // External path
-    public static final class EXTERNAL_PATH {
-        public static final String COMMON = "com.spring5microservices.common";
-    }
 
     /**
      * Prefix used to store the cipher passwords in database
      */
     public static final String CIPHER_SECRET_PREFIX = "{cipher}";
+
+    // Database information on which the entities have been included
+    public static final class DATABASE {
+        public static final String DATASOURCE_CONFIGURATION = "spring.datasource";
+
+        public static final class SCHEMA {
+            public static final String SECURITY = "security";
+        }
+    };
+
+    // Documentation API version
+    public static final String DOCUMENTATION_API_VERSION = "1.0";
+
+    // Path of the folders in the application and external ones
+    public static final class PATH {
+        public static final String MODEL = "com.security.jwt.model";
+        public static final String REPOSITORY = "com.security.jwt.repository";
+
+        public static final class EXTERNAL {
+            public static final String COMMON = "com.spring5microservices.common";
+        }
+    }
 
 }

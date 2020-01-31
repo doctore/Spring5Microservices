@@ -1,6 +1,6 @@
 package com.security.jwt.application.spring5microservices.model;
 
-import com.security.jwt.configuration.Constants;
+import com.security.jwt.application.spring5microservices.configuration.Constants;
 import com.security.jwt.application.spring5microservices.enums.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,13 +24,13 @@ import java.io.Serializable;
 @Entity
 @EqualsAndHashCode(of = {"name"})
 @NoArgsConstructor
-@Table(schema = Constants.DATABASE_SCHEMA.EAT)
+@Table(schema = Constants.DATABASE.SCHEMA.EAT)
 public class Role implements Serializable {
 
     private static final long serialVersionUID = -3655820157062921094L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".role_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE.SCHEMA.EAT + ".role_id_seq")
     private Integer id;
 
     @NotNull

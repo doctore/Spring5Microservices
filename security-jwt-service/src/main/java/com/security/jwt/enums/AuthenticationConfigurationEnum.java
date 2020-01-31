@@ -4,7 +4,7 @@ import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.interfaces.IAuthenticationGenerator;
 import com.security.jwt.interfaces.IUserService;
 import com.security.jwt.application.spring5microservices.service.UserService;
-import com.security.jwt.application.spring5microservices.service.Spring5MicroserviceAuthenticationGenerator;
+import com.security.jwt.application.spring5microservices.service.AuthenticationGenerator;
 import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
@@ -16,7 +16,7 @@ import static java.util.Optional.ofNullable;
  * Manage the configuration of existing Jwt token providers
  */
 public enum AuthenticationConfigurationEnum {
-    SPRING5_MICROSERVICES ("Spring5Microservices", Spring5MicroserviceAuthenticationGenerator.class, UserService.class);
+    SPRING5_MICROSERVICES ("Spring5Microservices", AuthenticationGenerator.class, UserService.class);
 
     private String clientId;
     private Class<? extends IAuthenticationGenerator> authenticationGeneratorClass;
