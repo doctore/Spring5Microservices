@@ -5,7 +5,7 @@ package com.security.jwt.application.spring5microservices.configuration;
  */
 public class Constants {
 
-    public static final String APPLICATION_NAME = "SecurityJWT-Spring5Microservices";
+    public static final String APPLICATION_NAME = "Spring5Microservices";
 
     // Database information on which the entities have been included
     public static final class DATABASE {

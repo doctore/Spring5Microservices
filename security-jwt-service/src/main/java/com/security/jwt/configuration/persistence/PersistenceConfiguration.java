@@ -19,12 +19,17 @@ import javax.sql.DataSource;
 @Configuration(value = Constants.APPLICATION_NAME + "PersistenceConfiguration")
 @EnableJpaRepositories(
         basePackages = Constants.PATH.REPOSITORY,
-        entityManagerFactoryRef = Constants.APPLICATION_NAME + "EntityManagerFactory",
-        transactionManagerRef= Constants.APPLICATION_NAME + "TransactionManager")
+        entityManagerFactoryRef = PersistenceConfiguration.ENTITY_MANAGER_FACTORY,
+        transactionManagerRef= PersistenceConfiguration.TRANSACTION_MANAGER)
 public class PersistenceConfiguration {
 
+    public static final String DATASOURCE = Constants.APPLICATION_NAME + "DataSource";
+    public static final String DATASOURCE_PROPERTIES = Constants.APPLICATION_NAME + "DataSourceProperties";
+    public static final String ENTITY_MANAGER_FACTORY = Constants.APPLICATION_NAME + "EntityManagerFactory";
+    public static final String TRANSACTION_MANAGER = Constants.APPLICATION_NAME + "TransactionManager";
+
     @Primary
-    @Bean(name = Constants.APPLICATION_NAME + "DataSourceProperties")
+    @Bean(name = DATASOURCE_PROPERTIES)
     @ConfigurationProperties(Constants.DATABASE.DATASOURCE_CONFIGURATION)
     public DataSourceProperties securityJwtDataSourceProperties() {
         return new DataSourceProperties();
@@ -32,7 +37,7 @@ public class PersistenceConfiguration {
 
 
     @Primary
-    @Bean(name = Constants.APPLICATION_NAME + "DataSource")
+    @Bean(name = DATASOURCE)
     public DataSource securityJwtDataSource() {
         return securityJwtDataSourceProperties().initializeDataSourceBuilder()
                 .type(HikariDataSource.class).build();
@@ -40,7 +45,7 @@ public class PersistenceConfiguration {
 
 
     @Primary
-    @Bean(name = Constants.APPLICATION_NAME + "EntityManagerFactory")
+    @Bean(name = ENTITY_MANAGER_FACTORY)
     public LocalContainerEntityManagerFactoryBean securityJwtEntityManagerFactory(EntityManagerFactoryBuilder builder) {
         return builder.dataSource(securityJwtDataSource())
                 .packages(Constants.PATH.MODEL)
@@ -50,9 +55,9 @@ public class PersistenceConfiguration {
 
 
     @Primary
-    @Bean(name = Constants.APPLICATION_NAME + "TransactionManager")
+    @Bean(name = TRANSACTION_MANAGER)
     public PlatformTransactionManager securityJwtTransactionManager(
-            final @Qualifier(Constants.APPLICATION_NAME + "EntityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
+            final @Qualifier(ENTITY_MANAGER_FACTORY) LocalContainerEntityManagerFactoryBean entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory.getObject());
     }
 
