@@ -1,5 +1,6 @@
 package com.security.jwt.application.spring5microservices.service;
 
+import com.security.jwt.configuration.Constants;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.interfaces.IAuthenticationGenerator;
 import com.security.jwt.application.spring5microservices.model.User;
@@ -17,8 +18,8 @@ import static com.security.jwt.enums.TokenKeyEnum.USERNAME;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
-@Service
-public class Spring5MicroserviceAuthenticationGenerator implements IAuthenticationGenerator {
+@Service(value = Constants.APPLICATIONS.SPRING5_MICROSERVICES + "AuthenticationGenerator")
+public class AuthenticationGenerator implements IAuthenticationGenerator {
 
     @Override
     public Optional<RawAuthenticationInformationDto> getRawAuthenticationInformation(UserDetails userDetails) {
