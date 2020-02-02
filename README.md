@@ -124,6 +124,11 @@ On the other hand, there are other "important folders":
 * **util** to manage the JWS/JWE functionality.
 <br><br>
 
+The existing two git branches are related with this microservice:
+
+* **master** there is only one datasource due to all applications use the same database.
+* **multi-datasource-security** every application has its own datasource, so different persistent context are defined for every one.
+
 ### pizza-service
 
 One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservices. The main purpose of this microservice is the creation of an small one
