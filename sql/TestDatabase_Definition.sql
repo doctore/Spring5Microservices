@@ -98,6 +98,7 @@ create table security.oauth_client_details (
 
 create table security.jwt_client_details (
   client_id                  varchar(64)    constraint jwt_client_details_pk primary key,
+  client_secret              varchar(128)   not null,
   signature_secret           varchar(256)   not null,
   signature_algorithm        varchar(16)    not null,
   authentication_generator   varchar(128)   not null,

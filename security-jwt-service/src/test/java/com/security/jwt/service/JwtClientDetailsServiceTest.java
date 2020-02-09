@@ -94,4 +94,33 @@ public class JwtClientDetailsServiceTest {
         }
     }
 
+
+    static Stream<Arguments> loadUserByUsernameTestCases() {
+        JwtClientDetails jwtClientDetails = JwtClientDetails.builder().clientId("ItDoesNotCare").build();
+        return Stream.of(
+                //@formatter:off
+                //            clientId,                repositoryResult,       expectedException,               expectedResult
+                Arguments.of( null,                    empty(),                ClientNotFoundException.class,   null ),
+                Arguments.of( "NotFound",              empty(),                ClientNotFoundException.class,   null ),
+                Arguments.of( "Found",                 of(jwtClientDetails),   null,                            jwtClientDetails )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("loadUserByUsernameTestCases")
+    @DisplayName("loadUserByUsername: test cases")
+    public void loadUserByUsername_testCases(String clientId, Optional<JwtClientDetails> repositoryResult,
+                                             Class<? extends Exception> expectedException, JwtClientDetails expectedResult) {
+
+        when(mockJwtClientDetailsRepository.findByClientId(clientId)).thenReturn(repositoryResult);
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> jwtClientDetailsService.findByClientId(clientId));
+        }
+        else {
+            assertEquals(expectedResult, jwtClientDetailsService.findByClientId(clientId));
+            verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));
+            verify(mockJwtClientDetailsCacheService, times(1)).get(eq(clientId));
+        }
+    }
+
 }

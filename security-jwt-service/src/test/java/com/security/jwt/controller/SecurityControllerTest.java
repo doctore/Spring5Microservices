@@ -2,11 +2,13 @@ package com.security.jwt.controller;
 
 import com.security.jwt.configuration.rest.RestRoutes;
 import com.security.jwt.dto.AuthenticationRequestDto;
+import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.service.SecurityService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -55,8 +59,27 @@ public class SecurityControllerTest {
     @MockBean
     private SecurityService mockSecurityService;
 
+    @MockBean
+    private PasswordEncoder mockPasswordEncoder;
+
+    @MockBean
+    private JwtClientDetailsService mockJwtClientDetailsService;
+
     @Autowired
     private MockMvc mockMvc;
+
+
+    @Test
+    @SneakyThrows
+    @DisplayName("login: when no basic authentication is provided then unauthorized code is returned")
+    public void login_whenNoBasicAuthIsProvided_thenUnauthorizedHttpCodeIsReturned() {
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+                .content(toJson(buildDefaultAuthenticationRequest())))
+                .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(mockSecurityService);
+    }
 
 
     static Stream<Arguments> login_invalidParametersTestCases() {
@@ -67,13 +90,13 @@ public class SecurityControllerTest {
                 //            invalidAuthenticationRequestDto,                                expectedError
                 Arguments.of( null,                                                           "The was a problem in the parameters of the current request" ),
                 Arguments.of( buildDefaultAuthenticationRequest().withUsername(null),         errorMessagePrefix + "[Field error in object 'authenticationRequestDto' "
-                                                                                                                 + "on field 'username' due to: must not be null]" ),
+                        + "on field 'username' due to: must not be null]" ),
                 Arguments.of( buildDefaultAuthenticationRequest().withPassword(null),         errorMessagePrefix + "[Field error in object 'authenticationRequestDto' "
-                                                                                                                 + "on field 'password' due to: must not be null]" ),
+                        + "on field 'password' due to: must not be null]" ),
                 Arguments.of( buildDefaultAuthenticationRequest().withUsername(longString),   errorMessagePrefix + "[Field error in object 'authenticationRequestDto' on "
-                                                                                                                 + "field 'username' due to: size must be between 1 and 64]" ),
+                        + "field 'username' due to: size must be between 1 and 64]" ),
                 Arguments.of( buildDefaultAuthenticationRequest().withPassword(longString),   errorMessagePrefix + "[Field error in object 'authenticationRequestDto' on "
-                                                                                                                 + "field 'password' due to: size must be between 1 and 128]" )
+                        + "field 'password' due to: size must be between 1 and 128]" )
         ); //@formatter:on
     }
 
@@ -81,14 +104,15 @@ public class SecurityControllerTest {
     @SneakyThrows
     @MethodSource("login_invalidParametersTestCases")
     @DisplayName("login: when given parameters do not verify validations then bad request error is returned with validation errors")
+    @WithMockUser
     public void login_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(AuthenticationRequestDto invalidAuthenticationRequestDto,
                                                                                                                      String expectedErrors) {
-        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/ItDoesNotCare")
-               .contentType(APPLICATION_JSON_UTF8_VALUE)
-               .content(toJson(invalidAuthenticationRequestDto)))
-               .andExpect(status().isBadRequest())
-               .andExpect(content().contentType(TEXT_PLAIN))
-               .andExpect(content().string(expectedErrors));
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+                .content(toJson(invalidAuthenticationRequestDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(TEXT_PLAIN))
+                .andExpect(content().string(expectedErrors));
 
         verifyZeroInteractions(mockSecurityService);
     }
@@ -108,6 +132,7 @@ public class SecurityControllerTest {
     @SneakyThrows
     @MethodSource("login_validParametersTestCases")
     @DisplayName("login: when given parameters verify the validations then the suitable Http code is returned")
+    @WithMockUser(username = "ItDoesNotCare")
     public void login_whenGivenParametersVerifyValidations_thenSuitableHttpCodeIsReturned(Optional<AuthenticationInformationDto> authenticationInformation,
                                                                                           HttpStatus expectedResultHttpCode,
                                                                                           AuthenticationInformationDto expectedBodyResult) {
@@ -116,24 +141,34 @@ public class SecurityControllerTest {
 
         when(mockSecurityService.login(clientId, authenticationRequestDto.getUsername(), authenticationRequestDto.getPassword())).thenReturn(authenticationInformation);
 
-        ResultActions result = mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN + "/ItDoesNotCare")
-                                      .contentType(APPLICATION_JSON_UTF8_VALUE)
-                                      .content(toJson(authenticationRequestDto)))
-                                      .andExpect(status().is(expectedResultHttpCode.value()));
+        ResultActions result = mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+                .content(toJson(authenticationRequestDto)))
+                .andExpect(status().is(expectedResultHttpCode.value()));
 
         assertEquals(expectedBodyResult, fromJson(result.andReturn().getResponse().getContentAsString(), AuthenticationInformationDto.class));
         verify(mockSecurityService, times(1)).login(clientId, authenticationRequestDto.getUsername(), authenticationRequestDto.getPassword());
     }
 
 
+    @Test
+    @SneakyThrows
+    @DisplayName("refresh: when no basic authentication is provided then unauthorized code is returned")
+    public void refresh_whenNoBasicAuthIsProvided_thenUnauthorizedHttpCodeIsReturned() {
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.REFRESH)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+                .content("ItDoesNotCare"))
+                .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(mockSecurityService);
+    }
+
+
     static Stream<Arguments> refresh_invalidParametersTestCases() {
-        String errorMessagePrefix = "The following constraints have failed: ";
-        String longString = String.join("", Collections.nCopies(150, "a"));
         return Stream.of(
                 //@formatter:off
-                //            clientId,          refreshToken,      expectedError
-                Arguments.of( longString,        "ItDoesNotCare",   errorMessagePrefix + "[Error in path 'refresh.clientId' due to: size must be between 1 and 64]" ),
-                Arguments.of( "ValidClientId",   "",                "The was a problem in the parameters of the current request" )
+                //            refreshToken,   expectedError
+                Arguments.of( "",             "The was a problem in the parameters of the current request" )
         ); //@formatter:on
     }
 
@@ -141,9 +176,10 @@ public class SecurityControllerTest {
     @SneakyThrows
     @MethodSource("refresh_invalidParametersTestCases")
     @DisplayName("refresh: when given parameters do not verify validations then bad request error is returned with validation errors")
-    public void refresh_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(String clientId, String refreshToken,
+    @WithMockUser
+    public void refresh_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(String refreshToken,
                                                                                                                        String expectedErrors) {
-        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.REFRESH + "/" + clientId)
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.REFRESH)
                 .contentType(APPLICATION_JSON_UTF8_VALUE)
                 .content(refreshToken))
                 .andExpect(status().isBadRequest())
@@ -168,6 +204,7 @@ public class SecurityControllerTest {
     @SneakyThrows
     @MethodSource("refresh_validParametersTestCases")
     @DisplayName("refresh: when given authentication request verifies the validations then the suitable Http code is returned")
+    @WithMockUser(username = "ItDoesNotCare")
     public void refresh_whenParametersVerifyValidations_thenSuitableHttpCodeIsReturned(Optional<AuthenticationInformationDto> authenticationInformation,
                                                                                        HttpStatus expectedResultHttpCode,
                                                                                        AuthenticationInformationDto expectedBodyResult) {
@@ -176,7 +213,7 @@ public class SecurityControllerTest {
 
         when(mockSecurityService.refresh(refreshToken, clientId)).thenReturn(authenticationInformation);
 
-        ResultActions result = mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.REFRESH + "/ItDoesNotCare")
+        ResultActions result = mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.REFRESH)
                 .contentType(APPLICATION_JSON_UTF8_VALUE)
                 .content(refreshToken))
                 .andExpect(status().is(expectedResultHttpCode.value()));
@@ -186,15 +223,24 @@ public class SecurityControllerTest {
     }
 
 
+    @Test
+    @SneakyThrows
+    @DisplayName("authorizationInformation: when no basic authentication is provided then unauthorized code is returned")
+    public void authorizationInformation_whenNoBasicAuthIsProvided_thenUnauthorizedHttpCodeIsReturned() {
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.AUTHORIZATION_INFO)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+                .content("ItDoesNotCare"))
+                .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(mockSecurityService);
+    }
+
+
     static Stream<Arguments> authorizationInformation_invalidParametersTestCases() {
-        String errorMessagePrefix = "The following constraints have failed: ";
-        String longString = String.join("", Collections.nCopies(150, "a"));
         return Stream.of(
                 //@formatter:off
-                //            clientId,          refreshToken,      expectedError
-                Arguments.of( longString,        "ItDoesNotCare",   errorMessagePrefix + "[Error in path 'authorizationInformation.clientId' "
-                                                                                       + "due to: size must be between 1 and 64]" ),
-                Arguments.of( "ValidClientId",   "",                "The was a problem in the parameters of the current request" )
+                //            refreshToken,   expectedError
+                Arguments.of( "",             "The was a problem in the parameters of the current request" )
         ); //@formatter:on
     }
 
@@ -202,9 +248,10 @@ public class SecurityControllerTest {
     @SneakyThrows
     @MethodSource("authorizationInformation_invalidParametersTestCases")
     @DisplayName("authorizationInformation: when given parameters do not verify validations then bad request error is returned with validation errors")
-    public void authorizationInformation_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(String clientId, String refreshToken,
+    @WithMockUser
+    public void authorizationInformation_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(String refreshToken,
                                                                                                                                         String expectedErrors) {
-        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.AUTHORIZATION_INFO + "/" + clientId)
+        mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.AUTHORIZATION_INFO)
                 .contentType(APPLICATION_JSON_UTF8_VALUE)
                 .content(refreshToken))
                 .andExpect(status().isBadRequest())
@@ -228,6 +275,7 @@ public class SecurityControllerTest {
     @SneakyThrows
     @MethodSource("authorizationInformation_validParametersTestCases")
     @DisplayName("authorizationInformation: when given authentication request verifies the validations then the suitable Http code is returned")
+    @WithMockUser(username = "ItDoesNotCare")
     public void authorizationInformation_whenParametersVerifyValidations_thenSuitableHttpCodeIsReturned(UsernameAuthoritiesDto usernameAuthorities,
                                                                                                         HttpStatus expectedResultHttpCode,
                                                                                                         UsernameAuthoritiesDto expectedBodyResult) {
@@ -236,7 +284,7 @@ public class SecurityControllerTest {
 
         when(mockSecurityService.getAuthorizationInformation(accessToken, clientId)).thenReturn(usernameAuthorities);
 
-        ResultActions result = mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.AUTHORIZATION_INFO + "/ItDoesNotCare")
+        ResultActions result = mockMvc.perform(post(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.AUTHORIZATION_INFO)
                 .contentType(APPLICATION_JSON_UTF8_VALUE)
                 .content(accessToken))
                 .andExpect(status().is(expectedResultHttpCode.value()));

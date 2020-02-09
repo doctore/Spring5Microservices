@@ -25,6 +25,16 @@ public class JwtClientDetailsCacheService {
 
 
     /**
+     * Clear the cache used to store {@link JwtClientDetails} information.
+     *
+     * @return {@code true} if the cache was cleared, {@code false} otherwise
+     */
+    public boolean clear() {
+        return cacheService.clear(cacheConfiguration.getJwtConfigurationCacheName());
+    }
+
+
+    /**
      * Check if exists the given {@link JwtClientDetails#getClientId()} inside the related cache.
      *
      * @param clientId
