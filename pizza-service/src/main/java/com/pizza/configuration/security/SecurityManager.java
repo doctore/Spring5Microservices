@@ -8,6 +8,7 @@ import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,11 +16,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.UnknownHttpStatusCodeException;
 import reactor.core.publisher.Mono;
 
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,8 +68,9 @@ public class SecurityManager implements ReactiveAuthenticationManager {
      */
     private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(String authenticationInformationWebService, String token) {
         try {
+            HttpEntity<String> request = new HttpEntity<>(token, createHeaders(securityConfiguration.getClientId(), securityConfiguration.getClientPassword()));
             ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.postForEntity(authenticationInformationWebService,
-                    new HttpEntity<>(token), UsernameAuthoritiesDto.class);
+                    request, UsernameAuthoritiesDto.class);
             return Optional.of(restResponse.getBody());
         } catch(Exception ex) {
             log.error("There was an error trying to validate the authentication token", ex);
@@ -79,7 +81,6 @@ public class SecurityManager implements ReactiveAuthenticationManager {
             return Optional.empty();
         }
     }
-
 
     /**
      * Converts a given {@link UsernameAuthoritiesDto} into an {@link UsernamePasswordAuthenticationToken}
@@ -105,6 +106,25 @@ public class SecurityManager implements ReactiveAuthenticationManager {
                 usernameAuthoritiesDto.getUsername(), null, authorities);
         authenticationInfo.setDetails(usernameAuthoritiesDto.getAdditionalInfo());
         return authenticationInfo;
+    }
+
+    /**
+     * Build the required Basic Authentication to send requests to the security server
+     *
+     * @param username
+     *    Security server client identifier
+     * @param password
+     *    Security server client password
+     *
+     * @return {@link HttpHeaders}
+     */
+    private HttpHeaders createHeaders(String username, String password){
+        return new HttpHeaders() {{
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
+            String authHeader = "Basic " + new String(encodedAuth);
+            set("Authorization", authHeader);
+        }};
     }
 
 }

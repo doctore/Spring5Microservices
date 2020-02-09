@@ -41,6 +41,28 @@ public class JwtClientDetailsCacheServiceTest {
     }
 
 
+    static Stream<Arguments> clearTestCases() {
+        return Stream.of(
+                //@formatter:off
+                //            cacheServiceResult,   expectedResult
+                Arguments.of( false,                false ),
+                Arguments.of( true,                 true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("clearTestCases")
+    @DisplayName("clear: test cases")
+    public void clear_testCases(boolean cacheServiceResult, boolean expectedResult) {
+        // When
+        when(mockCacheService.clear(anyString())).thenReturn(cacheServiceResult);
+        boolean operationResult = jwtClientDetailsCacheService.clear();
+
+        // Then
+        assertEquals(expectedResult, operationResult);
+    }
+
+
     static Stream<Arguments> containsTestCases() {
         String clientId = "clientId";
         return Stream.of(

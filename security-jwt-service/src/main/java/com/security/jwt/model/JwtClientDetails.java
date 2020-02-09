@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -16,7 +18,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
 
 @AllArgsConstructor
 @Builder
@@ -25,7 +28,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(of = {"clientId"})
 @NoArgsConstructor
 @Table(schema = Constants.DATABASE_SCHEMA.SECURITY)
-public class JwtClientDetails implements Serializable {
+public class JwtClientDetails implements UserDetails {
 
     private static final long serialVersionUID = -171319389828209358L;
     
@@ -33,6 +36,10 @@ public class JwtClientDetails implements Serializable {
     @NotNull
     @Size(min=1,max=64)
     private String clientId;
+
+    @NotNull
+    @Size(min=1,max=128)
+    private String clientSecret;
 
     @NotNull
     @Size(min=1,max=256)
@@ -58,5 +65,40 @@ public class JwtClientDetails implements Serializable {
 
     @NotNull
     private int refreshTokenValidity;
+
+    @Override
+    public String getUsername() {
+        return clientId;
+    }
+
+    @Override
+    public String getPassword() {
+        return clientSecret;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return new HashSet<>();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 
 }

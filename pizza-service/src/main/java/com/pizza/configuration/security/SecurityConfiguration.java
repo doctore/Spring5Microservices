@@ -14,4 +14,10 @@ public class SecurityConfiguration {
     @Value("${security.restApi.authenticationInformation}")
     private String authenticationInformationWebService;
 
+    @Value("${security.restApi.clientId}")
+    private String clientId;
+
+    @Value("${security.restApi.clientPassword}")
+    private String clientPassword;
+
 }

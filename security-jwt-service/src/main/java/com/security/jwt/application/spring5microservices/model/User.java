@@ -1,6 +1,5 @@
 package com.security.jwt.application.spring5microservices.model;
 
-import com.security.jwt.application.spring5microservices.model.Role;
 import com.security.jwt.configuration.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
