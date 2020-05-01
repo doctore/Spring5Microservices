@@ -2,245 +2,211 @@ package com.pizza.util.converter;
 
 import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
-import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
-import com.pizza.util.converter.enums.PizzaEnumConverter;
 import com.pizza.util.converter.enums.PizzaEnumConverterImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
+import static com.pizza.TestDataFactory.*;
+import static com.pizza.enums.PizzaEnum.CARBONARA;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {IngredientConverterImpl.class, PizzaConverterImpl.class, PizzaEnumConverterImpl.class})
 public class PizzaConverterTest {
 
     @Autowired
-    private PizzaConverter pizzaConverter;
-
-    // Ingredients used in the tests
-    Set<Ingredient> ingredients = new HashSet<>();
-    Set<IngredientDto> ingredientDtos = new HashSet<>();
-
-
-    @Before
-    public void init() {
-        Ingredient mozzarella = Ingredient.builder().id(1).name("Mozzarella").build();
-        Ingredient oregano = Ingredient.builder().id(2).name("Oregano").build();
-        ingredients.addAll(Arrays.asList(mozzarella, oregano));
-
-        IngredientDto mozzarellaDto = IngredientDto.builder().id(mozzarella.getId()).name(mozzarella.getName()).build();
-        IngredientDto oreganoDto = IngredientDto.builder().id(oregano.getId()).name(oregano.getName()).build();
-        ingredientDtos.addAll(Arrays.asList(mozzarellaDto, oreganoDto));
-    }
-
+    private PizzaConverter converter;
 
     @Test
+    @DisplayName("fromDtoToModel: when given dto is null then null model is returned")
     public void fromDtoToModel_whenGivenDtoIsNull_thenNullIsReturned() {
-        // When
-        Pizza pizza = pizzaConverter.fromDtoToModel(null);
+        assertNull(converter.fromDtoToModel(null));
+    }
 
-        // Then
-        assertNull(pizza);
+
+    static Stream<Arguments> fromDtoToModelTestCases() {
+        IngredientDto ingredientDto = buildIngredientDto(1, "Jam");
+        PizzaDto dto = buildPizzaDto(1, "Carbonara", 12.10D, Set.of(ingredientDto));
+        return Stream.of(
+                //@formatter:off
+                //            dtoToConvert
+                Arguments.of( new PizzaDto() ),
+                Arguments.of( dto )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDtoToModelTestCases")
+    @DisplayName("fromDtoToModel: when the given dto is not null then the equivalent model is returned")
+    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned(PizzaDto dtoToConvert) {
+        Pizza equivalentModel = converter.fromDtoToModel(dtoToConvert);
+        checkProperties(equivalentModel, dtoToConvert);
     }
 
 
     @Test
-    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned() {
-        // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
-
-        // When
-        Pizza pizza = pizzaConverter.fromDtoToModel(pizzaDto);
-
-        // Then
-        checkProperties(pizza, pizzaDto);
-        assertThat(ingredients, containsInAnyOrder(pizza.getIngredients().toArray()));
-    }
-
-
-    @Test
+    @DisplayName("fromDtoToOptionalModel: when given dto is null then empty Optional is returned")
     public void fromDtoToOptionalModel_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalModel(null);
+        Optional<Pizza> equivalentModel = converter.fromDtoToOptionalModel(null);
 
-        // Then
-        assertNotNull(optionalPizza);
-        assertFalse(optionalPizza.isPresent());
+        assertNotNull(equivalentModel);
+        assertFalse(equivalentModel.isPresent());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("fromDtoToModelTestCases")
+    @DisplayName("fromDtoToOptionalModel: when given dto is not null then Optional with equivalent model is returned")
+    public void fromModelToOptionalDto_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned(PizzaDto dtoToConvert) {
+        Optional<Pizza> equivalentModel = converter.fromDtoToOptionalModel(dtoToConvert);
+
+        assertTrue(equivalentModel.isPresent());
+        checkProperties(equivalentModel.get(), dtoToConvert);
     }
 
 
     @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
-        // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(ingredientDtos).build();
+    @DisplayName("fromDtosToModels: when given collection is null then empty list is returned")
+    public void fromDtosToModels_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
+        assertTrue(converter.fromDtosToModels(null).isEmpty());
+    }
 
-        // When
-        Optional<Pizza> optionalPizza = pizzaConverter.fromDtoToOptionalModel(pizzaDto);
 
-        // Then
-        assertNotNull(optionalPizza);
-        assertTrue(optionalPizza.isPresent());
-        checkProperties(optionalPizza.get(), pizzaDto);
-        assertThat(ingredients, containsInAnyOrder(optionalPizza.get().getIngredients().toArray()));
+    static Stream<Arguments> fromDtosToModelsTestCases() {
+        IngredientDto ingredientDto = buildIngredientDto(1, "Jam");
+        PizzaDto dto = buildPizzaDto(1, "Carbonara", 12.10D, Set.of(ingredientDto));
+        return Stream.of(
+                //@formatter:off
+                //            listOfDtosToConvert
+                Arguments.of( new ArrayList<>() ),
+                Arguments.of( asList(dto) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDtosToModelsTestCases")
+    @DisplayName("fromDtosToModels: when the given collection is not null then the returned one of equivalent models is returned")
+    public void fromDtosToModels_whenGivenCollectionIsNotNull_thenEquivalentCollectionModelsIsReturned(List<PizzaDto> listOfDtosToConvert) {
+        List<Pizza> equivalentModels = converter.fromDtosToModels(listOfDtosToConvert);
+
+        assertNotNull(equivalentModels);
+        assertEquals(listOfDtosToConvert.size(), equivalentModels.size());
+        for (int i = 0; i < equivalentModels.size(); i++) {
+            checkProperties(equivalentModels.get(i), listOfDtosToConvert.get(i));
+        }
     }
 
 
     @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
-        // When
-        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(null);
-
-        // Then
-        assertNotNull(pizzas);
-        assertTrue(pizzas.isEmpty());
-    }
-
-
-    @Test
-    public void fromDtosToEntities_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
-        // When
-        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(new ArrayList<>());
-
-        // Then
-        assertNotNull(pizzas);
-        assertTrue(pizzas.isEmpty());
-    }
-
-
-    @Test
-    public void fromDtosToEntities_whenGivenCollectionIsNotEmpty_thenEquivalentListOfEntitiesIsReturned() {
-        // Given
-        PizzaDto pizzaDto1 = PizzaDto.builder().id(1).name("Carbonara").cost(7.50D).ingredients(new HashSet<>()).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id(2).name("Hawaiian").cost(8D).ingredients(ingredientDtos).build();
-
-        Pizza pizza1 = Pizza.builder().id(pizzaDto1.getId()).name(PizzaEnum.getFromDatabaseValue(pizzaDto1.getName()).get())
-                                      .ingredients(new HashSet<>()).build();
-        Pizza pizza2 = Pizza.builder().id(pizzaDto2.getId()).name(PizzaEnum.getFromDatabaseValue(pizzaDto2.getName()).get())
-                                      .ingredients(ingredients).build();
-        // When
-        List<Pizza> pizzas = pizzaConverter.fromDtosToModels(Arrays.asList(pizzaDto1, pizzaDto2));
-
-        // Then
-        assertNotNull(pizzas);
-        assertEquals(2, pizzas.size());
-        assertThat(pizzas, containsInAnyOrder(pizza1, pizza2));
-    }
-
-
-    @Test
+    @DisplayName("fromModelToDto: when given model is null then null dto is returned")
     public void fromModelToDto_whenGivenModelIsNull_thenNullIsReturned() {
-        // When
-        PizzaDto pizzaDto = pizzaConverter.fromModelToDto(null);
-
-        // Then
-        assertNull(pizzaDto);
+        assertNull(converter.fromModelToDto(null));
     }
 
 
-    @Test
-    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned() {
-        // Given
-        Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
-
-        // When
-        PizzaDto pizzaDto = pizzaConverter.fromModelToDto(pizza);
-
-        // Then
-        checkProperties(pizza, pizzaDto);
-        assertThat(ingredientDtos, containsInAnyOrder(pizzaDto.getIngredients().toArray()));
+    static Stream<Arguments> fromModelToDtoTestCases() {
+        Ingredient ingredient = buildIngredient(1, "Jam");
+        Pizza model = buildPizza(1, CARBONARA, 12.10D, Set.of(ingredient));
+        return Stream.of(
+                //@formatter:off
+                //            modelToConvert
+                Arguments.of( new Pizza() ),
+                Arguments.of( model )
+        ); //@formatter:on
     }
 
+    @ParameterizedTest
+    @MethodSource("fromModelToDtoTestCases")
+    @DisplayName("fromModelToDto: when the given model is not null then the equivalent dto is returned")
+    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned(Pizza modelToConvert) {
+        PizzaDto equivalentDto = converter.fromModelToDto(modelToConvert);
+        checkProperties(modelToConvert, equivalentDto);
+    }
 
     @Test
+    @DisplayName("fromModelToOptionalDto: when given model is null then empty Optional is returned")
     public void fromModelToOptionalDto_whenGivenModelIsNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromModelToOptionalDto(null);
+        Optional<PizzaDto> equivalentDto = converter.fromModelToOptionalDto(null);
 
-        // Then
-        assertNotNull(optionalPizzaDto);
-        assertFalse(optionalPizzaDto.isPresent());
+        assertNotNull(equivalentDto);
+        assertFalse(equivalentDto.isPresent());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("fromModelToDtoTestCases")
+    @DisplayName("fromModelToOptionalDto: when given model is not null then Optional with equivalent Dto is returned")
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentDtoIsReturned(Pizza modelToConvert) {
+        Optional<PizzaDto> equivalentDto = converter.fromModelToOptionalDto(modelToConvert);
+
+        assertTrue(equivalentDto.isPresent());
+        checkProperties(modelToConvert, equivalentDto.get());
     }
 
 
     @Test
-    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
-        // Given
-        Pizza pizza = Pizza.builder().id(1).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(ingredients).build();
-
-        // When
-        Optional<PizzaDto> optionalPizzaDto = pizzaConverter.fromModelToOptionalDto(pizza);
-
-        // Then
-        assertNotNull(optionalPizzaDto);
-        assertTrue(optionalPizzaDto.isPresent());
-        checkProperties(pizza, optionalPizzaDto.get());
-        assertThat(ingredientDtos, containsInAnyOrder(optionalPizzaDto.get().getIngredients().toArray()));
-    }
-
-
-    @Test
+    @DisplayName("fromModelsToDtos: when given collection is null then empty list is returned")
     public void fromModelsToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
-        // When
-        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(null);
-
-        // Then
-        assertNotNull(pizzaDtos);
-        assertTrue(pizzaDtos.isEmpty());
+        assertTrue(converter.fromModelsToDtos(null).isEmpty());
     }
 
 
-    @Test
-    public void fromModelsToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
-        // When
-        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(new ArrayList<>());
+    static Stream<Arguments> fromModelsToDtosTestCases() {
+        Ingredient ingredient = buildIngredient(1, "Jam");
+        Pizza model = buildPizza(1, CARBONARA, 12.10D, Set.of(ingredient));
+        return Stream.of(
+                //@formatter:off
+                //            listOfModelsToConvert
+                Arguments.of( new ArrayList<>() ),
+                Arguments.of( asList(model) )
+        ); //@formatter:on
+    }
 
-        // Then
-        assertNotNull(pizzaDtos);
-        assertTrue(pizzaDtos.isEmpty());
+    @ParameterizedTest
+    @MethodSource("fromModelsToDtosTestCases")
+    @DisplayName("fromModelsToDtos: when the given collection is not null then the returned one of equivalent dtos is returned")
+    public void fromEntitiesToDtos_whenGivenCollectionIsNotNull_thenEquivalentCollectionDtosIsReturned(List<Pizza> listOfModelsToConvert) {
+        List<PizzaDto> equivalentDtos = converter.fromModelsToDtos(listOfModelsToConvert);
+
+        assertNotNull(equivalentDtos);
+        assertEquals(listOfModelsToConvert.size(), equivalentDtos.size());
+        for (int i = 0; i < equivalentDtos.size(); i++) {
+            checkProperties(listOfModelsToConvert.get(i), equivalentDtos.get(i));
+        }
     }
 
 
-    @Test
-    public void fromModelsToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
-        // Given
-        Pizza pizza1 = Pizza.builder().id(1).name(PizzaEnum.CARBONARA).cost(7.50D).ingredients(ingredients).build();
-        Pizza pizza2 = Pizza.builder().id(2).name(PizzaEnum.HAWAIIAN).cost(8D).ingredients(new HashSet<>()).build();
-
-        PizzaDto pizzaDto1 = PizzaDto.builder().id(pizza1.getId()).name(pizza1.getName().getInternalPropertyValue()).cost(pizza1.getCost())
-                                                                  .ingredients(ingredientDtos).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id(pizza2.getId()).name(pizza2.getName().getInternalPropertyValue()).cost(pizza2.getCost())
-                                                                  .ingredients(new HashSet<>()).build();
-        // When
-        List<PizzaDto> pizzaDtos = pizzaConverter.fromModelsToDtos(Arrays.asList(pizza1, pizza2));
-
-        // Then
-        assertNotNull(pizzaDtos);
-        assertEquals(2, pizzaDtos.size());
-        assertThat(pizzaDtos, containsInAnyOrder(pizzaDto1, pizzaDto2));
-    }
-
-
-    private void checkProperties(Pizza pizza, PizzaDto pizzaDto) {
-        assertNotNull(pizza);
-        assertNotNull(pizzaDto);
-        assertEquals(pizza.getId(), pizzaDto.getId());
-        assertEquals(pizza.getName().getInternalPropertyValue(), pizzaDto.getName());
-        assertEquals(pizza.getCost(), pizzaDto.getCost());
+    private void checkProperties(Pizza model, PizzaDto dto) {
+        assertNotNull(model);
+        assertNotNull(dto);
+        assertEquals(model.getId(), dto.getId());
+        assertEquals(model.getCost(), dto.getCost());
+        if (null != model.getName()) {
+            assertEquals(model.getName().getInternalPropertyValue(), dto.getName());
+        }
+        if (null != model.getIngredients()) {
+            assertEquals(model.getIngredients().size(), dto.getIngredients().size());
+            model.getIngredients().forEach(i -> {
+                IngredientDto iDto = buildIngredientDto(i.getId(), i.getName());
+                assertTrue(dto.getIngredients().contains(iDto));
+            });
+        }
     }
 
 }

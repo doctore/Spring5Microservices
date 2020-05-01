@@ -3,7 +3,8 @@ package com.pizza.controller;
 import com.pizza.annotation.RoleAdmin;
 import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.service.cache.UserBlacklistCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,18 +21,15 @@ import javax.validation.constraints.Size;
 /**
  * Rest services to work with users
  */
+@AllArgsConstructor
 @RestController
 @RequestMapping(RestRoutes.USER.ROOT)
 @CrossOrigin(origins="*")
 @Validated
 public class UserController {
 
-    private UserBlacklistCacheService userBlackListCacheService;
-
-    @Autowired
-    public UserController(UserBlacklistCacheService userBlackListCacheService) {
-        this.userBlackListCacheService = userBlackListCacheService;
-    }
+    @Lazy
+    private final UserBlacklistCacheService userBlackListCacheService;
 
 
     /**

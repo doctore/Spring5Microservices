@@ -7,7 +7,7 @@ import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,19 +29,15 @@ import javax.validation.constraints.Positive;
 /**
  * Rest services to work with {@link Order}
  */
+@AllArgsConstructor
 @RestController
 @RequestMapping(RestRoutes.ORDER.ROOT)
 @CrossOrigin(origins="*")
 @Validated
 public class OrderController {
 
-    private OrderService orderService;
-
-
-    @Autowired
-    public OrderController (@Lazy OrderService orderService) {
-        this.orderService = orderService;
-    }
+    @Lazy
+    private final OrderService orderService;
 
 
     /**

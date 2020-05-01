@@ -143,7 +143,6 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * @throws DataAccessException if there is an error executing the query
      */
     public Set<OrderDto> fetchPageToOrderDtoByIdWithOrderLineDto(int page, int size) {
-
         if (0 > page || 0 >= size)
             return new LinkedHashSet<>();
 

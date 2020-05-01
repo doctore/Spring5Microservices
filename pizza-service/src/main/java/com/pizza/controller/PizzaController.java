@@ -7,7 +7,7 @@ import com.pizza.dto.PizzaDto;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.service.PizzaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -25,18 +25,15 @@ import javax.validation.constraints.Size;
 /**
  * Rest services to work with {@link Pizza}
  */
+@AllArgsConstructor
 @RestController
 @RequestMapping(RestRoutes.PIZZA.ROOT)
 @CrossOrigin(origins="*")
 @Validated
 public class PizzaController {
 
-    private PizzaService pizzaService;
-
-    @Autowired
-    public PizzaController(@Lazy PizzaService pizzaService) {
-        this.pizzaService = pizzaService;
-    }
+    @Lazy
+    private final PizzaService pizzaService;
 
 
     /**

@@ -8,7 +8,7 @@ import com.pizza.repository.IngredientRepository;
 import com.pizza.repository.PizzaRepository;
 import com.pizza.util.PageUtil;
 import com.pizza.util.converter.PizzaConverter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,26 +16,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
+@AllArgsConstructor
 @Service
 public class PizzaService {
 
-    private IngredientRepository ingredientRepository;
-    private PageUtil pageUtil;
-    private PizzaConverter pizzaConverter;
-    private PizzaRepository pizzaRepository;
+    @Lazy
+    private final IngredientRepository ingredientRepository;
 
+    @Lazy
+    private final PizzaConverter pizzaConverter;
 
-    @Autowired
-    public PizzaService(@Lazy IngredientRepository ingredientRepository, @Lazy PageUtil pageUtil,
-                        @Lazy PizzaConverter pizzaConverter, @Lazy PizzaRepository pizzaRepository) {
-        this.ingredientRepository = ingredientRepository;
-        this.pageUtil = pageUtil;
-        this.pizzaConverter = pizzaConverter;
-        this.pizzaRepository = pizzaRepository;
-    }
+    @Lazy
+    private final PizzaRepository pizzaRepository;
 
 
     /**
@@ -71,7 +65,7 @@ public class PizzaService {
      */
     public Page<PizzaDto> findPageWithIngredients(int page, int size, Sort sort) {
         Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
-                                                   pageUtil.buildPageRequest(page,size,sort));
+                                                   PageUtil.buildPageRequest(page,size,sort));
         return Optional.ofNullable(pizzaPage)
                        .map(p -> new PageImpl(pizzaConverter.fromModelsToDtos(p.getContent())
                                              ,pizzaPage.getPageable()

@@ -3,420 +3,246 @@ package com.order.util.converter;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
 import com.order.model.OrderLine;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.order.model.Pizza;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import static com.order.TestDataFactory.buildOrderLine;
+import static com.order.TestDataFactory.buildOrderLineDto;
+import static com.order.TestDataFactory.buildPizza;
+import static com.order.TestDataFactory.buildPizzaDto;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = {OrderLineConverterImpl.class, OrderLineConverterImpl_.class})
 public class OrderLineConverterTest {
 
     @Autowired
-    private OrderLineConverter orderLineConverter;
-
-
-    @Test
-    public void fromDtoToModel_whenGivenDtoAndOrderIdAreNull_thenNullIsReturned() {
-        // When
-        OrderLine orderLine = orderLineConverter.fromDtoToModel(null, null);
-
-        // Then
-        assertNull(orderLine);
-    }
-
+    private OrderLineConverter converter;
 
     @Test
-    public void fromDtoToModel_whenGivenDtoIsNullAndOrderIdIsNotNull_thenNullIsReturned() {
-        // Given
-        Integer orderId = 1;
-
-        // When
-        OrderLine orderLine = orderLineConverter.fromDtoToModel(null, orderId);
-
-        // Then
-        assertNull(orderLine);
-    }
-
-
-    @Test
-    public void fromDtoToModel_whenGivenDtoIsNotNullAndOrderIdIsNull_thenModelWithoutOrderIdIsReturned() {
-        // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id((short)1).name("Carbonara").cost(12D).build();
-        OrderLineDto orderLineDto = OrderLineDto.builder().id(1).pizza(pizzaDto).cost(12D).amount((short)1).build();
-
-        // When
-        OrderLine orderLine = orderLineConverter.fromDtoToModel(orderLineDto, null);
-
-        // Then
-        assertNotNull(orderLine);
-        assertNull(orderLine.getOrderId());
-        checkProperties(orderLine, orderLineDto);
-    }
-
-
-    @Test
-    public void fromDtoToModel_whenGivenDtoAndOrderIdAreNotNull_thenModelWithAllPropertiesNotNullIsReturned() {
-        // Given
-        Integer orderId = 1;
-        PizzaDto pizzaDto = PizzaDto.builder().id((short)1).name("Carbonara").cost(12D).build();
-        OrderLineDto orderLineDto = OrderLineDto.builder().id(1).pizza(pizzaDto).cost(12D).amount((short)1).build();
-
-        // When
-        OrderLine orderLine = orderLineConverter.fromDtoToModel(orderLineDto, orderId);
-
-        // Then
-        assertNotNull(orderLine);
-        assertEquals(orderId, orderLine.getOrderId());
-        checkProperties(orderLine, orderLineDto);
-    }
-
-
-    @Test
+    @DisplayName("fromDtoToModel: when given dto is null then null model is returned")
     public void fromDtoToModel_whenGivenDtoIsNull_thenNullIsReturned() {
-        // When
-        OrderLine orderLine = orderLineConverter.fromDtoToModel(null);
+        assertNull(converter.fromDtoToModel(null));
+    }
 
-        // Then
-        assertNull(orderLine);
+
+    static Stream<Arguments> fromDtoToModelTestCases() {
+        PizzaDto pizzaDto = buildPizzaDto((short)1, "Carbonara", 12.10D);
+        OrderLineDto dto = buildOrderLineDto(1, 2, pizzaDto, (short)5, 12.10D);
+        return Stream.of(
+                //@formatter:off
+                //            dtoToConvert
+                Arguments.of( new OrderLineDto() ),
+                Arguments.of( dto )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDtoToModelTestCases")
+    @DisplayName("fromDtoToModel: when the given dto is not null then the equivalent model is returned")
+    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned(OrderLineDto dtoToConvert) {
+        OrderLine equivalentModel = converter.fromDtoToModel(dtoToConvert);
+        checkProperties(equivalentModel, dtoToConvert);
     }
 
 
     @Test
-    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned() {
-        // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id((short)1).name("Carbonara").cost(12D).build();
-        OrderLineDto orderLineDto = OrderLineDto.builder().id(1).orderId(4).pizza(pizzaDto).cost(12D).amount((short)1).build();
+    @DisplayName("fromDtoToModel: when given dto and id are null then null model is returned")
+    public void fromDtoToModel_whenGivenDtoAndIdAreNull_thenNullIsReturned() {
+        assertNull(converter.fromDtoToModel(null, null));
+    }
 
-        // When
-        OrderLine orderLine = orderLineConverter.fromDtoToModel(orderLineDto);
 
-        // Then
-        checkProperties(orderLine, orderLineDto);
-        assertEquals(orderLine.getOrderId(), orderLineDto.getOrderId());
+    static Stream<Arguments> fromDtoToModelWithIdTestCases() {
+        PizzaDto pizzaDto = buildPizzaDto((short)1, "Carbonara", 12.10D);
+        OrderLineDto dto = buildOrderLineDto(1, 2, pizzaDto, (short)5, 12.10D);
+        return Stream.of(
+                //@formatter:off
+                //            dtoToConvert,        id
+                Arguments.of( new OrderLineDto(),  null ),
+                Arguments.of( dto,                 1 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDtoToModelWithIdTestCases")
+    @DisplayName("fromDtoToModel: when the given dto and/or id are not null then the equivalent model is returned")
+    public void fromDtoToModel_whenGivenDtoAndOrIdAreNotNull_thenEquivalentModelIsReturned(OrderLineDto dtoToConvert, Integer orderId) {
+        OrderLine equivalentModel = converter.fromDtoToModel(dtoToConvert, orderId);
+        checkProperties(equivalentModel, dtoToConvert, orderId);
     }
 
 
     @Test
-    public void fromDtoToOptionalModel_whenGivenDtoAndOrderIdAreNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<OrderLine> optionalOrderLine = orderLineConverter.fromDtoToOptionalModel(null, null);
-
-        // Then
-        assertNotNull(optionalOrderLine);
-        assertFalse(optionalOrderLine.isPresent());
-    }
-
-
-    @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNullAndOrderIdAreNotNull_thenEmptyOptionalIsReturned() {
-        // Given
-        Integer orderId = 2;
-
-        // When
-        Optional<OrderLine> optionalOrderLine = orderLineConverter.fromDtoToOptionalModel(null, orderId);
-
-        // When
-        assertNotNull(optionalOrderLine);
-        assertFalse(optionalOrderLine.isPresent());
-    }
-
-
-    @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNotNullAndOrderIdIsNull_thenOptionalOfModelWithoutOrderIdIsReturned()  {
-        // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
-        OrderLineDto orderLineDto = OrderLineDto.builder().id(2).pizza(pizzaDto).cost(17D).amount((short)2).build();
-
-        // When
-        Optional<OrderLine> optionalOrderLine = orderLineConverter.fromDtoToOptionalModel(orderLineDto, null);
-
-        // When
-        assertTrue(optionalOrderLine.isPresent());
-        assertNull(optionalOrderLine.get().getOrderId());
-        checkProperties(optionalOrderLine.get(), orderLineDto);
-    }
-
-
-    @Test
-    public void fromDtoToOptionalModel_whenGivenDtoAndOrderIdAreNotNull_thenOptionalOfModelWithAllPropertiesNotNullIsReturned() {
-        // Given
-        Integer orderId = 1;
-        PizzaDto pizzaDto = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
-        OrderLineDto orderLineDto = OrderLineDto.builder().id(2).pizza(pizzaDto).cost(17D).amount((short)2).build();
-
-        // When
-        Optional<OrderLine> optionalOrderLine = orderLineConverter.fromDtoToOptionalModel(orderLineDto, orderId);
-
-        // Then
-        assertTrue(optionalOrderLine.isPresent());
-        assertEquals(orderId, optionalOrderLine.get().getOrderId());
-        checkProperties(optionalOrderLine.get(), orderLineDto);
-    }
-
-
-    @Test
+    @DisplayName("fromDtoToOptionalModel: when given dto is null then empty Optional is returned")
     public void fromDtoToOptionalModel_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<OrderLine> optionalOrderLine = orderLineConverter.fromDtoToOptionalModel(null);
+        Optional<OrderLine> equivalentModel = converter.fromDtoToOptionalModel(null);
 
-        // Then
-        assertNotNull(optionalOrderLine);
-        assertFalse(optionalOrderLine.isPresent());
+        assertNotNull(equivalentModel);
+        assertFalse(equivalentModel.isPresent());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("fromDtoToModelTestCases")
+    @DisplayName("fromDtoToOptionalModel: when given dto is not null then Optional with equivalent model is returned")
+    public void fromModelToOptionalDto_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned(OrderLineDto dtoToConvert) {
+        Optional<OrderLine> equivalentModel = converter.fromDtoToOptionalModel(dtoToConvert);
+
+        assertTrue(equivalentModel.isPresent());
+        checkProperties(equivalentModel.get(), dtoToConvert);
     }
 
 
     @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
-        // Given
-        PizzaDto pizzaDto = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
-        OrderLineDto orderLineDto = OrderLineDto.builder().id(2).pizza(pizzaDto).cost(17D).amount((short)2).build();
-
-        // When
-        Optional<OrderLine> optionalOrderLine = orderLineConverter.fromDtoToOptionalModel(orderLineDto);
-
-        // Then
-        assertNotNull(optionalOrderLine);
-        assertTrue(optionalOrderLine.isPresent());
-        checkProperties(optionalOrderLine.get(), orderLineDto);
-        assertEquals(orderLineDto.getOrderId(), optionalOrderLine.get().getOrderId());
-    }
-
-
-    @Test
-    public void fromDtosToModels_whenGivenCollectionAndOrderIdAreNull_thenEmptyListIsReturned() {
-        // When
-        List<OrderLine> orderLines = orderLineConverter.fromDtosToModels(null ,null);
-
-        // Then
-        assertNotNull(orderLines);
-        assertTrue(orderLines.isEmpty());
-    }
-
-
-    @Test
-    public void fromDtosToModels_whenGivenCollectionIsNullAndOrderIdIsNotNull_thenEmptyListIsReturned() {
-        // Given
-        Integer orderId = 3;
-
-        // When
-        List<OrderLine> orderLines = orderLineConverter.fromDtosToModels(null, orderId);
-
-        // Then
-        assertNotNull(orderLines);
-        assertTrue(orderLines.isEmpty());
-    }
-
-
-    @Test
-    public void fromDtosToModels_whenGivenCollectionIsNotEmptyAndOrderIdIsNull_thenEquivalentListOfModelsWithoutOrderIdIsReturned() {
-        // Given
-        PizzaDto pizzaDto1 = PizzaDto.builder().id((short)1).name("Carbonara").cost(12D).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
-
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(pizzaDto1).cost(12D).amount((short)1).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(pizzaDto2).cost(17D).amount((short)2).build();
-
-        OrderLine orderLine1 = OrderLine.builder().id(orderLineDto1.getId()).amount(orderLineDto1.getAmount())
-                                                  .cost(orderLineDto1.getCost()).pizzaId(pizzaDto1.getId()).build();
-
-        OrderLine orderLine2 = OrderLine.builder().id(orderLineDto2.getId()).amount(orderLineDto2.getAmount())
-                                                  .cost(orderLineDto2.getCost()).pizzaId(pizzaDto2.getId()).build();
-        // When
-        List<OrderLine> orderLines = orderLineConverter.fromDtosToModels(Arrays.asList(orderLineDto1, orderLineDto2), null);
-
-        // Then
-        assertNotNull(orderLines);
-        assertEquals(2, orderLines.size());
-        assertThat(orderLines, containsInAnyOrder(orderLine1, orderLine2));
-        orderLines.forEach(ol -> assertNull(ol.getOrderId()));
-    }
-
-
-    @Test
-    public void fromDtosToModels_whenGivenCollectionIsNotEmptyAndOrderIdIsNotNull_thenEquivalentListOfModelsWithOrderIdIsReturned() {
-        // Given
-        Integer orderId = 1;
-        PizzaDto pizzaDto1 = PizzaDto.builder().id((short)1).name("Carbonara").cost(12D).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
-
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(pizzaDto1).cost(12D).amount((short)1).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(pizzaDto2).cost(17D).amount((short)2).build();
-
-        OrderLine orderLine1 = OrderLine.builder().id(orderLineDto1.getId()).orderId(orderId).amount(orderLineDto1.getAmount())
-                                        .cost(orderLineDto1.getCost()).pizzaId(pizzaDto1.getId()).build();
-
-        OrderLine orderLine2 = OrderLine.builder().id(orderLineDto2.getId()).orderId(orderId).amount(orderLineDto2.getAmount())
-                                        .cost(orderLineDto2.getCost()).pizzaId(pizzaDto2.getId()).build();
-        // When
-        List<OrderLine> orderLines = orderLineConverter.fromDtosToModels(Arrays.asList(orderLineDto1, orderLineDto2), orderId);
-
-        // Then
-        assertNotNull(orderLines);
-        assertEquals(2, orderLines.size());
-        assertThat(orderLines, containsInAnyOrder(orderLine1, orderLine2));
-        orderLines.forEach(ol -> assertEquals(orderId, ol.getOrderId()));
-    }
-
-
-    @Test
+    @DisplayName("fromDtosToModels: when given collection is null then empty list is returned")
     public void fromDtosToModels_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
-        // When
-        List<OrderLine> orderLines = orderLineConverter.fromDtosToModels(null);
+        assertTrue(converter.fromDtosToModels(null).isEmpty());
+    }
 
-        // Then
-        assertNotNull(orderLines);
-        assertTrue(orderLines.isEmpty());
+
+    static Stream<Arguments> fromDtosToModelsTestCases() {
+        PizzaDto pizzaDto = buildPizzaDto((short)1, "Carbonara", 12.10D);
+        OrderLineDto dto = buildOrderLineDto(1, 2, pizzaDto, (short)5, 12.10D);
+        return Stream.of(
+                //@formatter:off
+                //            listOfDtosToConvert
+                Arguments.of( new ArrayList<>() ),
+                Arguments.of( asList(dto) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDtosToModelsTestCases")
+    @DisplayName("fromDtosToModels: when the given collection is not null then the returned one of equivalent models is returned")
+    public void fromDtosToModels_whenGivenCollectionIsNotNull_thenEquivalentCollectionModelsIsReturned(List<OrderLineDto> listOfDtosToConvert) {
+        List<OrderLine> equivalentModels = converter.fromDtosToModels(listOfDtosToConvert);
+
+        assertNotNull(equivalentModels);
+        assertEquals(listOfDtosToConvert.size(), equivalentModels.size());
+        for (int i = 0; i < equivalentModels.size(); i++) {
+            checkProperties(equivalentModels.get(i), listOfDtosToConvert.get(i));
+        }
     }
 
 
     @Test
-    public void fromDtosToModels_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
-        // When
-        List<OrderLine> orderLines = orderLineConverter.fromDtosToModels(new ArrayList<>());
-
-        // Then
-        assertNotNull(orderLines);
-        assertTrue(orderLines.isEmpty());
-    }
-
-
-    @Test
-    public void fromDtosToModels_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
-        // Given
-        PizzaDto pizzaDto1 = PizzaDto.builder().id((short)1).name("Carbonara").cost(12D).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
-
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).orderId(1).pizza(pizzaDto1).cost(12D).amount((short)1).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).orderId(1).pizza(pizzaDto2).cost(17D).amount((short)2).build();
-
-        OrderLine orderLine1 = OrderLine.builder().id(orderLineDto1.getId()).orderId(orderLineDto1.getOrderId()).amount(orderLineDto1.getAmount())
-                                                  .cost(orderLineDto1.getCost()).pizzaId(pizzaDto1.getId()).build();
-
-        OrderLine orderLine2 = OrderLine.builder().id(orderLineDto2.getId()).orderId(orderLineDto2.getOrderId()).amount(orderLineDto2.getAmount())
-                                                  .cost(orderLineDto2.getCost()).pizzaId(pizzaDto2.getId()).build();
-        // When
-        List<OrderLine> orderLines = orderLineConverter.fromDtosToModels(Arrays.asList(orderLineDto1, orderLineDto2));
-
-        // Then
-        assertNotNull(orderLines);
-        assertEquals(2, orderLines.size());
-        assertThat(orderLines, containsInAnyOrder(orderLine1, orderLine2));
-    }
-
-
-    @Test
+    @DisplayName("fromModelToDto: when given model is null then null dto is returned")
     public void fromModelToDto_whenGivenModelIsNull_thenNullIsReturned() {
-        // When
-        OrderLineDto orderLineDto = orderLineConverter.fromModelToDto(null);
-
-        // Then
-        assertNull(orderLineDto);
+        assertNull(converter.fromModelToDto(null));
     }
 
 
-    @Test
-    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned() {
-        // Given
-        OrderLine orderLine = OrderLine.builder().id(1).orderId(2).amount((short)1).cost(11D).pizzaId((short)3).build();
-
-        // When
-        OrderLineDto orderLineDto = orderLineConverter.fromModelToDto(orderLine);
-
-        // Then
-        checkProperties(orderLine, orderLineDto);
-        assertEquals(orderLine.getOrderId(), orderLineDto.getOrderId());
+    static Stream<Arguments> fromModelToDtoTestCases() {
+        OrderLine model = buildOrderLine(1, 2, (short)3, (short)5, 12.10D);
+        return Stream.of(
+                //@formatter:off
+                //            modelToConvert
+                Arguments.of( new OrderLine() ),
+                Arguments.of( model )
+        ); //@formatter:on
     }
 
+    @ParameterizedTest
+    @MethodSource("fromModelToDtoTestCases")
+    @DisplayName("fromModelToDto: when the given model is not null then the equivalent dto is returned")
+    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned(OrderLine modelToConvert) {
+        OrderLineDto equivalentDto = converter.fromModelToDto(modelToConvert);
+        checkProperties(modelToConvert, equivalentDto);
+    }
 
     @Test
+    @DisplayName("fromModelToOptionalDto: when given model is null then empty Optional is returned")
     public void fromModelToOptionalDto_whenGivenModelIsNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<OrderLineDto> optionalOrderLineDto = orderLineConverter.fromModelToOptionalDto(null);
+        Optional<OrderLineDto> equivalentDto = converter.fromModelToOptionalDto(null);
 
-        // Then
-        assertNotNull(optionalOrderLineDto);
-        assertFalse(optionalOrderLineDto.isPresent());
+        assertNotNull(equivalentDto);
+        assertFalse(equivalentDto.isPresent());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("fromModelToDtoTestCases")
+    @DisplayName("fromModelToOptionalDto: when given model is not null then Optional with equivalent Dto is returned")
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentDtoIsReturned(OrderLine modelToConvert) {
+        Optional<OrderLineDto> equivalentDto = converter.fromModelToOptionalDto(modelToConvert);
+
+        assertTrue(equivalentDto.isPresent());
+        checkProperties(modelToConvert, equivalentDto.get());
     }
 
 
     @Test
-    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
-        // Given
-        OrderLine orderLine = OrderLine.builder().id(1).orderId(2).amount((short)1).cost(11D).pizzaId((short)3).build();
-
-        // When
-        Optional<OrderLineDto> optionalOrderLineDto = orderLineConverter.fromModelToOptionalDto(orderLine);
-
-        // Then
-        assertNotNull(optionalOrderLineDto);
-        assertTrue(optionalOrderLineDto.isPresent());
-        checkProperties(orderLine, optionalOrderLineDto.get());
-        assertEquals(orderLine.getOrderId(), optionalOrderLineDto.get().getOrderId());
-    }
-
-
-    @Test
+    @DisplayName("fromModelsToDtos: when given collection is null then empty list is returned")
     public void fromModelsToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
-        // When
-        List<OrderLineDto> orderLineDtos = orderLineConverter.fromModelsToDtos(null);
-
-        // Then
-        assertNotNull(orderLineDtos);
-        assertTrue(orderLineDtos.isEmpty());
+        assertTrue(converter.fromModelsToDtos(null).isEmpty());
     }
 
 
-    @Test
-    public void fromModelsToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
-        // When
-        List<OrderLineDto> orderLineDtos = orderLineConverter.fromModelsToDtos(new ArrayList<>());
+    static Stream<Arguments> fromModelsToDtosTestCases() {
+        OrderLine model = buildOrderLine(1, 2, (short)3, (short)5, 12.10D);
+        return Stream.of(
+                //@formatter:off
+                //            listOfModelsToConvert
+                Arguments.of( new ArrayList<>() ),
+                Arguments.of( asList(model) )
+        ); //@formatter:on
+    }
 
-        // Then
-        assertNotNull(orderLineDtos);
-        assertTrue(orderLineDtos.isEmpty());
+    @ParameterizedTest
+    @MethodSource("fromModelsToDtosTestCases")
+    @DisplayName("fromModelsToDtos: when the given collection is not null then the returned one of equivalent dtos is returned")
+    public void fromEntitiesToDtos_whenGivenCollectionIsNotNull_thenEquivalentCollectionDtosIsReturned(List<OrderLine> listOfModelsToConvert) {
+        List<OrderLineDto> equivalentDtos = converter.fromModelsToDtos(listOfModelsToConvert);
+
+        assertNotNull(equivalentDtos);
+        assertEquals(listOfModelsToConvert.size(), equivalentDtos.size());
+        for (int i = 0; i < equivalentDtos.size(); i++) {
+            checkProperties(listOfModelsToConvert.get(i), equivalentDtos.get(i));
+        }
     }
 
 
-    @Test
-    public void fromModelsToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
-        // Given
-        OrderLine orderLine1 = OrderLine.builder().id(1).orderId(1).amount((short)2).cost(24D).pizzaId((short)1).build();
-        OrderLine orderLine2 = OrderLine.builder().id(2).orderId(1).amount((short)1).cost(8.50D).pizzaId((short)2).build();
-
-        PizzaDto pizzaDto1 = PizzaDto.builder().id((short)1).name("Carbonara").cost(12D).build();
-        PizzaDto pizzaDto2 = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8.5D).build();
-
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(orderLine1.getId()).orderId(orderLine1.getOrderId())
-                                                           .pizza(pizzaDto1).cost(orderLine1.getCost()).amount(orderLine1.getAmount()).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(orderLine2.getId()).orderId(orderLine2.getOrderId())
-                                                           .pizza(pizzaDto2).cost(orderLine2.getCost()).amount(orderLine2.getAmount()).build();
-        // When
-        List<OrderLineDto> orderLineDtos = orderLineConverter.fromModelsToDtos(Arrays.asList(orderLine1, orderLine2));
-
-        // Then
-        assertNotNull(orderLineDtos);
-        assertEquals(2, orderLineDtos.size());
-        assertThat(orderLineDtos, containsInAnyOrder(orderLineDto1, orderLineDto2));
-    }
-
-
-    private void checkProperties(OrderLine orderLine, OrderLineDto orderLineDto) {
+    private void checkProperties(OrderLine orderLine, OrderLineDto orderLineDto, Integer orderId) {
         assertNotNull(orderLine);
         assertNotNull(orderLineDto);
         assertEquals(orderLine.getId(), orderLineDto.getId());
         assertEquals(orderLine.getCost(), orderLineDto.getCost());
         assertEquals(orderLine.getAmount(), orderLineDto.getAmount());
-        assertEquals(orderLine.getPizzaId(), orderLineDto.getPizza().getId());
+        if (null != orderLine.getPizzaId()) {
+            assertEquals(orderLine.getPizzaId(), orderLineDto.getPizza().getId());
+        }
+        if (null != orderId) {
+            assertEquals(orderLine.getOrderId(), orderId);
+        }
+        else {
+            assertEquals(orderLine.getOrderId(), orderLineDto.getOrderId());
+        }
+    }
+
+    private void checkProperties(OrderLine orderLine, OrderLineDto orderLineDto) {
+        checkProperties(orderLine, orderLineDto, null);
     }
 
 }
