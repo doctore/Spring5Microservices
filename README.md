@@ -248,6 +248,8 @@ spring:
     password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
 ```
 
+And database table `security.jwt_client_details`, in the column `signature_secret`.
+
 To do it:
 
 - Run **registry-server** and **config-server**
