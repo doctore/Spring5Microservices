@@ -218,13 +218,13 @@ ENCRYPT_KEY=ENCRYPT_KEY
 If you are using Oracle JDK instead of OpenJDK, you need to download and install Oracle's Unlimited Strength Java Cryptography Extension (JCE). This isn't available through
 Maven and must be downloaded from Oracle Corporation. Once you've downloaded the zip files containing the JCE jars, you must do the following:
 
-- Locate your $JAVA_HOME/jre/lib/security directory
+- Locate your `$JAVA_HOME/jre/lib/security` directory
 
-- Back up the local_policy.jar and US_export_policy.jar files in the $JAVA_HOME/jre/lib/security directory to a different location.
+- Back up the `local_policy.jar` and `US_export_policy.jar` files in the `$JAVA_HOME/jre/lib/security` directory to a different location.
 
 - Unzip the JCE zip file you downloaded from Oracle
 
-- Copy the local_policy.jar and US_export_policy.jar to your $JAVA_HOME/jre/lib/security directory.
+- Copy the `local_policy.jar` and `US_export_policy.jar` to your `$JAVA_HOME/jre/lib/security` directory.
 
 #### Problems resolution
 
