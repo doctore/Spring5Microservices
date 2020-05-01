@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jooq.*;
+import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.springframework.beans.factory.annotation.Autowired;

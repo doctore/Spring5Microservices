@@ -22,6 +22,8 @@ spring:
 security:
   restApi:
     authenticationInformation: OnlyToAvoidAFailureLoadingConfigurationClass
+    clientId: TestClient
+    clientPassword: TestPassword
 
 cache:
   userBlacklist:
