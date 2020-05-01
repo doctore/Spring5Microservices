@@ -249,7 +249,7 @@ spring:
 
 To do it:
 
-- Run `registry-server` and `config-server`
+- Run **registry-server** and **config-server**
 
 - Encrypt required values using the provided endpoint for that purpose, as follows: 
 
@@ -327,9 +327,3 @@ or:
 From now, using the **gateway-server** URL, we can read the Swagger documentation included in the microservices.
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
-<br><br>
-
-## Future additions
-
-- Documentation of the REST Api with Swagger, when this library provides a more stable way to work with Webflux. **gateway-server** and **security-jwt-service** are currently
-configured.
