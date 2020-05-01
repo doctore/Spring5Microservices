@@ -64,7 +64,6 @@ public class CacheServiceTest {
     }
 
 
-
     static Stream<Arguments> containsTestCases() {
         Cache mockCache = Mockito.mock(Cache.class);
         SimpleValueWrapper returnedValue = new SimpleValueWrapper("FoundValue");
@@ -147,6 +146,72 @@ public class CacheServiceTest {
             doNothing().when(cacheManagerResult).put(key, value);
 
         boolean operationResult = cacheService.put(cacheName, key, value);
+
+        // Then
+        assertEquals(expectedResult, operationResult);
+    }
+
+
+    static Stream<Arguments> putIfAbsentTestCases() {
+        Cache mockCache = Mockito.mock(Cache.class);
+        SimpleValueWrapper returnedValue = new SimpleValueWrapper("FoundValue");
+        return Stream.of(
+                //@formatter:off
+                //            cacheName,         key,               value,             cacheManagerResult,   cacheResult,     expectedResult
+                Arguments.of( null,              null,              null,              null,                 null,            false ),
+                Arguments.of( null,              "ItDoesNotCare",   "ItDoesNotCare",   mockCache,            null,            false ),
+                Arguments.of( "NotFoundCache",   "ItDoesNotCare",   "ItDoesNotCare",   null,                 null,            false ),
+                Arguments.of( "FoundCache",      "ValidKey",        "ValidValue",      mockCache,            null,            true ),
+                Arguments.of( "FoundCache",      "ValidKey",        "ValidValue",      mockCache,            returnedValue,   false )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("putIfAbsentTestCases")
+    @DisplayName("putIfAbsent: test cases")
+    public void putIfAbsent_testCases(String cacheName, String key, String value, Cache cacheManagerResult, SimpleValueWrapper cacheResult,
+                                      boolean expectedResult) {
+        // When
+        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
+        if (null != cacheManagerResult) {
+            when(cacheManagerResult.get(key)).thenReturn(cacheResult);
+            doNothing().when(cacheManagerResult).put(key, value);
+        }
+
+        boolean operationResult = cacheService.putIfAbsent(cacheName, key, value);
+
+        // Then
+        assertEquals(expectedResult, operationResult);
+    }
+
+
+    static Stream<Arguments> putIfPresentTestCases() {
+        Cache mockCache = Mockito.mock(Cache.class);
+        SimpleValueWrapper returnedValue = new SimpleValueWrapper("FoundValue");
+        return Stream.of(
+                //@formatter:off
+                //            cacheName,         key,               value,             cacheManagerResult,   cacheResult,     expectedResult
+                Arguments.of( null,              null,              null,              null,                 null,            false ),
+                Arguments.of( null,              "ItDoesNotCare",   "ItDoesNotCare",   mockCache,            null,            false ),
+                Arguments.of( "NotFoundCache",   "ItDoesNotCare",   "ItDoesNotCare",   null,                 null,            false ),
+                Arguments.of( "FoundCache",      "ValidKey",        "ValidValue",      mockCache,            null,            false ),
+                Arguments.of( "FoundCache",      "ValidKey",        "ValidValue",      mockCache,            returnedValue,   true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("putIfPresentTestCases")
+    @DisplayName("putIfPresent: test cases")
+    public void putIfPresent_testCases(String cacheName, String key, String value, Cache cacheManagerResult, SimpleValueWrapper cacheResult,
+                                       boolean expectedResult) {
+        // When
+        when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
+        if (null != cacheManagerResult) {
+            when(cacheManagerResult.get(key)).thenReturn(cacheResult);
+            doNothing().when(cacheManagerResult).put(key, value);
+        }
+
+        boolean operationResult = cacheService.putIfPresent(cacheName, key, value);
 
         // Then
         assertEquals(expectedResult, operationResult);

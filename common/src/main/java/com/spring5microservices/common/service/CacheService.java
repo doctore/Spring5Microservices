@@ -102,6 +102,40 @@ public class CacheService {
 
 
     /**
+     * Include a pair of {@code key} - {@code value} inside the cache, ONLY if the provided key does not exist.
+     *
+     * @param cacheName
+     *    Cache on which the information will be included
+     * @param key
+     *    Identifier of the {@code value} we want to store
+     * @param value
+     *    Information to store
+     *
+     * @return {@code true} if the data was stored, {@code false} otherwise
+     */
+    public <K, V> boolean putIfAbsent(String cacheName, K key, V value) {
+        return contains(cacheName, key) ? false: put(cacheName, key, value);
+    }
+
+
+    /**
+     * Include a pair of {@code key} - {@code value} inside the cache, ONLY if the provided key exists.
+     *
+     * @param cacheName
+     *    Cache on which the information will be included
+     * @param key
+     *    Identifier of the {@code value} we want to store
+     * @param value
+     *    Information to store
+     *
+     * @return {@code true} if the data was stored, {@code false} otherwise
+     */
+    public <K, V> boolean putIfPresent(String cacheName, K key, V value) {
+        return contains(cacheName, key) ? put(cacheName, key, value) : false;
+    }
+
+
+    /**
      * Remove the given {@code key} of the cache.
      *
      * @param cacheName
