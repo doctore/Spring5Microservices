@@ -203,11 +203,20 @@ In the next picture you will see a communication diagram of all microservices de
 
 Due to every microservice has to decrypt the information sent by **config-server**, some steps are required:
 
-#### Download and install Oracle JCE jars needed for encryption
+#### Setting up an encryption key
 
-To begin, you need to download and install Oracle’s Unlimited Strength Java Cryptography Extension (JCE). This isn’t available through Maven and must be downloaded from Oracle
-Corporation. 1 Once you’ve downloaded the zip files containing the JCE
-jars, you must do the following:
+In this project a symmetric encryption key has been used. The symmetric encryption key is nothing more than a shared secret that's used by the encrypter to encrypt a value
+and the decrypter to decrypt a value. With the Spring Cloud configuration server, the symmetric encryption key is a string of characters you select that is passed to the
+service via an operating system environment variable called **ENCRYPT_KEY**. For those microservices, I have used:
+
+```
+ENCRYPT_KEY=ENCRYPT_KEY
+```
+
+#### JDK and Oracle JCE
+
+If you are using Oracle JDK instead of OpenJDK, you need to download and install Oracle's Unlimited Strength Java Cryptography Extension (JCE). This isn't available through
+Maven and must be downloaded from Oracle Corporation. Once you've downloaded the zip files containing the JCE jars, you must do the following:
 
 - Locate your $JAVA_HOME/jre/lib/security directory
 
@@ -217,15 +226,36 @@ jars, you must do the following:
 
 - Copy the local_policy.jar and US_export_policy.jar to your $JAVA_HOME/jre/lib/security directory.
 
-#### Setting up an encryption key
+#### Problems resolution
 
-Once the JAR files are in place, you need to set a symmetric encryption key. The symmetric encryption key is nothing more than a shared secret that’s used by the encrypter
-to encrypt a value and the decrypter to decrypt a value. With the Spring Cloud configuration server, the symmetric encryption key is a string of characters you select
-that is passed to the service via an operating system environment variable called **ENCRYPT_KEY**. For those microservices, I have used:
+If you receive some errors related with encryption like:
 
 ```
-ENCRYPT_KEY=ENCRYPT_KEY
+IllegalStateException: Cannot decrypt: ...
 ```
+
+Please, take a look to the previous steps in this section, maybe one of them is missing. If you still see same error messages, the best way to solve it is changing the
+"cipher values" added in the microservices configuration files included in: 
+
+* [Spring5Microservices_ConfigServerData](https://github.com/doctore/Spring5Microservices_ConfigServerData)
+
+Like:
+
+```
+spring:
+  datasource:
+    password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
+```
+
+To do it:
+
+- Run `registry-server` and `config-server`
+
+- Encrypt required values using the provided endpoint for that purpose, as follows: 
+
+![Alt text](/documentation/Encryption.png?raw=true "Encryption endpoint")
+
+- Overwrite current values by the provided ones.
 
 ## Security services
 
