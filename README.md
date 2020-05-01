@@ -244,6 +244,7 @@ Like:
 ```
 spring:
   datasource:
+    # Raw password: microservice
     password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
 ```
 
