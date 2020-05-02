@@ -3,7 +3,7 @@ package com.security.jwt.service.cache;
 import com.security.jwt.configuration.cache.CacheConfiguration;
 import com.security.jwt.model.JwtClientDetails;
 import com.spring5microservices.common.service.CacheService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -11,17 +11,15 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
+@AllArgsConstructor
 @Service
 public class JwtClientDetailsCacheService {
 
-    private CacheConfiguration cacheConfiguration;
-    private CacheService cacheService;
+    @Lazy
+    private final CacheConfiguration cacheConfiguration;
 
-    @Autowired
-    public JwtClientDetailsCacheService(@Lazy CacheConfiguration cacheConfiguration, @Lazy CacheService cacheService) {
-        this.cacheConfiguration = cacheConfiguration;
-        this.cacheService = cacheService;
-    }
+    @Lazy
+    private final CacheService cacheService;
 
 
     /**
