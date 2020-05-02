@@ -14,7 +14,6 @@
 - [Previous steps](#previous-steps)
 - [Security services](#security-services)
 - [How to use it?](#how-to-use-it)
-- [Future additions](#future-additions)
 
 ## Why was this project created?
 
