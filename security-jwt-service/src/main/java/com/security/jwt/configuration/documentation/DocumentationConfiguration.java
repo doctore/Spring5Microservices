@@ -7,11 +7,18 @@ import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.AuthorizationScope;
+import springfox.documentation.service.BasicAuth;
+import springfox.documentation.service.SecurityReference;
+import springfox.documentation.service.SecurityScheme;
 import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.ArrayList;
+
+import static java.util.Arrays.asList;
 
 /**
  * Used to configure the Swagger documentation of the current microservice
@@ -19,6 +26,8 @@ import java.util.ArrayList;
 @Configuration
 @EnableSwagger2
 public class DocumentationConfiguration {
+
+    private final String BASIC_AUTHORIZATION_API_KEY = "basicAuth";
 
     @Value("${springfox.documentation.apiVersion}")
     private String apiVersion;
@@ -38,7 +47,9 @@ public class DocumentationConfiguration {
                 .apis(RequestHandlerSelectors.basePackage(Constants.PATH.CONTROLLER))
                 .paths(PathSelectors.any())
                 .build()
-                .apiInfo(apiInfo());
+                .apiInfo(apiInfo())
+                .securitySchemes(asList(securityScheme()))
+                .securityContexts(asList(securityContext()));
     }
 
 
@@ -51,6 +62,20 @@ public class DocumentationConfiguration {
         return new ApiInfo(title, description, apiVersion,
                 null, null, null, null,
                 new ArrayList<>());
+    }
+
+    private SecurityScheme securityScheme() {
+        return new BasicAuth(BASIC_AUTHORIZATION_API_KEY);
+    }
+
+    private SecurityContext securityContext() {
+        return SecurityContext.builder()
+                .securityReferences(asList(securityReference()))
+                .build();
+    }
+
+    private SecurityReference securityReference() {
+        return new SecurityReference(BASIC_AUTHORIZATION_API_KEY, new AuthorizationScope[0]);
     }
 
 }
