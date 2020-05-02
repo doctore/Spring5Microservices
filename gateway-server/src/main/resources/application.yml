@@ -28,10 +28,3 @@ springfox:
       v2:
         # Api docs path properties
         path: /v2/api-docs
-
-
-# FROM HERE, Include them into configuration YML files
-cache:
-  entryCapacity: 100
-  expireInMinutes: 15
-  name: refToken_finalToken

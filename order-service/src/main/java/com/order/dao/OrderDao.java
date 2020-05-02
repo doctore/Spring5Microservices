@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jooq.*;
+import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,7 +143,6 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * @throws DataAccessException if there is an error executing the query
      */
     public Set<OrderDto> fetchPageToOrderDtoByIdWithOrderLineDto(int page, int size) {
-
         if (0 > page || 0 >= size)
             return new LinkedHashSet<>();
 

@@ -14,3 +14,11 @@ eureka:
     # Register the IP of the service rather than the server name (useful when there is no a
     # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
+
+restTemplate:
+  connect:
+    timeoutInMilliseconds: 5000
+  read:
+    timeoutInMilliseconds: 30000
+  write:
+    timeoutInMilliseconds: 30000

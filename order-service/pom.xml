@@ -16,9 +16,10 @@
 
     <properties>
         <hamcrest.version>2.1</hamcrest.version>
-        <java.version>1.8</java.version>
+        <java.version>1.10</java.version>
         <jooq.version>3.11.0</jooq.version>
-        <mapstruct-processor.version>1.3.0.Final</mapstruct-processor.version>
+        <junit-platform-surefire-provider.version>1.1.1</junit-platform-surefire-provider.version>
+        <mapstruct-processor.version>1.3.1.Final</mapstruct-processor.version>
         <maven-compiler-plugin.version>3.6.2</maven-compiler-plugin.version>
         <simpleflatmapper.version>6.2.1</simpleflatmapper.version>
         <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
@@ -108,11 +109,35 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>

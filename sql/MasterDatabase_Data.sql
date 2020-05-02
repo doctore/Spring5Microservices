@@ -55,7 +55,7 @@ VALUES (1, 6), (1, 7), (1, 8)
       ,(3, 6), (3, 7), (3, 11), (3, 12), (3, 13)
       ,(4, 6), (4, 15)
       ,(5, 6), (5, 7), (5, 8), (5, 3)
-      ,(6, 6), (6, 1), (6, 4) (6, 2);
+      ,(6, 6), (6, 1), (6, 4), (6, 2);
 
 
 INSERT INTO eat.order (id, code, created) 
@@ -94,6 +94,6 @@ INSERT INTO security.jwt_client_details (client_id, client_secret
                                         ,use_jwe, access_token_validity, refresh_token_validity)
 VALUES ('Spring5Microservices', '{bcrypt}$2a$10$NlKX/TyTk41qraDjxg98L.xFdu7IQYRoi3Z37PZmjekaQYAeaRZgO'   -- Raw password: Spring5Microservices
         -- Raw password: Spring5Microservices_999#secret#789(jwt)$3411781_GTDSAET-569016310k
-       ,'{cipher}4d86b22f3dfe617c6714141651b864035be7ac2d1c2b4bd13abf3704c0ed7a635c88734a18bdde7aea08189eb9ee0d7ed5d953d84d312aa70c4a1fb2a034abbe8fc1d0815a9d709f6b1477dc36c899299025bcfa3bc540d03303ed3b7ad69f51'
+       ,'{cipher}04f1b9a71d880569283849aa911e4f3f3373a2522cba355e25e17f7ac7e262cb63d41295ab8bca038823b884858f05457306159cdfe68eb11c616028d6213b719887c07750e8c4b60dfea4196b1ddaffdcd462180028abc1a2d1dda69b8ac4bf'
        ,'HS512', 'SPRING5_MICROSERVICES', 'Bearer'
        ,true, 900, 3600);

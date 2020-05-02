@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,18 +29,15 @@ import javax.validation.constraints.Size;
 
 import static java.util.Optional.ofNullable;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping(value = RestRoutes.SECURITY.ROOT)
-@CrossOrigin(origins="*")
 @Validated
 public class SecurityController {
 
-    private SecurityService securityService;
+    @Lazy
+    private final SecurityService securityService;
 
-    @Autowired
-    public SecurityController(@Lazy SecurityService securityService) {
-        this.securityService = securityService;
-    }
 
     /**
      *    Generate the suitable {@link AuthenticationInformationDto} using the given user's login information and

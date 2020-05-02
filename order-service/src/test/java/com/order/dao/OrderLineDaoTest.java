@@ -1,31 +1,31 @@
 package com.order.dao;
 
-import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
-import com.order.model.Order;
 import com.order.model.OrderLine;
 import org.jooq.DSLContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @JooqTest
 @AutoConfigureTestDatabase(replace=AutoConfigureTestDatabase.Replace.NONE)
 public class OrderLineDaoTest {
@@ -40,7 +40,7 @@ public class OrderLineDaoTest {
     private OrderLine orderLine2;
 
 
-    @Before
+    @BeforeEach
     public void init() {
         orderLineDao = new OrderLineDao(this.dslContext);
 

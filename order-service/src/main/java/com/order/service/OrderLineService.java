@@ -6,7 +6,7 @@ import com.order.dto.PizzaDto;
 import com.order.model.Order;
 import com.order.model.OrderLine;
 import com.order.util.converter.OrderLineConverter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -19,17 +19,15 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Service
 public class OrderLineService {
 
-    private OrderLineDao orderLineDao;
-    private OrderLineConverter orderLineConverter;
+    @Lazy
+    private final OrderLineDao orderLineDao;
 
-    @Autowired
-    public OrderLineService(@Lazy OrderLineDao orderLineDao, @Lazy OrderLineConverter orderLineConverter) {
-        this.orderLineDao = orderLineDao;
-        this.orderLineConverter = orderLineConverter;
-    }
+    @Lazy
+    private final OrderLineConverter orderLineConverter;
 
 
     /**

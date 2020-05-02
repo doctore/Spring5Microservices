@@ -3,9 +3,9 @@ package com.pizza.repository;
 import com.pizza.configuration.persistence.PersistenceConfiguration;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Pizza;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -13,15 +13,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace=AutoConfigureTestDatabase.Replace.NONE)
 @Import(PersistenceConfiguration.class)
@@ -36,7 +37,7 @@ public class PizzaRepositoryTest {
     private Pizza margherita;
 
 
-    @Before
+    @BeforeEach
     public void init() {
         carbonara = pizzaRepository.findWithIngredientsByName(PizzaEnum.CARBONARA).get();
         hawaiian = pizzaRepository.findWithIngredientsByName(PizzaEnum.HAWAIIAN).get();

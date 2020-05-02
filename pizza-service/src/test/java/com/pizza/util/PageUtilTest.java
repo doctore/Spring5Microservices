@@ -1,22 +1,17 @@
 package com.pizza.util;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {PageUtil.class})
+@ExtendWith(SpringExtension.class)
 public class PageUtilTest {
-
-    @Autowired
-    private PageUtil pageUtil;
-
 
     @Test
     public void buildPageRequest_whenNullSortIsGiven_thenNoSortIsConfigured() {
@@ -25,7 +20,7 @@ public class PageUtilTest {
         int size = 2;
 
         // When
-        PageRequest pageRequest = pageUtil.buildPageRequest(page, size, null);
+        PageRequest pageRequest = PageUtil.buildPageRequest(page, size, null);
 
         // Then
         assertEquals(page, pageRequest.getPageNumber());
@@ -42,7 +37,7 @@ public class PageUtilTest {
         Sort sort = Sort.by(Sort.Direction.ASC, "property1");
 
         // When
-        PageRequest pageRequest = pageUtil.buildPageRequest(page, size, sort);
+        PageRequest pageRequest = PageUtil.buildPageRequest(page, size, sort);
 
         // Then
         assertEquals(page, pageRequest.getPageNumber());

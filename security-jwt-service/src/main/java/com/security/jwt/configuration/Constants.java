@@ -1,7 +1,7 @@
 package com.security.jwt.configuration;
 
 /**
- * Global values used in different parts of the application
+ * Global values used in different part of the application
  */
 public class Constants {
 
@@ -24,11 +24,9 @@ public class Constants {
         }
     };
 
-    // Documentation API version
-    public static final String DOCUMENTATION_API_VERSION = "1.0";
-
     // Path of the folders in the application and external ones
     public static final class PATH {
+        public static final String CONTROLLER = "com.security.jwt.controller";
         public static final String MODEL = "com.security.jwt.model";
         public static final String REPOSITORY = "com.security.jwt.repository";
 

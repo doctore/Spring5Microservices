@@ -2,22 +2,22 @@ package com.pizza.service.cache;
 
 import com.pizza.configuration.cache.CacheConfiguration;
 import com.spring5microservices.common.service.CacheService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class UserBlacklistCacheServiceTest {
 
     @Mock
@@ -28,7 +28,7 @@ public class UserBlacklistCacheServiceTest {
 
     private UserBlacklistCacheService userBlacklistCacheService;
 
-    @Before
+    @BeforeEach
     public void init() {
         userBlacklistCacheService = new UserBlacklistCacheService(mockCacheConfiguration, mockCacheService);
         when(mockCacheConfiguration.getUserBlacklistCacheName()).thenReturn("TestCache");

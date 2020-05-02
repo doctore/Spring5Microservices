@@ -7,14 +7,21 @@ import com.pizza.dto.PizzaDto;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.service.PizzaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -25,18 +32,14 @@ import javax.validation.constraints.Size;
 /**
  * Rest services to work with {@link Pizza}
  */
+@AllArgsConstructor
 @RestController
 @RequestMapping(RestRoutes.PIZZA.ROOT)
-@CrossOrigin(origins="*")
 @Validated
 public class PizzaController {
 
-    private PizzaService pizzaService;
-
-    @Autowired
-    public PizzaController(@Lazy PizzaService pizzaService) {
-        this.pizzaService = pizzaService;
-    }
+    @Lazy
+    private final PizzaService pizzaService;
 
 
     /**

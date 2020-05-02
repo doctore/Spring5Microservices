@@ -7,8 +7,8 @@ import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.exception.TokenExpiredException;
 import com.spring5microservices.common.exception.UnauthorizedException;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusException;
@@ -23,18 +23,16 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static java.util.Optional.of;
 
+@AllArgsConstructor
 @Log4j2
 @Service
 public class SecurityService {
 
-    private ApplicationContext applicationContext;
-    private AuthenticationService authenticationService;
+    @Lazy
+    private final ApplicationContext applicationContext;
 
-    @Autowired
-    public SecurityService(@Lazy ApplicationContext applicationContext, @Lazy AuthenticationService authenticationService) {
-        this.applicationContext = applicationContext;
-        this.authenticationService = authenticationService;
-    }
+    @Lazy
+    private final AuthenticationService authenticationService;
 
 
     /**

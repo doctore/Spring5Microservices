@@ -4,24 +4,26 @@ import com.pizza.PizzaServiceApplication;
 import com.pizza.configuration.Constants;
 import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.service.cache.UserBlacklistCacheService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = PizzaServiceApplication.class)
 public class UserControllerTest {
 
@@ -33,7 +35,10 @@ public class UserControllerTest {
     @MockBean
     private UserBlacklistCacheService mockUserBlacklistCacheService;
 
-    @Before
+    @MockBean
+    private WebClient mockWebClient;
+
+    @BeforeEach
     public void init() {
         this.webTestClient = WebTestClient.bindToApplicationContext(this.context).configureClient().build();
     }

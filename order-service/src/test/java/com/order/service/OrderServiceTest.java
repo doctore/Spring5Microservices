@@ -3,34 +3,36 @@ package com.order.service;
 import com.order.dao.OrderDao;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
-import com.order.dto.PizzaDto;
 import com.order.model.Order;
 import com.order.util.converter.OrderConverter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static com.order.TestDataFactory.buildOrder;
+import static com.order.TestDataFactory.buildOrderDto;
+import static com.order.TestDataFactory.buildOrderLineDto;
+import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class OrderServiceTest {
 
@@ -43,182 +45,100 @@ public class OrderServiceTest {
     @Mock
     private OrderLineService mockOrderLineService;
 
+    private OrderService service;
 
-    private OrderService orderService;
 
-
-    @Before
+    @BeforeEach
     public void init() {
-        orderService = new OrderService(mockOrderDao, mockOrderConverter, mockOrderLineService);
+        service = new OrderService(mockOrderDao, mockOrderConverter, mockOrderLineService);
     }
 
 
-    @Test
-    public void findByIdWithOrderLines_whenNullIdIsGiven_thenEmptyOptionalIsReturned() {
-        // When
-        when(mockOrderDao.fetchToOrderDtoByIdWithOrderLineDto(anyInt())).thenReturn(Optional.empty());
-        Optional<OrderDto> optionalOrderDto = orderService.findByIdWithOrderLines(null);
+    static Stream<Arguments> findByIdWithOrderLinesTestCases() {
+        OrderLineDto lineDto = buildOrderLineDto(11, 1, null, (short)5, 7.50D);
+        OrderDto dto = buildOrderDto(1, "Order1", new Date(), asList(lineDto));
+        return Stream.of(
+                //@formatter:off
+                //            id,            repositoryResult,   expectedResult
+                Arguments.of( null,          empty(),            empty() ),
+                Arguments.of( 1,             empty(),            empty() ),
+                Arguments.of( dto.getId(),   of(dto),            of(dto) )
+        ); //@formatter:on
+    }
 
-        // Then
-        assertNotNull(optionalOrderDto);
-        assertFalse(optionalOrderDto.isPresent());
+    @ParameterizedTest
+    @MethodSource("findByIdWithOrderLinesTestCases")
+    @DisplayName("findByIdWithOrderLines: test cases")
+    public void findByIdWithOrderLines_testCases(Integer id, Optional<OrderDto> repositoryResult, Optional<OrderDto> expectedResult) {
+        when(mockOrderDao.fetchToOrderDtoByIdWithOrderLineDto(id)).thenReturn(repositoryResult);
+
+        Optional<OrderDto> result = service.findByIdWithOrderLines(id);
+
+        assertEquals(expectedResult, result);
     }
 
 
-    @Test
-    public void findByIdWithOrderLines_whenNonExistingIdInDatabaseIsGiven_thenEmptyOptionalIsReturned() {
-        // When
-        when(mockOrderDao.fetchToOrderDtoByIdWithOrderLineDto(anyInt())).thenReturn(Optional.empty());
-        Optional<OrderDto> optionalOrderDto = orderService.findByIdWithOrderLines(-1);
+    static Stream<Arguments> findPageOrderedByCreatedWithOrderLinesTestCases() {
+        OrderLineDto lineDto1 = buildOrderLineDto(11, 1, null, (short)5, 7.50D);
+        OrderLineDto lineDto2 = buildOrderLineDto(12, 2, null, (short)3, 6.75D);
+        OrderDto dto1 = buildOrderDto(1, "Order1", new Date(), asList(lineDto1));
+        OrderDto dto2 = buildOrderDto(2, "Order2", new Date(), asList(lineDto2));
+        return Stream.of(
+                //@formatter:off
+                //            page,   size,   repositoryResult,     expectedResult
+                Arguments.of( 0,      2,      Set.of(),             Set.of() ),
+                Arguments.of( 0,      2,      Set.of(dto1, dto2),   Set.of(dto1, dto2) )
 
-        // Then
-        assertNotNull(optionalOrderDto);
-        assertFalse(optionalOrderDto.isPresent());
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("findPageOrderedByCreatedWithOrderLinesTestCases")
+    @DisplayName("findPageOrderedByCreatedWithOrderLines: test cases")
+    public void findPageOrderedByCreatedWithOrderLines_testCases(int page, int size, Set<OrderDto> repositoryResult,
+                                                                 Set<OrderDto> expectedResult) {
+        when(mockOrderDao.fetchPageToOrderDtoByIdWithOrderLineDto(page, size)).thenReturn(repositoryResult);
+
+        Set<OrderDto> result = service.findPageOrderedByCreatedWithOrderLines(page, size);
+
+        assertEquals(expectedResult, result);
     }
 
 
-    @Test
-    public void findByIdWithOrderLines_whenExistingIdInDatabaseIsGiven_thenOptionalOfRelatedModelIsReturned() {
-        // Given
-        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
-        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
-
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
-
-        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
-                                              .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
-        // When
-        when(mockOrderDao.fetchToOrderDtoByIdWithOrderLineDto(anyInt())).thenReturn(Optional.of(orderDto));
-        Optional<OrderDto> optionalOrderDto = orderService.findByIdWithOrderLines(orderDto.getId());
-
-        // Then
-        assertTrue(optionalOrderDto.isPresent());
-        assertEquals(orderDto, optionalOrderDto.get());
-        assertThat(optionalOrderDto.get().getOrderLines(), containsInAnyOrder(orderDto.getOrderLines().toArray()));
-        assertThat(Arrays.asList(optionalOrderDto.get().getOrderLines().get(0).getPizza(),
-                                 optionalOrderDto.get().getOrderLines().get(1).getPizza()),
-                   containsInAnyOrder(carbonara, hawaiian));
+    static Stream<Arguments> saveTestCases() {
+        OrderDto dto = buildOrderDto(null, "Order1", new Date(), asList());
+        Order model = buildOrder(dto.getId(), dto.getCode(), new Timestamp(dto.getCreated().getTime()));
+        return Stream.of(
+                //@formatter:off
+                //            orderDto,   converterToModelResult,   repositoryResult,   converterToDtoResult,   expectedResult
+                Arguments.of( null,       empty(),                  empty(),            empty(),                empty() ),
+                Arguments.of( dto,        empty(),                  empty(),            empty(),                empty() ),
+                Arguments.of( dto,        of(model),                empty(),            empty(),                empty() ),
+                Arguments.of( dto,        of(model),                of(model),          empty(),                empty() ),
+                Arguments.of( dto,        of(model),                of(model),          of(dto),                of(dto) )
+        ); //@formatter:on
     }
 
+    @ParameterizedTest
+    @MethodSource("saveTestCases")
+    @DisplayName("save: test cases")
+    public void save_testCases(OrderDto orderDto, Optional<Order> converterToModelResult, Optional<Order> repositoryResult,
+                               Optional<OrderDto> converterToDtoResult, Optional<OrderDto> expectedResult) {
+        when(mockOrderConverter.fromDtoToOptionalModel(orderDto)).thenReturn(converterToModelResult);
+        if (repositoryResult.isPresent()) {
+            when(mockOrderConverter.fromModelToOptionalDto(repositoryResult.get())).thenReturn(converterToDtoResult);
+        }
+        if (converterToModelResult.isPresent()) {
+            when(mockOrderDao.save(converterToModelResult.get())).thenReturn(repositoryResult);
+        }
 
-    @Test
-    public void findPageOrderedByCreatedWithOrderLines_whenNoResultsAreReturnedByDatabase_thenEmptySetIsReturned() {
-        // When
-        when(mockOrderDao.fetchPageToOrderDtoByIdWithOrderLineDto(anyInt(), anyInt())).thenReturn(new LinkedHashSet<>());
-        Set<OrderDto> orderds = orderService.findPageOrderedByCreatedWithOrderLines(0, 2);
+        Optional<OrderDto> result = service.save(orderDto);
 
-        // Then
-        assertNotNull(orderds);
-        assertTrue(orderds.isEmpty());
-    }
-
-
-    @Test
-    public void findPageOrderedByCreatedWithOrderLines_whenInformationIsFoundInDatabase_thenEquivalentSetIsReturned() {
-        // Given
-        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
-        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
-
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
-
-        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
-                                              .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
-
-        Set<OrderDto> orders = new LinkedHashSet<>();
-        orders.add(orderDto);
-
-        // When
-        when(mockOrderDao.fetchPageToOrderDtoByIdWithOrderLineDto(anyInt(), anyInt())).thenReturn(orders);
-        Set<OrderDto> orderdsFromDatabase = orderService.findPageOrderedByCreatedWithOrderLines(0, 2);
-
-        // Then
-        assertNotNull(orderdsFromDatabase);
-        assertEquals(orders.size(), orderdsFromDatabase.size());
-        for (OrderDto order : orderdsFromDatabase)
-            assertThat(order, samePropertyValuesAs(orderDto));
-    }
-
-
-    @Test
-    public void save_whenOrderDtoIsNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<OrderDto> optionalOrderDto = orderService.save(null);
-
-        // Then
-        assertFalse(optionalOrderDto.isPresent());
-    }
-
-
-    @Test
-    public void save_whenConversionToModelReturnOptionalEmpty_thenEmptyOptionalIsReturned() {
-        // Given
-        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime())).build();
-
-        // When
-        when(mockOrderConverter.fromDtoToOptionalModel(any(OrderDto.class))).thenReturn(Optional.empty());
-        Optional<OrderDto> optionalOrderDto = orderService.save(orderDto);
-
-        // Then
-        assertFalse(optionalOrderDto.isPresent());
-    }
-
-
-    @Test
-    public void save_whenValidDtoIsGivenButFinalDtoConversionReturnsEmptyOptional_thenEmptyOptionalIsReturned() {
-        // Given
-        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Date()).build();
-        Order order = Order.builder().id(orderDto.getId()).created(new Timestamp(orderDto.getCreated().getTime()))
-                                     .code(orderDto.getCode()).build();
-        // When
-        when(mockOrderConverter.fromDtoToOptionalModel(orderDto)).thenReturn(Optional.of(order));
-        when(mockOrderDao.save(order)).thenReturn(Optional.of(order));
-        when(mockOrderLineService.saveAll(any(), anyInt())).thenReturn(new ArrayList<>());
-        when(mockOrderConverter.fromModelToOptionalDto(order)).thenReturn(Optional.empty());
-
-        Optional<OrderDto> optionalOrderDto = orderService.save(orderDto);
-
-        // Then
-        assertFalse(optionalOrderDto.isPresent());
-        verify(mockOrderConverter, times(1)).fromDtoToOptionalModel(orderDto);
-        verify(mockOrderDao, times(1)).save(order);
-        verify(mockOrderLineService, times(1)).saveAll(any(), anyInt());
-        verify(mockOrderConverter, times(1)).fromModelToOptionalDto(order);
-    }
-
-
-    @Test
-    public void save_whenValidDtoIsGiven_thenOptionalOfPersistedModelIsReturned() {
-        // Given
-        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
-        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
-
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
-
-        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
-                                              .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
-
-        Order order = Order.builder().id(orderDto.getId()).created(new Timestamp(orderDto.getCreated().getTime()))
-                                     .code(orderDto.getCode()).build();
-        // When
-        when(mockOrderConverter.fromDtoToOptionalModel(orderDto)).thenReturn(Optional.of(order));
-        when(mockOrderDao.save(order)).thenReturn(Optional.of(order));
-        when(mockOrderLineService.saveAll(Arrays.asList(orderLineDto1, orderLineDto2), orderDto.getId()))
-                .thenReturn(Arrays.asList(orderLineDto1, orderLineDto2));
-        when(mockOrderConverter.fromModelToOptionalDto(order)).thenReturn(Optional.of(orderDto));
-
-        Optional<OrderDto> optionalOrderDto = orderService.save(orderDto);
-
-        // Then
-        assertTrue(optionalOrderDto.isPresent());
-        assertThat(optionalOrderDto.get(), samePropertyValuesAs(orderDto));
-
-        verify(mockOrderConverter, times(1)).fromDtoToOptionalModel(orderDto);
-        verify(mockOrderDao, times(1)).save(order);
-        verify(mockOrderLineService, times(1)).saveAll(Arrays.asList(orderLineDto1, orderLineDto2), orderDto.getId());
-        verify(mockOrderConverter, times(1)).fromModelToOptionalDto(order);
+        assertEquals(expectedResult, result);
+        if (converterToModelResult.isPresent()) {
+            verify(mockOrderLineService, times(1)).saveAll(orderDto.getOrderLines(),
+                    converterToModelResult.get().getId());
+        }
     }
 
 }

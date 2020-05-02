@@ -6,28 +6,23 @@ import com.security.jwt.service.cache.JwtClientDetailsCacheService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping(value = RestRoutes.CACHE.ROOT)
-@CrossOrigin(origins="*")
 @Validated
 public class CacheController {
 
-    private JwtClientDetailsCacheService jwtClientDetailsCacheService;
-
-    @Autowired
-    public CacheController(@Lazy JwtClientDetailsCacheService jwtClientDetailsCacheService) {
-        this.jwtClientDetailsCacheService = jwtClientDetailsCacheService;
-    }
+    @Lazy
+    private final JwtClientDetailsCacheService jwtClientDetailsCacheService;
 
 
     /**

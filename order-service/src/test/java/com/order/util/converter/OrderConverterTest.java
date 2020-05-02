@@ -1,219 +1,205 @@
 package com.order.util.converter;
 
 import com.order.dto.OrderDto;
+
 import com.order.model.Order;
-import org.hamcrest.collection.IsIterableContainingInAnyOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static com.order.TestDataFactory.buildOrder;
+import static com.order.TestDataFactory.buildOrderDto;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = {OrderConverterImpl.class})
 public class OrderConverterTest {
 
     @Autowired
-    private OrderConverter orderConverter;
+    private OrderConverter converter;
 
 
     @Test
+    @DisplayName("fromDtoToModel: when given dto is null then null model is returned")
     public void fromDtoToModel_whenGivenDtoIsNull_thenNullIsReturned() {
-        // When
-        Order order = orderConverter.fromDtoToModel(null);
+        assertNull(converter.fromDtoToModel(null));
+    }
 
-        // Then
-        assertNull(order);
+
+    static Stream<Arguments> fromDtoToModelTestCases() {
+        OrderDto dto = buildOrderDto(1, "Order1", new Date(), asList());
+        return Stream.of(
+                //@formatter:off
+                //            dtoToConvert
+                Arguments.of( new OrderDto() ),
+                Arguments.of( dto )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDtoToModelTestCases")
+    @DisplayName("fromDtoToModel: when the given dto is not null then the equivalent model is returned")
+    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned(OrderDto dtoToConvert) {
+        Order equivalentModel = converter.fromDtoToModel(dtoToConvert);
+        checkProperties(equivalentModel, dtoToConvert);
     }
 
 
     @Test
-    public void fromDtoToModel_whenGivenDtoIsNotNull_thenEquivalentModelIsReturned() {
-        // Given
-        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Date()).build();
-
-        // When
-        Order order = orderConverter.fromDtoToModel(orderDto);
-
-        // Then
-        checkProperties(order, orderDto);
-    }
-
-
-    @Test
+    @DisplayName("fromDtoToOptionalModel: when given dto is null then empty Optional is returned")
     public void fromDtoToOptionalModel_whenGivenDtoIsNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<Order> optionalOrder = orderConverter.fromDtoToOptionalModel(null);
+        Optional<Order> equivalentModel = converter.fromDtoToOptionalModel(null);
 
-        // Then
-        assertNotNull(optionalOrder);
-        assertFalse(optionalOrder.isPresent());
+        assertNotNull(equivalentModel);
+        assertFalse(equivalentModel.isPresent());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("fromDtoToModelTestCases")
+    @DisplayName("fromDtoToOptionalModel: when given dto is not null then Optional with equivalent model is returned")
+    public void fromModelToOptionalDto_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned(OrderDto dtoToConvert) {
+        Optional<Order> equivalentModel = converter.fromDtoToOptionalModel(dtoToConvert);
+
+        assertTrue(equivalentModel.isPresent());
+        checkProperties(equivalentModel.get(), dtoToConvert);
     }
 
 
     @Test
-    public void fromDtoToOptionalModel_whenGivenDtoIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
-        // Given
-        OrderDto orderDto = OrderDto.builder().id(2).code("Order 2").created(new Date()).build();
-
-        // When
-        Optional<Order> optionalOrder = orderConverter.fromDtoToOptionalModel(orderDto);
-
-        // Then
-        assertNotNull(optionalOrder);
-        assertTrue(optionalOrder.isPresent());
-        checkProperties(optionalOrder.get(), orderDto);
-    }
-
-
-    @Test
+    @DisplayName("fromDtosToModels: when given collection is null then empty list is returned")
     public void fromDtosToModels_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
-        // When
-        List<Order> orders = orderConverter.fromDtosToModels(null);
+        assertTrue(converter.fromDtosToModels(null).isEmpty());
+    }
 
-        // Then
-        assertNotNull(orders);
-        assertTrue(orders.isEmpty());
+
+    static Stream<Arguments> fromDtosToModelsTestCases() {
+        OrderDto dto = buildOrderDto(1, "Order1", new Date(), asList());
+        return Stream.of(
+                //@formatter:off
+                //            listOfDtosToConvert
+                Arguments.of( new ArrayList<>() ),
+                Arguments.of( asList(dto) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDtosToModelsTestCases")
+    @DisplayName("fromDtosToModels: when the given collection is not null then the returned one of equivalent models is returned")
+    public void fromDtosToModels_whenGivenCollectionIsNotNull_thenEquivalentCollectionModelsIsReturned(List<OrderDto> listOfDtosToConvert) {
+        List<Order> equivalentModels = converter.fromDtosToModels(listOfDtosToConvert);
+
+        assertNotNull(equivalentModels);
+        assertEquals(listOfDtosToConvert.size(), equivalentModels.size());
+        for (int i = 0; i < equivalentModels.size(); i++) {
+            checkProperties(equivalentModels.get(i), listOfDtosToConvert.get(i));
+        }
     }
 
 
     @Test
-    public void fromDtosToModels_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
-        // When
-        List<Order> orders = orderConverter.fromDtosToModels(new ArrayList<>());
-
-        // Then
-        assertNotNull(orders);
-        assertTrue(orders.isEmpty());
-    }
-
-
-    @Test
-    public void fromDtosToModels_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
-        // Given
-        OrderDto orderDto1 = OrderDto.builder().id(1).code("Order 1").created(new Date()).build();
-        OrderDto orderDto2 = OrderDto.builder().id(2).code("Order 2").created(new Date()).build();
-
-        Order order1 = Order.builder().id(orderDto1.getId()).code(orderDto1.getCode())
-                                      .created(new Timestamp(orderDto1.getCreated().getTime())).build();
-        Order order2 = Order.builder().id(orderDto2.getId()).code(orderDto2.getCode())
-                                      .created(new Timestamp(orderDto2.getCreated().getTime())).build();
-        // When
-        List<Order> orders = orderConverter.fromDtosToModels(Arrays.asList(orderDto1, orderDto2));
-
-        // Then
-        assertNotNull(orders);
-        assertEquals(2, orders.size());
-        assertThat(orders, containsInAnyOrder(order1, order2));
-    }
-
-
-    @Test
+    @DisplayName("fromModelToDto: when given model is null then null dto is returned")
     public void fromModelToDto_whenGivenModelIsNull_thenNullIsReturned() {
-        // When
-        OrderDto orderDto = orderConverter.fromModelToDto(null);
-
-        // Then
-        assertNull(orderDto);
+        assertNull(converter.fromModelToDto(null));
     }
 
 
-    @Test
-    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned() {
-        // Given
-        Order order = Order.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime())).build();
-
-        // When
-        OrderDto orderDto = orderConverter.fromModelToDto(order);
-
-        // Then
-        checkProperties(order, orderDto);
+    static Stream<Arguments> fromModelToDtoTestCases() {
+        Order model = buildOrder(1, "Oder1", new Timestamp(new Date().getTime()));
+        return Stream.of(
+                //@formatter:off
+                //            modelToConvert
+                Arguments.of( new Order() ),
+                Arguments.of( model )
+        ); //@formatter:on
     }
 
+    @ParameterizedTest
+    @MethodSource("fromModelToDtoTestCases")
+    @DisplayName("fromModelToDto: when the given model is not null then the equivalent dto is returned")
+    public void fromModelToDto_whenGivenModelIsNotNull_thenEquivalentDtoIsReturned(Order modelToConvert) {
+        OrderDto equivalentDto = converter.fromModelToDto(modelToConvert);
+        checkProperties(modelToConvert, equivalentDto);
+    }
 
     @Test
+    @DisplayName("fromModelToOptionalDto: when given model is null then empty Optional is returned")
     public void fromModelToOptionalDto_whenGivenModelIsNull_thenEmptyOptionalIsReturned() {
-        // When
-        Optional<OrderDto> optionalOrderDto = orderConverter.fromModelToOptionalDto(null);
+        Optional<OrderDto> equivalentDto = converter.fromModelToOptionalDto(null);
 
-        // Then
-        assertNotNull(optionalOrderDto);
-        assertFalse(optionalOrderDto.isPresent());
+        assertNotNull(equivalentDto);
+        assertFalse(equivalentDto.isPresent());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("fromModelToDtoTestCases")
+    @DisplayName("fromModelToOptionalDto: when given model is not null then Optional with equivalent Dto is returned")
+    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentDtoIsReturned(Order modelToConvert) {
+        Optional<OrderDto> equivalentDto = converter.fromModelToOptionalDto(modelToConvert);
+
+        assertTrue(equivalentDto.isPresent());
+        checkProperties(modelToConvert, equivalentDto.get());
     }
 
 
     @Test
-    public void fromModelToOptionalDto_whenGivenModelIsNotNull_thenOptionalOfEquivalentModelIsReturned() {
-        // Given
-        Order order = Order.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime())).build();
-
-        // When
-        Optional<OrderDto> optionalOrderDto = orderConverter.fromModelToOptionalDto(order);
-
-        // Then
-        assertNotNull(optionalOrderDto);
-        assertTrue(optionalOrderDto.isPresent());
-        checkProperties(order, optionalOrderDto.get());
-    }
-
-
-    @Test
+    @DisplayName("fromModelsToDtos: when given collection is null then empty list is returned")
     public void fromModelsToDtos_whenGivenCollectionIsNull_thenEmptyListIsReturned() {
-        // When
-        List<OrderDto> orderDtos = orderConverter.fromModelsToDtos(null);
-
-        // Then
-        assertNotNull(orderDtos);
-        assertTrue(orderDtos.isEmpty());
+        assertTrue(converter.fromModelsToDtos(null).isEmpty());
     }
 
 
-    @Test
-    public void fromModelsToDtos_whenGivenCollectionIsEmpty_thenEmptyListIsReturned() {
-        // When
-        List<OrderDto> orderDtos = orderConverter.fromModelsToDtos(new ArrayList<>());
+    static Stream<Arguments> fromModelsToDtosTestCases() {
+        Order model = buildOrder(1, "Oder1", new Timestamp(new Date().getTime()));
+        return Stream.of(
+                //@formatter:off
+                //            listOfModelsToConvert
+                Arguments.of( new ArrayList<>() ),
+                Arguments.of( asList(model) )
+        ); //@formatter:on
+    }
 
-        // Then
-        assertNotNull(orderDtos);
-        assertTrue(orderDtos.isEmpty());
+    @ParameterizedTest
+    @MethodSource("fromModelsToDtosTestCases")
+    @DisplayName("fromModelsToDtos: when the given collection is not null then the returned one of equivalent dtos is returned")
+    public void fromEntitiesToDtos_whenGivenCollectionIsNotNull_thenEquivalentCollectionDtosIsReturned(List<Order> listOfModelsToConvert) {
+        List<OrderDto> equivalentDtos = converter.fromModelsToDtos(listOfModelsToConvert);
+
+        assertNotNull(equivalentDtos);
+        assertEquals(listOfModelsToConvert.size(), equivalentDtos.size());
+        for (int i = 0; i < equivalentDtos.size(); i++) {
+            checkProperties(listOfModelsToConvert.get(i), equivalentDtos.get(i));
+        }
     }
 
 
-    @Test
-    public void fromModelsToDtos_whenGivenCollectionIsNotEmpty_thenEquivalentListOfModelsIsReturned() {
-        // Given
-        Order order1 = Order.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime())).build();
-        Order order2 = Order.builder().id(2).code("Order 2").created(new Timestamp(new Date().getTime())).build();
-
-        OrderDto orderDto1 = OrderDto.builder().id(order1.getId()).code(order1.getCode()).created(order1.getCreated()).build();
-        OrderDto orderDto2 = OrderDto.builder().id(order2.getId()).code(order2.getCode()).created(order2.getCreated()).build();
-
-        // When
-        List<OrderDto> orderDtos = orderConverter.fromModelsToDtos(Arrays.asList(order1, order2));
-
-        // Then
-        assertNotNull(orderDtos);
-        assertEquals(2, orderDtos.size());
-        assertThat(orderDtos, containsInAnyOrder(orderDto1, orderDto2));
-    }
-
-
-    private void checkProperties(Order order, OrderDto orderDto) {
-        assertNotNull(order);
-        assertNotNull(orderDto);
-        assertEquals(order.getId(), orderDto.getId());
-        assertEquals(order.getCode(), orderDto.getCode());
-        assertEquals(order.getCreated().getTime(), orderDto.getCreated().getTime());
+    private void checkProperties(Order model, OrderDto dto) {
+        assertNotNull(model);
+        assertNotNull(dto);
+        assertEquals(model.getId(), dto.getId());
+        assertEquals(model.getCode(), dto.getCode());
+        if (null != model.getCreated()) {
+            assertEquals(model.getCreated().getTime(), dto.getCreated().getTime());
+        }
     }
 
 }

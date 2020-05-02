@@ -19,6 +19,9 @@ spring:
 
 springfox:
   documentation:
+    apiVersion: 1.0
+    title: Test Rest Api
+    description: Test description
     swagger:
       v2:
         path: onlyForTests

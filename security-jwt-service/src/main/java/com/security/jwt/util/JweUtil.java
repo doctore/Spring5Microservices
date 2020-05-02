@@ -17,9 +17,9 @@ import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.security.jwt.exception.TokenInvalidException;
 import com.spring5microservices.common.exception.TokenExpiredException;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -30,20 +30,17 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
+@AllArgsConstructor
 @Component
 @Log4j2
 public class JweUtil {
 
     // JWE encryption options
-    private JWEAlgorithm jweAlgorithm = JWEAlgorithm.DIR;
-    private EncryptionMethod encryptionMethod = EncryptionMethod.A128CBC_HS256;
+    private final JWEAlgorithm jweAlgorithm = JWEAlgorithm.DIR;
+    private final EncryptionMethod encryptionMethod = EncryptionMethod.A128CBC_HS256;
 
-    private JwsUtil jwsUtil;
-
-    @Autowired
-    public JweUtil(@Lazy JwsUtil jwsUtil) {
-        this.jwsUtil = jwsUtil;
-    }
+    @Lazy
+    private final JwsUtil jwsUtil;
 
 
     /**
