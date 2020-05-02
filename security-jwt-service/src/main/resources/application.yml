@@ -17,6 +17,9 @@ eureka:
 
 springfox:
   documentation:
+    apiVersion: 1.0
+    title: Security JWT Rest Api
+    description: Services related with authentication/authorization functionality
     swagger:
       v2:
         # Api docs path properties

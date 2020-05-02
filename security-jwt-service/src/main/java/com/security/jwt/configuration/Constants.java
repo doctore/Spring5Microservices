@@ -24,8 +24,10 @@ public class Constants {
         public static final String SECURITY = "security";
     };
 
-    // Documentation API version
-    public static final String DOCUMENTATION_API_VERSION = "1.0";
+    // Path of the folders in the application
+    public static final class PATH {
+        public static final String CONTROLLER = "com.security.jwt.controller";
+    }
 
     // External path
     public static final class EXTERNAL_PATH {

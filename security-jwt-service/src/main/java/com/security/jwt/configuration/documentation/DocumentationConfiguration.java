@@ -1,7 +1,7 @@
 package com.security.jwt.configuration.documentation;
 
 import com.security.jwt.configuration.Constants;
-import com.security.jwt.configuration.rest.RestRoutes;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.PathSelectors;
@@ -20,14 +20,25 @@ import java.util.ArrayList;
 @EnableSwagger2
 public class DocumentationConfiguration {
 
+    @Value("${springfox.documentation.apiVersion}")
+    private String apiVersion;
+
+    @Value("${springfox.documentation.title}")
+    private String title;
+
+    @Value("${springfox.documentation.description}")
+    private String description;
+
+
     @Bean
     public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2).useDefaultResponseMessages(false)
-                                                      .select()
-                                                      .apis(RequestHandlerSelectors.any())
-                                                      .paths(PathSelectors.ant(RestRoutes.SECURITY.ROOT + "/**"))
-                                                      .build()
-                                                      .apiInfo(apiInfo());
+        return new Docket(DocumentationType.SWAGGER_2)
+                .useDefaultResponseMessages(false)
+                .select()
+                .apis(RequestHandlerSelectors.basePackage(Constants.PATH.CONTROLLER))
+                .paths(PathSelectors.any())
+                .build()
+                .apiInfo(apiInfo());
     }
 
 
@@ -37,11 +48,9 @@ public class DocumentationConfiguration {
      * @return {@link ApiInfo}
      */
     private ApiInfo apiInfo() {
-        return new ApiInfo("Security JWT Rest Api",
-                           "Services related with authentication/authorization functionality",
-                           Constants.DOCUMENTATION_API_VERSION,
-                           null, null, null, null,
-                           new ArrayList<>());
+        return new ApiInfo(title, description, apiVersion,
+                null, null, null, null,
+                new ArrayList<>());
     }
 
 }
