@@ -7,17 +7,15 @@ import com.spring5microservices.common.exception.TokenExpiredException;
 import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.UnknownHttpStatusCodeException;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Base64;
@@ -26,6 +24,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 /**
  *    Manages the validation of the token related with a logged user, using the {@link Authentication}
@@ -43,16 +46,14 @@ public class SecurityManager implements ReactiveAuthenticationManager {
     private UserBlacklistCacheService userBlacklistCacheService;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient webClient;
 
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         String authToken = authentication.getCredentials().toString();
-        Optional<UsernameAuthoritiesDto> authInformation = getAuthenticationInformation(
-                securityConfiguration.getAuthenticationInformationWebService(), authToken);
-        return Mono.justOrEmpty(authInformation.map(au -> getFromUsernameAuthoritiesDto(au))
-                .orElse(null));
+        return getAuthenticationInformation(securityConfiguration.getAuthenticationInformationWebService(), authToken)
+                        .map(au -> getFromUsernameAuthoritiesDto(au));
     }
 
 
@@ -66,20 +67,20 @@ public class SecurityManager implements ReactiveAuthenticationManager {
      *
      * @return {@link Optional} of {@link UsernameAuthoritiesDto}
      */
-    private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(String authenticationInformationWebService, String token) {
-        try {
-            HttpEntity<String> request = new HttpEntity<>(token, createHeaders(securityConfiguration.getClientId(), securityConfiguration.getClientPassword()));
-            ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.postForEntity(authenticationInformationWebService,
-                    request, UsernameAuthoritiesDto.class);
-            return Optional.of(restResponse.getBody());
-        } catch(Exception ex) {
-            log.error("There was an error trying to validate the authentication token", ex);
-            if (ex instanceof UnknownHttpStatusCodeException &&
-                    ExtendedHttpStatus.TOKEN_EXPIRED.value() == ((UnknownHttpStatusCodeException)ex).getRawStatusCode()) {
-                throw new TokenExpiredException(ex);
-            }
-            return Optional.empty();
-        }
+    private Mono<UsernameAuthoritiesDto> getAuthenticationInformation(String authenticationInformationWebService, String token) {
+        return webClient.post()
+                .uri(authenticationInformationWebService)
+                .header(HttpHeaders.AUTHORIZATION,
+                        buildAuthorizationHeader(securityConfiguration.getClientId(), securityConfiguration.getClientPassword()))
+                .body(BodyInserters.fromObject(token))
+                .retrieve()
+                .onStatus(httpStatus -> asList(BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND).contains(httpStatus),
+                        clientResponse -> Mono.empty())
+                .onRawStatus(httpStatus -> ExtendedHttpStatus.TOKEN_EXPIRED.value() == httpStatus,
+                        clientResponse -> {
+                            throw new TokenExpiredException("The provided authentication token has expired");
+                })
+                .bodyToMono(UsernameAuthoritiesDto.class);
     }
 
     /**
@@ -109,7 +110,7 @@ public class SecurityManager implements ReactiveAuthenticationManager {
     }
 
     /**
-     * Build the required Basic Authentication to send requests to the security server
+     * Build the required Basic Authentication header to send requests to the security server
      *
      * @param username
      *    Security server client identifier
@@ -118,13 +119,10 @@ public class SecurityManager implements ReactiveAuthenticationManager {
      *
      * @return {@link HttpHeaders}
      */
-    private HttpHeaders createHeaders(String username, String password){
-        return new HttpHeaders() {{
-            String auth = username + ":" + password;
-            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
-            String authHeader = "Basic " + new String(encodedAuth);
-            set("Authorization", authHeader);
-        }};
+    private String buildAuthorizationHeader(String username, String password) {
+        String auth = username + ":" + password;
+        byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
+        return "Basic " + new String(encodedAuth);
     }
 
 }

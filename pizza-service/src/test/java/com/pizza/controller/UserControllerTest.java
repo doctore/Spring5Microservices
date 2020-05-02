@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -33,6 +34,9 @@ public class UserControllerTest {
 
     @MockBean
     private UserBlacklistCacheService mockUserBlacklistCacheService;
+
+    @MockBean
+    private WebClient mockWebClient;
 
     @BeforeEach
     public void init() {

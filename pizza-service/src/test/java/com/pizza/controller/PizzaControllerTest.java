@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -50,6 +51,9 @@ public class PizzaControllerTest {
 
     @MockBean
     private PizzaService mockPizzaService;
+
+    @MockBean
+    private WebClient mockWebClient;
 
     @BeforeEach
     public void init() {
