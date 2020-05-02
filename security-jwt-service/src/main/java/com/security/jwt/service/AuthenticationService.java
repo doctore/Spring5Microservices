@@ -6,14 +6,13 @@ import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.util.JweUtil;
 import com.security.jwt.util.JwsUtil;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.exception.TokenExpiredException;
 import com.spring5microservices.common.exception.UnauthorizedException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,27 +37,27 @@ import static java.util.Optional.ofNullable;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 
+@AllArgsConstructor
 @Service
 public class AuthenticationService {
 
-    private ApplicationContext applicationContext;
-    private JwtClientDetailsService jwtClientDetailsService;
-    private JweConfiguration jweConfiguration;
-    private JweUtil jweUtil;
-    private JwsUtil jwsUtil;
-    private TextEncryptor encryptor;
+    @Lazy
+    private final ApplicationContext applicationContext;
 
-    @Autowired
-    public AuthenticationService(@Lazy ApplicationContext applicationContext, @Lazy JwtClientDetailsService jwtClientDetailsService,
-                                 @Lazy JweConfiguration jweConfiguration, @Lazy JweUtil jweUtil, JwsUtil jwsUtil,
-                                 @Lazy TextEncryptor encryptor) {
-        this.applicationContext = applicationContext;
-        this.jwtClientDetailsService = jwtClientDetailsService;
-        this.jweConfiguration = jweConfiguration;
-        this.jweUtil = jweUtil;
-        this.jwsUtil = jwsUtil;
-        this.encryptor = encryptor;
-    }
+    @Lazy
+    private final JwtClientDetailsService jwtClientDetailsService;
+
+    @Lazy
+    private final JweConfiguration jweConfiguration;
+
+    @Lazy
+    private final JweUtil jweUtil;
+
+    @Lazy
+    private final JwsUtil jwsUtil;
+
+    @Lazy
+    private final TextEncryptor encryptor;
 
 
     /**
