@@ -27,7 +27,7 @@ import static java.util.Arrays.asList;
 @EnableSwagger2
 public class DocumentationConfiguration {
 
-    private final String BASIC_AUTHORIZATION_API_KEY = "basicAuth";
+    private final String BASIC_AUTHORIZATION = "basicAuth";
 
     @Value("${springfox.documentation.apiVersion}")
     private String apiVersion;
@@ -65,7 +65,7 @@ public class DocumentationConfiguration {
     }
 
     private SecurityScheme securityScheme() {
-        return new BasicAuth(BASIC_AUTHORIZATION_API_KEY);
+        return new BasicAuth(BASIC_AUTHORIZATION);
     }
 
     private SecurityContext securityContext() {
@@ -75,7 +75,7 @@ public class DocumentationConfiguration {
     }
 
     private SecurityReference securityReference() {
-        return new SecurityReference(BASIC_AUTHORIZATION_API_KEY, new AuthorizationScope[0]);
+        return new SecurityReference(BASIC_AUTHORIZATION, new AuthorizationScope[0]);
     }
 
 }

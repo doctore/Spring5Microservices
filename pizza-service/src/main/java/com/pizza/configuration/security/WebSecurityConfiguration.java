@@ -1,6 +1,8 @@
 package com.pizza.configuration.security;
 
+import com.pizza.configuration.documentation.DocumentationConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,9 @@ import reactor.core.publisher.Mono;
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class WebSecurityConfiguration {
+
+    @Value("${springdoc.api-docs.path}")
+    private String documentationPath;
 
     @Autowired
     private SecurityManager securityManager;
@@ -43,6 +48,12 @@ public class WebSecurityConfiguration {
                    .authorizeExchange()
                    // List of services do not require authentication
                    .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                   .pathMatchers(HttpMethod.GET,
+                           documentationPath + "/**",
+                           DocumentationConfiguration.DOCUMENTATION_API_URL + "/**",
+                           DocumentationConfiguration.DOCUMENTATION_RESOURCE_URL + "/**",
+                           DocumentationConfiguration.DOCUMENTATION_WEBJARS + "/**"
+                   ).permitAll()
                    // Any other request must be authenticated
                    .anyExchange().authenticated()
                    .and().build();
