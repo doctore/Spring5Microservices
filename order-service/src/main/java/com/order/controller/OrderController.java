@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ import javax.validation.constraints.Positive;
 @RestController
 @RequestMapping(RestRoutes.ORDER.ROOT)
 @Validated
+@Tag(name = "OrderController", description = "Endpoints to manage operations related orders")
 public class OrderController {
 
     @Lazy
