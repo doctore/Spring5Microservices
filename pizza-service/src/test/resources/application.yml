@@ -31,6 +31,14 @@ cache:
     expireInSeconds: 10
     name: OnlyToAvoidAFailureLoadingConfigurationClass
 
+springdoc:
+  documentation:
+    apiVersion: 1.0
+    title: Test Rest Api
+    description: Test description
+  api-docs:
+    path: onlyForTests
+
 #show sql statement
 #logging:
 #  level:

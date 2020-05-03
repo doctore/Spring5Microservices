@@ -1,5 +1,6 @@
 package com.order.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,18 +17,23 @@ import java.util.Objects;
 @NoArgsConstructor
 public class OrderLineDto {
 
+    @Schema(description = "Internal unique identifier", required = true)
     private Integer id;
 
+    @Schema(description = "Order related", required = true)
     private Integer orderId;
 
+    @Schema(description = "Pizzas included in this line", required = true)
     @NotNull
     @Valid
     private PizzaDto pizza;
 
+    @Schema(description = "Number of pizzas", required = true)
     @NotNull
     @Positive
     private Short amount;
 
+    @Schema(description = "Cost", required = true)
     @NotNull
     @Positive
     private Double cost;

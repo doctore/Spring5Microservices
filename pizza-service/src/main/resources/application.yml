@@ -22,3 +22,12 @@ restTemplate:
     timeoutInMilliseconds: 30000
   write:
     timeoutInMilliseconds: 30000
+
+springdoc:
+  documentation:
+    apiVersion: 1.0
+    title: Pizza Rest Api
+    description: Services related with how to manage pizzas
+  api-docs:
+    # Api docs path properties
+    path: /pizza/v2/api-docs

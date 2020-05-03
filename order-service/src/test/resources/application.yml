@@ -14,3 +14,11 @@ security:
     authenticationInformation: OnlyToAvoidAFailureLoadingConfigurationClass
     clientId: TestClient
     clientPassword: TestPassword
+
+springdoc:
+  documentation:
+    apiVersion: 1.0
+    title: Test Rest Api
+    description: Test description
+  api-docs:
+    path: onlyForTests
