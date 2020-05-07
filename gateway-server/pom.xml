@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.8.RELEASE</version>
+        <version>2.2.6.RELEASE</version>
         <relativePath/>
     </parent>
     <groupId>com.gatewayserver</groupId>
@@ -17,7 +17,7 @@
     <properties>
         <cache2k.version>1.2.4.Final</cache2k.version>
         <java.version>1.10</java.version>
-        <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
+        <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
         <springfox-swagger.version>2.9.2</springfox-swagger.version>
         <spring5-microservices-common.version>0.0.1</spring5-microservices-common.version>
     </properties>
