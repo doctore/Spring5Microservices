@@ -15,7 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.security.jwt.ObjectGeneratorForTest.buildDefaultJwtClientDetails;
+import static com.security.jwt.TestDataFactory.buildDefaultJwtClientDetails;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;

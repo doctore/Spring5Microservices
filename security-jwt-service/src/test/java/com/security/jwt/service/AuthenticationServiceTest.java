@@ -1,7 +1,7 @@
 package com.security.jwt.service;
 
 import com.nimbusds.jose.JWSAlgorithm;
-import com.security.jwt.ObjectGeneratorForTest;
+import com.security.jwt.TestDataFactory;
 import com.security.jwt.configuration.security.JweConfiguration;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.exception.ClientNotFoundException;
@@ -89,10 +89,10 @@ public class AuthenticationServiceTest {
 
     static Stream<Arguments> getAuthenticationInformationTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
-        UserDetails userDetails = ObjectGeneratorForTest.buildDefaultUser();
+        UserDetails userDetails = TestDataFactory.buildDefaultUser();
         AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
-        JwtClientDetails clientDetails = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
-        Optional<RawAuthenticationInformationDto> rawAuthenticationInformation = of(ObjectGeneratorForTest.buildDefaultRawAuthenticationInformation());
+        JwtClientDetails clientDetails = TestDataFactory.buildDefaultJwtClientDetails(clientId);
+        Optional<RawAuthenticationInformationDto> rawAuthenticationInformation = of(TestDataFactory.buildDefaultRawAuthenticationInformation());
         return Stream.of(
                 //@formatter:off
                 //            clientId,   userDetails,   authenticationGenerator,   clientDetailsResult,   rawAuthenticationInformation,   isResultEmpty
@@ -148,9 +148,9 @@ public class AuthenticationServiceTest {
 
     static Stream<Arguments> getPayloadOfTokenTestCases() {
         String clientId = "clientId";
-        JwtClientDetails clientDetailsJWE = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
+        JwtClientDetails clientDetailsJWE = TestDataFactory.buildDefaultJwtClientDetails(clientId);
         clientDetailsJWE.setUseJwe(true);
-        JwtClientDetails clientDetailsJWS = ObjectGeneratorForTest.buildDefaultJwtClientDetails(clientId);
+        JwtClientDetails clientDetailsJWS = TestDataFactory.buildDefaultJwtClientDetails(clientId);
         clientDetailsJWS.setUseJwe(false);
         Map<String, Object> payloadFromAccessToken = new HashMap<String, Object>() {{
             put(AUTHORITIES.getKey(), asList("admin"));

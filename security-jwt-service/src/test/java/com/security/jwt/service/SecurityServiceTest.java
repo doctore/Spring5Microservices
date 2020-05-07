@@ -1,6 +1,6 @@
 package com.security.jwt.service;
 
-import com.security.jwt.ObjectGeneratorForTest;
+import com.security.jwt.TestDataFactory;
 import com.security.jwt.application.spring5microservices.service.UserService;
 import com.security.jwt.exception.ClientNotFoundException;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
@@ -58,10 +58,10 @@ public class SecurityServiceTest {
     static Stream<Arguments> loginTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         String username = "username value";
-        UserDetails userDetails = ObjectGeneratorForTest.buildDefaultUser();
+        UserDetails userDetails = TestDataFactory.buildDefaultUser();
         String password = userDetails.getPassword();
         UserService userService = mock(UserService.class);
-        Optional<AuthenticationInformationDto> authenticationInformation = of(ObjectGeneratorForTest.buildDefaultAuthenticationInformation());
+        Optional<AuthenticationInformationDto> authenticationInformation = of(TestDataFactory.buildDefaultAuthenticationInformation());
         return Stream.of(
                 //@formatter:off
                 //            clientId,     username,   password,   userService,   userDetails,   passwordsMatch,  expectedException,                 authenticationInformation,   expectedResult
@@ -108,7 +108,7 @@ public class SecurityServiceTest {
         String username = "username value";
 
         UserService userService = mock(UserService.class);
-        Optional<AuthenticationInformationDto> authenticationInformation = of(ObjectGeneratorForTest.buildDefaultAuthenticationInformation());
+        Optional<AuthenticationInformationDto> authenticationInformation = of(TestDataFactory.buildDefaultAuthenticationInformation());
         return Stream.of(
                 //@formatter:off
                 //            refreshToken,      clientId,     usernameResult,   userService,   expectedException,                 authenticationInformation,   expectedResult
@@ -129,7 +129,7 @@ public class SecurityServiceTest {
     public void refresh_testCases(String refreshToken, String clientId, String usernameResult, UserService userService,
                                   Class<? extends Exception> expectedException, Optional<AuthenticationInformationDto> authenticationInformation,
                                   Optional<AuthenticationInformationDto> expectedResult) {
-        UserDetails userDetails = ObjectGeneratorForTest.buildDefaultUser();
+        UserDetails userDetails = TestDataFactory.buildDefaultUser();
         Map<String, Object> payload = new HashMap<>();
 
         when(mockAuthenticationService.getPayloadOfToken(refreshToken, clientId, false)).thenReturn(payload);
@@ -162,7 +162,7 @@ public class SecurityServiceTest {
         Map<String, Object> additionalInfoResult = new HashMap<String, Object>() {{
             put(NAME.getKey(), "name value");
         }};
-        UsernameAuthoritiesDto usernameAuthorities = ObjectGeneratorForTest.buildUsernameAuthorities(usernameResult, rolesResult, additionalInfoResult);
+        UsernameAuthoritiesDto usernameAuthorities = TestDataFactory.buildUsernameAuthorities(usernameResult, rolesResult, additionalInfoResult);
         return Stream.of(
                 //@formatter:off
                 //            accessToken,       clientId,     usernameResult,   rolesResult,   additionalInfoResult,   expectedException,                 expectedResult

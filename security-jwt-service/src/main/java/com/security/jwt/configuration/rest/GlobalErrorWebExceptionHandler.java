@@ -2,7 +2,6 @@ package com.security.jwt.configuration.rest;
 
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.TokenInvalidException;
-import com.spring5microservices.common.enums.ExtendedHttpStatus;
 import com.spring5microservices.common.exception.TokenExpiredException;
 import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
@@ -27,6 +26,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.spring5microservices.common.enums.ExtendedHttpStatus.TOKEN_EXPIRED;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -45,14 +45,14 @@ public class GlobalErrorWebExceptionHandler {
     @ExceptionHandler(AccountStatusException.class)
     public ResponseEntity<String> accountStatusException(AccountStatusException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The account of the user is disabled", FORBIDDEN);
+        return buildPlainTextResponse("The account of the user is disabled", FORBIDDEN.value());
     }
 
 
     @ExceptionHandler(ClientNotFoundException.class)
     public ResponseEntity<String> clientNotFoundException(ClientNotFoundException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Given invalid client details identifier", NOT_FOUND);
+        return buildPlainTextResponse("Given invalid client details identifier", NOT_FOUND.value());
     }
 
 
@@ -66,7 +66,7 @@ public class GlobalErrorWebExceptionHandler {
     @ExceptionHandler(HttpMessageConversionException.class)
     public ResponseEntity<String> httpMessageConversionException(HttpMessageConversionException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The was a problem in the parameters of the current request", BAD_REQUEST);
+        return buildPlainTextResponse("The was a problem in the parameters of the current request", BAD_REQUEST.value());
     }
 
 
@@ -80,42 +80,42 @@ public class GlobalErrorWebExceptionHandler {
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<String> nullPointerException(NullPointerException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Trying to access to a non existing property", INTERNAL_SERVER_ERROR);
+        return buildPlainTextResponse("Trying to access to a non existing property", INTERNAL_SERVER_ERROR.value());
     }
 
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<String> unAuthorizedException(UnauthorizedException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The user has no permissions to execute the request", UNAUTHORIZED);
+        return buildPlainTextResponse("The user has no permissions to execute the request", UNAUTHORIZED.value());
     }
 
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<String> usernameNotFoundException(UsernameNotFoundException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Given invalid credentials", NOT_FOUND);
+        return buildPlainTextResponse("Given invalid credentials", NOT_FOUND.value());
     }
 
 
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<String> throwable(Throwable exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Internal error in the application", INTERNAL_SERVER_ERROR);
+        return buildPlainTextResponse("Internal error in the application", INTERNAL_SERVER_ERROR.value());
     }
 
 
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<String> tokenExpiredException(TokenExpiredException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The provided token has expired", ExtendedHttpStatus.TOKEN_EXPIRED);
+        return buildPlainTextResponse("The provided token has expired", TOKEN_EXPIRED.value());
     }
 
 
     @ExceptionHandler(TokenInvalidException.class)
     public ResponseEntity<String> tokenInvalidException(TokenInvalidException exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The provided token is invalid", FORBIDDEN);
+        return buildPlainTextResponse("The provided token is invalid", FORBIDDEN.value());
     }
 
 
@@ -130,44 +130,27 @@ public class GlobalErrorWebExceptionHandler {
     private String getErrorMessageUsingHttpRequest(WebRequest request) {
         HttpServletRequest httpRequest = ((ServletWebRequest)request).getRequest();
         return format("There was an error trying to execute the request with: %s"
-                    + "Http method = %s %s "
-                    + "Uri = %s",
+                        + "Http method = %s %s "
+                        + "Uri = %s",
                 System.lineSeparator(), httpRequest.getMethod(),
                 System.lineSeparator(), httpRequest.getRequestURI());
     }
 
     /**
-     *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
+     *    Builds the Http response with the given information, including {@code httpStatusValue} and a custom message
      * to add in the content.
      *
      * @param responseMessage
      *    Information included in the returned response
-     * @param httpStatus
-     *    {@link HttpStatus} used in the Http response
+     * @param httpStatusValue
+     *    Used in the response as Http code to return
      *
      * @return {@link ResponseEntity} with the suitable Http response
      */
-    private ResponseEntity<String> buildPlainTextResponse(String responseMessage, HttpStatus httpStatus) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_PLAIN);
-        return new ResponseEntity<>(responseMessage, headers, httpStatus);
-    }
-
-    /**
-     *    Builds the Http response with the given information, including {@link ExtendedHttpStatus} and a custom message
-     * to add in the content.
-     *
-     * @param responseMessage
-     *    Information included in the returned response
-     * @param httpStatus
-     *    {@link ExtendedHttpStatus} used in the Http response
-     *
-     * @return {@link ResponseEntity} with the suitable Http response
-     */
-    private ResponseEntity<String> buildPlainTextResponse(String responseMessage, ExtendedHttpStatus httpStatus) {
-        return ResponseEntity.status(httpStatus.value())
-                             .contentType(MediaType.TEXT_PLAIN)
-                             .body(responseMessage);
+    private ResponseEntity<String> buildPlainTextResponse(String responseMessage, int httpStatusValue) {
+        return ResponseEntity.status(httpStatusValue)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(responseMessage);
     }
 
     /**
