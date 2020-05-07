@@ -23,7 +23,7 @@ import static com.security.jwt.enums.TokenKeyEnum.NAME;
 import static com.security.jwt.enums.TokenKeyEnum.USERNAME;
 
 @UtilityClass
-public class ObjectGeneratorForTest {
+public class TestDataFactory {
 
     public static AuthenticationInformationDto buildDefaultAuthenticationInformation() {
         return AuthenticationInformationDto.builder()

@@ -7,9 +7,14 @@ import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.service.PizzaService;
+import com.spring5microservices.common.dto.ErrorResponseDto;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -29,10 +34,13 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.pizza.TestDataFactory.buildIngredientDto;
 import static com.pizza.TestDataFactory.buildPizzaDto;
 import static com.pizza.enums.PizzaEnum.CARBONARA;
+import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
+import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -87,23 +95,38 @@ public class PizzaControllerTest {
     }
 
 
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned() {
-        // Given
-        PizzaDto pizzaDto = buildPizzaDto(1, "Not existing", 7D, Set.of());
+    static Stream<Arguments> createWhenDtoDoesNotVerifyValidationsTestCases() {
         String validPizzaNames = Arrays.stream(PizzaEnum.values())
-                                       .map(PizzaEnum::getInternalPropertyValue)
-                                       .collect(Collectors.joining(", "));
-        // When/Then
+                .map(PizzaEnum::getInternalPropertyValue)
+                .collect(Collectors.joining(", "));
+        PizzaDto dto1 = buildPizzaDto(1, "Not existing", 7D, Set.of());
+        PizzaDto dto2 = buildPizzaDto(null, CARBONARA.getInternalPropertyValue(), null, Set.of());
+        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'pizzaDto' on field 'name' due to: must be one of the "
+                     + "values included in [" + validPizzaNames + "]"));
+        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'pizzaDto' on field 'cost' due to: must not be null"));
+        return Stream.of(
+                //@formatter:off
+                //            dtoToCreate,   expectedResponse
+                Arguments.of( dto1,          response1 ),
+                Arguments.of( dto2,          response2 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("createWhenDtoDoesNotVerifyValidationsTestCases")
+    @DisplayName("create: when dto does not verify validations")
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
+            PizzaDto dtoToCreate, ErrorResponseDto expectedResponse) {
         webTestClient.post()
                      .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(pizzaDto), PizzaDto.class)
+                     .body(Mono.just(dtoToCreate), PizzaDto.class)
                      .exchange()
                      .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'name' due to: "
-                              + "must be one of the values included in [" + validPizzaNames + "]]");
+                     .expectBody(ErrorResponseDto.class)
+                     .isEqualTo(expectedResponse);
     }
 
 
@@ -188,14 +211,15 @@ public class PizzaControllerTest {
     public void findByName_whenTheNameDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
         String notValidPizzaName = "pizzaName1pizzaName2pizzaName3pizzaName4pizzaName5pizzaName6pizzaName7";
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("name: size must be between 1 and 64"));
 
         // When/Then
         webTestClient.get()
                      .uri(RestRoutes.PIZZA.ROOT + "/" + notValidPizzaName)
                      .exchange()
                      .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: findByName.name: size must be between 1 and 64");
+                     .expectBody(ErrorResponseDto.class)
+                     .isEqualTo(expectedResponse);
     }
 
 
@@ -274,43 +298,32 @@ public class PizzaControllerTest {
     }
 
 
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_USER})
-    public void findPageWithIngredients_whenThePageDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
-        // Given
-        int notValidPage = -1;
-        int size = 1;
-
-        // When/Then
-        webTestClient.get()
-                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-                                                  .queryParam("page", notValidPage)
-                                                  .queryParam("size", size)
-                                                  .build())
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: findPageWithIngredients.page: must be greater than or equal to 0");
+    static Stream<Arguments> findPageWithIngredientsWhenParametersNotVerifyValidationsTestCases() {
+        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION, asList("page: must be greater than or equal to 0"));
+        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION, asList("size: must be greater than 0"));
+        return Stream.of(
+                //@formatter:off
+                //            page,   size,   expectedResponse
+                Arguments.of( -1,     1,      response1 ),
+                Arguments.of( 0,      0,      response2 )
+        ); //@formatter:on
     }
 
-
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_USER})
-    public void findPageWithIngredients_whenTheSizeDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
-        // Given
-        int page = 0;
-        int notValidSize = 0;
-
-        // When/Then
+    @ParameterizedTest
+    @MethodSource("findPageWithIngredientsWhenParametersNotVerifyValidationsTestCases")
+    @DisplayName("findPageWithIngredients: when parameters do not verify validations")
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    public void findPageWithIngredients_whenGivenParametersDoNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
+            int page, int size, ErrorResponseDto expectedResponse) {
         webTestClient.get()
                      .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-                                                  .queryParam("page", page)
-                                                  .queryParam("size", notValidSize)
-                                                  .build())
+                        .queryParam("page", page)
+                        .queryParam("size", size)
+                        .build())
                      .exchange()
                      .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: findPageWithIngredients.size: must be greater than 0");
+                     .expectBody(ErrorResponseDto.class)
+                     .isEqualTo(expectedResponse);
     }
 
 
@@ -351,7 +364,7 @@ public class PizzaControllerTest {
         PizzaDto pizzaDto = buildPizzaDto(1, CARBONARA.getInternalPropertyValue(), 7D, Set.of(ingredientDto));
 
         // When
-        when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(Arrays.asList(pizzaDto)));
+        when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(asList(pizzaDto)));
 
         // Then
         webTestClient.get()
@@ -400,20 +413,38 @@ public class PizzaControllerTest {
     }
 
 
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
-        // Given
-        PizzaDto pizzaDto = buildPizzaDto(1, CARBONARA.getInternalPropertyValue(), null, Set.of());
+    static Stream<Arguments> updateWhenDtoDoesNotVerifyValidationsTestCases() {
+        String validPizzaNames = Arrays.stream(PizzaEnum.values())
+                .map(PizzaEnum::getInternalPropertyValue)
+                .collect(Collectors.joining(", "));
+        PizzaDto dto1 = buildPizzaDto(1, "Not existing", 7D, Set.of());
+        PizzaDto dto2 = buildPizzaDto(null, CARBONARA.getInternalPropertyValue(), null, Set.of());
+        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'pizzaDto' on field 'name' due to: must be one of the "
+                        + "values included in [" + validPizzaNames + "]"));
+        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'pizzaDto' on field 'cost' due to: must not be null"));
+        return Stream.of(
+                //@formatter:off
+                //            dtoToUpdate,   expectedResponse
+                Arguments.of( dto1,          response1 ),
+                Arguments.of( dto2,          response2 )
+        ); //@formatter:on
+    }
 
-        // When/Then
+    @ParameterizedTest
+    @MethodSource("updateWhenDtoDoesNotVerifyValidationsTestCases")
+    @DisplayName("update: when dto does not verify validations")
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
+            PizzaDto dtoToUpdate, ErrorResponseDto expectedResponse) {
         webTestClient.put()
                      .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(pizzaDto), PizzaDto.class)
+                     .body(Mono.just(dtoToUpdate), PizzaDto.class)
                      .exchange()
                      .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'pizzaDto' on field 'cost' due to: must not be null]");
+                     .expectBody(ErrorResponseDto.class)
+                     .isEqualTo(expectedResponse);
     }
 
 

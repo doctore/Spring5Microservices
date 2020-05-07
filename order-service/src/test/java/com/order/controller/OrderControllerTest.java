@@ -8,9 +8,14 @@ import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
 import com.order.service.OrderService;
+import com.spring5microservices.common.dto.ErrorResponseDto;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,10 +29,12 @@ import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
+import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
@@ -79,20 +86,34 @@ public class OrderControllerTest {
     }
 
 
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
-        // Given
-        OrderDto orderDto = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
+    static Stream<Arguments> createWhenDtoDoesNotVerifyValidationsTestCases() {
+        OrderDto dto1 = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
+        OrderDto dto2 = OrderDto.builder().created(new Date()).orderLines(new ArrayList<>()).build();
+        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'orderDto' on field 'created' due to: must not be null"));
+        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'orderDto' on field 'code' due to: must not be null"));
+        return Stream.of(
+                //@formatter:off
+                //            dtoToCreate,   expectedResponse
+                Arguments.of( dto1,          response1 ),
+                Arguments.of( dto2,          response2 )
+        ); //@formatter:on
+    }
 
-        // When/Then
+    @ParameterizedTest
+    @MethodSource("createWhenDtoDoesNotVerifyValidationsTestCases")
+    @DisplayName("create: when dto does not verify validations")
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
+            OrderDto dtoToCreate, ErrorResponseDto expectedResponse) {
         webTestClient.post()
                      .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(orderDto), OrderDto.class)
+                     .body(Mono.just(dtoToCreate), OrderDto.class)
                      .exchange()
                      .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
+                     .expectBody(ErrorResponseDto.class)
+                     .isEqualTo(expectedResponse);
     }
 
 
@@ -122,11 +143,11 @@ public class OrderControllerTest {
         PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
         OrderLineDto beforeOrderLineDto = OrderLineDto.builder().pizza(carbonara).cost(15D).amount((short)2).build();
         OrderDto beforeOrderDto = OrderDto.builder().code("Order 1").created(new Date())
-                                                    .orderLines(Arrays.asList(beforeOrderLineDto)).build();
+                                                    .orderLines(asList(beforeOrderLineDto)).build();
 
         OrderLineDto afterOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
         OrderDto afterOrderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
-                                                   .orderLines(Arrays.asList(afterOrderLineDto)).build();
+                                                   .orderLines(asList(afterOrderLineDto)).build();
         // When
         when(mockOrderService.save(beforeOrderDto)).thenReturn(Optional.of(afterOrderDto));
 
@@ -184,14 +205,15 @@ public class OrderControllerTest {
     public void findByIdWithOrderLines_whenTheIdDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
         String notValidOrderId = "0";
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("id: must be greater than 0"));
 
         // When/Then
         webTestClient.get()
                      .uri(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
                      .exchange()
                      .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("The following constraints have failed: findByIdWithOrderLines.id: must be greater than 0");
+                     .expectBody(ErrorResponseDto.class)
+                     .isEqualTo(expectedResponse);
     }
 
 
@@ -221,7 +243,7 @@ public class OrderControllerTest {
         OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
 
         OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime()))
-                                              .orderLines(Arrays.asList(orderLineDto1, orderLineDto2)).build();
+                                              .orderLines(asList(orderLineDto1, orderLineDto2)).build();
         // When
         when(mockOrderService.findByIdWithOrderLines(anyInt())).thenReturn(Optional.of(orderDto));
 
@@ -275,20 +297,34 @@ public class OrderControllerTest {
     }
 
 
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
-        // Given
-        OrderDto orderDto = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
+    static Stream<Arguments> updateWhenDtoDoesNotVerifyValidationsTestCases() {
+        OrderDto dto1 = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
+        OrderDto dto2 = OrderDto.builder().created(new Date()).orderLines(new ArrayList<>()).build();
+        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'orderDto' on field 'created' due to: must not be null"));
+        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
+                asList("Field error in object 'orderDto' on field 'code' due to: must not be null"));
+        return Stream.of(
+                //@formatter:off
+                //            dtoToUpdate,   expectedResponse
+                Arguments.of( dto1,          response1 ),
+                Arguments.of( dto2,          response2 )
+        ); //@formatter:on
+    }
 
-        // When/Then
+    @ParameterizedTest
+    @MethodSource("updateWhenDtoDoesNotVerifyValidationsTestCases")
+    @DisplayName("update: when dto does not verify validations")
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
+            OrderDto dtoToUpdate, ErrorResponseDto expectedResponse) {
         webTestClient.put()
                      .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(orderDto), OrderDto.class)
+                     .body(Mono.just(dtoToUpdate), OrderDto.class)
                      .exchange()
                      .expectStatus().isBadRequest()
-                     .expectBody(String.class)
-                     .isEqualTo("Error in the given parameters: [Field error in object 'orderDto' on field 'created' due to: must not be null]");
+                     .expectBody(ErrorResponseDto.class)
+                     .isEqualTo(expectedResponse);
     }
 
 
@@ -318,11 +354,11 @@ public class OrderControllerTest {
         PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
         OrderLineDto beforeOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
         OrderDto beforeOrderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
-                                                    .orderLines(Arrays.asList(beforeOrderLineDto)).build();
+                                                    .orderLines(asList(beforeOrderLineDto)).build();
 
         OrderLineDto afterOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(7.50D).amount((short)1).build();
         OrderDto afterOrderDto = OrderDto.builder().id(1).code("Order 1 updated").created(new Date())
-                                                   .orderLines(Arrays.asList(afterOrderLineDto)).build();
+                                                   .orderLines(asList(afterOrderLineDto)).build();
         // When
         when(mockOrderService.save(beforeOrderDto)).thenReturn(Optional.of(afterOrderDto));
 

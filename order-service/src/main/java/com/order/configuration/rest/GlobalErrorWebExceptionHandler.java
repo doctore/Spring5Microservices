@@ -1,6 +1,10 @@
 package com.order.configuration.rest;
 
+import com.spring5microservices.common.dto.ErrorResponseDto;
+import com.spring5microservices.common.enums.RestApiErrorCode;
+import com.spring5microservices.common.util.JsonUtil;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -10,11 +14,21 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
 import javax.validation.ConstraintViolationException;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
+import java.util.List;
+
+import static com.spring5microservices.common.enums.RestApiErrorCode.INTERNAL;
+import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 /**
  * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
@@ -26,14 +40,14 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        if (ex instanceof NullPointerException) {
-            return nullPointerException(exchange, (NullPointerException) ex);
-        }
-        else if (ex instanceof WebExchangeBindException) {
+        if (ex instanceof WebExchangeBindException) {
             return webExchangeBindException(exchange, (WebExchangeBindException) ex);
         }
         else if (ex instanceof ConstraintViolationException) {
             return constraintViolationException(exchange, (ConstraintViolationException) ex);
+        }
+        else if (ex instanceof ServerWebInputException) {
+            return serverWebInputException(exchange, (ServerWebInputException) ex);
         }
         else {
             return throwable(exchange, ex);
@@ -53,25 +67,14 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      */
     private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildListOfValidationErrorsResponse("Error in the given parameters: ", exchange, exception,
-                                                   null != exception.getStatus() ? exception.getStatus() : HttpStatus.UNPROCESSABLE_ENTITY);
-    }
-
-
-    /**
-     * Method used to manage when a Rest request throws a {@link NullPointerException}
-     *
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
-     * @param exception
-     *    {@link NullPointerException} thrown
-     *
-     * @return {@link Mono} with the suitable response
-     */
-    private Mono<Void> nullPointerException(ServerWebExchange exchange, NullPointerException exception) {
-        log.error("There was a NullPointerException. " + getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTextResponse("Trying to access to a non existing property", exchange,
-                                      HttpStatus.INTERNAL_SERVER_ERROR);
+        List<String> errorMessages = exception.getBindingResult().getFieldErrors()
+                .stream()
+                .map(fe -> "Field error in object '" + fe.getObjectName()
+                        + "' on field '" + fe.getField()
+                        + "' due to: " + fe.getDefaultMessage())
+                .collect(toList());
+        return buildErrorResponse(VALIDATION, errorMessages, exchange,
+                null != exception.getStatus() ? exception.getStatus() : UNPROCESSABLE_ENTITY);
     }
 
 
@@ -86,9 +89,32 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return {@link Mono} with the suitable response
      */
     private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
-        log.error("There was a ConstraintViolationException. " + getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTextResponse("The following constraints have failed: " + exception.getMessage(),
-                                      exchange, HttpStatus.BAD_REQUEST);
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        List<String> errorMessages = exception.getConstraintViolations()
+                .stream()
+                .map(c -> {
+                    String rawParameterName = c.getPropertyPath().toString();
+                    return rawParameterName.substring(rawParameterName.lastIndexOf(".") + 1) + ": " + c.getMessage();
+                })
+                .collect(toList());
+        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST);
+    }
+
+
+    /**
+     * Method used to manage when a Rest request throws a {@link ServerWebInputException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link ServerWebInputException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> serverWebInputException(ServerWebExchange exchange, ServerWebInputException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        List<String> errorMessages = getServerWebInputExceptionErrorMessages(exception);
+        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST);
     }
 
 
@@ -104,8 +130,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      */
     private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildPlainTextResponse("Internal error in the application", exchange,
-                HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), exchange, INTERNAL_SERVER_ERROR);
     }
 
 
@@ -118,10 +143,10 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @return error message with Http request information
      */
     private String getErrorMessageUsingHttpRequest(ServerWebExchange exchange) {
-        return String.format("There was an error trying to execute the request with:%s"
-                           + "Http method = %s %s"
-                           + "Uri = %s %s"
-                           + "Header = %s",
+        return format("There was an error trying to execute the request with:%s"
+                        + "Http method = %s %s"
+                        + "Uri = %s %s"
+                        + "Header = %s",
                 System.lineSeparator(),
                 exchange.getRequest().getMethod(), System.lineSeparator(),
                 exchange.getRequest().getURI().toString(), System.lineSeparator(),
@@ -130,57 +155,49 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
 
     /**
-     *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
-     * to include in the content.
+     * Get the list of internal errors included in the given exception
      *
-     * @param responseMessage
-     *    Information included in the returned response
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
-     * @param httpStatus
-     *    {@link HttpStatus} used in the Http response
+     * @param exception
+     *    {@link ServerWebInputException} with the error information
      *
-     * @return {@link Mono} with the suitable Http response
+     * @return {@link List} of {@link String} with the error messages
      */
-    private Mono<Void> buildPlainTextResponse(String responseMessage, ServerWebExchange exchange, HttpStatus httpStatus) {
-
-        exchange.getResponse().setStatusCode(httpStatus);
-        exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
-
-        byte[] responseMessageBytes = responseMessage.getBytes(StandardCharsets.UTF_8);
-        DataBuffer bufferResponseMessage = exchange.getResponse().bufferFactory().wrap(responseMessageBytes);
-        return exchange.getResponse().writeWith(Mono.just(bufferResponseMessage));
+    private List<String> getServerWebInputExceptionErrorMessages(ServerWebInputException exception) {
+        if (exception.getCause() instanceof TypeMismatchException) {
+            TypeMismatchException ex = (TypeMismatchException)exception.getCause();
+            return asList(format("There was an type mismatch error in %s. The provided value was %s and required type is %s",
+                    exception.getMethodParameter(),
+                    ex.getValue(),
+                    ex.getRequiredType()));
+        }
+        else {
+            return asList(format("There was an error in %s due to %s", exception.getMethodParameter(), exception.getReason()));
+        }
     }
 
 
     /**
-     *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
-     * with the "not verified" validations to include in the content.
+     * Builds the Http response related with an error, using the provided parameters.
      *
-     * @param responseMessage
-     *    Information included in the returned response
+     * @param errorCode
+     *    {@link RestApiErrorCode} included in the response
+     * @param errorMessages
+     *    {@link List} of error messages to include
      * @param exchange
      *    {@link ServerWebExchange} with the request information
-     * @param exception
-     *    {@link WebExchangeBindException} with the error information
      * @param httpStatus
      *    {@link HttpStatus} used in the Http response
      *
      * @return {@link Mono} with the suitable Http response
      */
-    private Mono<Void> buildListOfValidationErrorsResponse(String responseMessage, ServerWebExchange exchange,
-                                                           WebExchangeBindException exception, HttpStatus httpStatus) {
+    private Mono<Void> buildErrorResponse(RestApiErrorCode errorCode, List<String> errorMessages, ServerWebExchange exchange,
+                                          HttpStatus httpStatus) {
         exchange.getResponse().setStatusCode(httpStatus);
-        exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        responseMessage += exception.getBindingResult()
-                .getFieldErrors().stream()
-                .map(fe -> "Field error in object '" + fe.getObjectName()
-                        + "' on field '" + fe.getField()
-                        + "' due to: " + fe.getDefaultMessage())
-                .collect(Collectors.toList());
+        ErrorResponseDto error = new ErrorResponseDto(errorCode, errorMessages);
 
-        byte[] responseMessageBytes = responseMessage.getBytes(StandardCharsets.UTF_8);
+        byte[] responseMessageBytes = JsonUtil.toJson(error).orElse("").getBytes(StandardCharsets.UTF_8);
         DataBuffer bufferResponseMessage = exchange.getResponse().bufferFactory().wrap(responseMessageBytes);
         return exchange.getResponse().writeWith(Mono.just(bufferResponseMessage));
     }

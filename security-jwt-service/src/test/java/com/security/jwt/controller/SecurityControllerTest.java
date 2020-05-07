@@ -29,9 +29,9 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.security.jwt.ObjectGeneratorForTest.buildDefaultAuthenticationInformation;
-import static com.security.jwt.ObjectGeneratorForTest.buildDefaultAuthenticationRequest;
-import static com.security.jwt.ObjectGeneratorForTest.buildUsernameAuthorities;
+import static com.security.jwt.TestDataFactory.buildDefaultAuthenticationInformation;
+import static com.security.jwt.TestDataFactory.buildDefaultAuthenticationRequest;
+import static com.security.jwt.TestDataFactory.buildUsernameAuthorities;
 import static com.security.jwt.TestUtil.fromJson;
 import static com.security.jwt.TestUtil.toJson;
 import static java.util.Optional.empty;

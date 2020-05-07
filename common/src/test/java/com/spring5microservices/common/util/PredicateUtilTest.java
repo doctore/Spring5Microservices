@@ -1,30 +1,28 @@
 package com.spring5microservices.common.util;
 
 import com.spring5microservices.common.PizzaDto;
-import com.spring5microservices.common.PizzaEnum;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.PizzaEnum.CARBONARA;
+import static com.spring5microservices.common.PizzaEnum.MARGUERITA;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(SpringExtension.class)
 public class PredicateUtilTest {
 
     static Stream<Arguments> distinctByKeyTestCases() {
-        PizzaDto carbonaraCheap = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(5D).build();
-        PizzaDto carbonaraExpense = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue()).cost(10D).build();
-        PizzaDto margheritaCheap = PizzaDto.builder().name(PizzaEnum.MARGUERITA.getInternalPropertyValue()).cost(5D).build();
-        PizzaDto margheritaExpense = PizzaDto.builder().name(PizzaEnum.MARGUERITA.getInternalPropertyValue()).cost(10D).build();
+        PizzaDto carbonaraCheap = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
+        PizzaDto carbonaraExpense = new PizzaDto(CARBONARA.getInternalPropertyValue(), 10D);
+        PizzaDto margheritaCheap = new PizzaDto(MARGUERITA.getInternalPropertyValue(), 5D);
+        PizzaDto margheritaExpense = new PizzaDto(MARGUERITA.getInternalPropertyValue(), 10D);
         Function<PizzaDto, String> getName = PizzaDto::getName;
         Function<PizzaDto, Double> getCost = PizzaDto::getCost;
         return Stream.of(

@@ -15,6 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Set;
 
+import static com.spring5microservices.common.PizzaEnum.CARBONARA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,7 +35,7 @@ public class EnumHasInternalStringValueValidatorTest {
     @DisplayName("isValid: when given string value is not in enum then validation fails")
     public void whenGivenStringValueIsNotInEnum_thenValidationFails() {
         // Given
-        PizzaDto dto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue() + PizzaEnum.MARGUERITA.getInternalPropertyValue()).build();
+        PizzaDto dto = new PizzaDto(CARBONARA.getInternalPropertyValue() + PizzaEnum.MARGUERITA.getInternalPropertyValue(), 5D);
 
         // When
         Set<ConstraintViolation<PizzaDto>> violations = validator.validate(dto);
@@ -52,7 +53,7 @@ public class EnumHasInternalStringValueValidatorTest {
     @DisplayName("isValid: when given string value is in enum then validation Succeeds")
     public void whenGivenStringValueIsInEnum_thenValidationSucceeds() {
         // Given
-        PizzaDto dto = PizzaDto.builder().name(PizzaEnum.CARBONARA.getInternalPropertyValue()).build();
+        PizzaDto dto = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
 
         // When
         Set<ConstraintViolation<PizzaDto>> violations = validator.validate(dto);
