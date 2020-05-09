@@ -14,11 +14,11 @@ public class Constants {
     // Path of the folders in the application
     public static final class PATH {
         public static final String REPOSITORY = "com.pizza.repository";
-    }
 
-    // External path
-    public static final class EXTERNAL_PATH {
-        public static final String COMMON = "com.spring5microservices.common";
+        // External path
+        public static final class EXTERNAL {
+            public static final String COMMON = "com.spring5microservices.common";
+        }
     }
 
     // Mapping used to match the result of some custom queries

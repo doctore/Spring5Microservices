@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.OPTIONS;
 
 @Configuration
 @EnableWebSecurity
@@ -59,6 +60,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .httpBasic().and()
             .authorizeRequests()
             // List of services do not require authentication
+            .antMatchers(OPTIONS).permitAll()
             .antMatchers(GET, documentationPath).permitAll()
             // Any other request must be authenticated
             .anyRequest().authenticated();

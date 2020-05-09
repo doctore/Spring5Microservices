@@ -101,13 +101,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      */
     private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        List<String> errorMessages = exception.getConstraintViolations()
-                .stream()
-                .map(c -> {
-                    String rawParameterName = c.getPropertyPath().toString();
-                    return rawParameterName.substring(rawParameterName.lastIndexOf(".") + 1) + ": " + c.getMessage();
-                })
-                .collect(toList());
+        List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception);
         return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST);
     }
 
@@ -216,6 +210,25 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         else {
             return asList(format("There was an error in %s due to %s", exception.getMethodParameter(), exception.getReason()));
         }
+    }
+
+
+    /**
+     * Get the list of internal errors included in the given exception
+     *
+     * @param exception
+     *    {@link ConstraintViolationException} with the error information
+     *
+     * @return {@link List} of {@link String} with the error messages
+     */
+    private List<String> getConstraintViolationExceptionErrorMessages(ConstraintViolationException exception) {
+        return exception.getConstraintViolations()
+                .stream()
+                .map(c -> {
+                    String rawParameterName = c.getPropertyPath().toString();
+                    return rawParameterName.substring(rawParameterName.lastIndexOf(".") + 1) + ": " + c.getMessage();
+                })
+                .collect(toList());
     }
 
 

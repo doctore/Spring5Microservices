@@ -73,10 +73,10 @@ public class PizzaControllerTest {
     public void create_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
         // When/Then
         webTestClient.post()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 
@@ -88,10 +88,10 @@ public class PizzaControllerTest {
 
         // When/Then
         webTestClient.post()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(pizzaDto), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isForbidden();
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(pizzaDto), PizzaDto.class)
+                .exchange()
+                .expectStatus().isForbidden();
     }
 
 
@@ -121,12 +121,12 @@ public class PizzaControllerTest {
     public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
             PizzaDto dtoToCreate, ErrorResponseDto expectedResponse) {
         webTestClient.post()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(dtoToCreate), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(ErrorResponseDto.class)
-                     .isEqualTo(expectedResponse);
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(dtoToCreate), PizzaDto.class)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(ErrorResponseDto.class)
+                .isEqualTo(expectedResponse);
     }
 
 
@@ -141,11 +141,11 @@ public class PizzaControllerTest {
 
         // Then
         webTestClient.post()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(pizzaDto), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody().isEmpty();
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(pizzaDto), PizzaDto.class)
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                .expectBody().isEmpty();
     }
 
 
@@ -163,17 +163,13 @@ public class PizzaControllerTest {
 
         // Then
         webTestClient.post()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(beforePizzaDto), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isCreated()
-                     .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                     .expectBody()
-                     .jsonPath("$.id").isEqualTo(afterPizzaDto.getId())
-                     .jsonPath("$.name").isEqualTo(afterPizzaDto.getName())
-                     .jsonPath("$.cost").isEqualTo(afterPizzaDto.getCost())
-                     .jsonPath("$.ingredients.[0].id").isEqualTo(afterIngredientDto.getId())
-                     .jsonPath("$.ingredients.[0].name").isEqualTo(afterIngredientDto.getName());
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(beforePizzaDto), PizzaDto.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
+                .expectBody(PizzaDto.class)
+                .isEqualTo(afterPizzaDto);
 
         verify(mockPizzaService, times(1)).save(beforePizzaDto);
     }
@@ -186,9 +182,9 @@ public class PizzaControllerTest {
 
         // When/Then
         webTestClient.get()
-                     .uri(RestRoutes.PIZZA.ROOT + "/" + validPizzaName)
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+                .uri(RestRoutes.PIZZA.ROOT + "/" + validPizzaName)
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 
@@ -200,9 +196,9 @@ public class PizzaControllerTest {
 
         // When/Then
         webTestClient.get()
-                     .uri(RestRoutes.PIZZA.ROOT + "/" + validPizzaName)
-                     .exchange()
-                     .expectStatus().isForbidden();
+                .uri(RestRoutes.PIZZA.ROOT + "/" + validPizzaName)
+                .exchange()
+                .expectStatus().isForbidden();
     }
 
 
@@ -215,11 +211,11 @@ public class PizzaControllerTest {
 
         // When/Then
         webTestClient.get()
-                     .uri(RestRoutes.PIZZA.ROOT + "/" + notValidPizzaName)
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(ErrorResponseDto.class)
-                     .isEqualTo(expectedResponse);
+                .uri(RestRoutes.PIZZA.ROOT + "/" + notValidPizzaName)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(ErrorResponseDto.class)
+                .isEqualTo(expectedResponse);
     }
 
 
@@ -231,10 +227,10 @@ public class PizzaControllerTest {
 
         // Then
         webTestClient.get()
-                     .uri(RestRoutes.PIZZA.ROOT + "/carbonara")
-                     .exchange()
-                     .expectStatus().isNotFound()
-                     .expectBody().isEmpty();
+                .uri(RestRoutes.PIZZA.ROOT + "/carbonara")
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody().isEmpty();
     }
 
 
@@ -250,16 +246,12 @@ public class PizzaControllerTest {
 
         // Then
         webTestClient.get()
-                     .uri(RestRoutes.PIZZA.ROOT + "/" + pizzaDto.getName())
-                     .exchange()
-                     .expectStatus().isOk()
-                     .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                     .expectBody()
-                     .jsonPath("$.id").isEqualTo(pizzaDto.getId())
-                     .jsonPath("$.name").isEqualTo(pizzaDto.getName())
-                     .jsonPath("$.cost").isEqualTo(pizzaDto.getCost())
-                     .jsonPath("$.ingredients.[0].id").isEqualTo(ingredientDto.getId())
-                     .jsonPath("$.ingredients.[0].name").isEqualTo(ingredientDto.getName());
+                .uri(RestRoutes.PIZZA.ROOT + "/" + pizzaDto.getName())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
+                .expectBody(PizzaDto.class)
+                .isEqualTo(pizzaDto);
     }
 
 
@@ -271,12 +263,12 @@ public class PizzaControllerTest {
 
         // When/Then
         webTestClient.get()
-                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
                         .queryParam("page", notValidPage)
                         .queryParam("size", size)
                         .build())
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 
@@ -289,12 +281,12 @@ public class PizzaControllerTest {
 
         // When/Then
         webTestClient.get()
-                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-                                                  .queryParam("page", notValidPage)
-                                                  .queryParam("size", size)
-                                                  .build())
-                     .exchange()
-                     .expectStatus().isForbidden();
+                .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                        .queryParam("page", notValidPage)
+                        .queryParam("size", size)
+                        .build())
+                .exchange()
+                .expectStatus().isForbidden();
     }
 
 
@@ -316,14 +308,14 @@ public class PizzaControllerTest {
     public void findPageWithIngredients_whenGivenParametersDoNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
             int page, int size, ErrorResponseDto expectedResponse) {
         webTestClient.get()
-                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
                         .queryParam("page", page)
                         .queryParam("size", size)
                         .build())
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(ErrorResponseDto.class)
-                     .isEqualTo(expectedResponse);
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(ErrorResponseDto.class)
+                .isEqualTo(expectedResponse);
     }
 
 
@@ -339,18 +331,18 @@ public class PizzaControllerTest {
 
         // Then
         webTestClient.get()
-                     .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-                                                  .queryParam("page", page)
-                                                  .queryParam("size", size)
-                                                  .build())
-                     .exchange()
-                     .expectStatus().isOk()
-                     .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                     .expectBody()
-                     .jsonPath("$.content").isEqualTo(new ArrayList<>())
-                     .jsonPath("$.numberOfElements").isEqualTo(0)
-                     .jsonPath("$.totalPages").isEqualTo(1)
-                     .jsonPath("$.totalElements").isEqualTo(0);
+                .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+                        .queryParam("page", page)
+                        .queryParam("size", size)
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
+                .expectBody()
+                .jsonPath("$.content").isEqualTo(new ArrayList<>())
+                .jsonPath("$.numberOfElements").isEqualTo(0)
+                .jsonPath("$.totalPages").isEqualTo(1)
+                .jsonPath("$.totalElements").isEqualTo(0);
     }
 
 
@@ -369,9 +361,9 @@ public class PizzaControllerTest {
         // Then
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
-                                             .queryParam("page", page)
-                                             .queryParam("size", size)
-                                             .build())
+                        .queryParam("page", page)
+                        .queryParam("size", size)
+                        .build())
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -391,10 +383,10 @@ public class PizzaControllerTest {
     public void update_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
         // When/Then
         webTestClient.put()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(new PizzaDto()), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(new PizzaDto()), PizzaDto.class)
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 
@@ -406,10 +398,10 @@ public class PizzaControllerTest {
 
         // When/Then
         webTestClient.put()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(pizzaDto), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isForbidden();
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(pizzaDto), PizzaDto.class)
+                .exchange()
+                .expectStatus().isForbidden();
     }
 
 
@@ -439,12 +431,12 @@ public class PizzaControllerTest {
     public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
             PizzaDto dtoToUpdate, ErrorResponseDto expectedResponse) {
         webTestClient.put()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(dtoToUpdate), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(ErrorResponseDto.class)
-                     .isEqualTo(expectedResponse);
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(dtoToUpdate), PizzaDto.class)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(ErrorResponseDto.class)
+                .isEqualTo(expectedResponse);
     }
 
 
@@ -459,11 +451,11 @@ public class PizzaControllerTest {
 
         // Then
         webTestClient.put()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(pizzaDto), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isNotFound()
-                     .expectBody().isEmpty();
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(pizzaDto), PizzaDto.class)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody().isEmpty();
     }
 
 
@@ -481,17 +473,13 @@ public class PizzaControllerTest {
 
         // Then
         webTestClient.put()
-                     .uri(RestRoutes.PIZZA.ROOT)
-                     .body(Mono.just(beforePizzaDto), PizzaDto.class)
-                     .exchange()
-                     .expectStatus().isOk()
-                     .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                     .expectBody()
-                     .jsonPath("$.id").isEqualTo(afterPizzaDto.getId())
-                     .jsonPath("$.name").isEqualTo(afterPizzaDto.getName())
-                     .jsonPath("$.cost").isEqualTo(afterPizzaDto.getCost())
-                     .jsonPath("$.ingredients.[0].id").isEqualTo(afterIngredientDto.getId())
-                     .jsonPath("$.ingredients.[0].name").isEqualTo(afterIngredientDto.getName());
+                .uri(RestRoutes.PIZZA.ROOT)
+                .body(Mono.just(beforePizzaDto), PizzaDto.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
+                .expectBody(PizzaDto.class)
+                .isEqualTo(afterPizzaDto);
 
         verify(mockPizzaService, times(1)).save(beforePizzaDto);
     }

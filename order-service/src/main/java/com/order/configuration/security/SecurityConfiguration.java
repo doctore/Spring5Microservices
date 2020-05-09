@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SecurityConfiguration {
 
+    public static final String TOKEN_PREFIX = "Bearer ";
+
     @Value("${security.restApi.authenticationInformation}")
     private String authenticationInformationWebService;
 

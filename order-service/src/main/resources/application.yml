@@ -15,11 +15,12 @@ eureka:
     # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
 
-springdoc:
+springfox:
   documentation:
     apiVersion: 1.0
     title: Order Rest Api
     description: Services related with how to manage orders
-  api-docs:
-    # Api docs path properties
-    path: /order/v2/api-docs
+    swagger:
+      v2:
+        # Api docs path properties
+        path: /order/v2/api-docs

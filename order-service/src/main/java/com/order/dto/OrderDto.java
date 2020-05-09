@@ -1,6 +1,7 @@
 package com.order.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,21 +19,22 @@ import java.util.List;
 @EqualsAndHashCode(of = {"code"})
 @Data
 @NoArgsConstructor
+@ApiModel(description="Information related with an order")
 public class OrderDto {
 
-    @Schema(description = "Internal unique identifier", required = true)
+    @ApiModelProperty(value = "Internal unique identifier", required = true)
     private Integer id;
 
-    @Schema(description = "Unique identifier of the order", required = true)
+    @ApiModelProperty(position = 1, value = "Unique identifier of the order", required = true)
     @NotNull
     @Size(min=1, max=64)
     private String code;
 
-    @Schema(description = "When was created", required = true)
+    @ApiModelProperty(position = 1, value = "When was created", required = true)
     @NotNull
     private Date created;
 
-    @Schema(description = "List of order lines")
+    @ApiModelProperty(position = 1, value = "List of order lines", required = true)
     @Valid
     List<OrderLineDto> orderLines;
 

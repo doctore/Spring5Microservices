@@ -1,94 +1,104 @@
 package com.order.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.order.OrderServiceApplication;
 import com.order.configuration.Constants;
 import com.order.configuration.rest.RestRoutes;
+import com.order.configuration.security.SecurityManager;
+import com.order.configuration.security.filter.SecurityFilterConfigurer;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
 import com.order.service.OrderService;
 import com.spring5microservices.common.dto.ErrorResponseDto;
-import org.junit.jupiter.api.BeforeEach;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.order.TestUtil.fromJson;
+import static com.order.TestUtil.toJson;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.util.Arrays.asList;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = OrderServiceApplication.class)
+import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+@WebMvcTest(value = OrderController.class)
 public class OrderControllerTest {
 
-    @Autowired
-    ApplicationContext context;
+    @MockBean
+    private SecurityFilterConfigurer mockSecurityFilterConfigurer;
 
-    private WebTestClient webTestClient;
+    @MockBean
+    private SecurityManager mockSecurityManager;
 
     @MockBean
     private OrderService mockOrderService;
 
-
-    @BeforeEach
-    public void setup() {
-        this.webTestClient = WebTestClient.bindToApplicationContext(this.context).configureClient().build();
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
 
     @Test
+    @SneakyThrows
+    @DisplayName("create: when no logged user is given then unauthorized Http code is returned")
     public void create_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
-        // When/Then
-        webTestClient.post()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(new OrderDto()), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+        mockMvc.perform(
+                post(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(new OrderDto())))
+                .andExpect(status().isUnauthorized());
     }
 
 
     @Test
+    @SneakyThrows
     @WithMockUser(authorities = {Constants.ROLE_USER})
+    @DisplayName("create: when no valid role is given then forbidden Http code is returned")
     public void create_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // Given
-        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+        OrderDto dtoToCreate = new OrderDto(null, "Order 1", new Date(), asList());
 
         // When/Then
-        webTestClient.post()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(orderDto), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isForbidden();
+        mockMvc.perform(
+                post(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(dtoToCreate)))
+                .andExpect(status().isForbidden());
     }
 
 
     static Stream<Arguments> createWhenDtoDoesNotVerifyValidationsTestCases() {
-        OrderDto dto1 = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
-        OrderDto dto2 = OrderDto.builder().created(new Date()).orderLines(new ArrayList<>()).build();
+        OrderDto dto1 = new OrderDto(null, "Order 1", null, asList());
+        OrderDto dto2 = new OrderDto(null, null, new Date(), asList());
         ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
                 asList("Field error in object 'orderDto' on field 'created' due to: must not be null"));
         ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
@@ -102,285 +112,244 @@ public class OrderControllerTest {
     }
 
     @ParameterizedTest
+    @SneakyThrows
     @MethodSource("createWhenDtoDoesNotVerifyValidationsTestCases")
     @DisplayName("create: when dto does not verify validations")
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
             OrderDto dtoToCreate, ErrorResponseDto expectedResponse) {
-        webTestClient.post()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(dtoToCreate), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(ErrorResponseDto.class)
-                     .isEqualTo(expectedResponse);
+        ResultActions result = mockMvc.perform(
+                post(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(dtoToCreate)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(APPLICATION_JSON));
+
+        thenHttpErrorIsReturned(result, BAD_REQUEST, expectedResponse);
+        verifyNoInteractions(mockOrderService);
     }
 
 
-    @Test
+    static Stream<Arguments> create_validDtoTestCases() {
+        PizzaDto pizzaDto = new PizzaDto((short)1, "Carbonara", 7.50);
+        OrderLineDto orderLineDto = new OrderLineDto(10, null, pizzaDto, (short)2, 15D);
+        OrderDto dto = new OrderDto(null, "Order 1", new Date(), asList(orderLineDto));
+        return Stream.of(
+                //@formatter:off
+                //            serviceResult,   expectedResultHttpCode,   expectedBodyResult
+                Arguments.of( empty(),         UNPROCESSABLE_ENTITY,     null ),
+                Arguments.of( of(dto),         CREATED,                  dto )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @SneakyThrows
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void create_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndEmptyBodyAreReturned() {
+    @MethodSource("create_validDtoTestCases")
+    @DisplayName("create: when given dto verifies the validations then the suitable Http code is returned")
+    public void create_whenGivenDtoVerifiesValidations_thenSuitableHttpCodeIsReturned(Optional<OrderDto> serviceResult,
+                          HttpStatus expectedResultHttpCode, OrderDto expectedBodyResult) {
         // Given
-        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+        OrderDto dtoToCreate = new OrderDto(null, "Order 1", new Date(), asList());
 
         // When
-        when(mockOrderService.save(any())).thenReturn(Optional.empty());
+        when(mockOrderService.save(dtoToCreate)).thenReturn(serviceResult);
+
+        ResultActions result = mockMvc.perform(
+                post(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(dtoToCreate)));
 
         // Then
-        webTestClient.post()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(orderDto), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody().isEmpty();
+        result.andExpect(status().is(expectedResultHttpCode.value()));
+        assertEquals(expectedBodyResult, fromJson(result.andReturn().getResponse().getContentAsString(), OrderDto.class));
+        verify(mockOrderService, times(1)).save(dtoToCreate);
     }
 
 
     @Test
-    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void create_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndOrderDtoAreReturned() {
-        // Given
-        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
-        OrderLineDto beforeOrderLineDto = OrderLineDto.builder().pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderDto beforeOrderDto = OrderDto.builder().code("Order 1").created(new Date())
-                                                    .orderLines(asList(beforeOrderLineDto)).build();
-
-        OrderLineDto afterOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderDto afterOrderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
-                                                   .orderLines(asList(afterOrderLineDto)).build();
-        // When
-        when(mockOrderService.save(beforeOrderDto)).thenReturn(Optional.of(afterOrderDto));
-
-        // Then
-        webTestClient.post()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(beforeOrderDto), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isCreated()
-                     .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                     .expectBody()
-                     .jsonPath("$.id").isEqualTo(afterOrderDto.getId())
-                     .jsonPath("$.code").isEqualTo(afterOrderDto.getCode())
-                     .jsonPath("$.created").isEqualTo(afterOrderDto.getCreated())
-                     .jsonPath("$.orderLines.[0].id").isEqualTo(afterOrderLineDto.getId())
-                     .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(afterOrderLineDto.getAmount()))
-                     .jsonPath("$.orderLines.[0].cost").isEqualTo(afterOrderLineDto.getCost())
-                     .jsonPath("$.orderLines.[0].pizza.id").isEqualTo(Integer.valueOf(afterOrderLineDto.getPizza().getId()))
-                     .jsonPath("$.orderLines.[0].pizza.name").isEqualTo(afterOrderLineDto.getPizza().getName())
-                     .jsonPath("$.orderLines.[0].pizza.cost").isEqualTo(afterOrderLineDto.getPizza().getCost());
-
-        verify(mockOrderService, times(1)).save(beforeOrderDto);
-    }
-
-
-    @Test
+    @SneakyThrows
+    @DisplayName("findByIdWithOrderLines: when no logged user is given then unauthorized Http code is returned")
     public void findByIdWithOrderLines_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
         // Given
-        String validOrderId = "1";
+        Integer validOrderId = 1;
 
         // When/Then
-        webTestClient.get()
-                     .uri(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+        mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES))
+                .andExpect(status().isUnauthorized());
     }
 
 
     @Test
+    @SneakyThrows
     @WithMockUser(authorities = {"NOT_EXISTING"})
+    @DisplayName("findByIdWithOrderLines: when no valid authority is given then forbidden Http code is returned")
     public void findByIdWithOrderLines_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // Given
-        String validOrderId = "1";
+        Integer validOrderId = 1;
 
         // When/Then
-        webTestClient.get()
-                     .uri(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
-                     .exchange()
-                     .expectStatus().isForbidden();
+        mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES))
+                .andExpect(status().isForbidden());
     }
 
 
     @Test
+    @SneakyThrows
     @WithMockUser(authorities = {Constants.ROLE_USER})
+    @DisplayName("findByIdWithOrderLines: when id does not verify validations then bad request Http code is returned")
     public void findByIdWithOrderLines_whenTheIdDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
-        String notValidOrderId = "0";
-        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("id: must be greater than 0"));
+        Integer notValidOrderId = 0;
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("Error in path 'findByIdWithOrderLines.id' due to: must be greater than 0"));
 
         // When/Then
-        webTestClient.get()
-                     .uri(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(ErrorResponseDto.class)
-                     .isEqualTo(expectedResponse);
+        ResultActions result = mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.ORDER.WITH_ORDERLINES));
+
+        thenHttpErrorIsReturned(result, BAD_REQUEST, expectedResponse);
+        verifyNoInteractions(mockOrderService);
     }
 
 
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_USER})
-    public void findByIdWithOrderLines_whenTheIdDoesNotExist_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
-        // When
-        when(mockOrderService.findByIdWithOrderLines(anyInt())).thenReturn(Optional.empty());
-
-        // Then
-        webTestClient.get()
-                     .uri(RestRoutes.ORDER.ROOT + "/1" + RestRoutes.ORDER.WITH_ORDERLINES)
-                     .exchange()
-                     .expectStatus().isNotFound()
-                     .expectBody().isEmpty();
+    static Stream<Arguments> findByIdWithOrderLines_validIdTestCases() {
+        PizzaDto pizzaDto = new PizzaDto((short)1, "Carbonara", 7.50);
+        OrderLineDto orderLineDto = new OrderLineDto(10, 1, pizzaDto, (short)2, 15D);
+        OrderDto dto = new OrderDto(1, "Order 1", new Date(), asList(orderLineDto));
+        return Stream.of(
+                //@formatter:off
+                //            serviceResult,   expectedResultHttpCode,   expectedBodyResult
+                Arguments.of( empty(),         NOT_FOUND,                null ),
+                Arguments.of( of(dto),         OK,                       dto )
+        ); //@formatter:on
     }
 
-
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_USER})
-    public void findByIdWithOrderLines_whenTheIdExists_thenOkHttpCodeAndOrderWithOrderlinesAreReturned() throws JsonProcessingException {
+    @ParameterizedTest
+    @SneakyThrows
+    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    @MethodSource("findByIdWithOrderLines_validIdTestCases")
+    @DisplayName("findByIdWithOrderLines: when given Id verifies the validations then the suitable Http code is returned")
+    public void findByIdWithOrderLines_whenGivenIdVerifiesValidations_thenSuitableHttpCodeIsReturned(Optional<OrderDto> serviceResult,
+                                          HttpStatus expectedResultHttpCode, OrderDto expectedBodyResult) {
         // Given
-        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
-        PizzaDto hawaiian = PizzaDto.builder().id((short)2).name("Hawaiian").cost(8D).build();
+        Integer validOrderId = 1;
 
-        OrderLineDto orderLineDto1 = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderLineDto orderLineDto2 = OrderLineDto.builder().id(2).pizza(hawaiian).cost(8D).amount((short)1).build();
-
-        OrderDto orderDto = OrderDto.builder().id(1).code("Order 1").created(new Timestamp(new Date().getTime()))
-                                              .orderLines(asList(orderLineDto1, orderLineDto2)).build();
         // When
-        when(mockOrderService.findByIdWithOrderLines(anyInt())).thenReturn(Optional.of(orderDto));
+        when(mockOrderService.findByIdWithOrderLines(validOrderId)).thenReturn(serviceResult);
+
+        ResultActions result = mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES));
 
         // Then
-        webTestClient.get()
-                     .uri(RestRoutes.ORDER.ROOT + "/" + orderDto.getId() + RestRoutes.ORDER.WITH_ORDERLINES)
-                     .exchange()
-                     .expectStatus().isOk()
-                     .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                     .expectBody()
-                     .jsonPath("$.id").isEqualTo(orderDto.getId())
-                     .jsonPath("$.code").isEqualTo(orderDto.getCode())
-                     .jsonPath("$.orderLines.[0].id").isEqualTo(orderLineDto1.getId())
-                     .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(orderLineDto1.getAmount()))
-                     .jsonPath("$.orderLines.[0].cost").isEqualTo(orderLineDto1.getCost())
-                     .jsonPath("$.orderLines.[0].pizza.id").isEqualTo(Integer.valueOf(carbonara.getId()))
-                     .jsonPath("$.orderLines.[0].pizza.name").isEqualTo(carbonara.getName())
-                     .jsonPath("$.orderLines.[0].pizza.cost").isEqualTo(carbonara.getCost())
-                     .jsonPath("$.orderLines.[1].id").isEqualTo(orderLineDto2.getId())
-                     .jsonPath("$.orderLines.[1].amount").isEqualTo(Integer.valueOf(orderLineDto2.getAmount()))
-                     .jsonPath("$.orderLines.[1].cost").isEqualTo(orderLineDto2.getCost())
-                     .jsonPath("$.orderLines.[1].pizza.id").isEqualTo(Integer.valueOf(hawaiian.getId()))
-                     .jsonPath("$.orderLines.[1].pizza.name").isEqualTo(hawaiian.getName())
-                     .jsonPath("$.orderLines.[1].pizza.cost").isEqualTo(hawaiian.getCost());
+        result.andExpect(status().is(expectedResultHttpCode.value()));
+        assertEquals(expectedBodyResult, fromJson(result.andReturn().getResponse().getContentAsString(), OrderDto.class));
+        verify(mockOrderService, times(1)).findByIdWithOrderLines(validOrderId);
     }
 
 
     @Test
+    @SneakyThrows
+    @DisplayName("update: when no logged user is given then unauthorized Http code is returned")
     public void update_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
-        // When/Then
-        webTestClient.put()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(new OrderDto()), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+        mockMvc.perform(
+                put(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(new OrderDto())))
+                .andExpect(status().isUnauthorized());
     }
 
 
     @Test
+    @SneakyThrows
     @WithMockUser(authorities = {Constants.ROLE_USER})
+    @DisplayName("update: when no valid role is given then forbidden Http code is returned")
     public void update_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // Given
-        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+        OrderDto dtoToUpdate = new OrderDto(null, "Order 1", new Date(), asList());
 
         // When/Then
-        webTestClient.put()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(orderDto), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isForbidden();
+        mockMvc.perform(
+                put(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(dtoToUpdate)))
+                .andExpect(status().isForbidden());
     }
 
 
     static Stream<Arguments> updateWhenDtoDoesNotVerifyValidationsTestCases() {
-        OrderDto dto1 = OrderDto.builder().code("Order 1").orderLines(new ArrayList<>()).build();
-        OrderDto dto2 = OrderDto.builder().created(new Date()).orderLines(new ArrayList<>()).build();
+        OrderDto dto1 = new OrderDto(null, "Order 1", null, asList());
+        OrderDto dto2 = new OrderDto(null, null, new Date(), asList());
         ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
                 asList("Field error in object 'orderDto' on field 'created' due to: must not be null"));
         ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
                 asList("Field error in object 'orderDto' on field 'code' due to: must not be null"));
         return Stream.of(
                 //@formatter:off
-                //            dtoToUpdate,   expectedResponse
+                //            dtoToCreate,   expectedResponse
                 Arguments.of( dto1,          response1 ),
                 Arguments.of( dto2,          response2 )
         ); //@formatter:on
     }
 
     @ParameterizedTest
+    @SneakyThrows
     @MethodSource("updateWhenDtoDoesNotVerifyValidationsTestCases")
     @DisplayName("update: when dto does not verify validations")
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
-            OrderDto dtoToUpdate, ErrorResponseDto expectedResponse) {
-        webTestClient.put()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(dtoToUpdate), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isBadRequest()
-                     .expectBody(ErrorResponseDto.class)
-                     .isEqualTo(expectedResponse);
+            OrderDto dtoToCreate, ErrorResponseDto expectedResponse) {
+        ResultActions result = mockMvc.perform(
+                put(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(dtoToCreate)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(APPLICATION_JSON));
+
+        thenHttpErrorIsReturned(result, BAD_REQUEST, expectedResponse);
+        verifyNoInteractions(mockOrderService);
     }
 
 
-    @Test
+    static Stream<Arguments> update_validDtoTestCases() {
+        PizzaDto pizzaDto = new PizzaDto((short)1, "Carbonara", 7.50);
+        OrderLineDto orderLineDto = new OrderLineDto(10, 1, pizzaDto, (short)2, 15D);
+        OrderDto dto = new OrderDto(1, "Order 1", new Date(), asList(orderLineDto));
+        return Stream.of(
+                //@formatter:off
+                //            serviceResult,   expectedResultHttpCode,   expectedBodyResult
+                Arguments.of( empty(),         UNPROCESSABLE_ENTITY,     null ),
+                Arguments.of( of(dto),         CREATED,                  dto )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @SneakyThrows
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void update_whenSaveDoesNotReturnAnEntity_thenNotFoundHttpCodeAndEmptyBodyAreReturned() {
+    @MethodSource("update_validDtoTestCases")
+    @DisplayName("update: when given dto verifies the validations then the suitable Http code is returned")
+    public void update_whenGivenDtoVerifiesValidations_thenSuitableHttpCodeIsReturned(Optional<OrderDto> serviceResult,
+                                                                                      HttpStatus expectedResultHttpCode, OrderDto expectedBodyResult) {
         // Given
-        OrderDto orderDto = OrderDto.builder().code("Order 1").created(new Date()).orderLines(new ArrayList<>()).build();
+        OrderDto dtoToUpdate = new OrderDto(1, "Order 1", new Date(), asList());
 
         // When
-        when(mockOrderService.save(any())).thenReturn(Optional.empty());
+        when(mockOrderService.save(dtoToUpdate)).thenReturn(serviceResult);
+
+        ResultActions result = mockMvc.perform(
+                post(RestRoutes.ORDER.ROOT)
+                        .contentType(APPLICATION_JSON)
+                        .content(toJson(dtoToUpdate)));
 
         // Then
-        webTestClient.put()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(orderDto), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isNotFound()
-                     .expectBody().isEmpty();
+        result.andExpect(status().is(expectedResultHttpCode.value()));
+        assertEquals(expectedBodyResult, fromJson(result.andReturn().getResponse().getContentAsString(), OrderDto.class));
+        verify(mockOrderService, times(1)).save(dtoToUpdate);
     }
 
 
-    @Test
-    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void update_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndOrderDtoAreReturned() {
-        // Given
-        PizzaDto carbonara = PizzaDto.builder().id((short)1).name("Carbonara").cost(7.50).build();
-        OrderLineDto beforeOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(15D).amount((short)2).build();
-        OrderDto beforeOrderDto = OrderDto.builder().id(1).code("Order 1").created(new Date())
-                                                    .orderLines(asList(beforeOrderLineDto)).build();
-
-        OrderLineDto afterOrderLineDto = OrderLineDto.builder().id(1).pizza(carbonara).cost(7.50D).amount((short)1).build();
-        OrderDto afterOrderDto = OrderDto.builder().id(1).code("Order 1 updated").created(new Date())
-                                                   .orderLines(asList(afterOrderLineDto)).build();
-        // When
-        when(mockOrderService.save(beforeOrderDto)).thenReturn(Optional.of(afterOrderDto));
-
-        // Then
-        webTestClient.put()
-                     .uri(RestRoutes.ORDER.ROOT)
-                     .body(Mono.just(beforeOrderDto), OrderDto.class)
-                     .exchange()
-                     .expectStatus().isOk()
-                     .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                     .expectBody()
-                     .jsonPath("$.id").isEqualTo(afterOrderDto.getId())
-                     .jsonPath("$.code").isEqualTo(afterOrderDto.getCode())
-                     .jsonPath("$.created").isEqualTo(afterOrderDto.getCreated())
-                     .jsonPath("$.orderLines.[0].id").isEqualTo(afterOrderLineDto.getId())
-                     .jsonPath("$.orderLines.[0].amount").isEqualTo(Integer.valueOf(afterOrderLineDto.getAmount()))
-                     .jsonPath("$.orderLines.[0].cost").isEqualTo(afterOrderLineDto.getCost())
-                     .jsonPath("$.orderLines.[0].pizza.id").isEqualTo(Integer.valueOf(afterOrderLineDto.getPizza().getId()))
-                     .jsonPath("$.orderLines.[0].pizza.name").isEqualTo(afterOrderLineDto.getPizza().getName())
-                     .jsonPath("$.orderLines.[0].pizza.cost").isEqualTo(afterOrderLineDto.getPizza().getCost());
-
-        verify(mockOrderService, times(1)).save(beforeOrderDto);
+    @SneakyThrows
+    private void thenHttpErrorIsReturned(ResultActions webResult, HttpStatus expectedHttpCode,
+                                         ErrorResponseDto errorResponse) {
+        webResult.andExpect(status().is(expectedHttpCode.value()));
+        assertEquals(errorResponse, fromJson(webResult.andReturn().getResponse().getContentAsString(), ErrorResponseDto.class));
     }
 
 }

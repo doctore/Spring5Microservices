@@ -12,4 +12,9 @@ public class Constants {
     // Token configuration
     public static final String TOKEN_PREFIX = "Bearer ";
 
+    // Path of the folders in the application
+    public static final class PATH {
+        public static final String CONTROLLER = "com.order.controller";
+    }
+
 }

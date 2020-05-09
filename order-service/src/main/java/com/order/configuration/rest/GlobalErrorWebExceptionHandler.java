@@ -2,155 +2,99 @@ package com.order.configuration.rest;
 
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import com.spring5microservices.common.enums.RestApiErrorCode;
-import com.spring5microservices.common.util.JsonUtil;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.TypeMismatchException;
-import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.ServerWebInputException;
-import reactor.core.publisher.Mono;
 
 import javax.validation.ConstraintViolationException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.spring5microservices.common.enums.RestApiErrorCode.INTERNAL;
+import static com.spring5microservices.common.enums.RestApiErrorCode.SECURITY;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.stream.Collectors;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
- * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
+ * Global exception handler to manage unhandled errors in the Rest layer (Controllers)
  */
-@Component
+@ControllerAdvice
 @Log4j2
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
+public class GlobalErrorWebExceptionHandler {
 
-    @Override
-    public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        if (ex instanceof WebExchangeBindException) {
-            return webExchangeBindException(exchange, (WebExchangeBindException) ex);
-        }
-        else if (ex instanceof ConstraintViolationException) {
-            return constraintViolationException(exchange, (ConstraintViolationException) ex);
-        }
-        else if (ex instanceof ServerWebInputException) {
-            return serverWebInputException(exchange, (ServerWebInputException) ex);
-        }
-        else {
-            return throwable(exchange, ex);
-        }
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDto> accessDeniedException(AccessDeniedException exception, WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildErrorResponse(SECURITY, asList("Access denied"), FORBIDDEN);
     }
 
 
-    /**
-     * Method used to manage when a Rest request throws a {@link WebExchangeBindException}
-     *
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
-     * @param exception
-     *    {@link WebExchangeBindException} thrown
-     *
-     * @return {@link Mono} with the suitable response
-     */
-    private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
-        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        List<String> errorMessages = exception.getBindingResult().getFieldErrors()
-                .stream()
-                .map(fe -> "Field error in object '" + fe.getObjectName()
-                        + "' on field '" + fe.getField()
-                        + "' due to: " + fe.getDefaultMessage())
-                .collect(toList());
-        return buildErrorResponse(VALIDATION, errorMessages, exchange,
-                null != exception.getStatus() ? exception.getStatus() : UNPROCESSABLE_ENTITY);
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDto> constraintViolationException(ConstraintViolationException exception, WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception); //HttpMessageNotReadableException
+        return buildErrorResponse(VALIDATION, errorMessages, BAD_REQUEST);
     }
 
 
-    /**
-     * Method used to manage when a Rest request throws a {@link ConstraintViolationException}
-     *
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
-     * @param exception
-     *    {@link ConstraintViolationException} thrown
-     *
-     * @return {@link Mono} with the suitable response
-     */
-    private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
-        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        List<String> errorMessages = exception.getConstraintViolations()
-                .stream()
-                .map(c -> {
-                    String rawParameterName = c.getPropertyPath().toString();
-                    return rawParameterName.substring(rawParameterName.lastIndexOf(".") + 1) + ": " + c.getMessage();
-                })
-                .collect(toList());
-        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST);
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDto> httpMessageNotReadableException(HttpMessageNotReadableException exception, WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildErrorResponse(VALIDATION, asList("The was a problem in the parameters of the current request"), BAD_REQUEST);
     }
 
 
-    /**
-     * Method used to manage when a Rest request throws a {@link ServerWebInputException}
-     *
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
-     * @param exception
-     *    {@link ServerWebInputException} thrown
-     *
-     * @return {@link Mono} with the suitable response
-     */
-    private Mono<Void> serverWebInputException(ServerWebExchange exchange, ServerWebInputException exception) {
-        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        List<String> errorMessages = getServerWebInputExceptionErrorMessages(exception);
-        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDto> methodArgumentNotValidException(MethodArgumentNotValidException exception, WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        List<String> errorMessages = getMethodArgumentNotValidExceptionErrorMessages(exception);
+        return buildErrorResponse(VALIDATION, errorMessages, BAD_REQUEST);
     }
 
 
-    /**
-     * Method used to manage when a Rest request throws a {@link Throwable}
-     *
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
-     * @param exception
-     *    {@link Throwable} thrown
-     *
-     * @return {@link Mono} with the suitable response
-     */
-    private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
-        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), exchange, INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<ErrorResponseDto> throwable(Throwable exception, WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), INTERNAL_SERVER_ERROR);
     }
 
 
     /**
      * Using the given {@link ServerWebExchange} builds a message with information about the Http request
      *
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
+     * @param request
+     *    {@link WebRequest} with the request information
      *
      * @return error message with Http request information
      */
-    private String getErrorMessageUsingHttpRequest(ServerWebExchange exchange) {
-        return format("There was an error trying to execute the request with:%s"
-                        + "Http method = %s %s"
-                        + "Uri = %s %s"
-                        + "Header = %s",
-                System.lineSeparator(),
-                exchange.getRequest().getMethod(), System.lineSeparator(),
-                exchange.getRequest().getURI().toString(), System.lineSeparator(),
-                exchange.getRequest().getHeaders().entrySet());
+    private String getErrorMessageUsingHttpRequest(WebRequest request) {
+        HttpServletRequest httpRequest = ((ServletWebRequest)request).getRequest();
+        return format("There was an error trying to execute the request with: %s"
+                        + "Http method = %s %s "
+                        + "Uri = %s",
+                System.lineSeparator(), httpRequest.getMethod(),
+                System.lineSeparator(), httpRequest.getRequestURI());
     }
 
 
@@ -158,21 +102,33 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * Get the list of internal errors included in the given exception
      *
      * @param exception
-     *    {@link ServerWebInputException} with the error information
+     *    {@link MethodArgumentNotValidException} with the error information
      *
      * @return {@link List} of {@link String} with the error messages
      */
-    private List<String> getServerWebInputExceptionErrorMessages(ServerWebInputException exception) {
-        if (exception.getCause() instanceof TypeMismatchException) {
-            TypeMismatchException ex = (TypeMismatchException)exception.getCause();
-            return asList(format("There was an type mismatch error in %s. The provided value was %s and required type is %s",
-                    exception.getMethodParameter(),
-                    ex.getValue(),
-                    ex.getRequiredType()));
-        }
-        else {
-            return asList(format("There was an error in %s due to %s", exception.getMethodParameter(), exception.getReason()));
-        }
+    private List<String> getMethodArgumentNotValidExceptionErrorMessages(MethodArgumentNotValidException exception) {
+        return exception.getBindingResult().getFieldErrors().stream()
+                .map(fe -> "Field error in object '" + fe.getObjectName()
+                        + "' on field '" + fe.getField()
+                        + "' due to: " + fe.getDefaultMessage())
+                .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Get the list of internal errors included in the given exception
+     *
+     * @param exception
+     *    {@link ConstraintViolationException} with the error information
+     *
+     * @return {@link List} of {@link String} with the error messages
+     */
+    private List<String> getConstraintViolationExceptionErrorMessages(ConstraintViolationException exception) {
+        return exception.getConstraintViolations().stream()
+                .map(ce -> "Error in path '" + ce.getPropertyPath()
+                        + "' due to: " + ce.getMessage()
+                )
+                .collect(Collectors.toList());
     }
 
 
@@ -183,23 +139,17 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *    {@link RestApiErrorCode} included in the response
      * @param errorMessages
      *    {@link List} of error messages to include
-     * @param exchange
-     *    {@link ServerWebExchange} with the request information
      * @param httpStatus
      *    {@link HttpStatus} used in the Http response
      *
-     * @return {@link Mono} with the suitable Http response
+     * @return {@link ResponseEntity} of {@link ErrorResponseDto} with the suitable Http response
      */
-    private Mono<Void> buildErrorResponse(RestApiErrorCode errorCode, List<String> errorMessages, ServerWebExchange exchange,
-                                          HttpStatus httpStatus) {
-        exchange.getResponse().setStatusCode(httpStatus);
-        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+    private ResponseEntity<ErrorResponseDto> buildErrorResponse(RestApiErrorCode errorCode, List<String> errorMessages, HttpStatus httpStatus) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(APPLICATION_JSON);
 
         ErrorResponseDto error = new ErrorResponseDto(errorCode, errorMessages);
-
-        byte[] responseMessageBytes = JsonUtil.toJson(error).orElse("").getBytes(StandardCharsets.UTF_8);
-        DataBuffer bufferResponseMessage = exchange.getResponse().bufferFactory().wrap(responseMessageBytes);
-        return exchange.getResponse().writeWith(Mono.just(bufferResponseMessage));
+        return new ResponseEntity<>(error, headers, httpStatus);
     }
 
 }

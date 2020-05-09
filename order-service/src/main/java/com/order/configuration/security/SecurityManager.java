@@ -7,14 +7,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Mono;
 
 import java.util.Base64;
 import java.util.Collection;
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @Log4j2
-public class SecurityManager implements ReactiveAuthenticationManager {
+public class SecurityManager {
 
     @Autowired
     private SecurityConfiguration securityConfiguration;
@@ -37,13 +35,9 @@ public class SecurityManager implements ReactiveAuthenticationManager {
     private RestTemplate restTemplate;
 
 
-    @Override
-    public Mono<Authentication> authenticate(Authentication authentication) {
-        String authToken = authentication.getCredentials().toString();
-        Optional<UsernameAuthoritiesDto> authInformation = getAuthenticationInformation(securityConfiguration.getAuthenticationInformationWebService(),
-                                                                                        authToken);
-        return Mono.justOrEmpty(authInformation.map(au -> getFromUsernameAuthoritiesDto(au))
-                   .orElse(null));
+    public Optional<Authentication> authenticate(String authToken) {
+        return getAuthenticationInformation(securityConfiguration.getAuthenticationInformationWebService(), authToken)
+                .map(au -> getFromUsernameAuthoritiesDto(au));
     }
 
 

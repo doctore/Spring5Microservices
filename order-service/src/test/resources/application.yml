@@ -15,10 +15,11 @@ security:
     clientId: TestClient
     clientPassword: TestPassword
 
-springdoc:
+springfox:
   documentation:
     apiVersion: 1.0
     title: Test Rest Api
     description: Test description
-  api-docs:
-    path: onlyForTests
+    swagger:
+      v2:
+        path: onlyForTests

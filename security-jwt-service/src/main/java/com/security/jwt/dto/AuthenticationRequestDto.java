@@ -5,16 +5,17 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Wither;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Objects;
 
 @AllArgsConstructor
 @Builder
 @Data
+@EqualsAndHashCode(of = {"username"})
 @NoArgsConstructor
 @ApiModel(description="Required data to authenticate a user")
 @Wither
@@ -29,19 +30,5 @@ public class AuthenticationRequestDto {
     @NotNull
     @Size(min=1, max=128)
     private String password;
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AuthenticationRequestDto that = (AuthenticationRequestDto) o;
-        return username.equals(that.username);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(username);
-    }
 
 }

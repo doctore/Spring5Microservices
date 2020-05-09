@@ -48,9 +48,9 @@ public class UserControllerTest {
     public void addToBlacklist_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
         // When/Then
         webTestClient.post()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 
@@ -59,9 +59,9 @@ public class UserControllerTest {
     public void addToBlacklist_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // When/Then
         webTestClient.post()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
-                     .exchange()
-                     .expectStatus().isForbidden();
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
+                .exchange()
+                .expectStatus().isForbidden();
     }
 
 
@@ -73,10 +73,10 @@ public class UserControllerTest {
 
         // Then
         webTestClient.post()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
-                     .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
-                     .expectBody().isEmpty();
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                .expectBody().isEmpty();
 
         verify(mockUserBlacklistCacheService, times(1)).put(anyString());
     }
@@ -93,12 +93,12 @@ public class UserControllerTest {
 
         // Then
         webTestClient.post()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/" + username)
-                     .exchange()
-                     .expectStatus().isOk()
-                     .expectHeader().contentType(Constants.TEXT_PLAIN_UTF8_VALUE)
-                     .expectBody()
-                     .equals(username);
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/" + username)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(Constants.TEXT_PLAIN_UTF8_VALUE)
+                .expectBody()
+                .equals(username);
 
         verify(mockUserBlacklistCacheService, times(1)).put(anyString());
     }
@@ -108,9 +108,9 @@ public class UserControllerTest {
     public void removeFromBlacklist_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
         // When/Then
         webTestClient.delete()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
-                     .exchange()
-                     .expectStatus().isUnauthorized();
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 
 
@@ -119,9 +119,9 @@ public class UserControllerTest {
     public void removeFromBlacklist_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // When/Then
         webTestClient.delete()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
-                     .exchange()
-                     .expectStatus().isForbidden();
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
+                .exchange()
+                .expectStatus().isForbidden();
     }
 
 
@@ -133,10 +133,10 @@ public class UserControllerTest {
 
         // Then
         webTestClient.delete()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
-                     .exchange()
-                     .expectStatus().isEqualTo(HttpStatus.NOT_FOUND)
-                     .expectBody().isEmpty();
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/testUser")
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.NOT_FOUND)
+                .expectBody().isEmpty();
 
         verify(mockUserBlacklistCacheService, times(1)).remove(anyString());
     }
@@ -153,12 +153,12 @@ public class UserControllerTest {
 
         // Then
         webTestClient.delete()
-                     .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/" + username)
-                     .exchange()
-                     .expectStatus().isOk()
-                     .expectHeader().contentType(Constants.TEXT_PLAIN_UTF8_VALUE)
-                     .expectBody()
-                     .equals(username);
+                .uri(RestRoutes.USER.ROOT + RestRoutes.USER.BLACKLIST + "/" + username)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(Constants.TEXT_PLAIN_UTF8_VALUE)
+                .expectBody()
+                .equals(username);
 
         verify(mockUserBlacklistCacheService, times(1)).remove(anyString());
     }
