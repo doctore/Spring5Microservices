@@ -36,6 +36,11 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+
 /**
  * Rest services to work with {@link Pizza}
  */
@@ -77,8 +82,8 @@ public class PizzaController {
     @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
-                                     .map(p -> new ResponseEntity(p, HttpStatus.CREATED))
-                                     .orElse(new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY)));
+                                     .map(p -> new ResponseEntity(p, CREATED))
+                                     .orElse(new ResponseEntity(UNPROCESSABLE_ENTITY)));
     }
 
 
@@ -110,8 +115,8 @@ public class PizzaController {
     @RoleAdminOrUser
     public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) String name) {
         return Mono.just(pizzaService.findByName(name)
-                                     .map(p -> new ResponseEntity(p, HttpStatus.OK))
-                                     .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));
+                                     .map(p -> new ResponseEntity(p, OK))
+                                     .orElse(new ResponseEntity(NOT_FOUND)));
     }
 
 
@@ -175,8 +180,8 @@ public class PizzaController {
     @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
-                   .map(p -> new ResponseEntity(p, HttpStatus.OK))
-                   .orElse(new ResponseEntity(HttpStatus.NOT_FOUND)));
+                   .map(p -> new ResponseEntity(p, OK))
+                   .orElse(new ResponseEntity(NOT_FOUND)));
     }
 
 }

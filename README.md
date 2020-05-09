@@ -14,6 +14,7 @@
 - [Previous steps](#previous-steps)
 - [Security services](#security-services)
 - [How to use it?](#how-to-use-it)
+- [Rest API documentation](#rest-api-documentation)
 
 ## Why was this project created?
 
@@ -82,7 +83,7 @@ The technologies used are the following ones:
 * **Lombok** to reduce the code development in entities and DTOs.
 * **Cache2k** as cache to reduce the invocations to the database.
 
-In this subproject the layer's division is:
+In this microservice, the layer's division is:
 
 * **repository** layer used to access to the database.
 * **service** containing the business logic.
@@ -109,7 +110,7 @@ The technologies used are the following ones:
 * **NimbusJoseJwt** to work with JWS/JWE tokens.
 * **MVC** a traditional Spring MVC Rest API to manage the authentication/authorization requests.
 
-In this subproject the layer's division is:
+In this microservice, the layer's division is:
 
 * **repository** layer used to access to the database.
 * **service** containing the business logic.
@@ -141,7 +142,7 @@ on which I am using the following technologies:
 * **MapStruct** used to conversion between Entities <--> DTOs in an easy way.
 * **Webflux** creating a reactive REST Api as alternative to the traditional Spring MVC.
 
-In this subproject the layer's division is:
+In this microservice, the layer's division is:
 
 * **repository** layer used to access to the database.
 * **service** containing the business logic.
@@ -167,9 +168,9 @@ technologies:
 * **Lombok** to reduce the code development in models and DTOs.
 * **MapStruct** used to conversion between Models <--> DTOs in an easy way.
 * **SimpleFlatMapper** due to its integration with jOOQ, used to convert the some custom query results into a known Java object.
-* **Webflux** creating a reactive REST Api as alternative to the traditional Spring MVC.
+* **MVC** a traditional Spring MVC Rest API to manage the included requests.
 
-In this subproject the layer's division is:
+In this microservice, the layer's division is:
 
 * **dao** layer used to access to the database.
 * **service** containing the business logic.
@@ -326,6 +327,20 @@ or:
 
 ![Alt text](/documentation/OrderService.png?raw=true "Example of order service")
 
-From now, using the **gateway-server** URL, we can read the Swagger documentation included in the microservices.
+## Rest API documentation
+
+The following microservices have a well documented Rest API:
+
+* **security-jwt-service**
+* **pizza-service**
+* **order-service**
+ 
+Swagger has been used in all cases, however two different libraries have been included depending of the main Spring module of every microservice:
+
+* **SpringFox** in microservices based on MVC.
+* **Springdoc-OpenApi** in microservices based on Webflux.
+
+To facilitate access to this documentation, we can use the **gateway-server** URL. On that way, using the upper selector, we will be able to choose
+between all existing microservices.
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")

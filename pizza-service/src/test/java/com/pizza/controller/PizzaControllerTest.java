@@ -168,12 +168,8 @@ public class PizzaControllerTest {
                 .exchange()
                 .expectStatus().isCreated()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                .expectBody()
-                .jsonPath("$.id").isEqualTo(afterPizzaDto.getId())
-                .jsonPath("$.name").isEqualTo(afterPizzaDto.getName())
-                .jsonPath("$.cost").isEqualTo(afterPizzaDto.getCost())
-                .jsonPath("$.ingredients.[0].id").isEqualTo(afterIngredientDto.getId())
-                .jsonPath("$.ingredients.[0].name").isEqualTo(afterIngredientDto.getName());
+                .expectBody(PizzaDto.class)
+                .isEqualTo(afterPizzaDto);
 
         verify(mockPizzaService, times(1)).save(beforePizzaDto);
     }
@@ -254,12 +250,8 @@ public class PizzaControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                .expectBody()
-                .jsonPath("$.id").isEqualTo(pizzaDto.getId())
-                .jsonPath("$.name").isEqualTo(pizzaDto.getName())
-                .jsonPath("$.cost").isEqualTo(pizzaDto.getCost())
-                .jsonPath("$.ingredients.[0].id").isEqualTo(ingredientDto.getId())
-                .jsonPath("$.ingredients.[0].name").isEqualTo(ingredientDto.getName());
+                .expectBody(PizzaDto.class)
+                .isEqualTo(pizzaDto);
     }
 
 
@@ -486,12 +478,8 @@ public class PizzaControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON_VALUE)
-                .expectBody()
-                .jsonPath("$.id").isEqualTo(afterPizzaDto.getId())
-                .jsonPath("$.name").isEqualTo(afterPizzaDto.getName())
-                .jsonPath("$.cost").isEqualTo(afterPizzaDto.getCost())
-                .jsonPath("$.ingredients.[0].id").isEqualTo(afterIngredientDto.getId())
-                .jsonPath("$.ingredients.[0].name").isEqualTo(afterIngredientDto.getName());
+                .expectBody(PizzaDto.class)
+                .isEqualTo(afterPizzaDto);
 
         verify(mockPizzaService, times(1)).save(beforePizzaDto);
     }

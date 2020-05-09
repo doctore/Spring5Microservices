@@ -1,62 +1,51 @@
 package com.order.configuration.security;
 
-import com.order.configuration.documentation.DocumentationConfiguration;
+import com.order.configuration.security.filter.SecurityFilterConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.server.SecurityWebFilterChain;
-import reactor.core.publisher.Mono;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
-@EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
-public class WebSecurityConfiguration {
+import javax.servlet.http.HttpServletResponse;
 
-    @Value("${springdoc.api-docs.path}")
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.OPTIONS;
+
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Value("${springfox.documentation.swagger.v2.path}")
     private String documentationPath;
 
     @Autowired
-    private SecurityManager securityManager;
-
-    @Autowired
-    private SecurityContextRepository securityContextRepository;
+    private SecurityFilterConfigurer securityFilterConfigurer;
 
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http.csrf().disable()
-                   .formLogin().disable()
-                   .httpBasic().disable()
-                   // Handle an authorized attempts
-                   .exceptionHandling()
-                   // There is no a logged user
-                   .authenticationEntryPoint((swe, e) -> Mono.fromRunnable(
-                           () -> swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED))
-                   // Logged user has not the required authorities
-                   ).accessDeniedHandler((swe, e) -> Mono.fromRunnable(
-                        () -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN))
-                   )
-                   .and()
-                   // Include our custom AuthenticationManager
-                   .authenticationManager(securityManager)
-                   // Include our custom SecurityContextRepository
-                   .securityContextRepository(securityContextRepository)
-                   .authorizeExchange()
-                   // List of services do not require authentication
-                   .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                   .pathMatchers(HttpMethod.GET,
-                           documentationPath + "/**",
-                           DocumentationConfiguration.DOCUMENTATION_API_URL + "/**",
-                           DocumentationConfiguration.DOCUMENTATION_RESOURCE_URL + "/**",
-                           DocumentationConfiguration.DOCUMENTATION_WEBJARS + "/**"
-                   ).permitAll()
-                   // Any other request must be authenticated
-                   .anyExchange().authenticated()
-                   .and().build();
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+                .formLogin().disable()
+                .httpBasic().disable()
+                // Make sure we use stateless session; session won't be used to store user's state.
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                // Handle an authorized attempts
+                .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                .and()
+                .authorizeRequests()
+                // List of services do not require authentication
+                .antMatchers(OPTIONS).permitAll()
+                .antMatchers(GET, documentationPath).permitAll()
+                // Any other request must be authenticated
+                .anyRequest().authenticated()
+                .and()
+                .apply(securityFilterConfigurer);
     }
 
 }

@@ -22,15 +22,15 @@
         <maven-compiler-plugin.version>3.6.2</maven-compiler-plugin.version>
         <simpleflatmapper.version>6.2.1</simpleflatmapper.version>
         <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
-        <springdoc.version>1.3.7</springdoc.version>
         <spring5-microservices-common.version>0.0.1</spring5-microservices-common.version>
+        <springfox-swagger.version>2.9.2</springfox-swagger.version>
     </properties>
 
     <dependencies>
         <!-- Spring dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -106,9 +106,14 @@
         </dependency>
         <!-- Documentation -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-webflux-ui</artifactId>
-            <version>${springdoc.version}</version>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${springfox-swagger.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${springfox-swagger.version}</version>
         </dependency>
         <!-- Test -->
         <dependency>
