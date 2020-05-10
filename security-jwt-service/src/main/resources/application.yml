@@ -15,12 +15,11 @@ eureka:
     # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
 
-springfox:
+springdoc:
   documentation:
     apiVersion: 1.0
     title: Security JWT Rest Api
     description: Services related with authentication/authorization functionality
-    swagger:
-      v2:
-        # Api docs path properties
-        path: /security/jwt/v2/api-docs
+  api-docs:
+    # Api docs path properties
+    path: /security/jwt/v2/api-docs

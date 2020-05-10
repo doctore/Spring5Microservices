@@ -11,7 +11,6 @@ import com.spring5microservices.common.dto.ErrorResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,10 +20,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -47,21 +44,22 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = PizzaServiceApplication.class)
 public class PizzaControllerTest {
 
     @Autowired
     ApplicationContext context;
 
-    private WebTestClient webTestClient;
-
     @MockBean
     private PizzaService mockPizzaService;
 
     @MockBean
     private WebClient mockWebClient;
+
+    private WebTestClient webTestClient;
+
 
     @BeforeEach
     public void init() {
@@ -144,7 +142,7 @@ public class PizzaControllerTest {
                 .uri(RestRoutes.PIZZA.ROOT)
                 .body(Mono.just(pizzaDto), PizzaDto.class)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+                .expectStatus().isEqualTo(UNPROCESSABLE_ENTITY)
                 .expectBody().isEmpty();
     }
 
@@ -442,7 +440,7 @@ public class PizzaControllerTest {
 
     @Test
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void update_whenSaveDoesNotReturnAnEntity_thenUnprocessableEntityHttpCodeAndValidationErrorsAreReturned() {
+    public void update_whenSaveDoesNotReturnAnEntity_thenNotFoundHttpCodeAndValidationErrorsAreReturned() {
         // Given
         PizzaDto pizzaDto = buildPizzaDto(1, CARBONARA.getInternalPropertyValue(), 7D, Set.of());
 

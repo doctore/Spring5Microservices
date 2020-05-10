@@ -3,6 +3,7 @@ package com.pizza.controller;
 import com.pizza.annotation.RoleAdmin;
 import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.service.cache.UserBlacklistCacheService;
+import com.spring5microservices.common.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +27,8 @@ import javax.validation.constraints.Size;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 /**
  * Rest services to work with users
@@ -54,23 +56,21 @@ public class UserController {
     @Operation(summary = "Add a user to the blacklist", description = "Add a user to the blacklist (only allowed to user with role admin)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The given username was successfully added",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
+                    content = @Content(mediaType = TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "400", description = "There was a problem in the given request, the given parameters have not passed the required validations",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
+                    content = @Content(mediaType = TEXT_PLAIN_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
             @ApiResponse(responseCode = "412", description = "The provided authorization information has expired",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "422", description = "The user could not be included in the balcklist",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
+                    content = @Content(mediaType = TEXT_PLAIN_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
+            @ApiResponse(responseCode = "422", description = "The user could not be included in the balcklist"),
             @ApiResponse(responseCode = "500", description = "There was an internal problem in the server",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class)))
+                    content = @Content(mediaType = TEXT_PLAIN_VALUE, schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @PostMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @RoleAdmin
     public Mono<ResponseEntity<String>> addToBlacklist(@PathVariable @Size(min = 1) String username) {
-        if (userBlackListCacheService.put(username))
-            return Mono.just(new ResponseEntity(username, OK));
-        else
-            return Mono.just(new ResponseEntity(UNPROCESSABLE_ENTITY));
+        return userBlackListCacheService.put(username)
+                ? Mono.just(new ResponseEntity(username, OK))
+                : Mono.just(new ResponseEntity(UNPROCESSABLE_ENTITY));
     }
 
 
@@ -86,23 +86,21 @@ public class UserController {
     @Operation(summary = "Remove a user to the blacklist", description = "Remove a user to the blacklist (only allowed to user with role admin)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The given username was successfully removed",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
+                    content = @Content(mediaType = TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "400", description = "There was a problem in the given request, the given parameters have not passed the required validations",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "404", description = "The provided username does not exists in the blacklist",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
+                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "The provided username does not exists in the blacklist"),
             @ApiResponse(responseCode = "412", description = "The provided authorization information has expired",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class))),
+                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
             @ApiResponse(responseCode = "500", description = "There was an internal problem in the server",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(implementation = String.class)))
+                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @DeleteMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @RoleAdmin
     public Mono<ResponseEntity<String>> removeFromBlacklist(@PathVariable @Size(min = 1) String username) {
-        if (userBlackListCacheService.remove(username))
-            return Mono.just(new ResponseEntity(username, OK));
-        else
-            return Mono.just(new ResponseEntity(NOT_FOUND));
+        return userBlackListCacheService.remove(username)
+                ? Mono.just(new ResponseEntity(username, OK))
+                : Mono.just(new ResponseEntity(NOT_FOUND));
     }
 
 }

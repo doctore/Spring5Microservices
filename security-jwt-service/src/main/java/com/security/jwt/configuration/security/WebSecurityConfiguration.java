@@ -1,69 +1,80 @@
 package com.security.jwt.configuration.security;
 
+import com.security.jwt.configuration.documentation.DocumentationConfiguration;
 import com.security.jwt.service.JwtClientDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import reactor.core.publisher.Mono;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
-@Configuration
-@EnableWebSecurity
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+@EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
+public class WebSecurityConfiguration {
 
-    @Value("${springfox.documentation.swagger.v2.path}")
+    @Value("${springdoc.api-docs.path}")
     private String documentationPath;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private JwtClientDetailsService jwtClientDetailsService;
 
-
-    @Override
-    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder
-                .userDetailsService(jwtClientDetailsService)
-                .passwordEncoder(passwordEncoder);
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
-    @Override
     @Bean
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    public ReactiveAuthenticationManager authenticationManager() {
+        UserDetailsRepositoryReactiveAuthenticationManager authenticationManager =
+                new UserDetailsRepositoryReactiveAuthenticationManager(jwtClientDetailsService);
+        authenticationManager.setPasswordEncoder(passwordEncoder);
+        return authenticationManager;
     }
 
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                // Make sure we use stateless session; session won't be used to store user's state.
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                // Handle an authorized attempts
-                .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
-                .and()
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        return http.csrf().disable()
+                .formLogin().disable()
                 // Authorization requests config using Basic Auth
                 .httpBasic().and()
-                .authorizeRequests()
+                // Make sure we use stateless session; session won't be used to store user's state
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // Handle an authorized attempts
+                .exceptionHandling()
+                // There is no a logged user
+                .authenticationEntryPoint((swe, e) -> Mono.fromRunnable(
+                        () -> swe.getResponse().setStatusCode(UNAUTHORIZED))
+                        // Logged user has not the required authorities
+                ).accessDeniedHandler((swe, e) -> Mono.fromRunnable(
+                        () -> swe.getResponse().setStatusCode(FORBIDDEN))
+                )
+                .and()
+                // Include our custom AuthenticationManager
+                .authenticationManager(authenticationManager())
+                .authorizeExchange()
                 // List of services do not require authentication
-                .antMatchers(OPTIONS).permitAll()
-                .antMatchers(GET, documentationPath).permitAll()
+                .pathMatchers(OPTIONS).permitAll()
+                .pathMatchers(GET,
+                        documentationPath + "/**",
+                        DocumentationConfiguration.DOCUMENTATION_API_URL + "/**",
+                        DocumentationConfiguration.DOCUMENTATION_RESOURCE_URL + "/**",
+                        DocumentationConfiguration.DOCUMENTATION_WEBJARS + "/**"
+                ).permitAll()
                 // Any other request must be authenticated
-                .anyRequest().authenticated();
+                .anyExchange().authenticated()
+                .and().build();
     }
 
 }

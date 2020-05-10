@@ -20,15 +20,15 @@
         <java.version>1.10</java.version>
         <nimbus-jose-jwt.version>8.2</nimbus-jose-jwt.version>
         <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
+        <springdoc.version>1.3.7</springdoc.version>
         <spring5-microservices-common.version>0.0.1</spring5-microservices-common.version>
-        <springfox-swagger.version>2.9.2</springfox-swagger.version>
     </properties>
 
     <dependencies>
         <!-- Spring dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -63,6 +63,12 @@
             <groupId>com.spring5microservices.common</groupId>
             <artifactId>spring5-microservices-common</artifactId>
             <version>${spring5-microservices-common.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-swagger2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- JWT -->
         <dependency>
@@ -95,20 +101,9 @@
         </dependency>
         <!-- Documentation -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-        <!-- Required if we are using JDK >= 9 to avoid:
-                java.lang.ClassNotFoundException: com.sun.xml.internal.bind.v2.ContextFactory -->
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-webflux-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
         <!-- Test -->
         <dependency>

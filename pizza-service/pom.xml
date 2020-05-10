@@ -64,6 +64,12 @@
             <groupId>com.spring5microservices.common</groupId>
             <artifactId>spring5-microservices-common</artifactId>
             <version>${spring5-microservices-common.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-swagger2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Database related -->
         <dependency>

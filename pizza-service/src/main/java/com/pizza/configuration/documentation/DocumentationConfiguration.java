@@ -8,7 +8,6 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.service.ApiInfo;
 
 @Configuration
 public class DocumentationConfiguration {
@@ -44,7 +43,7 @@ public class DocumentationConfiguration {
     /**
      * Include more information related with the Rest Api documentation
      *
-     * @return {@link ApiInfo}
+     * @return {@link Info}
      */
     private Info apiInfo() {
         return new Info().title(title).description(description).version(apiVersion);

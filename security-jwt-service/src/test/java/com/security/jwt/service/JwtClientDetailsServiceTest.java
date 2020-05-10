@@ -11,7 +11,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -95,7 +98,7 @@ public class JwtClientDetailsServiceTest {
     }
 
 
-    static Stream<Arguments> loadUserByUsernameTestCases() {
+    static Stream<Arguments> findByUsernameTestCases() {
         JwtClientDetails jwtClientDetails = JwtClientDetails.builder().clientId("ItDoesNotCare").build();
         return Stream.of(
                 //@formatter:off
@@ -107,19 +110,25 @@ public class JwtClientDetailsServiceTest {
     }
 
     @ParameterizedTest
-    @MethodSource("loadUserByUsernameTestCases")
-    @DisplayName("loadUserByUsername: test cases")
-    public void loadUserByUsername_testCases(String clientId, Optional<JwtClientDetails> repositoryResult,
-                                             Class<? extends Exception> expectedException, JwtClientDetails expectedResult) {
-
+    @MethodSource("findByUsernameTestCases")
+    @DisplayName("findByUsername: test cases")
+    public void findByUsername_testCases(String clientId, Optional<JwtClientDetails> repositoryResult,
+                                         Class<? extends Exception> expectedException, JwtClientDetails expectedResult) {
         when(mockJwtClientDetailsRepository.findByClientId(clientId)).thenReturn(repositoryResult);
+
         if (null != expectedException) {
-            assertThrows(expectedException, () -> jwtClientDetailsService.findByClientId(clientId));
+            assertThrows(expectedException, () -> jwtClientDetailsService.findByUsername(clientId));
         }
         else {
-            assertEquals(expectedResult, jwtClientDetailsService.findByClientId(clientId));
-            verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));
-            verify(mockJwtClientDetailsCacheService, times(1)).get(eq(clientId));
+            Mono<UserDetails> result = jwtClientDetailsService.findByUsername(clientId);
+            StepVerifier.create(result)
+                    .expectNextMatches(userDetails -> {
+                        assertEquals(expectedResult, userDetails);
+                        verify(mockJwtClientDetailsRepository, times(1)).findByClientId(eq(clientId));
+                        verify(mockJwtClientDetailsCacheService, times(1)).get(eq(clientId));
+                        return true;
+                    })
+                    .verifyComplete();
         }
     }
 

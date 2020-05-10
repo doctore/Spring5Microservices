@@ -11,7 +11,6 @@ import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebExchangeBindException;
@@ -23,6 +22,7 @@ import javax.validation.ConstraintViolationException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static com.spring5microservices.common.enums.ExtendedHttpStatus.TOKEN_EXPIRED;
 import static com.spring5microservices.common.enums.RestApiErrorCode.INTERNAL;
 import static com.spring5microservices.common.enums.RestApiErrorCode.SECURITY;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
@@ -31,7 +31,6 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.PRECONDITION_FAILED;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
@@ -85,7 +84,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
                         + "' due to: " + fe.getDefaultMessage())
                 .collect(toList());
         return buildErrorResponse(VALIDATION, errorMessages, exchange,
-                null != exception.getStatus() ? exception.getStatus() : UNPROCESSABLE_ENTITY);
+                null != exception.getStatus() ? exception.getStatus().value() : UNPROCESSABLE_ENTITY.value());
     }
 
 
@@ -102,7 +101,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception);
-        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST);
+        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
     }
 
 
@@ -119,7 +118,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     private Mono<Void> serverWebInputException(ServerWebExchange exchange, ServerWebInputException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = getServerWebInputExceptionErrorMessages(exception);
-        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST);
+        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
     }
 
 
@@ -135,7 +134,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      */
     private Mono<Void> tokenExpiredException(ServerWebExchange exchange, TokenExpiredException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList("The given authorization token has expired"), exchange, PRECONDITION_FAILED);
+        return buildErrorResponse(SECURITY, asList("The given authorization token has expired"), exchange, TOKEN_EXPIRED.value());
     }
 
 
@@ -151,7 +150,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      */
     private Mono<Void> unauthorizedException(ServerWebExchange exchange, UnauthorizedException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList(exception.getMessage()), exchange, UNAUTHORIZED);
+        return buildErrorResponse(SECURITY, asList(exception.getMessage()), exchange, UNAUTHORIZED.value());
     }
 
 
@@ -167,7 +166,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      */
     private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), exchange, INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), exchange, INTERNAL_SERVER_ERROR.value());
     }
 
 
@@ -242,13 +241,13 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      * @param exchange
      *    {@link ServerWebExchange} with the request information
      * @param httpStatus
-     *    {@link HttpStatus} used in the Http response
+     *    Http code used in the response
      *
      * @return {@link Mono} with the suitable Http response
      */
     private Mono<Void> buildErrorResponse(RestApiErrorCode errorCode, List<String> errorMessages, ServerWebExchange exchange,
-                                          HttpStatus httpStatus) {
-        exchange.getResponse().setStatusCode(httpStatus);
+                                          int httpStatus) {
+        exchange.getResponse().setRawStatusCode(httpStatus);
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         ErrorResponseDto error = new ErrorResponseDto(errorCode, errorMessages);
