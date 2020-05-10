@@ -44,11 +44,8 @@ public class TestDataFactory {
     }
 
 
-    public static AuthenticationRequestDto buildDefaultAuthenticationRequest() {
-        return AuthenticationRequestDto.builder()
-                .username("username value")
-                .password("password value")
-                .build();
+    public static AuthenticationRequestDto buildAuthenticationRequest(String username, String password) {
+        return new AuthenticationRequestDto(username, password);
     }
 
 

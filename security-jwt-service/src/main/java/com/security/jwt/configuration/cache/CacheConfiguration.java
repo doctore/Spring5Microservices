@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import static com.security.jwt.configuration.Constants.CACHE_INSTANCE_NAME;
 
 @Configuration
-@ComponentScan(basePackages = {Constants.EXTERNAL_PATH.COMMON})
+@ComponentScan(basePackages = {Constants.PATH.EXTERNAL.COMMON})
 @EnableCaching
 public class CacheConfiguration {
 

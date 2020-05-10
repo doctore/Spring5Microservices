@@ -2,197 +2,340 @@ package com.security.jwt.configuration.rest;
 
 import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.exception.TokenInvalidException;
+import com.spring5microservices.common.dto.ErrorResponseDto;
+import com.spring5microservices.common.enums.RestApiErrorCode;
 import com.spring5microservices.common.exception.TokenExpiredException;
 import com.spring5microservices.common.exception.UnauthorizedException;
+import com.spring5microservices.common.util.JsonUtil;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.context.request.WebRequest;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.ServerWebInputException;
+import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.spring5microservices.common.enums.ExtendedHttpStatus.TOKEN_EXPIRED;
+import static com.spring5microservices.common.enums.RestApiErrorCode.INTERNAL;
+import static com.spring5microservices.common.enums.RestApiErrorCode.SECURITY;
+import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 /**
- * Global exception handler to manage unhandled errors in the Rest layer (Controllers)
+ * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
  */
-@ControllerAdvice
+@Component
 @Log4j2
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class GlobalErrorWebExceptionHandler {
+public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
 
-    @ExceptionHandler(AccountStatusException.class)
-    public ResponseEntity<String> accountStatusException(AccountStatusException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The account of the user is disabled", FORBIDDEN.value());
+    @Override
+    public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
+        if (ex instanceof AccountStatusException) {
+            return accountStatusException(exchange, (AccountStatusException) ex);
+        }
+        else if (ex instanceof ClientNotFoundException) {
+            return clientNotFoundException(exchange, (ClientNotFoundException) ex);
+        }
+        else if (ex instanceof WebExchangeBindException) {
+            return webExchangeBindException(exchange, (WebExchangeBindException) ex);
+        }
+        else if (ex instanceof ConstraintViolationException) {
+            return constraintViolationException(exchange, (ConstraintViolationException) ex);
+        }
+        else if (ex instanceof ServerWebInputException) {
+            return serverWebInputException(exchange, (ServerWebInputException) ex);
+        }
+        else if (ex instanceof TokenExpiredException) {
+            return tokenExpiredException(exchange, (TokenExpiredException) ex);
+        }
+        else if (ex instanceof TokenInvalidException) {
+            return tokenInvalidException(exchange, (TokenInvalidException) ex);
+        }
+        else if (ex instanceof UnauthorizedException) {
+            return unauthorizedException(exchange, (UnauthorizedException) ex);
+        }
+        else if (ex instanceof UsernameNotFoundException) {
+            return usernameNotFoundException(exchange, (UsernameNotFoundException) ex);
+        }
+        else {
+            return throwable(exchange, ex);
+        }
     }
 
 
-    @ExceptionHandler(ClientNotFoundException.class)
-    public ResponseEntity<String> clientNotFoundException(ClientNotFoundException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Given invalid client details identifier", NOT_FOUND.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link AccountStatusException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link AccountStatusException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> accountStatusException(ServerWebExchange exchange, AccountStatusException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildErrorResponse(SECURITY, asList("The account of the user is disabled"), exchange, FORBIDDEN.value());
     }
 
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<String> constraintViolationException(ConstraintViolationException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildListOfValidationErrorsResponse("The following constraints have failed: ", exception, BAD_REQUEST);
+    /**
+     * Method used to manage when a Rest request throws a {@link ClientNotFoundException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link ClientNotFoundException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> clientNotFoundException(ServerWebExchange exchange, ClientNotFoundException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildErrorResponse(SECURITY, asList("Given invalid client details identifier"), exchange, UNAUTHORIZED.value());
     }
 
 
-    @ExceptionHandler(HttpMessageConversionException.class)
-    public ResponseEntity<String> httpMessageConversionException(HttpMessageConversionException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The was a problem in the parameters of the current request", BAD_REQUEST.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link WebExchangeBindException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link WebExchangeBindException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        List<String> errorMessages = exception.getBindingResult().getFieldErrors()
+                .stream()
+                .map(fe -> "Field error in object '" + fe.getObjectName()
+                        + "' on field '" + fe.getField()
+                        + "' due to: " + fe.getDefaultMessage())
+                .collect(toList());
+        return buildErrorResponse(VALIDATION, errorMessages, exchange,
+                null != exception.getStatus() ? exception.getStatus().value() : UNPROCESSABLE_ENTITY.value());
     }
 
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> methodArgumentNotValidException(MethodArgumentNotValidException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildListOfValidationErrorsResponse("Error in the given parameters: ", exception, BAD_REQUEST);
+    /**
+     * Method used to manage when a Rest request throws a {@link ConstraintViolationException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link ConstraintViolationException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception);
+        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
     }
 
 
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<String> nullPointerException(NullPointerException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Trying to access to a non existing property", INTERNAL_SERVER_ERROR.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link ServerWebInputException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link ServerWebInputException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> serverWebInputException(ServerWebExchange exchange, ServerWebInputException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        List<String> errorMessages = getServerWebInputExceptionErrorMessages(exception);
+        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
     }
 
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<String> unAuthorizedException(UnauthorizedException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The user has no permissions to execute the request", UNAUTHORIZED.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link TokenExpiredException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link TokenExpiredException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> tokenExpiredException(ServerWebExchange exchange, TokenExpiredException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildErrorResponse(SECURITY, asList("The given authorization token has expired"), exchange, TOKEN_EXPIRED.value());
     }
 
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<String> usernameNotFoundException(UsernameNotFoundException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Given invalid credentials", NOT_FOUND.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link TokenInvalidException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link TokenInvalidException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> tokenInvalidException(ServerWebExchange exchange, TokenInvalidException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildErrorResponse(SECURITY, asList("The provided token is invalid"), exchange, FORBIDDEN.value());
     }
 
 
-    @ExceptionHandler(Throwable.class)
-    public ResponseEntity<String> throwable(Throwable exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("Internal error in the application", INTERNAL_SERVER_ERROR.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link UnauthorizedException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link UnauthorizedException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> unauthorizedException(ServerWebExchange exchange, UnauthorizedException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildErrorResponse(SECURITY, asList(exception.getMessage()), exchange, UNAUTHORIZED.value());
     }
 
 
-    @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<String> tokenExpiredException(TokenExpiredException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The provided token has expired", TOKEN_EXPIRED.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link UsernameNotFoundException}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link UsernameNotFoundException} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> usernameNotFoundException(ServerWebExchange exchange, UsernameNotFoundException exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildErrorResponse(SECURITY, asList("Given invalid credentials"), exchange, UNAUTHORIZED.value());
     }
 
 
-    @ExceptionHandler(TokenInvalidException.class)
-    public ResponseEntity<String> tokenInvalidException(TokenInvalidException exception, WebRequest request) {
-        log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildPlainTextResponse("The provided token is invalid", FORBIDDEN.value());
+    /**
+     * Method used to manage when a Rest request throws a {@link Throwable}
+     *
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param exception
+     *    {@link Throwable} thrown
+     *
+     * @return {@link Mono} with the suitable response
+     */
+    private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
+        log.error(getErrorMessageUsingHttpRequest(exchange), exception);
+        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), exchange, INTERNAL_SERVER_ERROR.value());
     }
 
 
     /**
      * Using the given {@link ServerWebExchange} builds a message with information about the Http request
      *
-     * @param request
-     *    {@link WebRequest} with the request information
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
      *
      * @return error message with Http request information
      */
-    private String getErrorMessageUsingHttpRequest(WebRequest request) {
-        HttpServletRequest httpRequest = ((ServletWebRequest)request).getRequest();
-        return format("There was an error trying to execute the request with: %s"
-                    + "Http method = %s %s "
-                    + "Uri = %s",
-                System.lineSeparator(), httpRequest.getMethod(),
-                System.lineSeparator(), httpRequest.getRequestURI());
+    private String getErrorMessageUsingHttpRequest(ServerWebExchange exchange) {
+        return format("There was an error trying to execute the request with:%s"
+                        + "Http method = %s %s"
+                        + "Uri = %s %s"
+                        + "Header = %s",
+                System.lineSeparator(),
+                exchange.getRequest().getMethod(), System.lineSeparator(),
+                exchange.getRequest().getURI().toString(), System.lineSeparator(),
+                exchange.getRequest().getHeaders().entrySet());
     }
 
-    /**
-     *    Builds the Http response with the given information, including {@code httpStatusValue} and a custom message
-     * to add in the content.
-     *
-     * @param responseMessage
-     *    Information included in the returned response
-     * @param httpStatusValue
-     *    Used in the response as Http code to return
-     *
-     * @return {@link ResponseEntity} with the suitable Http response
-     */
-    private ResponseEntity<String> buildPlainTextResponse(String responseMessage, int httpStatusValue) {
-        return ResponseEntity.status(httpStatusValue)
-                             .contentType(MediaType.TEXT_PLAIN)
-                             .body(responseMessage);
-    }
 
     /**
-     *    Builds the Http response with the given information, including {@link HttpStatus} and a custom message
-     * with the "not verified" validations to include in the content.
+     * Get the list of internal errors included in the given exception
      *
-     * @param responseMessage
-     *    Information included in the returned response
      * @param exception
-     *    {@link Exception} with the "not verified" validations or constraint exceptions
-     * @param httpStatus
-     *    {@link HttpStatus} used in the Http response
+     *    {@link ServerWebInputException} with the error information
      *
-     * @return {@link ResponseEntity} with the suitable Http response
+     * @return {@link List} of {@link String} with the error messages
      */
-    private ResponseEntity<String> buildListOfValidationErrorsResponse(String responseMessage, Exception exception,
-                                                                       HttpStatus httpStatus) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_PLAIN);
-
-        if (exception instanceof MethodArgumentNotValidException)
-            responseMessage += getErrors((MethodArgumentNotValidException) exception);
-        if (exception instanceof ConstraintViolationException)
-            responseMessage += getErrors((ConstraintViolationException)exception);
-
-        return new ResponseEntity<>(responseMessage, headers, httpStatus);
+    private List<String> getServerWebInputExceptionErrorMessages(ServerWebInputException exception) {
+        if (exception.getCause() instanceof TypeMismatchException) {
+            TypeMismatchException ex = (TypeMismatchException)exception.getCause();
+            return asList(format("There was an type mismatch error in %s. The provided value was %s and required type is %s",
+                    exception.getMethodParameter(),
+                    ex.getValue(),
+                    ex.getRequiredType()));
+        }
+        else {
+            return asList(format("There was an error in %s due to %s", exception.getMethodParameter(), exception.getReason()));
+        }
     }
 
-    private List<String> getErrors(MethodArgumentNotValidException exception) {
-        return exception.getBindingResult().getFieldErrors().stream()
-                .map(fe -> "Field error in object '" + fe.getObjectName()
-                        + "' on field '" + fe.getField()
-                        + "' due to: " + fe.getDefaultMessage())
-                .collect(Collectors.toList());
+
+    /**
+     * Get the list of internal errors included in the given exception
+     *
+     * @param exception
+     *    {@link ConstraintViolationException} with the error information
+     *
+     * @return {@link List} of {@link String} with the error messages
+     */
+    private List<String> getConstraintViolationExceptionErrorMessages(ConstraintViolationException exception) {
+        return exception.getConstraintViolations()
+                .stream()
+                .map(c -> {
+                    String rawParameterName = c.getPropertyPath().toString();
+                    return rawParameterName.substring(rawParameterName.lastIndexOf(".") + 1) + ": " + c.getMessage();
+                })
+                .collect(toList());
     }
 
-    private List<String> getErrors(ConstraintViolationException exception) {
-        return exception.getConstraintViolations().stream()
-                .map(ce -> "Error in path '" + ce.getPropertyPath()
-                        + "' due to: " + ce.getMessage()
-                )
-                .collect(Collectors.toList());
+
+    /**
+     * Builds the Http response related with an error, using the provided parameters.
+     *
+     * @param errorCode
+     *    {@link RestApiErrorCode} included in the response
+     * @param errorMessages
+     *    {@link List} of error messages to include
+     * @param exchange
+     *    {@link ServerWebExchange} with the request information
+     * @param httpStatus
+     *    Http code used in the response
+     *
+     * @return {@link Mono} with the suitable Http response
+     */
+    private Mono<Void> buildErrorResponse(RestApiErrorCode errorCode, List<String> errorMessages, ServerWebExchange exchange,
+                                          int httpStatus) {
+        exchange.getResponse().setRawStatusCode(httpStatus);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        ErrorResponseDto error = new ErrorResponseDto(errorCode, errorMessages);
+
+        byte[] responseMessageBytes = JsonUtil.toJson(error).orElse("").getBytes(StandardCharsets.UTF_8);
+        DataBuffer bufferResponseMessage = exchange.getResponse().bufferFactory().wrap(responseMessageBytes);
+        return exchange.getResponse().writeWith(Mono.just(bufferResponseMessage));
     }
 
 }

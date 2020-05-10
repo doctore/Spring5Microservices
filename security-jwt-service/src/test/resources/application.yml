@@ -17,14 +17,23 @@ spring:
         format_sql: false
         show_sql: false
 
-springfox:
+security:
+  jwe:
+    encryptionSecret: onlyForTests
+
+cache:
+  jwtConfiguration:
+    entryCapacity: 1
+    expireInSeconds: 100
+    name: onlyForTests
+
+springdoc:
   documentation:
     apiVersion: 1.0
     title: Test Rest Api
     description: Test description
-    swagger:
-      v2:
-        path: onlyForTests
+  api-docs:
+    path: onlyForTests
 
 #show sql statement
 #logging:

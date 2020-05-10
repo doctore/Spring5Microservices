@@ -1,60 +1,59 @@
 package com.security.jwt.controller;
 
+import com.security.jwt.SecurityJwtServiceApplication;
 import com.security.jwt.configuration.rest.RestRoutes;
-import com.security.jwt.service.JwtClientDetailsService;
 import com.security.jwt.service.cache.JwtClientDetailsCacheService;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.stream.Stream;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(value = CacheController.class)
+@SpringBootTest(classes = SecurityJwtServiceApplication.class)
 public class CacheControllerTest {
+
+    @Autowired
+    ApplicationContext context;
 
     @MockBean
     private JwtClientDetailsCacheService mockJwtClientDetailsCacheService;
 
-    @MockBean
-    private PasswordEncoder mockPasswordEncoder;
+    private WebTestClient webTestClient;
 
-    @MockBean
-    private JwtClientDetailsService mockJwtClientDetailsService;
-
-    @Autowired
-    private MockMvc mockMvc;
+    @BeforeEach
+    public void init() {
+        this.webTestClient = WebTestClient.bindToApplicationContext(this.context).configureClient().build();
+    }
 
 
     @Test
     @SneakyThrows
     @DisplayName("clear: when no basic authentication is provided then unauthorized code is returned")
     public void clear_whenNoBasicAuthIsProvided_thenUnauthorizedHttpCodeIsReturned() {
-        mockMvc.perform(put(RestRoutes.CACHE.ROOT + RestRoutes.CACHE.CLEAR))
-                .andExpect(status().isUnauthorized());
+        webTestClient.put()
+                .uri(RestRoutes.CACHE.ROOT + RestRoutes.CACHE.CLEAR)
+                .exchange()
+                .expectStatus().isUnauthorized();
 
-        verifyZeroInteractions(mockJwtClientDetailsCacheService);
+        verifyNoInteractions(mockJwtClientDetailsCacheService);
     }
 
 
@@ -76,8 +75,10 @@ public class CacheControllerTest {
                                                                                HttpStatus expectedResultHttpCode) {
         when(mockJwtClientDetailsCacheService.clear()).thenReturn(cacheServiceResult);
 
-        mockMvc.perform(put(RestRoutes.CACHE.ROOT + RestRoutes.CACHE.CLEAR))
-                .andExpect(status().is(expectedResultHttpCode.value()));
+        webTestClient.put()
+                .uri(RestRoutes.CACHE.ROOT + RestRoutes.CACHE.CLEAR)
+                .exchange()
+                .expectStatus().isEqualTo(expectedResultHttpCode);
 
         verify(mockJwtClientDetailsCacheService, times(1)).clear();
     }

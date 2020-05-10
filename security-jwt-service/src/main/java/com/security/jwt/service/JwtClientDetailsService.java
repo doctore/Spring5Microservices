@@ -8,9 +8,10 @@ import com.security.jwt.service.cache.JwtClientDetailsCacheService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -18,7 +19,7 @@ import static java.lang.String.format;
 
 @AllArgsConstructor
 @Service
-public class JwtClientDetailsService implements UserDetailsService {
+public class JwtClientDetailsService implements ReactiveUserDetailsService {
 
     @Lazy
     private final JwtClientDetailsCacheService jwtClientDetailsCacheService;
@@ -56,16 +57,16 @@ public class JwtClientDetailsService implements UserDetailsService {
      * @param clientId
      *    Identifier to search a coincidence in {@link JwtClientDetails#getUsername()}
      *
-     * @return {@link UserDetails}
+     * @return {@link Mono} of {@link UserDetails}
      *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override
-    public UserDetails loadUserByUsername(String clientId) {
+    public Mono<UserDetails> findByUsername(String clientId) {
         UserDetails userDetails = findByClientId(clientId);
         new AccountStatusUserDetailsChecker().check(userDetails);
-        return userDetails;
+        return Mono.just(userDetails);
     }
 
 }

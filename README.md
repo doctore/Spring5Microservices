@@ -108,13 +108,13 @@ The technologies used are the following ones:
 * **Lombok** to reduce the code development in entities and DTOs.
 * **Hazelcast** as cache to reduce the invocations to the database.
 * **NimbusJoseJwt** to work with JWS/JWE tokens.
-* **MVC** a traditional Spring MVC Rest API to manage the authentication/authorization requests.
+* **Webflux** creating a reactive REST Api to manage the authentication/authorization requests.
 
 In this microservice, the layer's division is:
 
 * **repository** layer used to access to the database.
 * **service** containing the business logic.
-* **controller** REST Api using Spring MVC.
+* **controller** REST Api using Webflux.
 
 On the other hand, there are other "important folders": 
 
@@ -174,7 +174,7 @@ In this microservice, the layer's division is:
 
 * **dao** layer used to access to the database.
 * **service** containing the business logic.
-* **controller** REST Api using Webflux.
+* **controller** REST Api using Spring MVC.
 
 On the other hand, there are other "important folders": 
 

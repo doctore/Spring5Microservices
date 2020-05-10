@@ -32,7 +32,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
-                // Make sure we use stateless session; session won't be used to store user's state.
+                // Make sure we use stateless session; session won't be used to store user's state
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 // Handle an authorized attempts
