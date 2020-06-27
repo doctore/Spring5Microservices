@@ -1,6 +1,5 @@
 package com.security.jwt.model;
 
-import com.security.jwt.configuration.Constants;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.enums.SignatureAlgorithmEnum;
 import lombok.AllArgsConstructor;
@@ -11,11 +10,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collection;
@@ -24,15 +18,12 @@ import java.util.HashSet;
 @AllArgsConstructor
 @Builder
 @Data
-@Entity
 @EqualsAndHashCode(of = {"clientId"})
 @NoArgsConstructor
-@Table(schema = Constants.DATABASE_SCHEMA.SECURITY)
 public class JwtClientDetails implements UserDetails {
 
     private static final long serialVersionUID = -171319389828209358L;
     
-    @Id
     @NotNull
     @Size(min=1,max=64)
     private String clientId;
@@ -46,11 +37,9 @@ public class JwtClientDetails implements UserDetails {
     private String signatureSecret;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
     private SignatureAlgorithmEnum signatureAlgorithm;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
     private AuthenticationConfigurationEnum authenticationGenerator;
 
     @NotNull

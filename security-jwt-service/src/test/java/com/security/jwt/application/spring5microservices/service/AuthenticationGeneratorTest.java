@@ -2,7 +2,6 @@ package com.security.jwt.application.spring5microservices.service;
 
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.application.spring5microservices.enums.RoleEnum;
-import com.security.jwt.application.spring5microservices.model.Role;
 import com.security.jwt.application.spring5microservices.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,8 +46,7 @@ public class AuthenticationGeneratorTest {
     @DisplayName("getRawAuthenticationInformation: when an existing user is given then related information is returned")
     public void getRawAuthenticationInformation_whenAnExistingUserIsGiven_thenRelatedInformationIsReturned() {
         // Given
-        Role role = Role.builder().name(RoleEnum.ADMIN).build();
-        User user = User.builder().username("test username").name("test name").roles(new HashSet<>(asList(role))).build();
+        User user = User.builder().username("test username").name("test name").roles(new HashSet<>(asList(RoleEnum.ADMIN))).build();
 
         // When
         Optional<RawAuthenticationInformationDto> rawTokenInformation = authenticationGenerator.getRawAuthenticationInformation(user);

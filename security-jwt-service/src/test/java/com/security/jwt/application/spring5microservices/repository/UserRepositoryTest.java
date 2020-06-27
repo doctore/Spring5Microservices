@@ -1,17 +1,18 @@
 package com.security.jwt.application.spring5microservices.repository;
 
+import com.security.jwt.application.spring5microservices.enums.RoleEnum;
 import com.security.jwt.application.spring5microservices.model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,8 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
-@DataJpaTest
-@AutoConfigureTestDatabase(replace=AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
 public class UserRepositoryTest {
 
     @Autowired
@@ -43,10 +43,10 @@ public class UserRepositoryTest {
     @DisplayName("findByUsername: when a non existent username is given then optional empty is returned")
     public void findByUsername_whenANonExistentUsernameIsGiven_thenOptionalEmptyIsReturned() {
         // Given
-        List<User> users = userRepository.findAll();
+        String notExistUsername = "12345abcd";
 
         // When
-        Optional<User> user = userRepository.findByUsername(users.get(0).getUsername() + "@V2@_2");
+        Optional<User> user = userRepository.findByUsername(notExistUsername);
 
         // Then
         assertNotNull(user);
@@ -58,15 +58,21 @@ public class UserRepositoryTest {
     @DisplayName("findByUsername: when an existent username is given then optional with related entity is returned")
     public void findByUsername_whenAnExistentUsernameIsGiven_thenOptionalWithRelatedEntityIsReturned() {
         // Given
-        List<User> users = userRepository.findAll();
+        User existingUser = User.builder()
+                .id(1l)
+                .username("user")
+                .name("Normal user")
+                .password("{bcrypt}$2a$10$i7LFiCo1JRm87ERePQOS3OkZ3Srgub8F7GyoWu6NmUuCLDTPq8zMW")
+                .active(true)
+                .roles(new HashSet<>(asList(RoleEnum.USER))).build();
 
         // When
-        Optional<User> user = userRepository.findByUsername(users.get(0).getUsername());
+        Optional<User> user = userRepository.findByUsername(existingUser.getUsername());
 
         // Then
         assertNotNull(user);
         assertTrue(user.isPresent());
-        assertThat(user.get(), samePropertyValuesAs(users.get(0)));
+        assertThat(user.get(), samePropertyValuesAs(existingUser));
     }
 
 }

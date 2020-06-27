@@ -6,7 +6,6 @@ import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.application.spring5microservices.enums.RoleEnum;
 import com.security.jwt.enums.SignatureAlgorithmEnum;
 import com.security.jwt.model.JwtClientDetails;
-import com.security.jwt.application.spring5microservices.model.Role;
 import com.security.jwt.application.spring5microservices.model.User;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
@@ -37,17 +36,15 @@ public class TestDataFactory {
                 .expiresIn(250)
                 .jwtId("unique identifier")
                 .scope(null)
-                .additionalInfo(new HashMap<String, Object>() {{
+                .additionalInfo(new HashMap<>() {{
                     put(NAME.getKey(), "name value");
                 }})
                 .build();
     }
 
-
     public static AuthenticationRequestDto buildAuthenticationRequest(String username, String password) {
         return new AuthenticationRequestDto(username, password);
     }
-
 
     public static JwtClientDetails buildDefaultJwtClientDetails(String clientId) {
         return JwtClientDetails.builder()
@@ -60,22 +57,20 @@ public class TestDataFactory {
                 .build();
     }
 
-
     public static RawAuthenticationInformationDto buildDefaultRawAuthenticationInformation() {
         return RawAuthenticationInformationDto.builder()
-                .accessTokenInformation(new HashMap<String, Object>() {{
+                .accessTokenInformation(new HashMap<>() {{
                     put(USERNAME.getKey(), "username value");
                     put(AUTHORITIES.getKey(), asList("admin", "user"));
                 }})
-                .refreshTokenInformation(new HashMap<String, Object>() {{
+                .refreshTokenInformation(new HashMap<>() {{
                     put(USERNAME.getKey(), "username value");
                 }})
-                .additionalTokenInformation(new HashMap<String, Object>() {{
+                .additionalTokenInformation(new HashMap<>() {{
                     put(NAME.getKey(), "name value");
                 }})
                 .build();
     }
-
 
     public static User buildDefaultUser() {
         return User.builder()
@@ -84,12 +79,9 @@ public class TestDataFactory {
                 .username("username value")
                 .password("password value")
                 .active(true)
-                .roles(new HashSet<>(asList(
-                        Role.builder().id(1).name(RoleEnum.ADMIN).build(),
-                        Role.builder().id(2).name(RoleEnum.USER).build())))
+                .roles(new HashSet<>(asList(RoleEnum.ADMIN, RoleEnum.USER)))
                 .build();
     }
-
 
     public static UsernameAuthoritiesDto buildUsernameAuthorities(String username, Set<String> authorities, Map<String, Object> additionalInfo) {
         return UsernameAuthoritiesDto.builder()
