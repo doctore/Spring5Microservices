@@ -124,10 +124,11 @@ On the other hand, there are other "important folders":
 * **util** to manage the JWS/JWE functionality.
 <br><br>
 
-The existing two git branches are related with this microservice:
+The existing three git branches are related with this microservice:
 
 * **master** there is only one datasource due to all applications use the same database.
 * **multi-datasource-security** every application has its own datasource, so different persistent context are defined for every one.
+* **spring-jdbc-security** there is only one datasource but Hibernate + JPA have been replaced by Spring JDBC template to improve the performance.
 
 ### pizza-service
 
