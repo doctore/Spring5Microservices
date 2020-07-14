@@ -1,5 +1,6 @@
 package com.security.oauth.configuration.security.jwt;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -8,30 +9,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Manages the information included in access and refresh tokens.
  */
 public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
 
-    private static Map<String, Object> oAuth2AccessTokenAdditionalInformation = new HashMap<>();
-
     private static final String AUTHORITIES = "authorities";
     private static final String SCOPE = "scope";
-    private static final String USER_NAME = "user_name";
     private static final String USERNAME = "username";
     private static final String ADDITIONAL_INFO = "additionalInfo";
-
 
     public CustomAccessTokenConverter() {
         super();
     }
 
-
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         OAuth2AccessToken result = super.enhance(accessToken, authentication);
-        result.getAdditionalInformation().putAll(getAdditionalInformation());
+        result.getAdditionalInformation().putAll(getAdditionalInformation(authentication));
         return result;
     }
 
@@ -49,7 +46,6 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     private Map<String, ?> getAccessTokenInformation(Map<String, Object> sourceInformation) {
         Map<String, Object> accessTokenInformation = new HashMap<>(sourceInformation);
         accessTokenInformation.keySet().removeIf(k -> asList(SCOPE).contains(k));
-        updateAdditionalInformation(sourceInformation);
         return accessTokenInformation;
     }
 
@@ -63,19 +59,18 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     }
 
     /**
-     * Extra information included in the returned {@link OAuth2AccessToken}
-     */
-    private void updateAdditionalInformation(Map<String, Object> accessTokenInformation) {
-        oAuth2AccessTokenAdditionalInformation.put(USERNAME, accessTokenInformation.get(USER_NAME));
-        oAuth2AccessTokenAdditionalInformation.put(AUTHORITIES, accessTokenInformation.get(AUTHORITIES));
-    }
-
-    /**
      * Include an specific section with extra information in the returned {@link OAuth2AccessToken}
      */
-    private Map<String, Object> getAdditionalInformation() {
+    private Map<String, Object> getAdditionalInformation(OAuth2Authentication authentication) {
+        Map<String, Object> authenticationAdditionalInformation = new HashMap<>();
+        authenticationAdditionalInformation.put(USERNAME, authentication.getUserAuthentication().getName());
+        authenticationAdditionalInformation.put(AUTHORITIES,
+                authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(toSet()));
+
         Map<String, Object> additionalInformation = new HashMap<>();
-        additionalInformation.put(ADDITIONAL_INFO, oAuth2AccessTokenAdditionalInformation);
+        additionalInformation.put(ADDITIONAL_INFO, authenticationAdditionalInformation);
         return additionalInformation;
     }
 
