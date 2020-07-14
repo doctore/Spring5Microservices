@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static java.util.Map.entry;
 import static java.util.stream.Collectors.toSet;
 
 /**
@@ -62,16 +63,14 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
      * Include an specific section with extra information in the returned {@link OAuth2AccessToken}
      */
     private Map<String, Object> getAdditionalInformation(OAuth2Authentication authentication) {
-        Map<String, Object> authenticationAdditionalInformation = new HashMap<>();
-        authenticationAdditionalInformation.put(USERNAME, authentication.getUserAuthentication().getName());
-        authenticationAdditionalInformation.put(AUTHORITIES,
-                authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(toSet()));
-
-        Map<String, Object> additionalInformation = new HashMap<>();
-        additionalInformation.put(ADDITIONAL_INFO, authenticationAdditionalInformation);
-        return additionalInformation;
+        Map<String, Object> authenticationAdditionalInformation = Map.ofEntries(
+                entry(USERNAME, authentication.getUserAuthentication().getName()),
+                entry(AUTHORITIES,
+                        authentication.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .collect(toSet()))
+        );
+        return Map.of(ADDITIONAL_INFO, authenticationAdditionalInformation);
     }
 
 }
