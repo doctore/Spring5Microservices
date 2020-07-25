@@ -3,7 +3,6 @@ package com.order.controller;
 import com.order.configuration.Constants;
 import com.order.configuration.rest.RestRoutes;
 import com.order.configuration.security.SecurityManager;
-import com.order.configuration.security.filter.SecurityFilterConfigurer;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
@@ -53,9 +52,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @WebMvcTest(value = OrderController.class)
 public class OrderControllerTest {
-
-    @MockBean
-    private SecurityFilterConfigurer mockSecurityFilterConfigurer;
 
     @MockBean
     private SecurityManager mockSecurityManager;
