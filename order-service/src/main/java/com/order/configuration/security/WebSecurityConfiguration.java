@@ -1,6 +1,6 @@
 package com.order.configuration.security;
 
-import com.order.configuration.security.filter.SecurityFilterConfigurer;
+import com.order.configuration.security.filter.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,8 +25,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private String documentationPath;
 
     @Autowired
-    private SecurityFilterConfigurer securityFilterConfigurer;
-
+    private  SecurityFilter securityFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -45,7 +45,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 // Any other request must be authenticated
                 .anyRequest().authenticated()
                 .and()
-                .apply(securityFilterConfigurer);
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
 }
