@@ -5,12 +5,12 @@ import com.security.jwt.model.JwtClientDetails;
 import com.spring5microservices.common.service.CacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -23,20 +23,20 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = JwtClientDetailsCacheService.class)
 public class JwtClientDetailsCacheServiceTest {
 
-    @Mock
+    @MockBean
     private CacheConfiguration mockCacheConfiguration;
 
-    @Mock
+    @MockBean
     private CacheService mockCacheService;
 
+    @Autowired
     private JwtClientDetailsCacheService jwtClientDetailsCacheService;
 
     @BeforeEach
     public void init() {
-        jwtClientDetailsCacheService = new JwtClientDetailsCacheService(mockCacheConfiguration, mockCacheService);
         when(mockCacheConfiguration.getJwtConfigurationCacheName()).thenReturn("TestCache");
     }
 

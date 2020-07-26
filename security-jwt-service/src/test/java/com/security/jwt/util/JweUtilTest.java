@@ -2,14 +2,13 @@ package com.security.jwt.util;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.exception.TokenInvalidException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,18 +23,14 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = JweUtil.class)
 public class JweUtilTest {
 
-    @Mock
+    @MockBean
     private JwsUtil mockJwsUtil;
 
+    @Autowired
     private JweUtil jweUtil;
-
-    @BeforeEach
-    public void init() {
-        jweUtil = new JweUtil(mockJwsUtil);
-    }
 
 
     static Stream<Arguments> generateTokenTestCases() {

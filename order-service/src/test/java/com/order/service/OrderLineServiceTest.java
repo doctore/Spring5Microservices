@@ -5,15 +5,13 @@ import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
 import com.order.model.OrderLine;
 import com.order.util.converter.OrderLineConverter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,23 +23,17 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+@SpringBootTest(classes = OrderLineService.class)
 public class OrderLineServiceTest {
 
-    @Mock
+    @MockBean
     private OrderLineDao mockOrderLineDao;
 
-    @Mock
+    @MockBean
     private OrderLineConverter mockOrderLineConverter;
 
+    @Autowired
     private OrderLineService service;
-
-
-    @BeforeEach
-    public void init() {
-        service = new OrderLineService(mockOrderLineDao, mockOrderLineConverter);
-    }
 
 
     static Stream<Arguments> saveAllTestCases() {
