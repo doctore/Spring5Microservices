@@ -9,17 +9,16 @@ import com.pizza.repository.IngredientRepository;
 import com.pizza.repository.PizzaRepository;
 import com.pizza.util.PageUtil;
 import com.pizza.util.converter.PizzaConverter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,24 +39,21 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = PizzaService.class)
 public class PizzaServiceTest {
 
-    @Mock
+    @MockBean
     private IngredientRepository mockIngredientRepository;
 
-    @Mock
+    @MockBean
     private PizzaConverter mockPizzaConverter;
 
-    @Mock
+    @MockBean
     private PizzaRepository mockPizzaRepository;
 
+    @Autowired
     private PizzaService pizzaService;
 
-    @BeforeEach
-    public void init() {
-        pizzaService = new PizzaService(mockIngredientRepository, mockPizzaConverter, mockPizzaRepository);
-    }
 
     static Stream<Arguments> findByNameTestCases() {
         Ingredient ingredient = buildIngredient(1, "Cheese");

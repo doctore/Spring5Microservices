@@ -5,15 +5,13 @@ import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.util.converter.OrderConverter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -32,26 +30,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+@SpringBootTest(classes = OrderService.class)
 public class OrderServiceTest {
 
-    @Mock
+    @MockBean
     private OrderDao mockOrderDao;
 
-    @Mock
+    @MockBean
     private OrderConverter mockOrderConverter;
 
-    @Mock
+    @MockBean
     private OrderLineService mockOrderLineService;
 
+    @Autowired
     private OrderService service;
-
-
-    @BeforeEach
-    public void init() {
-        service = new OrderService(mockOrderDao, mockOrderConverter, mockOrderLineService);
-    }
 
 
     static Stream<Arguments> findByIdWithOrderLinesTestCases() {
