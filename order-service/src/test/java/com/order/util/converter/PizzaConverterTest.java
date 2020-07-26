@@ -4,13 +4,11 @@ import com.order.dto.PizzaDto;
 import com.order.model.Pizza;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +20,7 @@ import static com.order.TestDataFactory.buildPizzaDto;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = {PizzaConverterImpl.class})
+@SpringBootTest(classes = PizzaConverterImpl.class)
 public class PizzaConverterTest {
 
     @Autowired

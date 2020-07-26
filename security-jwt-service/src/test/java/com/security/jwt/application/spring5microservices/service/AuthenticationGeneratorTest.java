@@ -4,12 +4,11 @@ import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.application.spring5microservices.enums.RoleEnum;
 import com.security.jwt.application.spring5microservices.model.Role;
 import com.security.jwt.application.spring5microservices.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -24,15 +23,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = AuthenticationGenerator.class)
 public class AuthenticationGeneratorTest {
 
+    @Autowired
     private AuthenticationGenerator authenticationGenerator;
-
-    @BeforeEach
-    public void init() {
-        authenticationGenerator = new AuthenticationGenerator();
-    }
 
 
     @Test

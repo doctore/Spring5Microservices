@@ -4,9 +4,9 @@ import com.pizza.configuration.cache.CacheConfiguration;
 import com.spring5microservices.common.service.CacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 
@@ -17,20 +17,20 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = UserBlacklistCacheService.class)
 public class UserBlacklistCacheServiceTest {
 
-    @Mock
+    @MockBean
     private CacheConfiguration mockCacheConfiguration;
 
-    @Mock
+    @MockBean
     private CacheService mockCacheService;
 
+    @Autowired
     private UserBlacklistCacheService userBlacklistCacheService;
 
     @BeforeEach
     public void init() {
-        userBlacklistCacheService = new UserBlacklistCacheService(mockCacheConfiguration, mockCacheService);
         when(mockCacheConfiguration.getUserBlacklistCacheName()).thenReturn("TestCache");
     }
 

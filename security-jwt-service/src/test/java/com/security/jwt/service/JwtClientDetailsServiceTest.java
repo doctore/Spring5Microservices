@@ -4,15 +4,14 @@ import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.repository.JwtClientDetailsRepository;
 import com.security.jwt.service.cache.JwtClientDetailsCacheService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -30,21 +29,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = JwtClientDetailsService.class)
 public class JwtClientDetailsServiceTest {
 
-    @Mock
+    @MockBean
     private JwtClientDetailsCacheService mockJwtClientDetailsCacheService;
 
-    @Mock
+    @MockBean
     private JwtClientDetailsRepository mockJwtClientDetailsRepository;
 
+    @Autowired
     private JwtClientDetailsService jwtClientDetailsService;
-
-    @BeforeEach
-    public void init() {
-        jwtClientDetailsService = new JwtClientDetailsService(mockJwtClientDetailsCacheService, mockJwtClientDetailsRepository);
-    }
 
 
     static Stream<Arguments> findByClientIdTestCases() {

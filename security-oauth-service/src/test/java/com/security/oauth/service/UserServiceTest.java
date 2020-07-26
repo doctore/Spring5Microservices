@@ -2,17 +2,16 @@ package com.security.oauth.service;
 
 import com.security.oauth.model.User;
 import com.security.oauth.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -23,19 +22,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = UserService.class)
 public class UserServiceTest {
 
-    @Mock
+    @MockBean
     private UserRepository mockUserRepository;
 
+    @Autowired
     private UserService userService;
-
-
-    @BeforeEach
-    public void init() {
-        userService = new UserService(mockUserRepository);
-    }
 
 
     static Stream<Arguments> loadUserByUsernameTestCases() {
