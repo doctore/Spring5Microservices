@@ -272,9 +272,7 @@ enter in details about this security service, it is important to know that, for 
 ![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
    
 You can see the *raw password* in the SQL file `MasterDatabase_Data.sql`, when the information about this application is included in the table `security.oauth_client_details`.
-In this case, the password is `Spring5Microservices`.
-   
-So, the list of web services is the following one:
+In this case, the password is `Spring5Microservices`. So, the list of web services is the following one:
 
 **1.** Get the authentication information:
 
@@ -295,7 +293,7 @@ Regarding to **security-jwt-service**, it has an equivalent list of web services
 
 ![Alt text](/documentation/SecurityJwtService_Credentials.png?raw=true "Security Jwt credentials")
 
-And in a similar way to the previous one, the table in database to contain that information is `security.jwt_client_details`.
+And in a similar way to the previous one, the table in database to contain that information is `security.jwt_client_details`. So, the list of web services is the following one:
 
 **1.** Get the authentication information:
 
