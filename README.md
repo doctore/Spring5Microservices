@@ -295,6 +295,8 @@ Regarding to **security-jwt-service**, it has an equivalent list of web services
 
 ![Alt text](/documentation/SecurityJwtService_Credentials.png?raw=true "Security Jwt credentials")
 
+And in a similar way to the previous one, the table in database to contain that information is `security.jwt_client_details`.
+
 **1.** Get the authentication information:
 
 ![Alt text](/documentation/SecurityJwtService_Login.png?raw=true "Login")
