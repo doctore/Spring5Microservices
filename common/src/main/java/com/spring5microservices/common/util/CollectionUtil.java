@@ -2,8 +2,10 @@ package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -26,10 +28,10 @@ public class CollectionUtil {
      * @param keyExtractor
      *    {@link Function} used to get the key we want to use to include in returned {@link Collection}
      *
-     * @return {@link Collection}
+     * @return {@link List}
      */
-    public static <T, E> Collection<E> collectProperty(final Collection<T> collection, Function<? super T, E> keyExtractor) {
-        return collectProperty(collection, keyExtractor, null);
+    public static <T, E> List<E> collectProperty(final Collection<T> collection, Function<? super T, E> keyExtractor) {
+        return (List)collectProperty(collection, keyExtractor, ArrayList::new);
     }
 
 

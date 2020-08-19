@@ -27,16 +27,16 @@ public class CollectionUtilTest {
         Function<PizzaDto, Double> getCost = PizzaDto::getCost;
         return Stream.of(
                 //@formatter:off
-                //            collection,                                   keyExtractor,   expectedResult
-                Arguments.of( null,                                         null,           asList() ),
-                Arguments.of( asList(carbonaraCheap, carbonaraExpense),     getName,        asList(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
-                Arguments.of( asList(carbonaraCheap, carbonaraExpense),     getCost,        asList(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
+                //            collection,                                 keyExtractor,   expectedResult
+                Arguments.of( null,                                       null,           asList() ),
+                Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getName,        asList(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
+                Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getCost,        asList(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("collectPropertyNoCollectionFactoryTestCases")
-    @DisplayName("collectProperty: without collection factory all parameters test cases")
+    @DisplayName("collectProperty: without collection factory test cases")
     public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> collection, Function<PizzaDto, String> keyExtractor,
                                                              Collection<String> expectedResult) {
         Collection<String> result = CollectionUtil.collectProperty(collection, keyExtractor);
@@ -52,13 +52,13 @@ public class CollectionUtilTest {
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         return Stream.of(
                 //@formatter:off
-                //            collection,                                   keyExtractor,   collectionFactory,   expectedResult
-                Arguments.of( null,                                         null,           null,                asList() ),
-                Arguments.of( null,                                         null,           setSupplier,         new HashSet<>() ),
-                Arguments.of( asList(carbonaraCheap, carbonaraExpense),     getName,        null,                asList(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
-                Arguments.of( asList(carbonaraCheap, carbonaraExpense),     getName,        setSupplier,         Set.of(carbonaraCheap.getName()) ),
-                Arguments.of( asList(carbonaraCheap, carbonaraExpense),     getCost,        null,                asList(carbonaraCheap.getCost(), carbonaraExpense.getCost()) ),
-                Arguments.of( asList(carbonaraCheap, carbonaraExpense),     getCost,        setSupplier,         Set.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
+                //            collection,                                 keyExtractor,   collectionFactory,   expectedResult
+                Arguments.of( null,                                       null,           null,                asList() ),
+                Arguments.of( null,                                       null,           setSupplier,         new HashSet<>() ),
+                Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getName,        null,                asList(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
+                Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getName,        setSupplier,         Set.of(carbonaraCheap.getName()) ),
+                Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getCost,        null,                asList(carbonaraCheap.getCost(), carbonaraExpense.getCost()) ),
+                Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getCost,        setSupplier,         Set.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
         ); //@formatter:on
     }
 
