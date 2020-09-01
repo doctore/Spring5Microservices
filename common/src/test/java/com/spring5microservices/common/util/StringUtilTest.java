@@ -19,9 +19,9 @@ public class StringUtilTest {
 
     static Stream<Arguments> splitFromStringNoSeparatorAndCollectionFactoryTestCases() {
         String integers = "1,2,3";
-        String characters = "A,B,3";
+        String characters = "A,B,  3";
         Function<String, Integer> fromStringToInteger = Integer::parseInt;
-        Function<String, String> fromStringToString = String::toString;
+        Function<String, String> fromStringToString = String::trim;
         return Stream.of(
                 //@formatter:off
                 //            source,       valueExtractor,        expectedResult
@@ -44,9 +44,9 @@ public class StringUtilTest {
 
     static Stream<Arguments> splitFromStringNoCollectionFactoryTestCases() {
         String integers = "1,2,3";
-        String characters = "A-B-3";
+        String characters = "A- B-  3";
         Function<String, Integer> fromStringToInteger = Integer::parseInt;
-        Function<String, String> fromStringToString = String::toString;
+        Function<String, String> fromStringToString = String::trim;
         return Stream.of(
                 //@formatter:off
                 //            source,       valueExtractor,        separator,   expectedResult
@@ -69,18 +69,19 @@ public class StringUtilTest {
 
 
     static Stream<Arguments> splitFromStringAllParametersTestCases() {
-        String integers = "1,2,3";
-        String characters = "A-B-3";
+        String integers = "1,2,3,3";
+        String characters = "A  -B -3- B";
         Function<String, Integer> fromStringToInteger = Integer::parseInt;
-        Function<String, String> fromStringToString = String::toString;
+        Function<String, String> fromStringToString = String::trim;
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         return Stream.of(
                 //@formatter:off
                 //            source,       valueExtractor,        separator,   collectionFactory,   expectedResult
                 Arguments.of( null,         null,                  null,        null,                asList() ),
                 Arguments.of( integers,     null,                  null,        null,                asList() ),
-                Arguments.of( integers,     fromStringToInteger,   null,        null,                asList(1,2,3) ),
-                Arguments.of( integers,     fromStringToInteger,   ",",         null,                asList(1,2,3) ),
+                Arguments.of( integers,     fromStringToInteger,   null,        null,                asList(1,2,3,3) ),
+                Arguments.of( integers,     fromStringToInteger,   ",",         null,                asList(1,2,3,3) ),
+                Arguments.of( characters,   fromStringToString,    "-",         null,                asList("A","B","3","B") ),
                 Arguments.of( integers,     fromStringToInteger,   ",",         setSupplier,         Set.of(1,2,3) ),
                 Arguments.of( characters,   fromStringToString,    "-",         setSupplier,         Set.of("A","B","3") )
         ); //@formatter:on
