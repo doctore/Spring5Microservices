@@ -16,10 +16,17 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class RestConfiguration {
 
+    @Value("${rest.connect.timeoutInMilliseconds}")
+    private int connectTimeoutMillis;
+
+    @Value("${rest.read.timeoutInMilliseconds}")
+    private int readTimeoutMillis;
+
+    @Value("${rest.write.timeoutInMilliseconds}")
+    private int writeTimeoutMillis;
+
     @Bean
-    public WebClient webClient(@Value("${rest.connect.timeoutInMilliseconds}") int connectTimeoutMillis,
-                               @Value("${rest.read.timeoutInMilliseconds}") int readTimeoutMillis,
-                               @Value("${rest.write.timeoutInMilliseconds}") int writeTimeoutMillis) {
+    public WebClient webClient() {
         TcpClient tcpClient = TcpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
                 .doOnConnected(connection -> {
