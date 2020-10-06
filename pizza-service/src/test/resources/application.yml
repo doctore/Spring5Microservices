@@ -25,6 +25,14 @@ security:
     clientId: TestClient
     clientPassword: TestPassword
 
+rest:
+  connect:
+    timeoutInMilliseconds: 5000
+  read:
+    timeoutInMilliseconds: 30000
+  write:
+    timeoutInMilliseconds: 30000
+
 cache:
   userBlacklist:
     entryCapacity: 2
