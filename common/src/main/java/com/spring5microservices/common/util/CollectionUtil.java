@@ -4,8 +4,10 @@ import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -77,6 +79,29 @@ public class CollectionUtil {
                                       .flatMap(Collection::stream)
                                       .collect(toCollection(LinkedHashSet::new)))
                 .orElse(new LinkedHashSet<>());
+    }
+
+
+    /**
+     * Return a {@link Map} with the information of the given {@code sourceMap} excluding the keys of {@code keysToExclude}
+     *
+     * @param sourceMap
+     *    {@link Map} with the information to filter
+     * @param keysToExclude
+     *    Keys to exclude from the provided {@link Map}
+     *
+     * @return {@link HashMap}
+     */
+    public static <T, E> Map<T, E> removeKeys(final Map<T, E> sourceMap, final Collection<T> keysToExclude) {
+        return ofNullable(sourceMap)
+                .map(sm -> {
+                    Map<T, E> filteredMap = new HashMap<>(sourceMap);
+                    if (null != keysToExclude) {
+                        keysToExclude.forEach(filteredMap::remove);
+                    }
+                    return filteredMap;
+                })
+                .orElse(new HashMap<>());
     }
 
 }
