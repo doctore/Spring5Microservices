@@ -7,9 +7,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -90,6 +92,35 @@ public class CollectionUtilTest {
                                                List<Integer> collection3ToConcat, LinkedHashSet<Integer> expectedResult) {
         Set<Integer> concatedValues = CollectionUtil.concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat);
         assertEquals(expectedResult, concatedValues);
+    }
+
+
+    static Stream<Arguments> removeKeysTestCases() {
+        Map<String, Integer> sourceMap = new HashMap<>() {{
+            put("A", 1);
+            put("B", 2);
+        }};
+        Map<String, Integer> sourceMapFiltered = new HashMap<>() {{
+            put("A", 1);
+        }};
+        List<String> keysToExcludeIncluded = asList("B");
+        List<String> keysToExcludeNotIncluded = asList("C");
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   keysToExclude,              expectedResult
+                Arguments.of( null,        null,                       new HashMap<>() ),
+                Arguments.of( null,        keysToExcludeIncluded,      new HashMap<>() ),
+                Arguments.of( sourceMap,   keysToExcludeNotIncluded,   sourceMap ),
+                Arguments.of( sourceMap,   keysToExcludeIncluded,      sourceMapFiltered )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("removeKeysTestCases")
+    @DisplayName("removeKeys: test cases")
+    public <T, E> void removeKeys_testCases(Map<T, E> sourceMap, Collection<T> keysToExclude, HashMap<T, E> expectedResult) {
+        Map<T, E> filteredMap = CollectionUtil.removeKeys(sourceMap, keysToExclude);
+        assertEquals(expectedResult, filteredMap);
     }
 
 }
