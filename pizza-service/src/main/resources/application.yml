@@ -15,14 +15,6 @@ eureka:
     # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
 
-restTemplate:
-  connect:
-    timeoutInMilliseconds: 5000
-  read:
-    timeoutInMilliseconds: 30000
-  write:
-    timeoutInMilliseconds: 30000
-
 springdoc:
   documentation:
     apiVersion: 1.0

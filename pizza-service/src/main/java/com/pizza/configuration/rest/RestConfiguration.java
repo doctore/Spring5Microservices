@@ -14,12 +14,12 @@ import reactor.netty.tcp.TcpClient;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class RestTemplateConfiguration {
+public class RestConfiguration {
 
     @Bean
-    public WebClient webClient(@Value("${restTemplate.connect.timeoutInMilliseconds}") int connectTimeoutMillis,
-                               @Value("${restTemplate.read.timeoutInMilliseconds}") int readTimeoutMillis,
-                               @Value("${restTemplate.write.timeoutInMilliseconds}") int writeTimeoutMillis) {
+    public WebClient webClient(@Value("${rest.connect.timeoutInMilliseconds}") int connectTimeoutMillis,
+                               @Value("${rest.read.timeoutInMilliseconds}") int readTimeoutMillis,
+                               @Value("${rest.write.timeoutInMilliseconds}") int writeTimeoutMillis) {
         TcpClient tcpClient = TcpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
                 .doOnConnected(connection -> {
