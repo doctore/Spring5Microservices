@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
@@ -102,6 +103,56 @@ public class CollectionUtil {
                     return filteredMap;
                 })
                 .orElse(new HashMap<>());
+    }
+
+
+    /**
+     * Loops through the provided {@link List} one position every time, returning sublists with {@code size}
+     * Examples:
+     *   [1, 2]    with size = 5 => [[1, 2]]
+     *   [7, 8, 9] with size = 2 => [[7, 8], [8, 9]]
+     *
+     * @param listToSlide
+     *    {@link List} to slide
+     * @param size
+     *    Size of every sublist
+     *
+     * @return {@link List} of {@link List}s
+     */
+    public static <T> List<List<T>> sliding(List<T> listToSlide, int size) {
+        if (null == listToSlide || 1 > size) {
+            return new ArrayList<>();
+        }
+        if (size > listToSlide.size()) {
+            return asList(listToSlide);
+        }
+        return IntStream.range(0, listToSlide.size() - size + 1)
+                .mapToObj(start -> listToSlide.subList(start, start + size))
+                .collect(toList());
+    }
+
+
+    /**
+     * Splits the given {@link List} in sublists with a size equal to the given pageSize
+     *
+     * @param listToSplit
+     *    {@link List} to split
+     * @param size
+     *    Size of every sublist
+     *
+     * @return {@link List} of {@link List}s
+     */
+    public static <T> List<List<T>> split(List<T> listToSplit, int size) {
+        if (null == listToSplit || 1 > size) {
+            return new ArrayList<>();
+        }
+        List<List<T>> splits = new ArrayList<>();
+        for (int i = 0; i < listToSplit.size(); i += size) {
+            splits.add(new ArrayList<>(
+                    listToSplit.subList(i, Math.min(listToSplit.size(), i + size)))
+            );
+        }
+        return splits;
     }
 
 }
