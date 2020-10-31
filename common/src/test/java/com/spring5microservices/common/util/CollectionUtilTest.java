@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,6 +122,52 @@ public class CollectionUtilTest {
     public <T, E> void removeKeys_testCases(Map<T, E> sourceMap, Collection<T> keysToExclude, HashMap<T, E> expectedResult) {
         Map<T, E> filteredMap = CollectionUtil.removeKeys(sourceMap, keysToExclude);
         assertEquals(expectedResult, filteredMap);
+    }
+
+
+    static Stream<Arguments> slidingTestCases() {
+        List<Integer> integers = asList(1, 3, 5);
+        List<String> strings = asList("A", "E", "G", "M");
+        return Stream.of(
+                //@formatter:off
+                //            listToSlide,   size,                  expectedResult
+                Arguments.of( null,          5,                     new ArrayList<>() ),
+                Arguments.of( asList(),      0,                     new ArrayList<>() ),
+                Arguments.of( integers,      integers.size() + 1,   asList(integers) ),
+                Arguments.of( strings,       2,                     asList(asList("A", "E"), asList("E", "G"), asList("G", "M")) ),
+                Arguments.of( strings,       3,                     asList(asList("A", "E", "G"), asList("E", "G", "M")) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("slidingTestCases")
+    @DisplayName("sliding: test cases")
+    public <T> void sliding_testCases(List<T> listToSlide, int size, List<List<T>> expectedResult) {
+        List<List<T>> slidedList = CollectionUtil.sliding(listToSlide, size);
+        assertEquals(expectedResult, slidedList);
+    }
+
+
+    static Stream<Arguments> splitTestCases() {
+        List<Integer> integers = asList(1, 3, 5);
+        List<String> strings = asList("A", "E", "G", "M");
+        return Stream.of(
+                //@formatter:off
+                //            listToSplit,   size,                  expectedResult
+                Arguments.of( null,          5,                     new ArrayList<>() ),
+                Arguments.of( asList(),      0,                     new ArrayList<>() ),
+                Arguments.of( integers,      integers.size() + 1,   asList(integers) ),
+                Arguments.of( strings,       2,                     asList(asList("A", "E"), asList("G", "M")) ),
+                Arguments.of( strings,       3,                     asList(asList("A", "E", "G"), asList("M")) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("splitTestCases")
+    @DisplayName("split: test cases")
+    public <T> void split_testCases(List<T> listToSplit, int size, List<List<T>> expectedResult) {
+        List<List<T>> splittedList = CollectionUtil.split(listToSplit, size);
+        assertEquals(expectedResult, splittedList);
     }
 
 }
