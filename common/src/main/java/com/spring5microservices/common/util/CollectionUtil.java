@@ -108,7 +108,7 @@ public class CollectionUtil {
 
     /**
      * Loops through the provided {@link List} one position every time, returning sublists with {@code size}
-     * Examplea:
+     * Examples:
      *   [1, 2]    with size = 5 => [[1, 2]]
      *   [7, 8, 9] with size = 2 => [[7, 8], [8, 9]]
      *
