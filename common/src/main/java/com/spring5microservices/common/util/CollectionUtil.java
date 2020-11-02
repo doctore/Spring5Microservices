@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -84,6 +85,42 @@ public class CollectionUtil {
 
 
     /**
+     * Folds this elements from the left, starting with {@code initialValue} and successively calling {@code accumulator}.
+     * Examples:
+     *   [5, 7, 9],   1,  (a, b) -> a * b   => 315
+     *   ["a", "h"], "!", (a, b) -> a + b   => "!ah"
+     *
+     * @param collection
+     *    {@link Collection} with elements to combine
+     * @param initialValue
+     *    The initial value to start with
+     * @param accumulator
+     *    A function which combines elements
+     *
+     * @return a folded value
+     *
+     * @throws IllegalArgumentException if {@code initialValue} is {@code null}
+     */
+    public static <T, E> E foldLeft(final Collection<T> collection, final E initialValue,
+                                    final BiFunction<E, ? super T, E> accumulator) {
+        if (null == initialValue) {
+            throw new IllegalArgumentException("initialValue must be not null");
+        }
+        return ofNullable(collection)
+                .map(c -> {
+                    E result = initialValue;
+                    if (null != accumulator) {
+                        for (T element : c) {
+                            result = accumulator.apply(result, element);
+                        }
+                    }
+                    return result;
+                })
+                .orElse(initialValue);
+    }
+
+
+    /**
      * Return a {@link Map} with the information of the given {@code sourceMap} excluding the keys of {@code keysToExclude}
      *
      * @param sourceMap
@@ -119,7 +156,7 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> sliding(List<T> listToSlide, int size) {
+    public static <T> List<List<T>> sliding(final List<T> listToSlide, final int size) {
         if (null == listToSlide || 1 > size) {
             return new ArrayList<>();
         }
@@ -142,7 +179,7 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> split(List<T> listToSplit, int size) {
+    public static <T> List<List<T>> split(final List<T> listToSplit, final int size) {
         if (null == listToSplit || 1 > size) {
             return new ArrayList<>();
         }
