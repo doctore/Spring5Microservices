@@ -14,12 +14,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CollectionUtilTest {
 
@@ -93,6 +95,36 @@ public class CollectionUtilTest {
                                                List<Integer> collection3ToConcat, LinkedHashSet<Integer> expectedResult) {
         Set<Integer> concatedValues = CollectionUtil.concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat);
         assertEquals(expectedResult, concatedValues);
+    }
+
+
+    static Stream<Arguments> foldLeftTestCases() {
+        List<Integer> integers = asList(1, 3, 5);
+        List<String> strings = asList("AB", "E", "GMT");
+        BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
+        BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
+        return Stream.of(
+                //@formatter:off
+                //            collection,   initialValue,   accumulator,  expectedException,                expectedResult
+                Arguments.of( null,         null,           null,         IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),     1,              multiply,     null,                             1 ),
+                Arguments.of( integers,     0,              null,         null,                             0 ),
+                Arguments.of( integers,     1,              multiply,     null,                             15 ),
+                Arguments.of( strings,      0,              sumLength,    null,                             6 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldLeftTestCases")
+    @DisplayName("foldLeft: test cases")
+    public <T, E> void foldLeft_testCases(Collection<T> collection, E initialValue, BiFunction<E, ? super T, E> accumulator,
+                                          Class<? extends Exception> expectedException, E expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.foldLeft(collection, initialValue, accumulator));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.foldLeft(collection, initialValue, accumulator));
+        }
     }
 
 
