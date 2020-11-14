@@ -5,6 +5,7 @@ import lombok.experimental.UtilityClass;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class CollectionUtil {
      *
      * @return {@link LinkedHashSet}
      */
-    public static <T> Set<T> concatUniqueElements(final Collection<T>... collections) {
+    public static <T> Set<T> concatUniqueElements(final Collection<T> ...collections) {
         return ofNullable(collections)
                 .map(c -> Stream.of(c).filter(Objects::nonNull)
                                       .flatMap(Collection::stream)
@@ -190,6 +191,48 @@ public class CollectionUtil {
             );
         }
         return splits;
+    }
+
+
+    /**
+     * Transposes the given {@code collectionsToTranspose}.
+     * Examples:
+     *   [[1, 2, 3], [4, 5, 6]]                     =>  [[1, 4], [2, 5], [3, 6]]
+     *   [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]  =>  [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
+     *
+     * @param collectionsToTranspose
+     *    {@link Collection} of {@link Collection}s to transpose
+     *
+     * @return {@link List} of {@link List}s
+     *
+     * @throws IllegalArgumentException if not all {@code collections} have the same size
+     */
+    public static <T> List<List<T>> transpose(final Collection<Collection<T>> collectionsToTranspose) {
+        if (null == collectionsToTranspose || 1 > collectionsToTranspose.size()) {
+            return new ArrayList<>();
+        }
+        int expectedSize = -1;
+        List<Iterator<T>> iteratorList = new ArrayList<>(collectionsToTranspose.size());
+        for (Collection<T> c: collectionsToTranspose) {
+            if (expectedSize != c.size()) {
+                if (-1 == expectedSize) {
+                    expectedSize = c.size();
+                }
+                else {
+                    throw new IllegalArgumentException("transpose requires all collections have the same size");
+                }
+            }
+            iteratorList.add(c.iterator());
+        }
+        List<List<T>> result = new ArrayList<>();
+        for (int i = 0; i < expectedSize; i++) {
+            List<T> newRow = new ArrayList<>();
+            for (Iterator<T> iterator: iteratorList) {
+                newRow.add(iterator.next());
+            }
+            result.add(newRow);
+        }
+        return result;
     }
 
 }
