@@ -202,4 +202,48 @@ public class CollectionUtilTest {
         assertEquals(expectedResult, splittedList);
     }
 
+
+    static Stream<Arguments> transposeTestCases() {
+        List<List<Integer>> invalidList = asList(asList(1), asList(2, 3));
+        List<List<Integer>> integers = asList(asList(1, 2, 3), asList(4, 5, 6));
+        Set<Set<String>> strings = new LinkedHashSet<>() {{
+            add(new LinkedHashSet<>() {{
+                add("a1");
+                add("a2");
+            }});
+            add(new LinkedHashSet<>() {{
+                add("b1");
+                add("b2");
+            }});
+            add(new LinkedHashSet<>() {{
+                add("c1");
+                add("c2");
+            }});
+        }};
+        List<List<Integer>> integersResult = asList(asList(1, 4), asList(2, 5), asList(3, 6));
+        List<List<String>> stringsResult = asList(asList("a1", "b1", "c1"), asList("a2", "b2", "c2"));
+        return Stream.of(
+                //@formatter:off
+                //            collectionsToTranspose,   expectedException,                expectedResult
+                Arguments.of( null,                     null,                             new ArrayList<>() ),
+                Arguments.of( new ArrayList<>(),        null,                             new ArrayList<>() ),
+                Arguments.of( invalidList,              IllegalArgumentException.class,   null ),
+                Arguments.of( integers,                 null,                             integersResult ),
+                Arguments.of( strings,                  null,                             stringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("transposeTestCases")
+    @DisplayName("transpose: test cases")
+    public <T> void transpose_testCases(Collection<Collection<T>> collectionsToTranspose, Class<? extends Exception> expectedException,
+                                        List<List<T>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.transpose(collectionsToTranspose));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.transpose(collectionsToTranspose));
+        }
+    }
+
 }
