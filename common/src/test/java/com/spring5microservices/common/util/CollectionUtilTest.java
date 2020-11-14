@@ -204,6 +204,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> transposeTestCases() {
+        List<List<Integer>> emptyLists = asList(asList(), asList());
         List<List<Integer>> invalidList = asList(asList(1), asList(2, 3));
         List<List<Integer>> integers = asList(asList(1, 2, 3), asList(4, 5, 6));
         Set<Set<String>> strings = new LinkedHashSet<>() {{
@@ -227,6 +228,7 @@ public class CollectionUtilTest {
                 //            collectionsToTranspose,   expectedException,                expectedResult
                 Arguments.of( null,                     null,                             new ArrayList<>() ),
                 Arguments.of( new ArrayList<>(),        null,                             new ArrayList<>() ),
+                Arguments.of( emptyLists,               null,                             new ArrayList<>() ),
                 Arguments.of( invalidList,              IllegalArgumentException.class,   null ),
                 Arguments.of( integers,                 null,                             integersResult ),
                 Arguments.of( strings,                  null,                             stringsResult )
