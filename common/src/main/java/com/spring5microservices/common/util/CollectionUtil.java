@@ -224,7 +224,7 @@ public class CollectionUtil {
             }
             iteratorList.add(c.iterator());
         }
-        List<List<T>> result = new ArrayList<>();
+        List<List<T>> result = new ArrayList<>(collectionsToTranspose.size());
         for (int i = 0; i < expectedSize; i++) {
             List<T> newRow = new ArrayList<>(expectedSize);
             for (Iterator<T> iterator: iteratorList) {
