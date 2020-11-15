@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -124,6 +125,35 @@ public class CollectionUtilTest {
         }
         else {
             assertEquals(expectedResult, CollectionUtil.foldLeft(collection, initialValue, accumulator));
+        }
+    }
+
+
+    static Stream<Arguments> iterateTestCases() {
+        Function<Integer, Integer> divisionBy10 = a -> a / 10;
+        Predicate<Integer> untilLowerOrEqualTo50 = a -> 50 >= a;
+        Predicate<Integer> untilLowerOrEqualTo0 = a -> 0 >= a;
+        return Stream.of(
+                //@formatter:off
+                //            initialValue,   applyFunction,   untilPredicate,          expectedException,                expectedResult
+                Arguments.of( null,           null,            null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( 1,              null,            null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( 1,              divisionBy10,    null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( 42,             divisionBy10,    untilLowerOrEqualTo50,   null,                             asList() ),
+                Arguments.of( 42,             divisionBy10,    untilLowerOrEqualTo0,    null,                             asList(42, 4) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("iterateTestCases")
+    @DisplayName("iterate: test cases")
+    public <T> void iterate_testCases(T initialValue, Function<T, T> applyFunction, Predicate<T> untilPredicate,
+                                      Class<? extends Exception> expectedException, T expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.iterate(initialValue, applyFunction, untilPredicate));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.iterate(initialValue, applyFunction, untilPredicate));
         }
     }
 
