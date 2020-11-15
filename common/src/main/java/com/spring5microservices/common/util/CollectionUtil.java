@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -87,6 +88,7 @@ public class CollectionUtil {
 
     /**
      * Folds this elements from the left, starting with {@code initialValue} and successively calling {@code accumulator}.
+     *
      * Examples:
      *   [5, 7, 9],   1,  (a, b) -> a * b   => 315
      *   ["a", "h"], "!", (a, b) -> a + b   => "!ah"
@@ -96,7 +98,7 @@ public class CollectionUtil {
      * @param initialValue
      *    The initial value to start with
      * @param accumulator
-     *    A function which combines elements
+     *    A {@link BiFunction} which combines elements
      *
      * @return a folded value
      *
@@ -118,6 +120,47 @@ public class CollectionUtil {
                     return result;
                 })
                 .orElse(initialValue);
+    }
+
+
+    /**
+     *    Using {@code initialValue} as first element, apply {@code applyFunction} up to {@code untilPredicate} function
+     * is {@code true}. The accumulated results are returned in a {@link List}.
+     *
+     * Examples:
+     *    42, a -> a / 10, a -> 50 >= a  =>  List()
+     *    42, a -> a / 10, a -> 0 >= a   =>  List(42, 4)
+     *
+     * @param initialValue
+     *    The initial value to start with
+     * @param applyFunction
+     *    {@link Function} to apply initially to {@code initialValue} and then next results
+     * @param untilPredicate
+     *    {@link Predicate} to know when to stop apply {@code applyFunction}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code initialValue} or {@code untilPredicate} are {@code null}
+     */
+    public static <T> List<T> iterate(final T initialValue, final Function<T, T> applyFunction,
+                                      final Predicate<T> untilPredicate) {
+        if (null == initialValue) {
+            throw new IllegalArgumentException("initialValue must be not null");
+        }
+        if (null == untilPredicate) {
+            throw new IllegalArgumentException("untilPredicate must be not null");
+        }
+        return ofNullable(applyFunction)
+                .map(af -> {
+                    List<T> result = new ArrayList<>();
+                    T currentValue = initialValue;
+                    while (!untilPredicate.test(currentValue)) {
+                        result.add(currentValue);
+                        currentValue = applyFunction.apply(currentValue);
+                    }
+                    return result;
+                })
+                .orElse(asList(initialValue));
     }
 
 
@@ -146,6 +189,7 @@ public class CollectionUtil {
 
     /**
      * Loops through the provided {@link List} one position every time, returning sublists with {@code size}
+     *
      * Examples:
      *   [1, 2]    with size = 5 => [[1, 2]]
      *   [7, 8, 9] with size = 2 => [[7, 8], [8, 9]]
@@ -196,6 +240,7 @@ public class CollectionUtil {
 
     /**
      * Transposes the given {@code collectionsToTranspose}.
+     *
      * Examples:
      *   [[1, 2, 3], [4, 5, 6]]                     =>  [[1, 4], [2, 5], [3, 6]]
      *   [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]  =>  [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
