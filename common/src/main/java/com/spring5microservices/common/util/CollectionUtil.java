@@ -128,8 +128,8 @@ public class CollectionUtil {
      * is {@code true}. The accumulated results are returned in a {@link List}.
      *
      * Examples:
-     *    42, a -> a / 10, a -> 50 >= a  =>  List()
-     *    42, a -> a / 10, a -> 0 >= a   =>  List(42, 4)
+     *    42, a -> a / 10, a -> 50 >= a  =>  []
+     *    42, a -> a / 10, a -> 0 >= a   =>  [42, 4]
      *
      * @param initialValue
      *    The initial value to start with
@@ -188,23 +188,24 @@ public class CollectionUtil {
 
 
     /**
-     * Loops through the provided {@link List} one position every time, returning sublists with {@code size}
+     * Loops through the provided {@link Collection} one position every time, returning sublists with {@code size}
      *
      * Examples:
      *   [1, 2]    with size = 5 => [[1, 2]]
      *   [7, 8, 9] with size = 2 => [[7, 8], [8, 9]]
      *
-     * @param listToSlide
-     *    {@link List} to slide
+     * @param collectionToSlide
+     *    {@link Collection} to slide
      * @param size
      *    Size of every sublist
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> sliding(final List<T> listToSlide, final int size) {
-        if (null == listToSlide || 1 > size) {
+    public static <T> List<List<T>> sliding(final Collection<T> collectionToSlide, final int size) {
+        if (null == collectionToSlide || 1 > size) {
             return new ArrayList<>();
         }
+        List<T> listToSlide = new ArrayList<>(collectionToSlide);
         if (size > listToSlide.size()) {
             return asList(listToSlide);
         }
@@ -215,20 +216,29 @@ public class CollectionUtil {
 
 
     /**
-     * Splits the given {@link List} in sublists with a size equal to the given pageSize
+     * Splits the given {@link Collection} in sublists with a size equal to the given {@code size}
      *
-     * @param listToSplit
-     *    {@link List} to split
+     * Examples:
+     *   [1, 2, 3, 4] with size = 2 => [[1, 2], [3, 4]]
+     *   [1, 2, 3, 4] with size = 3 => [[1, 2, 3], [4]]
+     *   [1, 2, 3, 4] with size = 5 => [[1, 2, 3, 4]]
+     *
+     * @param collectionToSplit
+     *    {@link Collection} to split
      * @param size
      *    Size of every sublist
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> split(final List<T> listToSplit, final int size) {
-        if (null == listToSplit || 1 > size) {
+    public static <T> List<List<T>> split(final Collection<T> collectionToSplit, final int size) {
+        if (null == collectionToSplit || 1 > size) {
             return new ArrayList<>();
         }
-        List<List<T>> splits = new ArrayList<>();
+        List<T> listToSplit = new ArrayList<>(collectionToSplit);
+        int expectedSize = 0 == listToSplit.size() % size
+                ? listToSplit.size() / size
+                : (listToSplit.size() / size) + 1;
+        List<List<T>> splits = new ArrayList<>(expectedSize);
         for (int i = 0; i < listToSplit.size(); i += size) {
             splits.add(new ArrayList<>(
                     listToSplit.subList(i, Math.min(listToSplit.size(), i + size)))
