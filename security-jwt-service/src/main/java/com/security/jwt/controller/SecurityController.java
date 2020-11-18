@@ -75,7 +75,7 @@ public class SecurityController {
                 .map(userDetails ->
                         securityService.login(userDetails.getUsername(), authenticationRequestDto.getUsername(), authenticationRequestDto.getPassword())
                                 .map(ai -> new ResponseEntity<>(ai, OK))
-                                .orElse(new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY)));
+                                .orElseGet(() -> new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY)));
     }
 
 
@@ -109,7 +109,7 @@ public class SecurityController {
                 .map(userDetails ->
                         securityService.refresh(refreshToken, userDetails.getUsername())
                                 .map(ai -> new ResponseEntity<>(ai, OK))
-                                .orElse(new ResponseEntity(HttpStatus.UNAUTHORIZED)));
+                                .orElseGet(() -> new ResponseEntity(HttpStatus.UNAUTHORIZED)));
     }
 
 

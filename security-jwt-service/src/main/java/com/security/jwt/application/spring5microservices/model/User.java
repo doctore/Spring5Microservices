@@ -76,7 +76,7 @@ public class User implements UserDetails {
                 .map(rList -> rList.stream()
                                    .map(r -> new SimpleGrantedAuthority(r.getName().toString()))
                                    .collect(toSet()))
-                .orElse(new HashSet<>());
+                .orElseGet(HashSet::new);
     }
 
     @Override
