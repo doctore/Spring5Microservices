@@ -65,7 +65,7 @@ public class CollectionUtil {
                             ? keyExtractedStream.collect(toList())
                             : keyExtractedStream.collect(toCollection(collectionFactory));
                 })
-                .orElse(null == collectionFactory ? asList() : collectionFactory.get());
+                .orElseGet(() -> null == collectionFactory ? asList() : collectionFactory.get());
     }
 
 
@@ -82,7 +82,7 @@ public class CollectionUtil {
                 .map(c -> Stream.of(c).filter(Objects::nonNull)
                                       .flatMap(Collection::stream)
                                       .collect(toCollection(LinkedHashSet::new)))
-                .orElse(new LinkedHashSet<>());
+                .orElseGet(() -> new LinkedHashSet<>());
     }
 
 
@@ -119,7 +119,7 @@ public class CollectionUtil {
                     }
                     return result;
                 })
-                .orElse(initialValue);
+                .orElseGet(() -> initialValue);
     }
 
 
@@ -160,7 +160,7 @@ public class CollectionUtil {
                     }
                     return result;
                 })
-                .orElse(asList(initialValue));
+                .orElseGet(() -> asList(initialValue));
     }
 
 
@@ -183,7 +183,7 @@ public class CollectionUtil {
                     }
                     return filteredMap;
                 })
-                .orElse(new HashMap<>());
+                .orElseGet(HashMap::new);
     }
 
 
