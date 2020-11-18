@@ -44,7 +44,7 @@ public class DocumentationConfiguration implements SwaggerResourcesProvider {
                                                                   DOCUMENTATION_API_VERSION))
                                                           .collect(Collectors.toList())
                         )
-                       .orElse(new ArrayList<>());
+                       .orElseGet(ArrayList::new);
     }
 
     /**
