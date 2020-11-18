@@ -82,7 +82,7 @@ public class StringUtil {
                             ? valueExtractedStream.collect(toList())
                             : valueExtractedStream.collect(toCollection(collectionFactory));
                 })
-                .orElse(null == collectionFactory ? asList() : collectionFactory.get());
+                .orElseGet(() -> null == collectionFactory ? asList() : collectionFactory.get());
     }
 
 }
