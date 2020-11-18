@@ -59,7 +59,7 @@ public class User implements UserDetails {
                 .map(rList -> rList.stream()
                                    .map(r -> new SimpleGrantedAuthority(r.name()))
                                    .collect(toSet()))
-                .orElse(new HashSet<>());
+                .orElseGet(HashSet::new);
     }
 
     @Override
