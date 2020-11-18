@@ -148,7 +148,7 @@ public class AuthenticationService {
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
                 .map(authGen -> null == payload.get(authGen.getRolesKey()) ? null : new HashSet<>((List<String>)payload.get(authGen.getRolesKey())))
-                .orElse(new HashSet<>());
+                .orElseGet(HashSet::new);
     }
 
 
@@ -184,7 +184,7 @@ public class AuthenticationService {
                             .filter(e -> !keysToFilter.contains(e.getKey()))
                             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
                 })
-                .orElse(new HashMap<>());
+                .orElseGet(HashMap::new);
     }
 
 
