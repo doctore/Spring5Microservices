@@ -105,7 +105,7 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
                            toInsert.addAll(toUpdate);
                            return toInsert;
                        })
-                       .orElse(new ArrayList<>());
+                       .orElseGet(ArrayList::new);
     }
 
 }

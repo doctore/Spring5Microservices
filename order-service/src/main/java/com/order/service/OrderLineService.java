@@ -55,7 +55,7 @@ public class OrderLineService {
 
                            return  orderLineDtosPersisted;
                        })
-                       .orElse(new ArrayList<>());
+                       .orElseGet(ArrayList::new);
     }
 
 

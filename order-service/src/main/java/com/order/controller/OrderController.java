@@ -69,8 +69,8 @@ public class OrderController {
     @RoleAdmin
     public ResponseEntity<OrderDto> create(@RequestBody @Valid OrderDto orderDto) {
         return orderService.save(orderDto)
-                .map(p -> new ResponseEntity(p, CREATED))
-                .orElse(new ResponseEntity(UNPROCESSABLE_ENTITY));
+                   .map(p -> new ResponseEntity(p, CREATED))
+                   .orElseGet(() -> new ResponseEntity(UNPROCESSABLE_ENTITY));
     }
 
 
@@ -98,8 +98,8 @@ public class OrderController {
     @RoleAdminOrUser
     public ResponseEntity<OrderDto> findByIdWithOrderLines(@PathVariable @Positive Integer id) {
         return orderService.findByIdWithOrderLines(id)
-                .map(p -> new ResponseEntity(p, OK))
-                .orElse(new ResponseEntity(NOT_FOUND));
+                   .map(p -> new ResponseEntity(p, OK))
+                   .orElseGet(() -> new ResponseEntity(NOT_FOUND));
     }
 
 
@@ -128,8 +128,8 @@ public class OrderController {
     @RoleAdmin
     public ResponseEntity<OrderDto> update(@RequestBody @Valid OrderDto orderDto) {
         return orderService.save(orderDto)
-                .map(p -> new ResponseEntity(p, OK))
-                .orElse(new ResponseEntity(NOT_FOUND));
+                   .map(p -> new ResponseEntity(p, OK))
+                   .orElseGet(() -> new ResponseEntity(NOT_FOUND));
     }
 
 }
