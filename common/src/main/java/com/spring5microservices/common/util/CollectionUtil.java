@@ -82,7 +82,7 @@ public class CollectionUtil {
                 .map(c -> Stream.of(c).filter(Objects::nonNull)
                                       .flatMap(Collection::stream)
                                       .collect(toCollection(LinkedHashSet::new)))
-                .orElseGet(() -> new LinkedHashSet<>());
+                .orElseGet(LinkedHashSet::new);
     }
 
 
@@ -119,7 +119,7 @@ public class CollectionUtil {
                     }
                     return result;
                 })
-                .orElseGet(() -> initialValue);
+                .orElse(initialValue);
     }
 
 
