@@ -70,7 +70,7 @@ public interface OrderLineConverter extends BaseConverter<OrderLine, OrderLineDt
                            dtos.forEach(dto -> orderLines.add(this.fromDtoToModel(dto, orderId)));
                            return orderLines;
                        })
-                       .orElse(new ArrayList<>());
+                       .orElseGet(ArrayList::new);
     }
 
     /**

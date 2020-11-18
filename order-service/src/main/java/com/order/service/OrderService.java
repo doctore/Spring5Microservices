@@ -81,7 +81,7 @@ public class OrderService {
                            orderDtoPersisted.ifPresent(dto -> dto.setOrderLines(orderLineDtos));
                            return orderDtoPersisted;
                        })
-                       .orElse(Optional.empty());
+                       .orElseGet(Optional::empty);
     }
 
 }

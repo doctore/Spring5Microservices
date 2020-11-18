@@ -85,7 +85,7 @@ public class PizzaController {
     public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                                      .map(p -> new ResponseEntity(p, CREATED))
-                                     .orElse(new ResponseEntity(UNPROCESSABLE_ENTITY)));
+                                     .orElseGet(() -> new ResponseEntity(UNPROCESSABLE_ENTITY)));
     }
 
 
@@ -118,7 +118,7 @@ public class PizzaController {
     public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) String name) {
         return Mono.just(pizzaService.findByName(name)
                                      .map(p -> new ResponseEntity(p, OK))
-                                     .orElse(new ResponseEntity(NOT_FOUND)));
+                                     .orElseGet(() -> new ResponseEntity(NOT_FOUND)));
     }
 
 
@@ -183,7 +183,7 @@ public class PizzaController {
     public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                    .map(p -> new ResponseEntity(p, OK))
-                   .orElse(new ResponseEntity(NOT_FOUND)));
+                   .orElseGet(() -> new ResponseEntity(NOT_FOUND)));
     }
 
 }

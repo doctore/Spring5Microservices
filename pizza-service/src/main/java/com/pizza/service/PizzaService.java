@@ -70,7 +70,7 @@ public class PizzaService {
                        .map(p -> new PageImpl(pizzaConverter.fromModelsToDtos(p.getContent())
                                              ,pizzaPage.getPageable()
                                              ,pizzaPage.getTotalElements()))
-                       .orElse(new PageImpl<PizzaDto>(new ArrayList()));
+                       .orElseGet(() -> new PageImpl<PizzaDto>(new ArrayList()));
     }
 
 
