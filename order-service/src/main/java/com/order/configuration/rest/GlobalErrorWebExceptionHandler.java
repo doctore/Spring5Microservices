@@ -8,6 +8,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebExchange;
 
 import javax.validation.ConstraintViolationException;
@@ -25,7 +26,6 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
@@ -38,7 +38,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 /**
  * Global exception handler to manage unhandled errors in the Rest layer (Controllers)
  */
-@ControllerAdvice
+@RestControllerAdvice
 @Log4j2
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalErrorWebExceptionHandler {

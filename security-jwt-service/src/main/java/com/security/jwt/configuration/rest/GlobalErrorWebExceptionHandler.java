@@ -9,14 +9,14 @@ import com.spring5microservices.common.exception.UnauthorizedException;
 import com.spring5microservices.common.util.JsonUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
@@ -42,45 +42,10 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 /**
  * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
  */
-@Component
+@RestControllerAdvice
 @Log4j2
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler {
-
-    @Override
-    public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        if (ex instanceof AccountStatusException) {
-            return accountStatusException(exchange, (AccountStatusException) ex);
-        }
-        else if (ex instanceof ClientNotFoundException) {
-            return clientNotFoundException(exchange, (ClientNotFoundException) ex);
-        }
-        else if (ex instanceof WebExchangeBindException) {
-            return webExchangeBindException(exchange, (WebExchangeBindException) ex);
-        }
-        else if (ex instanceof ConstraintViolationException) {
-            return constraintViolationException(exchange, (ConstraintViolationException) ex);
-        }
-        else if (ex instanceof ServerWebInputException) {
-            return serverWebInputException(exchange, (ServerWebInputException) ex);
-        }
-        else if (ex instanceof TokenExpiredException) {
-            return tokenExpiredException(exchange, (TokenExpiredException) ex);
-        }
-        else if (ex instanceof TokenInvalidException) {
-            return tokenInvalidException(exchange, (TokenInvalidException) ex);
-        }
-        else if (ex instanceof UnauthorizedException) {
-            return unauthorizedException(exchange, (UnauthorizedException) ex);
-        }
-        else if (ex instanceof UsernameNotFoundException) {
-            return usernameNotFoundException(exchange, (UsernameNotFoundException) ex);
-        }
-        else {
-            return throwable(exchange, ex);
-        }
-    }
-
+public class GlobalErrorWebExceptionHandler {
 
     /**
      * Method used to manage when a Rest request throws a {@link AccountStatusException}
@@ -92,7 +57,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> accountStatusException(ServerWebExchange exchange, AccountStatusException exception) {
+    @ExceptionHandler(AccountStatusException.class)
+    public Mono<Void> accountStatusException(ServerWebExchange exchange, AccountStatusException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildErrorResponse(SECURITY, asList("The account of the user is disabled"), exchange, FORBIDDEN.value());
     }
@@ -108,7 +74,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> clientNotFoundException(ServerWebExchange exchange, ClientNotFoundException exception) {
+    @ExceptionHandler(ClientNotFoundException.class)
+    public Mono<Void> clientNotFoundException(ServerWebExchange exchange, ClientNotFoundException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildErrorResponse(SECURITY, asList("Given invalid client details identifier"), exchange, UNAUTHORIZED.value());
     }
@@ -124,7 +91,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = exception.getBindingResult().getFieldErrors()
                 .stream()
@@ -147,7 +115,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception);
         return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
@@ -164,7 +133,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> serverWebInputException(ServerWebExchange exchange, ServerWebInputException exception) {
+    @ExceptionHandler(ServerWebInputException.class)
+    public Mono<Void> serverWebInputException(ServerWebExchange exchange, ServerWebInputException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = getServerWebInputExceptionErrorMessages(exception);
         return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
@@ -181,7 +151,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> tokenExpiredException(ServerWebExchange exchange, TokenExpiredException exception) {
+    @ExceptionHandler(TokenExpiredException.class)
+    public Mono<Void> tokenExpiredException(ServerWebExchange exchange, TokenExpiredException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildErrorResponse(SECURITY, asList("The given authorization token has expired"), exchange, TOKEN_EXPIRED.value());
     }
@@ -197,7 +168,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> tokenInvalidException(ServerWebExchange exchange, TokenInvalidException exception) {
+    @ExceptionHandler(TokenInvalidException.class)
+    public Mono<Void> tokenInvalidException(ServerWebExchange exchange, TokenInvalidException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildErrorResponse(SECURITY, asList("The provided token is invalid"), exchange, FORBIDDEN.value());
     }
@@ -213,7 +185,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> unauthorizedException(ServerWebExchange exchange, UnauthorizedException exception) {
+    @ExceptionHandler(UnauthorizedException.class)
+    public Mono<Void> unauthorizedException(ServerWebExchange exchange, UnauthorizedException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildErrorResponse(SECURITY, asList(exception.getMessage()), exchange, UNAUTHORIZED.value());
     }
@@ -229,7 +202,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> usernameNotFoundException(ServerWebExchange exchange, UsernameNotFoundException exception) {
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public Mono<Void> usernameNotFoundException(ServerWebExchange exchange, UsernameNotFoundException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildErrorResponse(SECURITY, asList("Given invalid credentials"), exchange, UNAUTHORIZED.value());
     }
@@ -245,7 +219,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
      *
      * @return {@link Mono} with the suitable response
      */
-    private Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
+    @ExceptionHandler(Throwable.class)
+    public Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         return buildErrorResponse(INTERNAL, asList("Internal error in the application"), exchange, INTERNAL_SERVER_ERROR.value());
     }
