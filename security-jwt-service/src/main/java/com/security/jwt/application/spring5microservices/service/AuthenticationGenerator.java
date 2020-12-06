@@ -49,7 +49,7 @@ public class AuthenticationGenerator implements IAuthenticationGenerator {
     }
 
     private Map<String, Object> getAccessTokenInformation(User user) {
-        return new HashMap<String, Object>() {{
+        return new HashMap<>() {{
             put(USERNAME.getKey(), user.getUsername());
             put(NAME.getKey(), user.getName());
             put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
@@ -57,13 +57,13 @@ public class AuthenticationGenerator implements IAuthenticationGenerator {
     }
 
     private Map<String, Object> getRefreshTokenInformation(User user) {
-        return new HashMap<String, Object>() {{
+        return new HashMap<>() {{
             put(USERNAME.getKey(), user.getUsername());
         }};
     }
 
     private Map<String, Object> getAdditionalTokenInformation(User user) {
-        return new HashMap<String, Object>() {{
+        return new HashMap<>() {{
             put(USERNAME.getKey(), user.getUsername());
             put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
         }};

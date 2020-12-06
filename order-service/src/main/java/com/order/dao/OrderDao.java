@@ -25,6 +25,7 @@ import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import static java.util.Optional.ofNullable;
 import static org.jooq.impl.DSL.denseRank;
 import static org.jooq.impl.DSL.orderBy;
 
@@ -44,9 +45,9 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      */
     @Override
     protected Integer getId(Order order) {
-        return Optional.ofNullable(order)
-                       .map(Order::getId)
-                       .orElse(null);
+        return ofNullable(order)
+                .map(Order::getId)
+                .orElse(null);
     }
 
 

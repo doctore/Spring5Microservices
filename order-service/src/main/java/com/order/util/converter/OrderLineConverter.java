@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Utility class to convert from {@link OrderLine} to {@link OrderLineDto} and vice versa.
  */
@@ -51,7 +53,7 @@ public interface OrderLineConverter extends BaseConverter<OrderLine, OrderLineDt
      * @return {@link Optional} of {@link OrderLine}
      */
     default Optional<OrderLine> fromDtoToOptionalModel(final OrderLineDto orderLineDto, Integer orderId) {
-        return Optional.ofNullable(orderLineDto)
+        return ofNullable(orderLineDto)
                        .map(dto -> this.fromDtoToModel(dto, orderId));
     }
 
@@ -64,13 +66,13 @@ public interface OrderLineConverter extends BaseConverter<OrderLine, OrderLineDt
      * @return {@link List} of {@link OrderLine}
      */
     default List<OrderLine> fromDtosToModels(final Collection<OrderLineDto> orderLineDtos, Integer orderId) {
-        return Optional.ofNullable(orderLineDtos)
-                       .map(dtos -> {
-                           List<OrderLine> orderLines = new ArrayList<>();
-                           dtos.forEach(dto -> orderLines.add(this.fromDtoToModel(dto, orderId)));
-                           return orderLines;
-                       })
-                       .orElseGet(ArrayList::new);
+        return ofNullable(orderLineDtos)
+                .map(dtos -> {
+                    List<OrderLine> orderLines = new ArrayList<>();
+                    dtos.forEach(dto -> orderLines.add(this.fromDtoToModel(dto, orderId)));
+                    return orderLines;
+                })
+                .orElseGet(ArrayList::new);
     }
 
     /**
@@ -107,7 +109,7 @@ abstract class OrderLineConverterDecorator implements OrderLineConverter {
      */
     @Override
     public OrderLine fromDtoToModel(final OrderLineDto orderLineDto, Integer orderId) {
-        return Optional.ofNullable(orderLineDto)
+        return ofNullable(orderLineDto)
                        .map(dto -> orderLineConverter.fromDtoToModel(dto, orderId))
                        .orElse(null);
     }

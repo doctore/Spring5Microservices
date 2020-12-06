@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.partitioningBy;
 
 /**
@@ -64,15 +65,15 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
      * @return {@link Optional} with the "final version" of the given object
      */
     public Optional<P> save(P model) {
-        return Optional.ofNullable(model)
-                       .map(m -> {
-                           if (m.isNew()) {
-                               insert(m);
-                           } else {
-                               update(m);
-                           }
-                           return m;
-                       });
+        return ofNullable(model)
+                .map(m -> {
+                    if (m.isNew()) {
+                        insert(m);
+                    } else {
+                        update(m);
+                    }
+                    return m;
+                });
     }
 
 
@@ -85,7 +86,7 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
      * @return {@link List} with the "final version" of the given models
      */
     public List<P> saveAll(Collection<P> models) {
-        return Optional.ofNullable(models)
+        return ofNullable(models)
                        .map(m -> {
                            Map<Boolean, List<P>> insertAndUpdate =
                                    models.stream().collect(partitioningBy(IModel::isNew));

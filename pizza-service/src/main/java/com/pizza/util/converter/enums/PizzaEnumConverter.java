@@ -4,7 +4,7 @@ import com.pizza.enums.PizzaEnum;
 import com.spring5microservices.common.converter.enums.BaseEnumConverter;
 import org.mapstruct.Mapper;
 
-import java.util.Optional;
+import static java.util.Optional.ofNullable;
 
 /**
  * Utility class to convert from {@link PizzaEnum} to "equivalent" {@link String} and vice versa.
@@ -20,8 +20,8 @@ public class PizzaEnumConverter implements BaseEnumConverter<PizzaEnum, String> 
 
     @Override
     public String fromEnumToValue(PizzaEnum enumValue) {
-        return Optional.ofNullable(enumValue)
-                       .map(PizzaEnum::getInternalPropertyValue)
-                       .orElse(null);
+        return ofNullable(enumValue)
+                .map(PizzaEnum::getInternalPropertyValue)
+                .orElse(null);
     }
 }
