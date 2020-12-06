@@ -11,6 +11,8 @@ import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import static java.util.Optional.ofNullable;
+
 @Repository
 public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
 
@@ -27,9 +29,9 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      */
     @Override
     protected Short getId(Pizza pizza) {
-        return Optional.ofNullable(pizza)
-                       .map(Pizza::getId)
-                       .orElse(null);
+        return ofNullable(pizza)
+                .map(Pizza::getId)
+                .orElse(null);
     }
 
 

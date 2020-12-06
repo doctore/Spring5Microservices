@@ -11,8 +11,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Used to configure the different Swagger documentation of the existing microservices
@@ -36,15 +37,15 @@ public class DocumentationConfiguration implements SwaggerResourcesProvider {
 
     @Override
     public List<SwaggerResource> get() {
-        return Optional.ofNullable(routeLocator)
-                       .map(rl -> routeLocator.getRoutes().stream()
-                                                          .filter(route -> documentedRestApis.contains(route.getId()))
-                                                          .map(r -> swaggerResource(r.getId(),
-                                                                  r.getFullPath().replace("/**", documentationPath),
-                                                                  DOCUMENTATION_API_VERSION))
-                                                          .collect(Collectors.toList())
-                        )
-                       .orElseGet(ArrayList::new);
+        return ofNullable(routeLocator)
+                .map(rl -> routeLocator.getRoutes().stream()
+                                .filter(route -> documentedRestApis.contains(route.getId()))
+                                .map(r -> swaggerResource(r.getId(),
+                                        r.getFullPath().replace("/**", documentationPath),
+                                        DOCUMENTATION_API_VERSION))
+                                .collect(Collectors.toList())
+                )
+                .orElseGet(ArrayList::new);
     }
 
     /**

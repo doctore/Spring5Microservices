@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.ofNullable;
+
 @Repository
 public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, QuerydslPredicateExecutor<Pizza> {
 
@@ -119,8 +121,8 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      *         {@link Optional#empty()} otherwise.
      */
     default Optional<Pizza> findByName(@Nullable PizzaEnum name) {
-        return Optional.ofNullable(name)
-                       .flatMap(n -> findOne(QPizza.pizza.name.eq(n)));
+        return ofNullable(name)
+                .flatMap(n -> findOne(QPizza.pizza.name.eq(n)));
     }
 
 }

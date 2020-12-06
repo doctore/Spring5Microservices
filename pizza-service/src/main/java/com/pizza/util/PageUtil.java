@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import java.util.Optional;
+import static java.util.Optional.ofNullable;
 
 /**
  *    Helper functions to work with ecosystem related with {@link Page} like:
@@ -27,9 +27,9 @@ public class PageUtil {
      * @return {@link PageRequest}
      */
     public static PageRequest buildPageRequest(int page, int size, Sort sort) {
-        return Optional.ofNullable(sort)
-                       .map(s -> PageRequest.of(page, size, sort))
-                       .orElseGet(() -> PageRequest.of(page, size));
+        return ofNullable(sort)
+                .map(s -> PageRequest.of(page, size, sort))
+                .orElseGet(() -> PageRequest.of(page, size));
     }
 
 }

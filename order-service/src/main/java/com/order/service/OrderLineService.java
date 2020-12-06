@@ -15,9 +15,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static java.util.Optional.ofNullable;
 
 @AllArgsConstructor
 @Service
@@ -43,19 +44,18 @@ public class OrderLineService {
      * @throws IllegalArgumentException if given orderLineDtos is not null but orderId is null
      */
     public List<OrderLineDto> saveAll(Collection<OrderLineDto> orderLineDtos, Integer orderId) {
-        return Optional.ofNullable(orderLineDtos)
-                       .map(dtos -> {
-                           Assert.notNull(orderId, "OrderId cannot be null");
+        return ofNullable(orderLineDtos)
+                .map(dtos -> {
+                    Assert.notNull(orderId, "OrderId cannot be null");
 
-                           Collection<OrderLine> orderLines = orderLineConverter.fromDtosToModels(dtos, orderId);
-                           orderLineDao.saveAll(orderLines);
+                    Collection<OrderLine> orderLines = orderLineConverter.fromDtosToModels(dtos, orderId);
+                    orderLineDao.saveAll(orderLines);
 
-                           List<OrderLineDto> orderLineDtosPersisted = orderLineConverter.fromModelsToDtos(orderLines);
-                           mergePizzaInformation(orderLineDtos, orderLineDtosPersisted);
-
-                           return  orderLineDtosPersisted;
-                       })
-                       .orElseGet(ArrayList::new);
+                    List<OrderLineDto> orderLineDtosPersisted = orderLineConverter.fromModelsToDtos(orderLines);
+                    mergePizzaInformation(orderLineDtos, orderLineDtosPersisted);
+                    return  orderLineDtosPersisted;
+                })
+                .orElseGet(ArrayList::new);
     }
 
 
