@@ -20,6 +20,8 @@ import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import static java.util.Optional.ofNullable;
+
 @Repository
 public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer> {
 
@@ -36,9 +38,9 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      */
     @Override
     protected Integer getId(OrderLine orderLine) {
-        return Optional.ofNullable(orderLine)
-                       .map(OrderLine::getId)
-                       .orElse(null);
+        return ofNullable(orderLine)
+                .map(OrderLine::getId)
+                .orElse(null);
     }
 
 

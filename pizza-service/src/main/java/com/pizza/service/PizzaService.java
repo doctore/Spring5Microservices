@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 @AllArgsConstructor
 @Service
 public class PizzaService {
@@ -41,13 +43,10 @@ public class PizzaService {
      * @return {@link Optional} of {@link PizzaDto}
      */
     public Optional<PizzaDto> findByName(String name) {
-        return Optional.ofNullable(name)
-                       .map(n -> {
-                           Optional<PizzaEnum> pe = PizzaEnum.getFromDatabaseValue(n);
-                           return pe.isPresent() ? pe.get() : null;
-                       })
-                       .flatMap(pizzaRepository::findWithIngredientsByName)
-                       .flatMap(pizzaConverter::fromModelToOptionalDto);
+        return ofNullable(name)
+                .flatMap(PizzaEnum::getFromDatabaseValue)
+                .flatMap(pizzaRepository::findWithIngredientsByName)
+                .flatMap(pizzaConverter::fromModelToOptionalDto);
     }
 
 
@@ -66,11 +65,11 @@ public class PizzaService {
     public Page<PizzaDto> findPageWithIngredients(int page, int size, Sort sort) {
         Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
                                                    PageUtil.buildPageRequest(page,size,sort));
-        return Optional.ofNullable(pizzaPage)
-                       .map(p -> new PageImpl(pizzaConverter.fromModelsToDtos(p.getContent())
-                                             ,pizzaPage.getPageable()
-                                             ,pizzaPage.getTotalElements()))
-                       .orElseGet(() -> new PageImpl<PizzaDto>(new ArrayList()));
+        return ofNullable(pizzaPage)
+                .map(p -> new PageImpl(pizzaConverter.fromModelsToDtos(p.getContent())
+                        ,pizzaPage.getPageable()
+                        ,pizzaPage.getTotalElements()))
+                .orElseGet(() -> new PageImpl<PizzaDto>(new ArrayList()));
     }
 
 
@@ -83,15 +82,15 @@ public class PizzaService {
      * @return {@link Optional} of {@link Pizza} with its "final information" after this action
      */
     public Optional<PizzaDto> save(PizzaDto pizzaDto) {
-        return Optional.ofNullable(pizzaDto)
-                       .flatMap(pizzaConverter::fromDtoToOptionalModel)
-                       .map(p -> {
-                           if (null != p.getIngredients())
-                               ingredientRepository.saveAll(p.getIngredients());
-
-                           return pizzaRepository.save(p);
-                       })
-                       .flatMap(pizzaConverter::fromModelToOptionalDto);
+        return ofNullable(pizzaDto)
+                .flatMap(pizzaConverter::fromDtoToOptionalModel)
+                .map(p -> {
+                    if (null != p.getIngredients()) {
+                        ingredientRepository.saveAll(p.getIngredients());
+                    }
+                    return pizzaRepository.save(p);
+                })
+                .flatMap(pizzaConverter::fromModelToOptionalDto);
     }
 
 }

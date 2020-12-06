@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Optional.ofNullable;
+
 @AllArgsConstructor
 @Service
 public class OrderService {
@@ -71,17 +73,15 @@ public class OrderService {
      * @return {@link Optional} of {@link OrderDto} with its "final information" after this action
      */
     public Optional<OrderDto> save(OrderDto orderDto) {
-        return Optional.ofNullable(orderDto)
-                       .flatMap(orderConverter::fromDtoToOptionalModel)
-                       .map(order -> {
-                           orderDao.save(order);
-                           List<OrderLineDto> orderLineDtos = orderLineService.saveAll(orderDto.getOrderLines(), order.getId());
-
-                           Optional<OrderDto> orderDtoPersisted = orderConverter.fromModelToOptionalDto(order);
-                           orderDtoPersisted.ifPresent(dto -> dto.setOrderLines(orderLineDtos));
-                           return orderDtoPersisted;
-                       })
-                       .orElseGet(Optional::empty);
+        return ofNullable(orderDto)
+                .flatMap(orderConverter::fromDtoToOptionalModel)
+                .flatMap(order -> {
+                    orderDao.save(order);
+                    List<OrderLineDto> orderLineDtos = orderLineService.saveAll(orderDto.getOrderLines(), order.getId());
+                    Optional<OrderDto> orderDtoPersisted = orderConverter.fromModelToOptionalDto(order);
+                    orderDtoPersisted.ifPresent(dto -> dto.setOrderLines(orderLineDtos));
+                    return orderDtoPersisted;
+                });
     }
 
 }
