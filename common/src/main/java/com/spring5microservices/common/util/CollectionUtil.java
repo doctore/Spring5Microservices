@@ -15,6 +15,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -134,7 +135,7 @@ public class CollectionUtil {
      * @param initialValue
      *    The initial value to start with
      * @param applyFunction
-     *    {@link Function} to apply initially to {@code initialValue} and then next results
+     *    {@link UnaryOperator} to apply initially to {@code initialValue} and then next results
      * @param untilPredicate
      *    {@link Predicate} to know when to stop apply {@code applyFunction}
      *
@@ -142,7 +143,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code initialValue} or {@code untilPredicate} are {@code null}
      */
-    public static <T> List<T> iterate(final T initialValue, final Function<T, T> applyFunction,
+    public static <T> List<T> iterate(final T initialValue, final UnaryOperator<T> applyFunction,
                                       final Predicate<T> untilPredicate) {
         if (null == initialValue) {
             throw new IllegalArgumentException("initialValue must be not null");
