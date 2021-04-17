@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,9 +108,7 @@ public class CollectionUtil {
      */
     public static <T, E> E foldLeft(final Collection<T> collection, final E initialValue,
                                     final BiFunction<E, ? super T, E> accumulator) {
-        if (null == initialValue) {
-            throw new IllegalArgumentException("initialValue must be not null");
-        }
+        Assert.notNull(initialValue, "initialValue must be not null");
         return ofNullable(collection)
                 .map(c -> {
                     E result = initialValue;
@@ -145,12 +144,8 @@ public class CollectionUtil {
      */
     public static <T> List<T> iterate(final T initialValue, final UnaryOperator<T> applyFunction,
                                       final Predicate<T> untilPredicate) {
-        if (null == initialValue) {
-            throw new IllegalArgumentException("initialValue must be not null");
-        }
-        if (null == untilPredicate) {
-            throw new IllegalArgumentException("untilPredicate must be not null");
-        }
+        Assert.notNull(initialValue, "initialValue must be not null");
+        Assert.notNull(untilPredicate, "untilPredicate must be not null");
         return ofNullable(applyFunction)
                 .map(af -> {
                     List<T> result = new ArrayList<>();
