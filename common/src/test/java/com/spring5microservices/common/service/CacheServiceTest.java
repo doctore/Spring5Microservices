@@ -28,7 +28,7 @@ public class CacheServiceTest {
     private CacheManager mockCacheManager;
 
     @Autowired
-    private CacheService cacheService;
+    private CacheService service;
 
 
     static Stream<Arguments> clearTestCases() {
@@ -52,7 +52,7 @@ public class CacheServiceTest {
         if (null != cacheManagerResult)
             doNothing().when(cacheManagerResult).clear();
 
-        boolean operationResult = cacheService.clear(cacheName);
+        boolean operationResult = service.clear(cacheName);
 
         // Then
         assertEquals(expectedResult, operationResult);
@@ -82,7 +82,7 @@ public class CacheServiceTest {
         if (null != cacheManagerResult)
             when(cacheManagerResult.get(key)).thenReturn(cacheResult);
 
-        boolean operationResult = cacheService.contains(cacheName, key);
+        boolean operationResult = service.contains(cacheName, key);
 
         // Then
         assertEquals(expectedResult, operationResult);
@@ -112,7 +112,7 @@ public class CacheServiceTest {
         if (null != cacheManagerResult)
             when(cacheManagerResult.get(key)).thenReturn(cacheResult);
 
-        Optional<String> operationResult = cacheService.get(cacheName, key);
+        Optional<String> operationResult = service.get(cacheName, key);
 
         // Then
         assertEquals(expectedResult, operationResult);
@@ -140,7 +140,7 @@ public class CacheServiceTest {
         if (null != cacheManagerResult)
             doNothing().when(cacheManagerResult).put(key, value);
 
-        boolean operationResult = cacheService.put(cacheName, key, value);
+        boolean operationResult = service.put(cacheName, key, value);
 
         // Then
         assertEquals(expectedResult, operationResult);
@@ -173,7 +173,7 @@ public class CacheServiceTest {
             doNothing().when(cacheManagerResult).put(key, value);
         }
 
-        boolean operationResult = cacheService.putIfAbsent(cacheName, key, value);
+        boolean operationResult = service.putIfAbsent(cacheName, key, value);
 
         // Then
         assertEquals(expectedResult, operationResult);
@@ -206,7 +206,7 @@ public class CacheServiceTest {
             doNothing().when(cacheManagerResult).put(key, value);
         }
 
-        boolean operationResult = cacheService.putIfPresent(cacheName, key, value);
+        boolean operationResult = service.putIfPresent(cacheName, key, value);
 
         // Then
         assertEquals(expectedResult, operationResult);
@@ -231,7 +231,7 @@ public class CacheServiceTest {
     public void remove_testCases(String cacheName, String key, Cache cacheManagerResult, boolean expectedResult) {
         // When
         when(mockCacheManager.getCache(cacheName)).thenReturn(cacheManagerResult);
-        boolean operationResult = cacheService.remove(cacheName, key);
+        boolean operationResult = service.remove(cacheName, key);
 
         // Then
         assertEquals(expectedResult, operationResult);
