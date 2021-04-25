@@ -1,6 +1,7 @@
 package com.pizza;
 
 import com.pizza.dto.IngredientDto;
+import com.pizza.dto.IngredientPizzaSummaryDto;
 import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
@@ -26,6 +27,10 @@ public class TestDataFactory {
 
     public static PizzaDto buildPizzaDto(Integer id, String name, Double cost, Set<IngredientDto> ingredients) {
         return new PizzaDto(id, name, cost, ingredients);
+    }
+
+    public static IngredientPizzaSummaryDto buildIngredientPizzaSummaryDto(String ingredient, String pizza, Double cost) {
+        return new IngredientPizzaSummaryDto(ingredient, pizza, cost);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.pizza.repository;
+package com.pizza.repository.base;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -18,7 +18,7 @@ import java.io.Serializable;
 public interface ExtendedJpaRepository<T, ID extends Serializable> extends JpaRepository<T, ID> {
 
     /**
-     * Return the internal {@link EntityManager} to provide more functionality to the repositories
+     * Return the internal {@link EntityManager} to provide more functionality to the repositories.
      *
      * @return {@link EntityManager}
      */

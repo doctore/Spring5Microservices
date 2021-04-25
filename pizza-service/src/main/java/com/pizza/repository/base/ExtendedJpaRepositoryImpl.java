@@ -1,6 +1,5 @@
-package com.pizza.repository.impl;
+package com.pizza.repository.base;
 
-import com.pizza.repository.ExtendedJpaRepository;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 
@@ -17,7 +16,7 @@ import java.io.Serializable;
  */
 public class ExtendedJpaRepositoryImpl<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> implements ExtendedJpaRepository<T, ID> {
 
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
     public ExtendedJpaRepositoryImpl(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
         super(entityInformation, entityManager);
