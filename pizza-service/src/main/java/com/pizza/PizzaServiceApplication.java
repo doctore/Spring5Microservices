@@ -11,9 +11,17 @@ public class PizzaServiceApplication {
 
         /*
         ConfigurableApplicationContext context = SpringApplication.run(PizzaServiceApplication.class, args);
+
         PizzaRepository pizzaRepository = context.getBean(PizzaRepository.class);
-        Optional<Pizza> pizzaOptional = pizzaRepository.findWithIngredientsByName("Carbonara");
-        */
+        Optional<Pizza> pizzaOptional = pizzaRepository.findWithIngredientsByName(PizzaEnum.CARBONARA);
+
+        IngredientRepository ingredientRepository = context.getBean(IngredientRepository.class);
+        List<IngredientPizzaSummaryDto> result = ingredientRepository.getIngredientWithItsMoreExpensivePizza(
+                asList("Bacon", "Cheese", "Garlic", "Seafood", "Mozzarella", "Tomato sauce")
+        );
+
+        int a = 1;
+         */
     }
 
 }

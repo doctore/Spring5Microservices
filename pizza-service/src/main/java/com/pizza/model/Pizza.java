@@ -29,7 +29,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(schema = Constants.DATABASE_SCHEMA)
+@Table(name = "pizza", schema = Constants.DATABASE_SCHEMA)
 @SqlResultSetMapping(
    name = Constants.SQL_RESULT_MAPPING.PIZZA_INGREDIENTS,
    entities = {
