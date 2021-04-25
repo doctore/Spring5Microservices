@@ -11,7 +11,7 @@ import java.util.Optional;
  *    Class used to convert from/to the database value stored in the column {@code name} of the {@code pizza}
  * table from/to {@link Pizza#getName()}
  */
-@Converter(autoApply = true)
+@Converter
 public class PizzaEnumDatabaseConverter implements AttributeConverter<PizzaEnum, String> {
 
     @Override

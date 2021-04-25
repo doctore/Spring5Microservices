@@ -5,6 +5,7 @@ import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.model.QPizza;
+import com.pizza.repository.base.ExtendedJpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -58,7 +59,6 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      * @return {@link Page} of {@link Pizza}
      */
     default Page<Pizza> findPageWithIngredientsWithoutInMemoryPagination(@Nullable Pageable pageable) {
-
         if (null == pageable)
             return findPageWithIngredients(pageable);
 

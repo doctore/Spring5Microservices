@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PizzaRepositoryTest {
 
     @Autowired
-    private PizzaRepository pizzaRepository;
+    private PizzaRepository repository;
 
     // Elements used to test the functionality
     private Pizza carbonara;
@@ -39,16 +39,16 @@ public class PizzaRepositoryTest {
 
     @BeforeEach
     public void init() {
-        carbonara = pizzaRepository.findWithIngredientsByName(PizzaEnum.CARBONARA).get();
-        hawaiian = pizzaRepository.findWithIngredientsByName(PizzaEnum.HAWAIIAN).get();
-        margherita = pizzaRepository.findWithIngredientsByName(PizzaEnum.MARGUERITA).get();
+        carbonara = repository.findWithIngredientsByName(PizzaEnum.CARBONARA).get();
+        hawaiian = repository.findWithIngredientsByName(PizzaEnum.HAWAIIAN).get();
+        margherita = repository.findWithIngredientsByName(PizzaEnum.MARGUERITA).get();
     }
 
 
     @Test
     public void findPageWithIngredients_whenNullPageableIsGiven_thenAllPizzasAreReceived() {
         // When
-        Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredients(null);
+        Page<Pizza> pizzaPage = repository.findPageWithIngredients(null);
 
         // Then
         assertNotNull(pizzaPage);
@@ -65,8 +65,8 @@ public class PizzaRepositoryTest {
         Sort sort = Sort.by(Sort.Direction.ASC, "name");
 
         // When
-        Page<Pizza> pizzaPage1 = pizzaRepository.findPageWithIngredients(PageRequest.of(0, size, sort));
-        Page<Pizza> pizzaPage2 = pizzaRepository.findPageWithIngredients(PageRequest.of(1, size, sort));
+        Page<Pizza> pizzaPage1 = repository.findPageWithIngredients(PageRequest.of(0, size, sort));
+        Page<Pizza> pizzaPage2 = repository.findPageWithIngredients(PageRequest.of(1, size, sort));
 
         // Then
         assertNotNull(pizzaPage1);
@@ -84,7 +84,7 @@ public class PizzaRepositoryTest {
     @Test
     public void findPageWithIngredientsWithoutInMemoryPagination_whenNullPageableIsGiven_thenAllPizzasAreReceived() {
         // When
-        Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(null);
+        Page<Pizza> pizzaPage = repository.findPageWithIngredientsWithoutInMemoryPagination(null);
 
         // Then
         assertNotNull(pizzaPage);
@@ -101,8 +101,8 @@ public class PizzaRepositoryTest {
         Sort sort = Sort.by(Sort.Direction.ASC, "cost");
 
         // When
-        Page<Pizza> pizzaPage1 = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(PageRequest.of(0, size, sort));
-        Page<Pizza> pizzaPage2 = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(PageRequest.of(1, size, sort));
+        Page<Pizza> pizzaPage1 = repository.findPageWithIngredientsWithoutInMemoryPagination(PageRequest.of(0, size, sort));
+        Page<Pizza> pizzaPage2 = repository.findPageWithIngredientsWithoutInMemoryPagination(PageRequest.of(1, size, sort));
 
         // Then
         assertNotNull(pizzaPage1);
@@ -120,7 +120,7 @@ public class PizzaRepositoryTest {
     @Test
     public void findWithIngredientsByName_whenNoNameIsGiven_thenOptionalEmptyIsReturned() {
         // When
-        Optional<Pizza> optionalPizza = pizzaRepository.findWithIngredientsByName(null);
+        Optional<Pizza> optionalPizza = repository.findWithIngredientsByName(null);
 
         // Then
         assertFalse(optionalPizza.isPresent());
@@ -130,7 +130,7 @@ public class PizzaRepositoryTest {
     @Test
     public void findWithIngredientsByName_whenAnExistentNameIsGiven_thenOptionalWithRelatedEntityIsReturned() {
         // When
-        Optional<Pizza> optionalPizza = pizzaRepository.findWithIngredientsByName(carbonara.getName());
+        Optional<Pizza> optionalPizza = repository.findWithIngredientsByName(carbonara.getName());
 
         // Then
         assertTrue(optionalPizza.isPresent());
@@ -144,7 +144,7 @@ public class PizzaRepositoryTest {
     @Test
     public void findByName_whenNoNameIsGiven_thenOptionalEmptyIsReturned() {
         // When
-        Optional<Pizza> optionalPizza = pizzaRepository.findByName(null);
+        Optional<Pizza> optionalPizza = repository.findByName(null);
 
         // Then
         assertFalse(optionalPizza.isPresent());
@@ -154,7 +154,7 @@ public class PizzaRepositoryTest {
     @Test
     public void findByName_whenAnExistentNameIsGiven_thenOptionalWithRelatedEntityIsReturned() {
         // When
-        Optional<Pizza> optionalPizza = pizzaRepository.findByName(hawaiian.getName());
+        Optional<Pizza> optionalPizza = repository.findByName(hawaiian.getName());
 
         // Then
         assertTrue(optionalPizza.isPresent());

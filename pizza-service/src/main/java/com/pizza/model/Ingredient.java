@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,15 +20,17 @@ import javax.validation.constraints.Size;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(schema = Constants.DATABASE_SCHEMA)
+@Table(name = "ingredient", schema = Constants.DATABASE_SCHEMA)
 public class Ingredient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator=Constants.DATABASE_SCHEMA + "ingredient_id_seq")
+    @Column
     private Integer id;
 
     @NotNull
     @Size(min=1, max=64)
+    @Column
     private String name;
 
 }
