@@ -40,7 +40,7 @@ public class User implements UserDetails {
     private static final long serialVersionUID = -2635894377988063111L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE.SCHEMA.EAT + ".user_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE.SCHEMA.EAT + "user_id_seq")
     private Long id;
 
     @NotNull
