@@ -29,6 +29,21 @@ import static java.util.stream.Collectors.toList;
 public class CollectionUtil {
 
     /**
+     * Return a {@link LinkedHashSet} with the provided {@code elements}.
+     *
+     * @param elements
+     *    Elements to include.
+     *
+     * @return {@link LinkedHashSet}
+     */
+    public static <T> Set<T> asSet(T ...elements) {
+        return ofNullable(elements)
+                .map(e -> new LinkedHashSet<>(asList(elements)))
+                .orElse(new LinkedHashSet<>());
+    }
+
+
+    /**
      * Return a {@link Collection} with the extracted property of the given {@code collection}
      *
      * @param collection
