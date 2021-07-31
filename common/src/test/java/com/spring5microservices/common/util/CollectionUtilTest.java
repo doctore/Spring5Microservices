@@ -2,6 +2,7 @@ package com.spring5microservices.common.util;
 
 import com.spring5microservices.common.PizzaDto;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,11 +22,26 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.CollectionUtil.asSet;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CollectionUtilTest {
+
+    @Test
+    public void asSet_whenNullIsGiven_thenNewEmptySetIsReturned() {
+        Set result = asSet(null);
+        assertEquals(result, new LinkedHashSet<>());
+    }
+
+
+    @Test
+    public void asSet_whenSeveralParametersAreGiven_thenNewSetWithGivenParametersIsReturned() {
+        Set result = asSet(2, 5, 8, 9, 11);
+        assertEquals(result, new LinkedHashSet<>(asList(2, 5, 8, 9, 11)));
+    }
+
 
     static Stream<Arguments> collectPropertyNoCollectionFactoryTestCases() {
         PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
