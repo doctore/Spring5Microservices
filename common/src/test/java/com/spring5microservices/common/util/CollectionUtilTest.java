@@ -43,6 +43,76 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> collectNoCollectionFactoryTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        Function<Integer, String> fromIntegerToString = i -> i.toString();
+        return Stream.of(
+                //@formatter:off
+                //            collection,   filterPredicate,   mapFunction,           expectedException,                expectedResult
+                Arguments.of( null,         null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),     null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    isEven,            null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( null,         isEven,            fromIntegerToString,   null,                             asList()),
+                Arguments.of( asList(),     isEven,            fromIntegerToString,   null,                             asList()),
+                Arguments.of( ints,         isEven,            fromIntegerToString,   null,                             asList("2", "6"))
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectNoCollectionFactoryTestCases")
+    @DisplayName("collect: without collection factory test cases")
+    public <T, E> void collectNoCollectionFactory_testCases(Collection<T> collection, Predicate<? super T> filterPredicate,
+                                                            Function<? super T, ? extends E> mapFunction,
+                                                            Class<? extends Exception> expectedException,
+                                                            List<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.collect(collection, filterPredicate, mapFunction));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.collect(collection, filterPredicate, mapFunction));
+        }
+    }
+
+
+    static Stream<Arguments> collectAllParametersTestCases() {
+        List<Integer> ints = asList(1, 2, 3, 6);
+        Set<String> collectedInts = new HashSet<>(asList("1", "3"));
+        Predicate<Integer> isOdd = i -> i % 2 == 1;
+        Function<Integer, String> fromIntegerToString = i -> i.toString();
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+        return Stream.of(
+                //@formatter:off
+                //            collection,   filterPredicate,   mapFunction,           collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,         null,              null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),     null,              null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    null,              null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    isOdd,             null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,         isOdd,             fromIntegerToString,   null,                null,                             asList()),
+                Arguments.of( asList(),     isOdd,             fromIntegerToString,   null,                null,                             asList()),
+                Arguments.of( ints,         isOdd,             fromIntegerToString,   null,                null,                             asList("1", "3")),
+                Arguments.of( ints,         isOdd,             fromIntegerToString,   setSupplier,         null,                             collectedInts)
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectAllParametersTestCases")
+    @DisplayName("collect: with all parameters test cases")
+    public <T, E> void collectAllParameters_testCases(Collection<T> collection, Predicate<? super T> filterPredicate,
+                                                      Function<? super T, ? extends E> mapFunction,
+                                                      Supplier<Collection<E>> collectionFactory,
+                                                      Class<? extends Exception> expectedException,
+                                                      Collection<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.collect(collection, filterPredicate, mapFunction, collectionFactory));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.collect(collection, filterPredicate, mapFunction, collectionFactory));
+        }
+    }
+
+
     static Stream<Arguments> collectPropertyNoCollectionFactoryTestCases() {
         PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
         PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
