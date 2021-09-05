@@ -2,6 +2,7 @@ package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,12 +45,78 @@ public class CollectionUtil {
 
 
     /**
+     * Return a {@link Collection} after:
+     *
+     *  - Filter its elements using {@code filterPredicate}
+     *  - Transform its filtered elements using {@code mapFunction}
+     *
+     * @param collection
+     *    Source {@link Collection} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from the source {@code collection}.
+     * @param mapFunction
+     *    {@link Function} to transform filtered elements from the source {@code collection}.
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     */
+    public static <T, E> Collection<E> collect(final Collection<T> collection,
+                                               final Predicate<? super T> filterPredicate,
+                                               final Function<? super T, ? extends E> mapFunction,
+                                               final Supplier<Collection<E>> collectionFactory) {
+        Assert.notNull(filterPredicate, "filterPredicate must be not null");
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+
+        if (CollectionUtils.isEmpty(collection)) {
+            return new ArrayList<>();
+        }
+        Supplier<Collection<E>> definitiveCollectionFactory =
+                null == collectionFactory
+                        ? () -> new ArrayList<>()
+                        : collectionFactory;
+
+        return collection
+                .stream()
+                .filter(filterPredicate)
+                .map(mapFunction)
+                .collect(toCollection(definitiveCollectionFactory));
+    }
+
+
+    /**
+     * Return a {@link Collection} after:
+     *
+     *  - Filter its elements using {@code filterPredicate}
+     *  - Transform its filtered elements using {@code mapFunction}
+     *
+     * @param collection
+     *    Source {@link Collection} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from the source {@code collection}.
+     * @param mapFunction
+     *    {@link Function} to transform filtered elements from the source {@code collection}.
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     */
+    public static <T, E> List<E> collect(final Collection<T> collection,
+                                         final Predicate<? super T> filterPredicate,
+                                         final Function<? super T, ? extends E> mapFunction) {
+        return (List)collect(collection, filterPredicate, mapFunction, ArrayList::new);
+    }
+
+
+    /**
      * Return a {@link Collection} with the extracted property of the given {@code collection}
      *
      * @param collection
-     *    Source {@link Collection} with the property to extract
+     *    Source {@link Collection} with the property to extract.
      * @param keyExtractor
-     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}
+     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}.
      *
      * @return {@link List}
      */
@@ -62,16 +129,16 @@ public class CollectionUtil {
      * Return a {@link Collection} with the extracted property of the given {@code collection}
      *
      * @param collection
-     *    Source {@link Collection} with the property to extract
+     *    Source {@link Collection} with the property to extract.
      * @param keyExtractor
-     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}
+     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}.
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *
      * @return {@link Collection}
      */
     public static <T, E> Collection<E> collectProperty(final Collection<T> collection, Function<? super T, E> keyExtractor,
-                                                       Supplier<Collection<E>> collectionFactory) {
+                                                       final Supplier<Collection<E>> collectionFactory) {
         return ofNullable(collection)
                 .map(c -> {
                     if (null == keyExtractor) {
@@ -90,7 +157,7 @@ public class CollectionUtil {
      * Return the unique elements of the given {@link Collection}s.
      *
      * @param collections
-     *    {@link Collection}s to concat
+     *    {@link Collection}s to concat.
      *
      * @return {@link LinkedHashSet}
      */
@@ -111,11 +178,11 @@ public class CollectionUtil {
      *   ["a", "h"], "!", (a, b) -> a + b   => "!ah"
      *
      * @param collection
-     *    {@link Collection} with elements to combine
+     *    {@link Collection} with elements to combine.
      * @param initialValue
-     *    The initial value to start with
+     *    The initial value to start with.
      * @param accumulator
-     *    A {@link BiFunction} which combines elements
+     *    A {@link BiFunction} which combines elements.
      *
      * @return a folded value
      *
@@ -213,7 +280,7 @@ public class CollectionUtil {
      * @return {@link List} of {@link List}s
      */
     public static <T> List<List<T>> sliding(final Collection<T> collectionToSlide, final int size) {
-        if (null == collectionToSlide || 1 > size) {
+        if (CollectionUtils.isEmpty(collectionToSlide)) {
             return new ArrayList<>();
         }
         List<T> listToSlide = new ArrayList<>(collectionToSlide);
@@ -242,7 +309,7 @@ public class CollectionUtil {
      * @return {@link List} of {@link List}s
      */
     public static <T> List<List<T>> split(final Collection<T> collectionToSplit, final int size) {
-        if (null == collectionToSplit || 1 > size) {
+        if (CollectionUtils.isEmpty(collectionToSplit)) {
             return new ArrayList<>();
         }
         List<T> listToSplit = new ArrayList<>(collectionToSplit);
@@ -274,7 +341,7 @@ public class CollectionUtil {
      * @throws IllegalArgumentException if not all {@code collectionsToTranspose} have the same size
      */
     public static <T> List<List<T>> transpose(final Collection<Collection<T>> collectionsToTranspose) {
-        if (null == collectionsToTranspose || 1 > collectionsToTranspose.size()) {
+        if (CollectionUtils.isEmpty(collectionsToTranspose)) {
             return new ArrayList<>();
         }
         int expectedSize = -1;
