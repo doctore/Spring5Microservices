@@ -1,6 +1,6 @@
 package com.spring5microservices.common;
 
-import com.spring5microservices.common.interfaces.IEnumInternalPropertyValue;
+import com.spring5microservices.common.validator.enums.IEnumInternalPropertyValue;
 
 public enum PizzaEnum implements IEnumInternalPropertyValue<String> {
     MARGUERITA("Margherita"),

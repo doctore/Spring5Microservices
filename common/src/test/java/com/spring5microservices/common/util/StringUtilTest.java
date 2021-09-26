@@ -71,8 +71,6 @@ public class StringUtilTest {
     static Stream<Arguments> splitFromStringWithSourceAndSeparatorAndChunkLimitTestCases() {
         String integers = "1,2,3";
         String characters = "A,B,  3";
-        Function<String, Integer> fromStringToInteger = Integer::parseInt;
-        Function<String, String> fromStringToString = String::trim;
         return Stream.of(
                 //@formatter:off
                 //            source,       separator,   chunkLimit,        expectedResult

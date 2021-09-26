@@ -1,7 +1,5 @@
-package com.spring5microservices.common.validator;
+package com.spring5microservices.common.validator.enums;
 
-import com.spring5microservices.common.interfaces.IEnumInternalPropertyValue;
-import com.spring5microservices.common.validator.annotation.EnumHasInternalStringValue;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 import javax.validation.ConstraintValidator;
