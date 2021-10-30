@@ -6,8 +6,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -50,6 +54,54 @@ public class NumberUtilTest {
                 case GREATER_THAN_ZERO: assertTrue(0 < result); break;
             }
         }
+    }
+
+
+    static Stream<Arguments> fromStringWithClazzTestCases() {
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   clazzReturnedInstance,   expectedException,                expectedResult
+                Arguments.of( null,              null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( "12",              null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( "aa",              Integer.class,           null,                             empty() ),
+                Arguments.of( "12",              Integer.class,           null,                             of(Integer.valueOf(12)) ),
+                Arguments.of( "aa",              Long.class,              null,                             empty() ),
+                Arguments.of( "12",              Long.class,              null,                             of(Long.valueOf(12)) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromStringWithClazzTestCases")
+    @DisplayName("fromString: providing a result class test cases")
+    public <T extends Number> void fromStringWithClazz_testCases(String potentialNumber, Class<T> clazzReturnedInstance,
+                                                                 Class<? extends Exception> expectedException,
+                                                                 Optional<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> NumberUtil.fromString(potentialNumber, clazzReturnedInstance));
+        }
+        else {
+            Optional<T> result = NumberUtil.fromString(potentialNumber, clazzReturnedInstance);
+            assertEquals(expectedResult, result);
+        }
+    }
+
+    static Stream<Arguments> fromStringTestCases() {
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              empty() ),
+                Arguments.of( "aa",              empty() ),
+                Arguments.of( "12.1",            empty() ),
+                Arguments.of( "12",              of(Integer.valueOf(12)) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromStringTestCases")
+    @DisplayName("fromString: test cases")
+    public void fromString_testCases(String potentialNumber, Optional<Integer> expectedResult) {
+        Optional<Integer> result = NumberUtil.fromString(potentialNumber);
+        assertEquals(expectedResult, result);
     }
 
 
