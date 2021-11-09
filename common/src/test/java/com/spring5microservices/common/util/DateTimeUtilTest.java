@@ -6,9 +6,18 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Optional;
+import java.util.TimeZone;
 import java.util.stream.Stream;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,6 +66,60 @@ public class DateTimeUtilTest {
                 case GREATER_THAN_ZERO: assertTrue(0 < result); break;
             }
         }
+    }
+
+
+    static Stream<Arguments> fromLocalDateTimeToDateTestCases() {
+        ZoneId gmtZoneId = ZoneId.of("GMT");
+        LocalDateTime ldt1 = LocalDateTime.of(2020, 10, 10, 12, 0, 0);
+        LocalDateTime ldt2 = LocalDateTime.of(2022, 11, 12, 23, 0, 0);
+
+        GregorianCalendar gc1 = new GregorianCalendar(2020, Calendar.OCTOBER, 10, 13, 0, 0);
+        gc1.setTimeZone(TimeZone.getTimeZone("GMT+1"));
+        GregorianCalendar gc2 = new GregorianCalendar(2022, Calendar.NOVEMBER, 13, 1, 0, 0);
+        gc2.setTimeZone(TimeZone.getTimeZone("GMT+2"));
+        return Stream.of(
+                //@formatter:off
+                //            localDateTime,   zoneId,      expectedResult
+                Arguments.of( null,            null,        empty() ),
+                Arguments.of( ldt1,            gmtZoneId,   of(gc1.getTime()) ),
+                Arguments.of( ldt2,            gmtZoneId,   of(gc2.getTime()) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromLocalDateTimeToDateTestCases")
+    @DisplayName("fromLocalDateTimeToDate: test cases")
+    public void fromLocalDateTimeToDate_testCases(LocalDateTime localDateTime, ZoneId zoneId, Optional<Date> expectedResult) {
+        Optional<Date> result = DateTimeUtil.fromLocalDateTimeToDate(localDateTime, zoneId);
+        assertEquals(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> fromDateToLocalDateTimeTestCases() {
+        ZoneId gmtZoneId = ZoneId.of("GMT");
+        LocalDateTime ldt1 = LocalDateTime.of(2020, 10, 10, 12, 0, 0);
+        LocalDateTime ldt2 = LocalDateTime.of(2022, 11, 12, 23, 0, 0);
+
+        GregorianCalendar gc1 = new GregorianCalendar(2020, Calendar.OCTOBER, 10, 13, 0, 0);
+        gc1.setTimeZone(TimeZone.getTimeZone("GMT+1"));
+        GregorianCalendar gc2 = new GregorianCalendar(2022, Calendar.NOVEMBER, 13, 1, 0, 0);
+        gc2.setTimeZone(TimeZone.getTimeZone("GMT+2"));
+        return Stream.of(
+                //@formatter:off
+                //            date,            zoneId,      expectedResult
+                Arguments.of( null,            null,        empty() ),
+                Arguments.of( gc1.getTime(),   gmtZoneId,   of(ldt1) ),
+                Arguments.of( gc2.getTime(),   gmtZoneId,   of(ldt2) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromDateToLocalDateTimeTestCases")
+    @DisplayName("fromDateToLocalDateTime: test cases")
+    public void fromDateToLocalDateTime_testCases(Date date, ZoneId zoneId, Optional<LocalDateTime> expectedResult) {
+        Optional<LocalDateTime> result = DateTimeUtil.fromDateToLocalDateTime(date, zoneId);
+        assertEquals(expectedResult, result);
     }
 
 

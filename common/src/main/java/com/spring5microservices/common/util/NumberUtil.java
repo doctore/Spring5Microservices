@@ -28,7 +28,7 @@ public class NumberUtil {
      *
      * @throws IllegalArgumentException if {@code numberOfDecimals} is less than {@code zero}
      */
-    public static int compareTo(final BigDecimal one, BigDecimal two, int numberOfDecimals) {
+    public static int compare(final BigDecimal one, BigDecimal two, int numberOfDecimals) {
         Assert.isTrue(0 <= numberOfDecimals, "numberOfDecimals must be equals or greater than 0");
         if (null == one) {
             return null == two ? 0 : -1;

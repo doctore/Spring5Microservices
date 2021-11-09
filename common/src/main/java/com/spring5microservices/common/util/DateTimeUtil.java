@@ -3,10 +3,14 @@ package com.spring5microservices.common.util;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.lang.Math.abs;
+import static java.util.Optional.ofNullable;
 
 @UtilityClass
 public class DateTimeUtil {
@@ -30,7 +34,7 @@ public class DateTimeUtil {
      *
      * @throws IllegalArgumentException if {@code epsilon} is less than {@code zero}
      */
-    public static int compare(LocalDateTime one, LocalDateTime two, long epsilon, ChronoUnit timeUnit) {
+    public static int compare(final LocalDateTime one, final LocalDateTime two, long epsilon, final ChronoUnit timeUnit) {
         if (0 > epsilon) {
             throw new IllegalArgumentException("epsilon must be equals or greater than 0");
         }
@@ -50,6 +54,78 @@ public class DateTimeUtil {
         return abs(difference) <= epsilon
                 ? 0
                 : 0 < difference ? -1 : 1;
+    }
+
+
+    /**
+     * Convert to an instance of {@link Date} the given {@link LocalDateTime} using the provided {@link ZoneId}
+     *
+     * @param localDateTime
+     *    {@link LocalDateTime} value to convert
+     * @param zoneId
+     *    {@link ZoneId} used in the conversion
+     *
+     * @return {@link Optional} of {@link Date}
+     */
+    public static Optional<Date> fromLocalDateTimeToDate(final LocalDateTime localDateTime, final ZoneId zoneId) {
+        return ofNullable(localDateTime)
+                .map(lcd -> {
+                    ZoneId finalZoneId = Objects.nonNull(zoneId)
+                            ? zoneId
+                            : ZoneId.systemDefault();
+                    return Date.from(
+                            lcd.atZone(finalZoneId).toInstant()
+                    );
+                });
+    }
+
+
+    /**
+     * Convert to an instance of {@link Date} the given {@link LocalDateTime} using {@link ZoneId#systemDefault()}
+     *
+     * @param localDateTime
+     *    {@link LocalDateTime} value to convert
+     *
+     * @return {@link Optional} of {@link Date}
+     */
+    public static Optional<Date> fromLocalDateTimeToDate(LocalDateTime localDateTime) {
+        return fromLocalDateTimeToDate(localDateTime, ZoneId.systemDefault());
+    }
+
+
+    /**
+     * Convert to an instance of {@link LocalDateTime} the given {@link Date} using the provided {@link ZoneId}
+     *
+     * @param date
+     *    {@link Date} value to convert
+     * @param zoneId
+     *    {@link ZoneId} used in the conversion
+     *
+     * @return {@link Optional} of {@link LocalDateTime}
+     */
+    public static Optional<LocalDateTime> fromDateToLocalDateTime(final Date date, final ZoneId zoneId) {
+        return ofNullable(date)
+                .map(d -> {
+                    ZoneId finalZoneId = Objects.nonNull(zoneId)
+                            ? zoneId
+                            : ZoneId.systemDefault();
+                    return d.toInstant()
+                            .atZone(finalZoneId)
+                            .toLocalDateTime();
+                });
+    }
+
+
+    /**
+     * Convert to an instance of {@link LocalDateTime} the given {@link Date} using {@link ZoneId#systemDefault()}
+     *
+     * @param date
+     *    {@link Date} value to convert
+     *
+     * @return {@link Optional} of {@link LocalDateTime}
+     */
+    public static Optional<LocalDateTime> fromDateToLocalDateTime(final Date date) {
+        return fromDateToLocalDateTime(date, ZoneId.systemDefault());
     }
 
 }

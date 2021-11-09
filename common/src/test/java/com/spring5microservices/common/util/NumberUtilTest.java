@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NumberUtilTest {
 
-    static Stream<Arguments> compareToBigDecimalTestCases() {
+    static Stream<Arguments> compareBigDecimalTestCases() {
         BigDecimal bg1 = new BigDecimal(100);
         BigDecimal bg2 = new BigDecimal(111);
         BigDecimal bg3 = new BigDecimal(100.1241);
@@ -39,15 +39,15 @@ public class NumberUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("compareToBigDecimalTestCases")
-    @DisplayName("compareTo: BigDecimal test cases")
-    public void compareToBigDecimal_testCases(BigDecimal one, BigDecimal two, int numberOfDecimals,
-                                              Class<? extends Exception> expectedException, CompareToResult expectedResult) {
+    @MethodSource("compareBigDecimalTestCases")
+    @DisplayName("compare: BigDecimal test cases")
+    public void compareBigDecimal_testCases(BigDecimal one, BigDecimal two, int numberOfDecimals,
+                                            Class<? extends Exception> expectedException, CompareToResult expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> NumberUtil.compareTo(one, two, numberOfDecimals));
+            assertThrows(expectedException, () -> NumberUtil.compare(one, two, numberOfDecimals));
         }
         else {
-            int result = NumberUtil.compareTo(one, two, numberOfDecimals);
+            int result = NumberUtil.compare(one, two, numberOfDecimals);
             switch (expectedResult) {
                 case LESS_THAN_ZERO: assertTrue(0 > result); break;
                 case ZERO: assertTrue(0 == result); break;
