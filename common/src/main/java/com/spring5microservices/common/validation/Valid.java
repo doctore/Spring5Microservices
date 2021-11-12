@@ -1,7 +1,7 @@
 package com.spring5microservices.common.validation;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -10,8 +10,10 @@ import java.util.Objects;
  *
  * @param <T>
  *    Data type of the instance to validate.
+ * @param <E>
+ *    Value type of error
  */
-public final class Valid<T> extends Validation<T> implements Serializable {
+public final class Valid<E, T> extends Validation<E, T> implements Serializable {
 
     private final T value;
 
@@ -32,7 +34,7 @@ public final class Valid<T> extends Validation<T> implements Serializable {
      *
      * @return an empty {@code Valid}
      */
-    public static <T> Valid<T> empty() {
+    public static <E, T> Valid<E, T> empty() {
         return new Valid(null);
     }
 
@@ -47,7 +49,7 @@ public final class Valid<T> extends Validation<T> implements Serializable {
      *
      * @throws NullPointerException if value is {@code null}
      */
-    public static <T> Valid<T> of(T value) {
+    public static <E, T> Valid<E, T> of(T value) {
         return new Valid(Objects.requireNonNull(value));
     }
 
@@ -65,14 +67,14 @@ public final class Valid<T> extends Validation<T> implements Serializable {
 
 
     @Override
-    public List<String> getErrors() {
-        throw new NoSuchElementException("Is not possible to get errors of a 'valid' Validation");
+    public Collection<E> getErrors() {
+        throw new NoSuchElementException("Is not possible to get error of a 'valid' Validation");
     }
 
 
     @Override
     public boolean equals(Object obj) {
-        return (obj == this) || (obj instanceof Valid && Objects.equals(value, ((Valid<?>) obj).value));
+        return (obj == this) || (obj instanceof Valid && Objects.equals(value, ((Valid<?, ?>) obj).value));
     }
 
 

@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ValidatorTest {
+public class ValidationUseCasesTest {
 
     static Stream<Arguments> validateWithCombineTestCases() {
         PizzaDto validPizza = new PizzaDto("Carbonara", 15d);
@@ -20,10 +20,15 @@ public class ValidatorTest {
         PizzaDto invalidPizzaCost = new PizzaDto("Margherita", -5d);
         PizzaDto invalidPizza = new PizzaDto("564", -2d);
 
-        Validation<PizzaDto> validValidation = Validation.valid(validPizza);
-        Validation<PizzaDto> invalidPizzaNameValidation = Validation.invalid(asList("Name contains invalid characters: '12#2'"));
-        Validation<PizzaDto> invalidPizzaCostValidation = Validation.invalid(asList("Cost must be at least 0"));
-        Validation<PizzaDto> invalidPizzaValidation = Validation.invalid(asList("Name contains invalid characters: '564'", "Cost must be at least 0"));
+        ValidationError validationError1 = ValidationError.of(1, "Name contains invalid characters: '12#2'");
+        ValidationError validationError2 = ValidationError.of(2, "Cost must be at least 0");
+        ValidationError validationError3 = ValidationError.of(1, "Name contains invalid characters: '564'");
+        ValidationError validationError4 = ValidationError.of(2, "Cost must be at least 0");
+
+        Validation<ValidationError, PizzaDto> validValidation = Validation.valid(validPizza);
+        Validation<ValidationError, PizzaDto> invalidPizzaNameValidation = Validation.invalid(asList(validationError1));
+        Validation<ValidationError, PizzaDto> invalidPizzaCostValidation = Validation.invalid(asList(validationError2));
+        Validation<ValidationError, PizzaDto> invalidPizzaValidation = Validation.invalid(asList(validationError3, validationError4));
         return Stream.of(
                 //@formatter:off
                 //            objectToVerifyInstance,   expectedResult
@@ -37,8 +42,8 @@ public class ValidatorTest {
     @ParameterizedTest
     @MethodSource("validateWithCombineTestCases")
     @DisplayName("validate: with combine test cases")
-    public <T> void validateWithCombine_testCases(PizzaDto objectToVerifyInstance,
-                                                  Validation<T> expectedResult) {
+    public <E, T> void validateWithCombine_testCases(PizzaDto objectToVerifyInstance,
+                                                     Validation<E, T> expectedResult) {
         PizzaDtoValidatorCombine validator = new PizzaDtoValidatorCombine();
         assertEquals(expectedResult, validator.validate(objectToVerifyInstance));
     }
@@ -50,10 +55,14 @@ public class ValidatorTest {
         PizzaDto invalidPizzaCost = new PizzaDto("Margherita", -5d);
         PizzaDto invalidPizza = new PizzaDto("564", -2d);
 
-        Validation<PizzaDto> validValidation = Validation.valid(validPizza);
-        Validation<PizzaDto> invalidPizzaNameValidation = Validation.invalid(asList("Name contains invalid characters: '12#2'"));
-        Validation<PizzaDto> invalidPizzaCostValidation = Validation.invalid(asList("Cost must be at least 0"));
-        Validation<PizzaDto> invalidPizzaValidation = Validation.invalid(asList("Name contains invalid characters: '564'"));
+        ValidationError validationError1 = ValidationError.of(1, "Name contains invalid characters: '12#2'");
+        ValidationError validationError2 = ValidationError.of(2, "Cost must be at least 0");
+        ValidationError validationError3 = ValidationError.of(1, "Name contains invalid characters: '564'");
+
+        Validation<ValidationError, PizzaDto> validValidation = Validation.valid(validPizza);
+        Validation<ValidationError, PizzaDto> invalidPizzaNameValidation = Validation.invalid(asList(validationError1));
+        Validation<ValidationError, PizzaDto> invalidPizzaCostValidation = Validation.invalid(asList(validationError2));
+        Validation<ValidationError, PizzaDto> invalidPizzaValidation = Validation.invalid(asList(validationError3));
         return Stream.of(
                 //@formatter:off
                 //            objectToVerifyInstance,   expectedResult
@@ -67,8 +76,8 @@ public class ValidatorTest {
     @ParameterizedTest
     @MethodSource("validateWithGetFirstInvalidTestCases")
     @DisplayName("validate: with getFirstInvalid test cases")
-    public <T> void validateWithGetFirstInvalid_testCases(PizzaDto objectToVerifyInstance,
-                                                          Validation<T> expectedResult) {
+    public <E, T> void validateWithGetFirstInvalid_testCases(PizzaDto objectToVerifyInstance,
+                                                             Validation<E, T> expectedResult) {
         PizzaDtoValidatorGetFirstInvalid validator = new PizzaDtoValidatorGetFirstInvalid();
         assertEquals(expectedResult, validator.validate(objectToVerifyInstance));
     }
@@ -76,53 +85,67 @@ public class ValidatorTest {
 }
 
 
-class PizzaDtoValidatorCombine implements Validator<PizzaDto> {
+class PizzaDtoValidatorCombine {
 
     private static final String VALID_NAME_CHARS = "[a-zA-Z ]";
     private static final int MIN_COST = 0;
 
-    @Override
-    public Validation<PizzaDto> validate(PizzaDto p) {
+    public Validation<ValidationError, PizzaDto> validate(PizzaDto p) {
         return ValidationUtil.combine(validateName(p), validateAge(p));
     }
 
-    private Validation<PizzaDto> validateName(PizzaDto p) {
+    private Validation<ValidationError, PizzaDto> validateName(PizzaDto p) {
         final String onlyValidCharacters = p.getName().replaceAll(VALID_NAME_CHARS, "");
         return onlyValidCharacters.isEmpty()
                 ? Validation.valid(p)
-                : Validation.invalid(asList("Name contains invalid characters: '" + p.getName() + "'"));
+                : Validation.invalid(
+                        asList(
+                                ValidationError.of(1, "Name contains invalid characters: '" + p.getName() + "'")
+                        )
+        );
     }
 
-    private Validation<PizzaDto> validateAge(PizzaDto p) {
+    private Validation<ValidationError, PizzaDto> validateAge(PizzaDto p) {
         return p.getCost() >= MIN_COST
                 ? Validation.valid(p)
-                : Validation.invalid(asList("Cost must be at least " + MIN_COST));
+                : Validation.invalid(
+                        asList(
+                                ValidationError.of(2,"Cost must be at least " + MIN_COST)
+                        )
+        );
     }
 
 }
 
 
-class PizzaDtoValidatorGetFirstInvalid implements Validator<PizzaDto> {
+class PizzaDtoValidatorGetFirstInvalid {
 
     private static final String VALID_NAME_CHARS = "[a-zA-Z ]";
     private static final int MIN_COST = 0;
 
-    @Override
-    public Validation<PizzaDto> validate(PizzaDto p) {
+    public Validation<ValidationError, PizzaDto> validate(PizzaDto p) {
         return ValidationUtil.getFirstInvalid(() -> validateName(p), () -> validateCost(p));
     }
 
-    private Validation<PizzaDto> validateName(PizzaDto p) {
+    private Validation<ValidationError, PizzaDto> validateName(PizzaDto p) {
         final String onlyValidCharacters = p.getName().replaceAll(VALID_NAME_CHARS, "");
         return onlyValidCharacters.isEmpty()
                 ? Validation.valid(p)
-                : Validation.invalid(asList("Name contains invalid characters: '" + p.getName() + "'"));
+                : Validation.invalid(
+                        asList(
+                                ValidationError.of(1, "Name contains invalid characters: '" + p.getName() + "'")
+                        )
+        );
     }
 
-    private Validation<PizzaDto> validateCost(PizzaDto p) {
+    private Validation<ValidationError, PizzaDto> validateCost(PizzaDto p) {
         return p.getCost() >= MIN_COST
                 ? Validation.valid(p)
-                : Validation.invalid(asList("Cost must be at least " + MIN_COST));
+                : Validation.invalid(
+                        asList(
+                                ValidationError.of(2,"Cost must be at least " + MIN_COST)
+                        )
+        );
     }
 
 }

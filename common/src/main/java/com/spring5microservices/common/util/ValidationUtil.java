@@ -23,11 +23,11 @@ public class ValidationUtil {
      *
      * @return {@link Validation}
      */
-    public static <T> Validation<T> combine(Validation<? super T>... validations) {
-        Validation<T> result = Valid.empty();
+    public static <E, T> Validation<E, T> combine(Validation<E, T>... validations) {
+        Validation<E, T> result = Valid.empty();
         if (!ObjectUtils.isEmpty(validations)) {
             for (int i = 0; i < validations.length; i++) {
-                result = (Validation<T>) result.ap(validations[i]);
+                result = result.ap(validations[i]);
             }
         }
         return result;
@@ -43,11 +43,11 @@ public class ValidationUtil {
      *
      * @return {@link Validation}
      */
-    public static <T> Validation<T> getFirstInvalid(Supplier<Validation<? super T>>... suppliers) {
-        Validation<T> result = Valid.empty();
+    public static <E, T> Validation<E, T> getFirstInvalid(Supplier<Validation<E, T>>... suppliers) {
+        Validation<E, T> result = Valid.empty();
         if (!ObjectUtils.isEmpty(suppliers)) {
             for (int i = 0; i < suppliers.length; i++) {
-                result = (Validation<T>) result.ap(suppliers[i].get());
+                result = result.ap(suppliers[i].get());
                 if (!result.isValid()) {
                     return result;
                 }

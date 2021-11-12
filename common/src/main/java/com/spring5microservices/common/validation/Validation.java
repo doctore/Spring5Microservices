@@ -2,6 +2,7 @@ package com.spring5microservices.common.validation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -22,8 +23,10 @@ import static java.util.Optional.of;
  *
  * @param <T>
  *    Value type in the case of {@link Valid}
+ * @param <E>
+ *    Value type in the case of {@link Invalid}
  */
-public abstract class Validation<T> implements Serializable {
+public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Creates a {@link Valid} that contains the given {@code value}.
@@ -33,7 +36,7 @@ public abstract class Validation<T> implements Serializable {
      *
      * @return {@code Valid(value)}
      */
-    public static <T> Validation<T> valid(T value) {
+    public static <E, T> Validation<E, T> valid(T value) {
         return Valid.of(value);
     }
 
@@ -41,11 +44,11 @@ public abstract class Validation<T> implements Serializable {
      * Creates an {@link Invalid} that contains the given {@code errors}.
      *
      * @param errors
-     *    {@link List} of errors to include in the returned {@link Invalid}
+     *    {@link Collection} of errors to include in the returned {@link Invalid}
      *
      * @return {@code Invalid(error)}
      */
-    public static <T> Validation<T> invalid(List<String> errors) {
+    public static <E, T> Validation<E, T> invalid(Collection<E> errors) {
         return Invalid.of(errors);
     }
 
@@ -55,13 +58,13 @@ public abstract class Validation<T> implements Serializable {
      * Otherwise does nothing if this is a {@link Invalid}.
      *
      * @param mapper
-     *    The mapping function to apply to a value
+     *    The mapping function to apply to a value of a {@link Valid} instance.
      *
      * @return A new value
      *
      * @throws NullPointerException if {@code mapper} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final <U> Validation<U> map(Function<? super T, ? extends U> mapper) {
+    public final <U> Validation<E, U> map(Function<? super T, ? extends U> mapper) {
         if (isValid()) {
             Objects.requireNonNull(mapper, "mapper is null");
             final T value = get();
@@ -83,10 +86,10 @@ public abstract class Validation<T> implements Serializable {
      *
      * @throws NullPointerException if {@code mapper} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final Validation<T> mapError(Function<List<String>, List<String>> mapper) {
+    public final <U> Validation<U, T> mapError(Function<Collection<? super E>, Collection<U>> mapper) {
         if (!isValid()) {
             Objects.requireNonNull(mapper, "mapper is null");
-            final List<String> errors = getErrors();
+            final Collection<E> errors = getErrors();
             return Validation.invalid(mapper.apply(errors));
         } else {
             return Validation.valid(get());
@@ -113,14 +116,15 @@ public abstract class Validation<T> implements Serializable {
      * @throws NullPointerException if {@code mapperValid} is {@code null} and the current instance is a {@link Valid} one
      *                              or {@code mapperInvalid} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final <U> Validation<U> bimap(Function<? super T, ? extends U> mapperValid, Function<List<String>, List<String>> mapperInvalid) {
+    public final <E2, T2> Validation<E2, T2> bimap(Function<? super T, ? extends T2> mapperValid,
+                                                   Function<Collection<? super E>, Collection<E2>> mapperInvalid) {
         if (isValid()) {
             Objects.requireNonNull(mapperValid, "mapperValid is null");
             final T value = get();
             return Validation.valid(mapperValid.apply(value));
         } else {
             Objects.requireNonNull(mapperInvalid, "mapperInvalid is null");
-            final List<String> errors = getErrors();
+            final Collection<E> errors = getErrors();
             return Validation.invalid(mapperInvalid.apply(errors));
         }
     }
@@ -137,12 +141,12 @@ public abstract class Validation<T> implements Serializable {
      *
      * @throws NullPointerException if {@code mapper} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final <U> Validation<U> flatMap(Function<? super T, ? extends Validation<? extends U>> mapper) {
+    public final <U> Validation<E, U> flatMap(Function<? super T, ? extends Validation<E, ? extends U>> mapper) {
         if (isValid()) {
             Objects.requireNonNull(mapper, "mapper is null");
-            return (Validation<U>) mapper.apply(get());
+            return (Validation<E, U>) mapper.apply(get());
         }
-        return (Validation<U>) this;
+        return (Validation<E, U>) this;
     }
 
 
@@ -156,7 +160,7 @@ public abstract class Validation<T> implements Serializable {
      *
      * @throws NullPointerException if {@code action} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final Validation<T> peek(Consumer<? super T> action) {
+    public final Validation<E, T> peek(Consumer<? super T> action) {
         if (isValid()) {
             Objects.requireNonNull(action, "action is null");
             action.accept(get());
@@ -175,7 +179,7 @@ public abstract class Validation<T> implements Serializable {
      *
      * @throws NullPointerException if {@code action} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final Validation<T> peekError(Consumer<List<String>> action) {
+    public final Validation<E, T> peekError(Consumer<Collection<? super E>> action) {
         if (!isValid()) {
             Objects.requireNonNull(action, "action is null");
             action.accept(getErrors());
@@ -199,7 +203,7 @@ public abstract class Validation<T> implements Serializable {
      * @throws NullPointerException if {@code actionValid} is {@code null} and the current instance is a {@link Valid} one
      *                              or {@code actionInvalid} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final Validation<T> bipeek(Consumer<? super T> actionValid, Consumer<List<String>> actionInvalid) {
+    public final Validation<E, T> bipeek(Consumer<? super T> actionValid, Consumer<Collection<? super E>> actionInvalid) {
         if (isValid()) {
             Objects.requireNonNull(actionValid, "actionValid is null");
             actionValid.accept(get());
@@ -222,7 +226,7 @@ public abstract class Validation<T> implements Serializable {
      *
      * @throws NullPointerException if {@code predicate} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final Optional<Validation<T>> filter(Predicate<? super T> predicate) {
+    public final Optional<Validation<E, T>> filter(Predicate<? super T> predicate) {
         if (!isValid()) {
             return of(this);
         }
@@ -248,9 +252,9 @@ public abstract class Validation<T> implements Serializable {
      *
      * @return {@code Validation}
      */
-    public final <T> Validation<T> ap(Validation<? extends T> validation) {
+    public final Validation<E, T> ap(Validation<E, T> validation) {
         if (Objects.isNull(validation)) {
-            return (Validation<T>) this;
+            return this;
         }
         // this is a Valid instance
         if (isValid()) {
@@ -258,20 +262,20 @@ public abstract class Validation<T> implements Serializable {
             if (validation.isValid()) {
                 return valid(validation.get());
 
-            // this is Valid but validation is Invalid
+                // this is Valid but validation is Invalid
             } else {
-                final List<String> errors = validation.getErrors();
+                final Collection<E> errors = validation.getErrors();
                 return invalid(errors);
             }
         } else {
             // Due only this is Invalid, return only its errors
             if (validation.isValid()) {
-                final List<String> errors = this.getErrors();
+                final Collection<E> errors = this.getErrors();
                 return invalid(errors);
 
-            // Add both errors of this and validation
+                // Add both errors of this and validation
             } else {
-                final List<String> errors = new ArrayList<>(this.getErrors());
+                final Collection<E> errors = new ArrayList<>(this.getErrors());
                 errors.addAll(validation.getErrors());
                 return invalid(errors);
             }
@@ -300,10 +304,10 @@ public abstract class Validation<T> implements Serializable {
      *
      * @return {@code Validation}
      */
-    public final Validation<T> orElse(Validation<? extends T> other) {
+    public final Validation<E, T> orElse(Validation<? extends E, ? extends T> other) {
         return isValid()
                 ? this
-                : (Validation<T>) other;
+                : (Validation<E, T>) other;
     }
 
 
@@ -317,12 +321,12 @@ public abstract class Validation<T> implements Serializable {
      *
      * @throws NullPointerException if {@code supplier} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final Validation<T> orElse(Supplier<Validation<? extends T>> supplier) {
+    public final Validation<E, T> orElse(Supplier<Validation<? extends E, ? extends T>> supplier) {
         if (isValid()) {
             return this;
         }
         Objects.requireNonNull(supplier, "supplier is null");
-        return (Validation<T>) supplier.get();
+        return (Validation<E, T>) supplier.get();
     }
 
 
@@ -378,12 +382,12 @@ public abstract class Validation<T> implements Serializable {
 
 
     /**
-     * Gets the {@link List} of errors of this {@code Validation} if it is an {@link Invalid} or throws if this is a {@link Valid}.
+     * Gets the {@code error} of this {@code Validation} if it is an {@link Invalid} or throws if this is a {@link Valid}.
      *
-     * @return the {@link List} of errors, if present
+     * @return {@link Collection} of {@code error}, if present
      *
      * @throws NoSuchElementException if this is a {@link Valid}
      */
-    public abstract List<String> getErrors();
+    public abstract Collection<E> getErrors();
 
 }

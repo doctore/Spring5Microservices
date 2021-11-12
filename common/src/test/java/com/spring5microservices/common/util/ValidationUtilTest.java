@@ -19,15 +19,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ValidationUtilTest {
 
     static Stream<Arguments> combineTestCases() {
-        Validation<Integer> validInt1 = Validation.valid(1);
-        Validation<Integer> validInt4 = Validation.valid(4);
-        Validation<Integer> invalidProb1 = Validation.invalid(asList("problem1"));
-        Validation<Integer> invalidProb2 = Validation.invalid(asList("problem2"));
-        Validation<Integer> allValidationsArray[] = new Validation[] { validInt1, invalidProb1, validInt4, invalidProb2 };
+        Validation<String, Integer> validInt1 = Validation.valid(1);
+        Validation<String, Integer> validInt4 = Validation.valid(4);
+        Validation<String, Integer> invalidProb1 = Validation.invalid(asList("problem1"));
+        Validation<String, Integer> invalidProb2 = Validation.invalid(asList("problem2"));
+        Validation<String, Integer> allValidationsArray[] = new Validation[] { validInt1, invalidProb1, validInt4, invalidProb2 };
 
         List<String> allErrors = new ArrayList<>(invalidProb1.getErrors());
         allErrors.addAll(invalidProb2.getErrors());
-        Validation<Integer> invalidAll = Validation.invalid(allErrors);
+        Validation<String, Integer> invalidAll = Validation.invalid(allErrors);
         return Stream.of(
                 //@formatter:off
                 //            validations,                                               expectedResult
@@ -45,22 +45,22 @@ public class ValidationUtilTest {
     @ParameterizedTest
     @MethodSource("combineTestCases")
     @DisplayName("combine: test cases")
-    public <T> void combine_testCases(Validation<? super T> validations[],
-                                      Validation<T> expectedResult) {
+    public <E, T> void combine_testCases(Validation<E, T> validations[],
+                                         Validation<E, T> expectedResult) {
         assertEquals(expectedResult, ValidationUtil.combine(validations));
     }
 
 
     static Stream<Arguments> getFirstInvalidTestCases() {
-        Validation<Integer> validInt1 = Validation.valid(1);
-        Validation<Integer> validInt4 = Validation.valid(4);
-        Validation<Integer> invalidProb1 = Validation.invalid(asList("problem1"));
-        Validation<Integer> invalidProb2 = Validation.invalid(asList("problem2"));
+        Validation<String, Integer> validInt1 = Validation.valid(1);
+        Validation<String, Integer> validInt4 = Validation.valid(4);
+        Validation<String, Integer> invalidProb1 = Validation.invalid(asList("problem1"));
+        Validation<String, Integer> invalidProb2 = Validation.invalid(asList("problem2"));
 
-        Supplier<Validation<Integer>> supValidInt1 = () -> validInt1;
-        Supplier<Validation<Integer>> supValidInt4 = () -> validInt4;
-        Supplier<Validation<Integer>> supInvalidProb1 = () -> invalidProb1;
-        Supplier<Validation<Integer>> supInvalidProb2 = () -> invalidProb2;
+        Supplier<Validation<String, Integer>> supValidInt1 = () -> validInt1;
+        Supplier<Validation<String, Integer>> supValidInt4 = () -> validInt4;
+        Supplier<Validation<String, Integer>> supInvalidProb1 = () -> invalidProb1;
+        Supplier<Validation<String, Integer>> supInvalidProb2 = () -> invalidProb2;
         return Stream.of(
                 //@formatter:off
                 //            supplier1,         supplier2,         supplier3,         expectedResult
@@ -76,11 +76,11 @@ public class ValidationUtilTest {
     @ParameterizedTest
     @MethodSource("getFirstInvalidTestCases")
     @DisplayName("getFirstInvalid: test cases")
-    public <T> void getFirstInvalid_testCases(Supplier<Validation<? super T>> supplier1,
-                                              Supplier<Validation<? super T>> supplier2,
-                                              Supplier<Validation<? super T>> supplier3,
-                                              Validation<T> expectedResult) {
-        Validation<T> result = null;
+    public <E, T> void getFirstInvalid_testCases(Supplier<Validation<E, T>> supplier1,
+                                                 Supplier<Validation<E, T>> supplier2,
+                                                 Supplier<Validation<E, T>> supplier3,
+                                                 Validation<E, T> expectedResult) {
+        Validation<E, T> result = null;
         if (Objects.isNull(supplier1) && Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
             result = ValidationUtil.getFirstInvalid();
         }
