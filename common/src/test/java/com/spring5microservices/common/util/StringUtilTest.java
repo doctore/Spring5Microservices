@@ -18,8 +18,38 @@ import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StringUtilTest {
+
+    static Stream<Arguments> abbreviateMiddleTestCases() {
+        return Stream.of(
+                //@formatter:off
+                //            sourceString,   putInTheMiddle,   sizeOfEveryChunk,   expectedException,                expectedResult
+                Arguments.of( null,           null,             -2,                 IllegalArgumentException.class,   null ),
+                Arguments.of( "ABCDE",        null,             -1,                 IllegalArgumentException.class,   null ),
+                Arguments.of( "ABCDE",        "..",             0,                  IllegalArgumentException.class,   null ),
+                Arguments.of( "AB",           "..",             1,                  null,                             of("AB") ),
+                Arguments.of( "ABC",          "..",             1,                  null,                             of("A..C") ),
+                Arguments.of( "ABC",          null,             2,                  null,                             of("ABC") ),
+                Arguments.of( "ABCDE",        null,             2,                  null,                             of("AB...DE") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("abbreviateMiddleTestCases")
+    @DisplayName("abbreviateMiddle: test cases")
+    public void compareToBigDecimal_testCases(String sourceString, String putInTheMiddle, int sizeOfEveryChunk,
+                                              Class<? extends Exception> expectedException, Optional<String> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> StringUtil.abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk));
+        }
+        else {
+            Optional<String> result = StringUtil.abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk);
+            assertEquals(expectedResult, result);
+        }
+    }
+
 
     static Stream<Arguments> keepOnlyDigitsTestCases() {
         return Stream.of(

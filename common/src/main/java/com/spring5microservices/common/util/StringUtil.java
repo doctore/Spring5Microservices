@@ -19,8 +19,48 @@ import static java.util.stream.Collectors.toList;
 @UtilityClass
 public class StringUtil {
 
+    private final String DEFAULT_MIDDLE_STRING_ABBREVIATION = "...";
     private final String DEFAULT_STRING_SEPARATOR = ",";
     private final Function<String, String> DEFAULT_STRING_EXTRACTOR = String::trim;
+
+
+    /**
+     *    Abbreviates the given {@code sourceString} to the chunk size provided {@code sizeOfEveryChunk}, replacing the middle
+     *  characters with the supplied replacement string {@code putInTheMiddle}.
+     *
+     * @param sourceString
+     *    {@link String} to abbreviate
+     * @param putInTheMiddle
+     *    {@link String} to replace the middle characters. Default value will be "..."
+     * @param sizeOfEveryChunk
+     *    Size of visible parts on every side
+     *
+     * @return {@link Optional} with the abbreviated {@link String}
+     *      or {@link Optional#empty()} if given {@code sourceString} is {@code null}
+     *
+     * @throws IllegalArgumentException if {@code sizeOfEveryChunk} is lower to 1
+     */
+    public static Optional<String> abbreviateMiddle(final String sourceString, final String putInTheMiddle, int sizeOfEveryChunk) {
+        if (1 > sizeOfEveryChunk) {
+            throw new IllegalArgumentException("sizeOfEveryChunk must be a positive value");
+        }
+        return ofNullable(sourceString)
+                .map(s -> {
+                    String finalPutInTheMiddle = Objects.isNull(putInTheMiddle) || putInTheMiddle.trim().isEmpty()
+                            ? DEFAULT_MIDDLE_STRING_ABBREVIATION
+                            : putInTheMiddle;
+
+                    if (sourceString.length() > (2 * sizeOfEveryChunk)) {
+                        int startPos = sizeOfEveryChunk;
+                        int endPos = sourceString.length() - sizeOfEveryChunk;
+
+                        return sourceString.substring(0, startPos)
+                                + finalPutInTheMiddle
+                                + sourceString.substring(endPos);
+                    }
+                    return sourceString;
+                });
+    }
 
 
     /**
