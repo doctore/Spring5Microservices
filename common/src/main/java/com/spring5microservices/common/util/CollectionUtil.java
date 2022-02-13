@@ -21,6 +21,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
@@ -266,6 +267,52 @@ public class CollectionUtil {
 
 
     /**
+     *    Using the provided {@code sourceCollection}, return all elements beginning at index {@code from} and afterwards,
+     * up until index {@code until} (excluding this index).
+     *
+     * Examples:
+     *    [5, 7, 9, 6],  1,  3  =>  [7, 9]
+     *    [a, b, c, d],  3,  7  =>  [d]
+     *    [a, b, c, d], -1,  2  =>  [a, b]
+     *
+     * @param sourceCollection
+     *    {@link Collection} to slice
+     * @param from
+     *    Lower limit of the chunk to extract from provided {@link Collection} (starting from {@code 0})
+     * @param until
+     *    Upper limit of the chunk to extract from provided {@link Collection} (up to {@link Collection#size()})
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code from} is upper than {@code until}
+     */
+    public static <T> List<T> slice(final Collection<T> sourceCollection, int from, int until) {
+        Assert.isTrue(from < until, format("from: %d must be lower than to: %d", from, until));
+        if (CollectionUtils.isEmpty(sourceCollection) ||
+                from > sourceCollection.size() - 1) {
+            return new ArrayList<>();
+        }
+        int finalFrom = Math.max(0, from);
+        int finalUntil = Math.min(sourceCollection.size(), until);
+        if (sourceCollection instanceof List) {
+            return ((List<T>) sourceCollection).subList(finalFrom, finalUntil);
+        }
+        int i = 0;
+        List<T> result = new ArrayList<>(Math.max(finalUntil - finalFrom, finalUntil - finalFrom - 1));
+        for (T element: sourceCollection) {
+            if (i >= finalUntil) {
+                break;
+            }
+            if (i >= finalFrom && i < finalUntil) {
+                result.add(element);
+            }
+            i++;
+        }
+        return result;
+    }
+
+
+    /**
      * Loops through the provided {@link Collection} one position every time, returning sublists with {@code size}
      *
      * Examples:
@@ -357,9 +404,9 @@ public class CollectionUtil {
             }
             iteratorList.add(c.iterator());
         }
-        List<List<T>> result = new ArrayList<>(collectionsToTranspose.size());
+        List<List<T>> result = new ArrayList<>(expectedSize);
         for (int i = 0; i < expectedSize; i++) {
-            List<T> newRow = new ArrayList<>(expectedSize);
+            List<T> newRow = new ArrayList<>(collectionsToTranspose.size());
             for (Iterator<T> iterator: iteratorList) {
                 newRow.add(iterator.next());
             }
