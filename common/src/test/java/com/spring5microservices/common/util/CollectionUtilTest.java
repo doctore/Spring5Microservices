@@ -274,6 +274,43 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> sliceTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(11, 12, 13, 14));
+        List<String> letters = asList("a", "b", "c", "d", "f");
+        return Stream.of(
+                //@formatter:off
+                //            collection,   from,   to,   expectedException,                expectedResult
+                Arguments.of( null,         2,      1,    IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),     3,      1,    IllegalArgumentException.class,   null ),
+                Arguments.of( ints,         1,      0,    IllegalArgumentException.class,   null ),
+                Arguments.of( null,         0,      1,    null,                             asList() ),
+                Arguments.of( asList(),     0,      1,    null,                             asList() ),
+                Arguments.of( ints,        -1,      0,    null,                             asList() ),
+                Arguments.of( ints,        -1,      3,    null,                             asList(11, 12, 13) ),
+                Arguments.of( ints,         1,      3,    null,                             asList(12, 13) ),
+                Arguments.of( ints,         2,      5,    null,                             asList(13, 14) ),
+                Arguments.of( ints,         6,      8,    null,                             asList() ),
+                Arguments.of( letters,     -1,      1,    null,                             asList("a") ),
+                Arguments.of( letters,      2,      3,    null,                             asList("c") ),
+                Arguments.of( letters,      4,      9,    null,                             asList("f") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("sliceTestCases")
+    @DisplayName("slice: test cases")
+    public <T> void slice_testCases(Collection<T> collection, int from, int until,
+                                    Class<? extends Exception> expectedException,
+                                    List<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.slice(collection, from, until));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.slice(collection, from, until));
+        }
+    }
+
+
     static Stream<Arguments> slidingTestCases() {
         List<Integer> integers = asList(1, 3, 5);
         Set<String> strings = new LinkedHashSet<>() {{
