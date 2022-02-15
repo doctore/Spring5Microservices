@@ -51,6 +51,31 @@ public class StringUtilTest {
     }
 
 
+    static Stream<Arguments> containsIgnoreCaseTestCases() {
+        return Stream.of(
+                //@formatter:off
+                //            sourceString,   stringToSearch,  expectedResult
+                Arguments.of( null,           null,            false ),
+                Arguments.of( null,           "test",          false ),
+                Arguments.of( "test",         null,            false ),
+                Arguments.of( "abc",          "ac",            false ),
+                Arguments.of( "ABC",          "AC",            false ),
+                Arguments.of( "ac",           "abc",           false ),
+                Arguments.of( "AC",           "ABC",           false ),
+                Arguments.of( "abcd",         "bc",            true ),
+                Arguments.of( "ABcD",         "bC",            true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("containsIgnoreCaseTestCases")
+    @DisplayName("containsIgnoreCase: test cases")
+    public void containsIgnoreCase_testCases(String sourceString, String stringToSearch, boolean expectedResult) {
+        boolean result = StringUtil.containsIgnoreCase(sourceString, stringToSearch);
+        assertEquals(expectedResult, result);
+    }
+
+
     static Stream<Arguments> keepOnlyDigitsTestCases() {
         return Stream.of(
                 //@formatter:off
@@ -101,8 +126,6 @@ public class StringUtilTest {
     static Stream<Arguments> splitFromStringWithSourceAndSeparatorAndChunkLimitTestCases() {
         String integers = "1,2,3";
         String characters = "A,B,  3";
-        Function<String, Integer> fromStringToInteger = Integer::parseInt;
-        Function<String, String> fromStringToString = String::trim;
         return Stream.of(
                 //@formatter:off
                 //            source,       separator,   chunkLimit,        expectedResult
