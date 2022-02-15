@@ -64,6 +64,24 @@ public class StringUtil {
 
 
     /**
+     * Verify if the given {@code sourceString} contains {@code stringToSearch} ignoring case.
+     *
+     * @param sourceString
+     *    {@link String} to check if contains {@code stringToSearch}
+     * @param stringToSearch
+     *    {@link String} to search in {@code sourceString}
+     *
+     * @return {@code true} if {@code sourceString} contains {@code stringToSearch}, {@code false} otherwise.
+     */
+    public static boolean containsIgnoreCase(String sourceString, String stringToSearch) {
+        if (Objects.isNull(sourceString) || Objects.isNull(stringToSearch)) {
+            return false;
+        }
+        return sourceString.toLowerCase().contains(stringToSearch.toLowerCase());
+    }
+
+
+    /**
      * Remove from the given {@code sourceString} all non-numeric characters.
      *
      * @param sourceString
