@@ -268,7 +268,7 @@ public class CollectionUtil {
 
     /**
      *    Using the provided {@code sourceCollection}, return all elements beginning at index {@code from} and afterwards,
-     * up until index {@code until} (excluding this index).
+     * up to index {@code until} (excluding this one).
      *
      * Examples:
      *    [5, 7, 9, 6],  1,  3  =>  [7, 9]
@@ -379,36 +379,32 @@ public class CollectionUtil {
      * Examples:
      *   [[1, 2, 3], [4, 5, 6]]                     =>  [[1, 4], [2, 5], [3, 6]]
      *   [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]  =>  [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
+     *   [[1, 2], [0], [7, 8, 9]]                   =>  [[1, 0, 7], [2, 8], [9]]
      *
      * @param collectionsToTranspose
      *    {@link Collection} of {@link Collection}s to transpose
      *
      * @return {@link List} of {@link List}s
-     *
-     * @throws IllegalArgumentException if not all {@code collectionsToTranspose} have the same size
      */
     public static <T> List<List<T>> transpose(final Collection<Collection<T>> collectionsToTranspose) {
         if (CollectionUtils.isEmpty(collectionsToTranspose)) {
             return new ArrayList<>();
         }
-        int expectedSize = -1;
+        int sizeOfLongestSubCollection = -1;
         List<Iterator<T>> iteratorList = new ArrayList<>(collectionsToTranspose.size());
         for (Collection<T> c: collectionsToTranspose) {
-            if (expectedSize != c.size()) {
-                if (-1 == expectedSize) {
-                    expectedSize = c.size();
-                }
-                else {
-                    throw new IllegalArgumentException("transpose requires all collections have the same size");
-                }
+            if (sizeOfLongestSubCollection < c.size()) {
+                sizeOfLongestSubCollection = c.size();
             }
             iteratorList.add(c.iterator());
         }
-        List<List<T>> result = new ArrayList<>(expectedSize);
-        for (int i = 0; i < expectedSize; i++) {
+        List<List<T>> result = new ArrayList<>(sizeOfLongestSubCollection);
+        for (int i = 0; i < sizeOfLongestSubCollection; i++) {
             List<T> newRow = new ArrayList<>(collectionsToTranspose.size());
             for (Iterator<T> iterator: iteratorList) {
-                newRow.add(iterator.next());
+                if (iterator.hasNext()) {
+                    newRow.add(iterator.next());
+                }
             }
             result.add(newRow);
         }

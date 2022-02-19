@@ -386,31 +386,29 @@ public class CollectionUtilTest {
                 add("c2");
             }});
         }};
+        List<List<Integer>> differentInnerListSizes = asList(asList(1, 2), asList(0), asList(7, 8, 9));
+
         List<List<Integer>> integersResult = asList(asList(1, 4), asList(2, 5), asList(3, 6));
         List<List<String>> stringsResult = asList(asList("a1", "b1", "c1"), asList("a2", "b2", "c2"));
+        List<List<Integer>> differentInnerListSizesResult = asList(asList(1, 0, 7), asList(2, 8), asList(9));
+
         return Stream.of(
                 //@formatter:off
-                //            collectionsToTranspose,   expectedException,                expectedResult
-                Arguments.of( null,                     null,                             new ArrayList<>() ),
-                Arguments.of( new ArrayList<>(),        null,                             new ArrayList<>() ),
-                Arguments.of( emptyLists,               null,                             new ArrayList<>() ),
-                Arguments.of( invalidList,              IllegalArgumentException.class,   null ),
-                Arguments.of( integers,                 null,                             integersResult ),
-                Arguments.of( strings,                  null,                             stringsResult )
+                //            collectionsToTranspose,    expectedResult
+                Arguments.of( null,                      new ArrayList<>() ),
+                Arguments.of( new ArrayList<>(),         new ArrayList<>() ),
+                Arguments.of( emptyLists,                new ArrayList<>() ),
+                Arguments.of( integers,                  integersResult ),
+                Arguments.of( strings,                   stringsResult ),
+                Arguments.of( differentInnerListSizes,   differentInnerListSizesResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("transposeTestCases")
     @DisplayName("transpose: test cases")
-    public <T> void transpose_testCases(Collection<Collection<T>> collectionsToTranspose, Class<? extends Exception> expectedException,
-                                        List<List<T>> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.transpose(collectionsToTranspose));
-        }
-        else {
-            assertEquals(expectedResult, CollectionUtil.transpose(collectionsToTranspose));
-        }
+    public <T> void transpose_testCases(Collection<Collection<T>> collectionsToTranspose, List<List<T>> expectedResult) {
+        assertEquals(expectedResult, CollectionUtil.transpose(collectionsToTranspose));
     }
 
 }
