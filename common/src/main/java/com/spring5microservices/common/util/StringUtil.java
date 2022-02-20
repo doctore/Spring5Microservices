@@ -82,7 +82,7 @@ public class StringUtil {
         }
         return sourceString.toLowerCase().contains(stringToSearch.toLowerCase());
     }
-final
+
 
     /**
      * Remove from the given {@code sourceString} all non-numeric characters.
