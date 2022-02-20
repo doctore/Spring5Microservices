@@ -31,6 +31,84 @@ import static java.util.stream.Collectors.toList;
 public class CollectionUtil {
 
     /**
+     *    In the given {@code collection}, applies {@code defaultFunction} if the current element verifies
+     * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
+     *
+     * Example:
+     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2  =>  [2, 4, 4, 12]
+     *
+     * @param collection
+     *    Source {@link Collection} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from the source {@code collection}.
+     * @param defaultFunction
+     *    {@link Function} to transform elements of {@code collection} that verify {@code filterPredicate}.
+     * @param orElseFunction
+     *    {@link Function} to transform elements of {@code collection} do not verify {@code filterPredicate}.
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
+     *                                  is {@code null}
+     */
+    public static <T, E> List<E> applyOrElse(final Collection<T> collection,
+                                             final Predicate<? super T> filterPredicate,
+                                             final Function<? super T, ? extends E> defaultFunction,
+                                             final Function<? super T, ? extends E> orElseFunction) {
+        return (List)applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
+    }
+
+
+    /**
+     *    In the given {@code collection}, applies {@code defaultFunction} if the current element verifies
+     * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
+     *
+     * Example:
+     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2,  ArrayList::new  =>  [2, 4, 4, 12]
+     *
+     * @param collection
+     *    Source {@link Collection} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from the source {@code collection}.
+     * @param defaultFunction
+     *    {@link Function} to transform elements of {@code collection} that verify {@code filterPredicate}.
+     * @param orElseFunction
+     *    {@link Function} to transform elements of {@code collection} do not verify {@code filterPredicate}.
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
+     *                                  is {@code null}
+     */
+    public static <T, E> Collection<E> applyOrElse(final Collection<T> collection,
+                                                   final Predicate<? super T> filterPredicate,
+                                                   final Function<? super T, ? extends E> defaultFunction,
+                                                   final Function<? super T, ? extends E> orElseFunction,
+                                                   final Supplier<Collection<E>> collectionFactory) {
+        Assert.notNull(filterPredicate, "filterPredicate must be not null");
+        Assert.notNull(defaultFunction, "defaultFunction must be not null");
+        Assert.notNull(orElseFunction, "orElseFunction must be not null");
+        if (CollectionUtils.isEmpty(collection)) {
+            return new ArrayList<>();
+        }
+        Supplier<Collection<E>> definitiveCollectionFactory =
+                null == collectionFactory
+                        ? () -> new ArrayList<>()
+                        : collectionFactory;
+
+        return collection.stream()
+                .map(elto ->
+                        filterPredicate.test(elto)
+                                ? defaultFunction.apply(elto)
+                                : orElseFunction.apply(elto)
+                )
+                .collect(toCollection(definitiveCollectionFactory));
+    }
+
+
+    /**
      * Return a {@link LinkedHashSet} with the provided {@code elements}.
      *
      * @param elements
@@ -38,7 +116,7 @@ public class CollectionUtil {
      *
      * @return {@link LinkedHashSet}
      */
-    public static <T> Set<T> asSet(T ...elements) {
+    public static <T> Set<T> asSet(final T ...elements) {
         return ofNullable(elements)
                 .map(e -> new LinkedHashSet<>(asList(elements)))
                 .orElse(new LinkedHashSet<>());
@@ -50,6 +128,36 @@ public class CollectionUtil {
      *
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
+     *
+     * Example:
+     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i.toString()  =>  ["1", "3"]
+     *
+     * @param collection
+     *    Source {@link Collection} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from the source {@code collection}.
+     * @param mapFunction
+     *    {@link Function} to transform filtered elements from the source {@code collection}.
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     */
+    public static <T, E> List<E> collect(final Collection<T> collection,
+                                         final Predicate<? super T> filterPredicate,
+                                         final Function<? super T, ? extends E> mapFunction) {
+        return (List)collect(collection, filterPredicate, mapFunction, ArrayList::new);
+    }
+
+
+    /**
+     * Return a {@link Collection} after:
+     *
+     *  - Filter its elements using {@code filterPredicate}
+     *  - Transform its filtered elements using {@code mapFunction}
+     *
+     * Example:
+     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i.toString(),  ArrayList::new  =>  ["1", "3"]
      *
      * @param collection
      *    Source {@link Collection} with the elements to filter and transform.
@@ -70,7 +178,6 @@ public class CollectionUtil {
                                                final Supplier<Collection<E>> collectionFactory) {
         Assert.notNull(filterPredicate, "filterPredicate must be not null");
         Assert.notNull(mapFunction, "mapFunction must be not null");
-
         if (CollectionUtils.isEmpty(collection)) {
             return new ArrayList<>();
         }
@@ -84,30 +191,6 @@ public class CollectionUtil {
                 .filter(filterPredicate)
                 .map(mapFunction)
                 .collect(toCollection(definitiveCollectionFactory));
-    }
-
-
-    /**
-     * Return a {@link Collection} after:
-     *
-     *  - Filter its elements using {@code filterPredicate}
-     *  - Transform its filtered elements using {@code mapFunction}
-     *
-     * @param collection
-     *    Source {@link Collection} with the elements to filter and transform.
-     * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code collection}.
-     * @param mapFunction
-     *    {@link Function} to transform filtered elements from the source {@code collection}.
-     *
-     * @return {@link List}
-     *
-     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
-     */
-    public static <T, E> List<E> collect(final Collection<T> collection,
-                                         final Predicate<? super T> filterPredicate,
-                                         final Function<? super T, ? extends E> mapFunction) {
-        return (List)collect(collection, filterPredicate, mapFunction, ArrayList::new);
     }
 
 
@@ -175,8 +258,8 @@ public class CollectionUtil {
      * Folds this elements from the left, starting with {@code initialValue} and successively calling {@code accumulator}.
      *
      * Examples:
-     *   [5, 7, 9],   1,  (a, b) -> a * b   => 315
-     *   ["a", "h"], "!", (a, b) -> a + b   => "!ah"
+     *   [5, 7, 9],     1,  (a, b) -> a * b   => 315
+     *   ["a", "h"],  "!",  (a, b) -> a + b   => "!ah"
      *
      * @param collection
      *    {@link Collection} with elements to combine.
@@ -189,7 +272,8 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code initialValue} is {@code null}
      */
-    public static <T, E> E foldLeft(final Collection<T> collection, final E initialValue,
+    public static <T, E> E foldLeft(final Collection<T> collection,
+                                    final E initialValue,
                                     final BiFunction<E, ? super T, E> accumulator) {
         Assert.notNull(initialValue, "initialValue must be not null");
         return ofNullable(collection)
@@ -211,8 +295,8 @@ public class CollectionUtil {
      * is {@code true}. The accumulated results are returned in a {@link List}.
      *
      * Examples:
-     *    42, a -> a / 10, a -> 50 >= a  =>  []
-     *    42, a -> a / 10, a -> 0 >= a   =>  [42, 4]
+     *    42,  a -> a / 10,  a -> 50 >= a  =>  []
+     *    42,  a -> a / 10,  a -> 0 >= a   =>  [42, 4]
      *
      * @param initialValue
      *    The initial value to start with
@@ -225,7 +309,8 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code initialValue} or {@code untilPredicate} are {@code null}
      */
-    public static <T> List<T> iterate(final T initialValue, final UnaryOperator<T> applyFunction,
+    public static <T> List<T> iterate(final T initialValue,
+                                      final UnaryOperator<T> applyFunction,
                                       final Predicate<T> untilPredicate) {
         Assert.notNull(initialValue, "initialValue must be not null");
         Assert.notNull(untilPredicate, "untilPredicate must be not null");
@@ -253,7 +338,8 @@ public class CollectionUtil {
      *
      * @return {@link HashMap}
      */
-    public static <T, E> Map<T, E> removeKeys(final Map<T, E> sourceMap, final Collection<T> keysToExclude) {
+    public static <T, E> Map<T, E> removeKeys(final Map<T, E> sourceMap,
+                                              final Collection<T> keysToExclude) {
         return ofNullable(sourceMap)
                 .map(sm -> {
                     Map<T, E> filteredMap = new HashMap<>(sourceMap);
@@ -271,9 +357,9 @@ public class CollectionUtil {
      * up to index {@code until} (excluding this one).
      *
      * Examples:
-     *    [5, 7, 9, 6],  1,  3  =>  [7, 9]
-     *    [a, b, c, d],  3,  7  =>  [d]
-     *    [a, b, c, d], -1,  2  =>  [a, b]
+     *    [5, 7, 9, 6],   1,  3  =>  [7, 9]
+     *    [a, b, c, d],   3,  7  =>  [d]
+     *    [a, b, c, d],  -1,  2  =>  [a, b]
      *
      * @param sourceCollection
      *    {@link Collection} to slice
@@ -286,7 +372,9 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code from} is upper than {@code until}
      */
-    public static <T> List<T> slice(final Collection<T> sourceCollection, int from, int until) {
+    public static <T> List<T> slice(final Collection<T> sourceCollection,
+                                    final int from,
+                                    final int until) {
         Assert.isTrue(from < until, format("from: %d must be lower than to: %d", from, until));
         if (CollectionUtils.isEmpty(sourceCollection) ||
                 from > sourceCollection.size() - 1) {
@@ -316,8 +404,8 @@ public class CollectionUtil {
      * Loops through the provided {@link Collection} one position every time, returning sublists with {@code size}
      *
      * Examples:
-     *   [1, 2]    with size = 5 => [[1, 2]]
-     *   [7, 8, 9] with size = 2 => [[7, 8], [8, 9]]
+     *   [1, 2]    with size = 5  =>  [[1, 2]]
+     *   [7, 8, 9] with size = 2  =>  [[7, 8], [8, 9]]
      *
      * @param collectionToSlide
      *    {@link Collection} to slide
@@ -326,7 +414,8 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> sliding(final Collection<T> collectionToSlide, final int size) {
+    public static <T> List<List<T>> sliding(final Collection<T> collectionToSlide,
+                                            final int size) {
         if (CollectionUtils.isEmpty(collectionToSlide)) {
             return new ArrayList<>();
         }
@@ -344,9 +433,9 @@ public class CollectionUtil {
      * Splits the given {@link Collection} in sublists with a size equal to the given {@code size}
      *
      * Examples:
-     *   [1, 2, 3, 4] with size = 2 => [[1, 2], [3, 4]]
-     *   [1, 2, 3, 4] with size = 3 => [[1, 2, 3], [4]]
-     *   [1, 2, 3, 4] with size = 5 => [[1, 2, 3, 4]]
+     *   [1, 2, 3, 4] with size = 2  =>  [[1, 2], [3, 4]]
+     *   [1, 2, 3, 4] with size = 3  =>  [[1, 2, 3], [4]]
+     *   [1, 2, 3, 4] with size = 5  =>  [[1, 2, 3, 4]]
      *
      * @param collectionToSplit
      *    {@link Collection} to split
@@ -355,7 +444,8 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> split(final Collection<T> collectionToSplit, final int size) {
+    public static <T> List<List<T>> split(final Collection<T> collectionToSplit,
+                                          final int size) {
         if (CollectionUtils.isEmpty(collectionToSplit)) {
             return new ArrayList<>();
         }
@@ -386,7 +476,7 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> transpose(final Collection<Collection<T>> collectionsToTranspose) {
+    public static <T> List<List<T>> transpose(final Collection<? extends Collection<T>> collectionsToTranspose) {
         if (CollectionUtils.isEmpty(collectionsToTranspose)) {
             return new ArrayList<>();
         }

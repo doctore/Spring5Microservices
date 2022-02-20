@@ -29,6 +29,84 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CollectionUtilTest {
 
+    static Stream<Arguments> applyOrElseNoCollectionFactoryTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        Function<Integer, String> plus1String = i -> String.valueOf(i + 1);
+        Function<Integer, String> multiply2String = i -> String.valueOf(i * 2);
+        List<String> expectedIntsResult = asList("2", "3", "6", "7");
+        return Stream.of(
+                //@formatter:off
+                //            collection,   filterPredicate,   defaultFunction,   orElseFunction,    expectedException,                expectedResult
+                Arguments.of( null,         null,              null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),     null,              null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    isEven,            null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    isEven,            plus1String,       null,              IllegalArgumentException.class,   null ),
+                Arguments.of( null,         isEven,            plus1String,       multiply2String,   null,                             asList() ),
+                Arguments.of( asList(),     isEven,            plus1String,       multiply2String,   null,                             asList() ),
+                Arguments.of( ints,         isEven,            plus1String,       multiply2String,   null,                             expectedIntsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseNoCollectionFactoryTestCases")
+    @DisplayName("applyOrElse: without collection factory test cases")
+    public <T, E> void applyOrElseNoCollectionFactory_testCases(Collection<T> collection,
+                                                                Predicate<? super T> filterPredicate,
+                                                                Function<? super T, ? extends E> defaultFunction,
+                                                                Function<? super T, ? extends E> orElseFunction,
+                                                                Class<? extends Exception> expectedException,
+                                                                List<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction));
+        }
+    }
+
+
+    static Stream<Arguments> applyOrElseAllParametersTestCases() {
+        List<Integer> ints = asList(1, 2, 3, 6);
+        Predicate<Integer> isOdd = i -> i % 2 == 1;
+        Function<Integer, String> plus1String = i -> String.valueOf(i + 1);
+        Function<Integer, String> multiply2String = i -> String.valueOf(i * 2);
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+        List<String> expectedIntsResultList = asList("2", "4", "4", "12");
+        Set<String> expectedIntsResultSet = new HashSet<>(expectedIntsResultList);
+        return Stream.of(
+                //@formatter:off
+                //            collection,   filterPredicate,   defaultFunction,   orElseFunction,    collectionFactory,  expectedException,                expectedResult
+                Arguments.of( null,         null,              null,              null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),     null,              null,              null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    isOdd,             null,              null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),    isOdd,             plus1String,       null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( null,         isOdd,             plus1String,       multiply2String,   null,               null,                             asList() ),
+                Arguments.of( asList(),     isOdd,             plus1String,       multiply2String,   null,               null,                             asList() ),
+                Arguments.of( ints,         isOdd,             plus1String,       multiply2String,   null,               null,                             expectedIntsResultList ),
+                Arguments.of( ints,         isOdd,             plus1String,       multiply2String,   setSupplier,        null,                             expectedIntsResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseAllParametersTestCases")
+    @DisplayName("applyOrElse: with all parameters test cases")
+    public <T, E> void applyOrElseAllParameters_testCases(Collection<T> collection,
+                                                          Predicate<? super T> filterPredicate,
+                                                          Function<? super T, ? extends E> defaultFunction,
+                                                          Function<? super T, ? extends E> orElseFunction,
+                                                          Supplier<Collection<E>> collectionFactory,
+                                                          Class<? extends Exception> expectedException,
+                                                          Collection<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction, collectionFactory));
+        }
+        else {
+            assertEquals(expectedResult, CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction, collectionFactory));
+        }
+    }
+
+
     @Test
     public void asSet_whenNullIsGiven_thenNewEmptySetIsReturned() {
         Set result = asSet(null);
@@ -89,10 +167,10 @@ public class CollectionUtilTest {
                 Arguments.of( asList(),     null,              null,                  null,                IllegalArgumentException.class,   null ),
                 Arguments.of( asList(1),    null,              null,                  null,                IllegalArgumentException.class,   null ),
                 Arguments.of( asList(1),    isOdd,             null,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,         isOdd,             fromIntegerToString,   null,                null,                             asList()),
-                Arguments.of( asList(),     isOdd,             fromIntegerToString,   null,                null,                             asList()),
-                Arguments.of( ints,         isOdd,             fromIntegerToString,   null,                null,                             asList("1", "3")),
-                Arguments.of( ints,         isOdd,             fromIntegerToString,   setSupplier,         null,                             collectedInts)
+                Arguments.of( null,         isOdd,             fromIntegerToString,   null,                null,                             asList() ),
+                Arguments.of( asList(),     isOdd,             fromIntegerToString,   null,                null,                             asList() ),
+                Arguments.of( ints,         isOdd,             fromIntegerToString,   null,                null,                             asList("1", "3") ),
+                Arguments.of( ints,         isOdd,             fromIntegerToString,   setSupplier,         null,                             collectedInts )
         ); //@formatter:on
     }
 
@@ -370,7 +448,6 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> transposeTestCases() {
         List<List<Integer>> emptyLists = asList(asList(), asList());
-        List<List<Integer>> invalidList = asList(asList(1), asList(2, 3));
         List<List<Integer>> integers = asList(asList(1, 2, 3), asList(4, 5, 6));
         Set<Set<String>> strings = new LinkedHashSet<>() {{
             add(new LinkedHashSet<>() {{
