@@ -34,7 +34,10 @@ public class DateTimeUtil {
      *
      * @throws IllegalArgumentException if {@code epsilon} is less than {@code zero}
      */
-    public static int compare(final LocalDateTime one, final LocalDateTime two, long epsilon, final ChronoUnit timeUnit) {
+    public static int compare(final LocalDateTime one,
+                              final LocalDateTime two,
+                              final long epsilon,
+                              final ChronoUnit timeUnit) {
         if (0 > epsilon) {
             throw new IllegalArgumentException("epsilon must be equals or greater than 0");
         }
@@ -67,7 +70,8 @@ public class DateTimeUtil {
      *
      * @return {@link Optional} of {@link Date}
      */
-    public static Optional<Date> fromLocalDateTimeToDate(final LocalDateTime localDateTime, final ZoneId zoneId) {
+    public static Optional<Date> fromLocalDateTimeToDate(final LocalDateTime localDateTime,
+                                                         final ZoneId zoneId) {
         return ofNullable(localDateTime)
                 .map(lcd -> {
                     ZoneId finalZoneId = Objects.nonNull(zoneId)
@@ -103,7 +107,8 @@ public class DateTimeUtil {
      *
      * @return {@link Optional} of {@link LocalDateTime}
      */
-    public static Optional<LocalDateTime> fromDateToLocalDateTime(final Date date, final ZoneId zoneId) {
+    public static Optional<LocalDateTime> fromDateToLocalDateTime(final Date date,
+                                                                  final ZoneId zoneId) {
         return ofNullable(date)
                 .map(d -> {
                     ZoneId finalZoneId = Objects.nonNull(zoneId)

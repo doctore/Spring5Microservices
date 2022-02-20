@@ -40,7 +40,9 @@ public class StringUtil {
      *
      * @throws IllegalArgumentException if {@code sizeOfEveryChunk} is lower to 1
      */
-    public static Optional<String> abbreviateMiddle(final String sourceString, final String putInTheMiddle, int sizeOfEveryChunk) {
+    public static Optional<String> abbreviateMiddle(final String sourceString,
+                                                    final String putInTheMiddle,
+                                                    final int sizeOfEveryChunk) {
         if (1 > sizeOfEveryChunk) {
             throw new IllegalArgumentException("sizeOfEveryChunk must be a positive value");
         }
@@ -73,7 +75,8 @@ public class StringUtil {
      *
      * @return {@code true} if {@code sourceString} contains {@code stringToSearch}, {@code false} otherwise.
      */
-    public static boolean containsIgnoreCase(String sourceString, String stringToSearch) {
+    public static boolean containsIgnoreCase(final String sourceString,
+                                             final String stringToSearch) {
         if (Objects.isNull(sourceString) || Objects.isNull(stringToSearch)) {
             return false;
         }
