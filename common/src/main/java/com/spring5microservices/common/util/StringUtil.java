@@ -40,7 +40,9 @@ public class StringUtil {
      *
      * @throws IllegalArgumentException if {@code sizeOfEveryChunk} is lower to 1
      */
-    public static Optional<String> abbreviateMiddle(final String sourceString, final String putInTheMiddle, int sizeOfEveryChunk) {
+    public static Optional<String> abbreviateMiddle(final String sourceString,
+                                                    final String putInTheMiddle,
+                                                    final int sizeOfEveryChunk) {
         if (1 > sizeOfEveryChunk) {
             throw new IllegalArgumentException("sizeOfEveryChunk must be a positive value");
         }
@@ -73,13 +75,14 @@ public class StringUtil {
      *
      * @return {@code true} if {@code sourceString} contains {@code stringToSearch}, {@code false} otherwise.
      */
-    public static boolean containsIgnoreCase(String sourceString, String stringToSearch) {
+    public static boolean containsIgnoreCase(final String sourceString,
+                                             final String stringToSearch) {
         if (Objects.isNull(sourceString) || Objects.isNull(stringToSearch)) {
             return false;
         }
         return sourceString.toLowerCase().contains(stringToSearch.toLowerCase());
     }
-
+final
 
     /**
      * Remove from the given {@code sourceString} all non-numeric characters.
@@ -127,7 +130,7 @@ public class StringUtil {
      */
     public static <T> List<T> splitFromString(final String source,
                                               final String separator,
-                                              int chunkLimit) {
+                                              final int chunkLimit) {
         return (List)splitFromString(source, separator, chunkLimit, DEFAULT_STRING_EXTRACTOR, ArrayList::new);
     }
 
@@ -168,9 +171,9 @@ public class StringUtil {
      * @return {@link Collection}
      */
     public static <T> Collection<T> splitFromString(final String source,
-                                                    Function<String, T> valueExtractor,
+                                                    final Function<String, T> valueExtractor,
                                                     final String separator,
-                                                    Supplier<Collection<T>> collectionFactory) {
+                                                    final Supplier<Collection<T>> collectionFactory) {
         return splitFromString(source, separator, -1, valueExtractor, collectionFactory);
     }
 
@@ -205,7 +208,7 @@ public class StringUtil {
      */
     public static <T> Collection<T> splitFromString(final String source,
                                                     final String separator,
-                                                    int chunkLimit,
+                                                    final int chunkLimit,
                                                     final Function<String, T> valueExtractor,
                                                     final Supplier<Collection<T>> collectionFactory) {
         return ofNullable(source)

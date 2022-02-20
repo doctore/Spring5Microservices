@@ -23,7 +23,7 @@ public class ValidationUtil {
      *
      * @return {@link Validation}
      */
-    public static <E, T> Validation<E, T> combine(Validation<E, T>... validations) {
+    public static <E, T> Validation<E, T> combine(final Validation<E, T>... validations) {
         Validation<E, T> result = Valid.empty();
         if (!ObjectUtils.isEmpty(validations)) {
             for (int i = 0; i < validations.length; i++) {
@@ -43,7 +43,7 @@ public class ValidationUtil {
      *
      * @return {@link Validation}
      */
-    public static <E, T> Validation<E, T> getFirstInvalid(Supplier<Validation<E, T>>... suppliers) {
+    public static <E, T> Validation<E, T> getFirstInvalid(final Supplier<Validation<E, T>>... suppliers) {
         Validation<E, T> result = Valid.empty();
         if (!ObjectUtils.isEmpty(suppliers)) {
             for (int i = 0; i < suppliers.length; i++) {

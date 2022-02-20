@@ -28,7 +28,9 @@ public class NumberUtil {
      *
      * @throws IllegalArgumentException if {@code numberOfDecimals} is less than {@code zero}
      */
-    public static int compare(final BigDecimal one, BigDecimal two, int numberOfDecimals) {
+    public static int compare(final BigDecimal one,
+                              final BigDecimal two,
+                              final int numberOfDecimals) {
         Assert.isTrue(0 <= numberOfDecimals, "numberOfDecimals must be equals or greater than 0");
         if (null == one) {
             return null == two ? 0 : -1;
@@ -56,7 +58,8 @@ public class NumberUtil {
      *
      * @throws IllegalArgumentException if {@code clazzReturnedInstance} is {@code null}
      */
-    public static <T extends Number> Optional<T> fromString(final String potentialNumber, final Class<T> clazzReturnedInstance) {
+    public static <T extends Number> Optional<T> fromString(final String potentialNumber,
+                                                            final Class<T> clazzReturnedInstance) {
         if (null == clazzReturnedInstance) {
             throw new IllegalArgumentException("clazzReturnedInstance must be not null");
         }
