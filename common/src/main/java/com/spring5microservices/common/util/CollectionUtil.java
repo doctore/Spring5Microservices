@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.dto.PairDto;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -204,7 +205,8 @@ public class CollectionUtil {
      *
      * @return {@link List}
      */
-    public static <T, E> List<E> collectProperty(final Collection<T> collection, Function<? super T, E> keyExtractor) {
+    public static <T, E> List<E> collectProperty(final Collection<T> collection,
+                                                 final Function<? super T, E> keyExtractor) {
         return (List)collectProperty(collection, keyExtractor, ArrayList::new);
     }
 
@@ -221,7 +223,8 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      */
-    public static <T, E> Collection<E> collectProperty(final Collection<T> collection, Function<? super T, E> keyExtractor,
+    public static <T, E> Collection<E> collectProperty(final Collection<T> collection,
+                                                       final Function<? super T, E> keyExtractor,
                                                        final Supplier<Collection<E>> collectionFactory) {
         return ofNullable(collection)
                 .map(c -> {
@@ -497,6 +500,32 @@ public class CollectionUtil {
                 }
             }
             result.add(newRow);
+        }
+        return result;
+    }
+
+
+    /**
+     *    Returns a {@link List} containing pairs consisting of all elements of this iterable collection paired with
+     * their index. Indices start at {@code 0}.
+     *
+     * Example:
+     *   ["d", "h", "y"]  =>  [(0, "d"), (1, "h"), (2, "y")]
+     *
+     * @param collectionToZip
+     *    {@link Collection} to extract: index and element
+     *
+     * @return {@link List} of {@link PairDto}s
+     */
+    public static <T> List<PairDto<Integer, T>> zipWithIndex(Collection<T> collectionToZip) {
+        if (CollectionUtils.isEmpty(collectionToZip)) {
+            return new ArrayList<>();
+        }
+        int i = 0;
+        List<PairDto<Integer, T>> result = new ArrayList<>(collectionToZip.size());
+        for (T element: collectionToZip) {
+            result.add(PairDto.of(i, element));
+            i++;
         }
         return result;
     }
