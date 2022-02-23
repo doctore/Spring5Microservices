@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
 import com.spring5microservices.common.PizzaDto;
+import com.spring5microservices.common.dto.PairDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -468,7 +469,6 @@ public class CollectionUtilTest {
         List<List<Integer>> integersResult = asList(asList(1, 4), asList(2, 5), asList(3, 6));
         List<List<String>> stringsResult = asList(asList("a1", "b1", "c1"), asList("a2", "b2", "c2"));
         List<List<Integer>> differentInnerListSizesResult = asList(asList(1, 0, 7), asList(2, 8), asList(9));
-
         return Stream.of(
                 //@formatter:off
                 //            collectionsToTranspose,    expectedResult
@@ -486,6 +486,35 @@ public class CollectionUtilTest {
     @DisplayName("transpose: test cases")
     public <T> void transpose_testCases(Collection<Collection<T>> collectionsToTranspose, List<List<T>> expectedResult) {
         assertEquals(expectedResult, CollectionUtil.transpose(collectionsToTranspose));
+    }
+
+
+    static Stream<Arguments> zipWithIndexTestCases() {
+        List<Integer> integers = asList(1, 3, 5);
+        Set<String> strings = new LinkedHashSet<>() {{
+            add("A");
+            add("E");
+            add("G");
+            add("M");
+        }};
+        List<PairDto<Integer, Integer>> integersResult = asList(PairDto.of(0, 1), PairDto.of(1, 3), PairDto.of(2, 5));
+        List<PairDto<Integer, String>> stringsResult = asList(PairDto.of(0, "A"), PairDto.of(1, "E"), PairDto.of(2, "G"), PairDto.of(3, "M"));
+        return Stream.of(
+                //@formatter:off
+                //            collectionToZip,   expectedResult
+                Arguments.of( null,              new ArrayList<>() ),
+                Arguments.of( asList(),          new ArrayList<>() ),
+                Arguments.of( integers,          integersResult ),
+                Arguments.of( strings,           stringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("zipWithIndexTestCases")
+    @DisplayName("zipWithIndex: test cases")
+    public <T> void zipWithIndex_testCases(Collection<T> collectionToZip, List<PairDto<Integer, T>> expectedResult) {
+        List<PairDto<Integer, T>> zippedList = CollectionUtil.zipWithIndex(collectionToZip);
+        assertEquals(expectedResult, zippedList);
     }
 
 }
