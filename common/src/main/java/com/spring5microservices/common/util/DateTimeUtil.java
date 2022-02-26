@@ -53,6 +53,7 @@ public class DateTimeUtil {
         ChronoUnit finalTimeUnit = Objects.nonNull(timeUnit)
                 ? timeUnit
                 : ChronoUnit.MINUTES;
+
         long difference = finalTimeUnit.between(one, two);
         return abs(difference) <= epsilon
                 ? 0
@@ -77,6 +78,7 @@ public class DateTimeUtil {
                     ZoneId finalZoneId = Objects.nonNull(zoneId)
                             ? zoneId
                             : ZoneId.systemDefault();
+
                     return Date.from(
                             lcd.atZone(finalZoneId).toInstant()
                     );
@@ -114,6 +116,7 @@ public class DateTimeUtil {
                     ZoneId finalZoneId = Objects.nonNull(zoneId)
                             ? zoneId
                             : ZoneId.systemDefault();
+
                     return d.toInstant()
                             .atZone(finalZoneId)
                             .toLocalDateTime();
