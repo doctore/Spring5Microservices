@@ -5,14 +5,20 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.CollectionUtil.asSet;
+import static com.spring5microservices.common.util.StringUtil.abbreviateMiddle;
+import static com.spring5microservices.common.util.StringUtil.containsIgnoreCase;
+import static com.spring5microservices.common.util.StringUtil.sliding;
+import static com.spring5microservices.common.util.StringUtil.splitBySize;
 import static com.spring5microservices.common.util.StringUtil.splitFromString;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
@@ -42,10 +48,10 @@ public class StringUtilTest {
     public void compareToBigDecimal_testCases(String sourceString, String putInTheMiddle, int sizeOfEveryChunk,
                                               Class<? extends Exception> expectedException, Optional<String> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> StringUtil.abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk));
+            assertThrows(expectedException, () -> abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk));
         }
         else {
-            Optional<String> result = StringUtil.abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk);
+            Optional<String> result = abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk);
             assertEquals(expectedResult, result);
         }
     }
@@ -71,7 +77,7 @@ public class StringUtilTest {
     @MethodSource("containsIgnoreCaseTestCases")
     @DisplayName("containsIgnoreCase: test cases")
     public void containsIgnoreCase_testCases(String sourceString, String stringToSearch, boolean expectedResult) {
-        boolean result = StringUtil.containsIgnoreCase(sourceString, stringToSearch);
+        boolean result = containsIgnoreCase(sourceString, stringToSearch);
         assertEquals(expectedResult, result);
     }
 
@@ -94,6 +100,60 @@ public class StringUtilTest {
     @DisplayName("keepOnlyDigits: test cases")
     public void keepOnlyDigits_testCases(String sourceString, Optional<String> expectedResult) {
         Optional<String> result = StringUtil.keepOnlyDigits(sourceString);
+        assertEquals(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> splitBySizeTestCases() {
+        return Stream.of(
+                //@formatter:off
+                //            sourceString,   size,   expectedResult
+                Arguments.of( null,           -1,     asList() ),
+                Arguments.of( null,            3,     asList() ),
+                Arguments.of( "",             -1,     asList("") ),
+                Arguments.of( "",              3,     asList("") ),
+                Arguments.of( "12345",        -1,     asList("12345") ),
+                Arguments.of( "12345",         8,     asList("12345") ),
+                Arguments.of( "12345",         3,     asList("123", "45") ),
+                Arguments.of( "1234",          2,     asList("12", "34") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("splitBySizeTestCases")
+    @DisplayName("splitBySize: test cases")
+    public void splitBySize_testCases(String sourceString, int size,
+                                      List<String> expectedResult) {
+        List<String> result = splitBySize(sourceString, size);
+        assertEquals(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> slidingTestCases() {
+        String emptyString = "";
+        String stringValue1 = "abcdefg";
+        String stringValue2 = "1234";
+
+        List<String> stringValue1Size8Result = asList("abcdefg");
+        List<String> stringValue1Size3Result = asList("abc", "bcd", "cde", "def", "efg");
+        List<String> stringValue2Size2Result = asList("12", "23", "34");
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   size,   expectedResult
+                Arguments.of( null,               5,      new ArrayList<>() ),
+                Arguments.of( emptyString,        0,      asList("") ),
+                Arguments.of( emptyString,        5,      asList("") ),
+                Arguments.of( stringValue1,       8,      stringValue1Size8Result ),
+                Arguments.of( stringValue1,       3,      stringValue1Size3Result ),
+                Arguments.of( stringValue2,       2,      stringValue2Size2Result )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("slidingTestCases")
+    @DisplayName("sliding: test cases")
+    public void sliding_testCases(String sourceString, int size, List<String> expectedResult) {
+        List<String> result = sliding(sourceString, size);
         assertEquals(expectedResult, result);
     }
 

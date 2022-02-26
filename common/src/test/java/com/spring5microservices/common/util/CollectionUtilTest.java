@@ -23,7 +23,22 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.CollectionUtil.applyOrElse;
 import static com.spring5microservices.common.util.CollectionUtil.asSet;
+import static com.spring5microservices.common.util.CollectionUtil.collect;
+import static com.spring5microservices.common.util.CollectionUtil.collectProperty;
+import static com.spring5microservices.common.util.CollectionUtil.concatUniqueElements;
+import static com.spring5microservices.common.util.CollectionUtil.foldLeft;
+import static com.spring5microservices.common.util.CollectionUtil.iterate;
+import static com.spring5microservices.common.util.CollectionUtil.removeKeys;
+import static com.spring5microservices.common.util.CollectionUtil.slice;
+import static com.spring5microservices.common.util.CollectionUtil.sliding;
+import static com.spring5microservices.common.util.CollectionUtil.split;
+import static com.spring5microservices.common.util.CollectionUtil.transpose;
+import static com.spring5microservices.common.util.CollectionUtil.unzip;
+import static com.spring5microservices.common.util.CollectionUtil.zip;
+import static com.spring5microservices.common.util.CollectionUtil.zipAll;
+import static com.spring5microservices.common.util.CollectionUtil.zipWithIndex;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -38,31 +53,39 @@ public class CollectionUtilTest {
         List<String> expectedIntsResult = asList("2", "3", "6", "7");
         return Stream.of(
                 //@formatter:off
-                //            collection,   filterPredicate,   defaultFunction,   orElseFunction,    expectedException,                expectedResult
-                Arguments.of( null,         null,              null,              null,              IllegalArgumentException.class,   null ),
-                Arguments.of( asList(),     null,              null,              null,              IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    isEven,            null,              null,              IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    isEven,            plus1String,       null,              IllegalArgumentException.class,   null ),
-                Arguments.of( null,         isEven,            plus1String,       multiply2String,   null,                             asList() ),
-                Arguments.of( asList(),     isEven,            plus1String,       multiply2String,   null,                             asList() ),
-                Arguments.of( ints,         isEven,            plus1String,       multiply2String,   null,                             expectedIntsResult )
+                //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    expectedException,                expectedResult
+                Arguments.of( null,               null,              null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           null,              null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          isEven,            null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          isEven,            plus1String,       null,              IllegalArgumentException.class,   null ),
+                Arguments.of( null,               isEven,            plus1String,       multiply2String,   null,                             asList() ),
+                Arguments.of( asList(),           isEven,            plus1String,       multiply2String,   null,                             asList() ),
+                Arguments.of( ints,               isEven,            plus1String,       multiply2String,   null,                             expectedIntsResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("applyOrElseNoCollectionFactoryTestCases")
     @DisplayName("applyOrElse: without collection factory test cases")
-    public <T, E> void applyOrElseNoCollectionFactory_testCases(Collection<T> collection,
+    public <T, E> void applyOrElseNoCollectionFactory_testCases(Collection<T> sourceCollection,
                                                                 Predicate<? super T> filterPredicate,
                                                                 Function<? super T, ? extends E> defaultFunction,
                                                                 Function<? super T, ? extends E> orElseFunction,
                                                                 Class<? extends Exception> expectedException,
                                                                 List<E> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction));
+            assertThrows(expectedException,
+                    () -> applyOrElse(
+                            sourceCollection, filterPredicate, defaultFunction, orElseFunction
+                    )
+            );
         }
         else {
-            assertEquals(expectedResult, CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction));
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceCollection, filterPredicate, defaultFunction, orElseFunction
+                    )
+            );
         }
     }
 
@@ -77,22 +100,22 @@ public class CollectionUtilTest {
         Set<String> expectedIntsResultSet = new HashSet<>(expectedIntsResultList);
         return Stream.of(
                 //@formatter:off
-                //            collection,   filterPredicate,   defaultFunction,   orElseFunction,    collectionFactory,  expectedException,                expectedResult
-                Arguments.of( null,         null,              null,              null,              null,               IllegalArgumentException.class,   null ),
-                Arguments.of( asList(),     null,              null,              null,              null,               IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    isOdd,             null,              null,              null,               IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    isOdd,             plus1String,       null,              null,               IllegalArgumentException.class,   null ),
-                Arguments.of( null,         isOdd,             plus1String,       multiply2String,   null,               null,                             asList() ),
-                Arguments.of( asList(),     isOdd,             plus1String,       multiply2String,   null,               null,                             asList() ),
-                Arguments.of( ints,         isOdd,             plus1String,       multiply2String,   null,               null,                             expectedIntsResultList ),
-                Arguments.of( ints,         isOdd,             plus1String,       multiply2String,   setSupplier,        null,                             expectedIntsResultSet )
+                //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    collectionFactory,  expectedException,                expectedResult
+                Arguments.of( null,               null,              null,              null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           null,              null,              null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          isOdd,             null,              null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          isOdd,             plus1String,       null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( null,               isOdd,             plus1String,       multiply2String,   null,               null,                             asList() ),
+                Arguments.of( asList(),           isOdd,             plus1String,       multiply2String,   null,               null,                             asList() ),
+                Arguments.of( ints,               isOdd,             plus1String,       multiply2String,   null,               null,                             expectedIntsResultList ),
+                Arguments.of( ints,               isOdd,             plus1String,       multiply2String,   setSupplier,        null,                             expectedIntsResultSet )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("applyOrElseAllParametersTestCases")
     @DisplayName("applyOrElse: with all parameters test cases")
-    public <T, E> void applyOrElseAllParameters_testCases(Collection<T> collection,
+    public <T, E> void applyOrElseAllParameters_testCases(Collection<T> sourceCollection,
                                                           Predicate<? super T> filterPredicate,
                                                           Function<? super T, ? extends E> defaultFunction,
                                                           Function<? super T, ? extends E> orElseFunction,
@@ -100,10 +123,18 @@ public class CollectionUtilTest {
                                                           Class<? extends Exception> expectedException,
                                                           Collection<E> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction, collectionFactory));
+            assertThrows(expectedException,
+                    () -> applyOrElse(
+                            sourceCollection, filterPredicate, defaultFunction, orElseFunction, collectionFactory
+                    )
+            );
         }
         else {
-            assertEquals(expectedResult, CollectionUtil.applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction, collectionFactory));
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceCollection, filterPredicate, defaultFunction, orElseFunction, collectionFactory
+                    )
+            );
         }
     }
 
@@ -128,29 +159,29 @@ public class CollectionUtilTest {
         Function<Integer, String> fromIntegerToString = i -> i.toString();
         return Stream.of(
                 //@formatter:off
-                //            collection,   filterPredicate,   mapFunction,           expectedException,                expectedResult
-                Arguments.of( null,         null,              null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( asList(),     null,              null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    null,              null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    isEven,            null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( null,         isEven,            fromIntegerToString,   null,                             asList()),
-                Arguments.of( asList(),     isEven,            fromIntegerToString,   null,                             asList()),
-                Arguments.of( ints,         isEven,            fromIntegerToString,   null,                             asList("2", "6"))
+                //            sourceCollection,   filterPredicate,   mapFunction,           expectedException,                expectedResult
+                Arguments.of( null,               null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          isEven,            null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( null,               isEven,            fromIntegerToString,   null,                             asList()),
+                Arguments.of( asList(),           isEven,            fromIntegerToString,   null,                             asList()),
+                Arguments.of( ints,               isEven,            fromIntegerToString,   null,                             asList("2", "6"))
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("collectNoCollectionFactoryTestCases")
     @DisplayName("collect: without collection factory test cases")
-    public <T, E> void collectNoCollectionFactory_testCases(Collection<T> collection, Predicate<? super T> filterPredicate,
+    public <T, E> void collectNoCollectionFactory_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
                                                             Function<? super T, ? extends E> mapFunction,
                                                             Class<? extends Exception> expectedException,
                                                             List<E> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.collect(collection, filterPredicate, mapFunction));
+            assertThrows(expectedException, () -> collect(sourceCollection, filterPredicate, mapFunction));
         }
         else {
-            assertEquals(expectedResult, CollectionUtil.collect(collection, filterPredicate, mapFunction));
+            assertEquals(expectedResult, collect(sourceCollection, filterPredicate, mapFunction));
         }
     }
 
@@ -163,31 +194,31 @@ public class CollectionUtilTest {
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         return Stream.of(
                 //@formatter:off
-                //            collection,   filterPredicate,   mapFunction,           collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,         null,              null,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( asList(),     null,              null,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    null,              null,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( asList(1),    isOdd,             null,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,         isOdd,             fromIntegerToString,   null,                null,                             asList() ),
-                Arguments.of( asList(),     isOdd,             fromIntegerToString,   null,                null,                             asList() ),
-                Arguments.of( ints,         isOdd,             fromIntegerToString,   null,                null,                             asList("1", "3") ),
-                Arguments.of( ints,         isOdd,             fromIntegerToString,   setSupplier,         null,                             collectedInts )
+                //            sourceCollection,   filterPredicate,   mapFunction,           collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           null,              null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          null,              null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( asList(1),          isOdd,             null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               isOdd,             fromIntegerToString,   null,                null,                             asList() ),
+                Arguments.of( asList(),           isOdd,             fromIntegerToString,   null,                null,                             asList() ),
+                Arguments.of( ints,               isOdd,             fromIntegerToString,   null,                null,                             asList("1", "3") ),
+                Arguments.of( ints,               isOdd,             fromIntegerToString,   setSupplier,         null,                             collectedInts )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("collectAllParametersTestCases")
     @DisplayName("collect: with all parameters test cases")
-    public <T, E> void collectAllParameters_testCases(Collection<T> collection, Predicate<? super T> filterPredicate,
+    public <T, E> void collectAllParameters_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
                                                       Function<? super T, ? extends E> mapFunction,
                                                       Supplier<Collection<E>> collectionFactory,
                                                       Class<? extends Exception> expectedException,
                                                       Collection<E> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.collect(collection, filterPredicate, mapFunction, collectionFactory));
+            assertThrows(expectedException, () -> collect(sourceCollection, filterPredicate, mapFunction, collectionFactory));
         }
         else {
-            assertEquals(expectedResult, CollectionUtil.collect(collection, filterPredicate, mapFunction, collectionFactory));
+            assertEquals(expectedResult, collect(sourceCollection, filterPredicate, mapFunction, collectionFactory));
         }
     }
 
@@ -199,7 +230,7 @@ public class CollectionUtilTest {
         Function<PizzaDto, Double> getCost = PizzaDto::getCost;
         return Stream.of(
                 //@formatter:off
-                //            collection,                                 keyExtractor,   expectedResult
+                //            sourceCollection,                           keyExtractor,   expectedResult
                 Arguments.of( null,                                       null,           asList() ),
                 Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getName,        asList(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
                 Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getCost,        asList(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
@@ -209,9 +240,9 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectPropertyNoCollectionFactoryTestCases")
     @DisplayName("collectProperty: without collection factory test cases")
-    public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> collection, Function<PizzaDto, String> keyExtractor,
+    public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> sourceCollection, Function<PizzaDto, String> keyExtractor,
                                                              Collection<String> expectedResult) {
-        Collection<String> result = CollectionUtil.collectProperty(collection, keyExtractor);
+        Collection<String> result = collectProperty(sourceCollection, keyExtractor);
         assertEquals(expectedResult, result);
     }
 
@@ -224,7 +255,7 @@ public class CollectionUtilTest {
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         return Stream.of(
                 //@formatter:off
-                //            collection,                                 keyExtractor,   collectionFactory,   expectedResult
+                //            sourceCollection,                           keyExtractor,   collectionFactory,   expectedResult
                 Arguments.of( null,                                       null,           null,                asList() ),
                 Arguments.of( null,                                       null,           setSupplier,         new HashSet<>() ),
                 Arguments.of( asList(carbonaraCheap, carbonaraExpense),   getName,        null,                asList(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
@@ -237,9 +268,9 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectPropertyAllParametersTestCases")
     @DisplayName("collectProperty: with all parameters test cases")
-    public void collectPropertyAllParameters_testCases(List<PizzaDto> collection, Function<PizzaDto, String> keyExtractor,
+    public void collectPropertyAllParameters_testCases(List<PizzaDto> sourceCollection, Function<PizzaDto, String> keyExtractor,
                                                        Supplier<Collection<String>> collectionFactory, Collection<String> expectedResult) {
-        Collection<String> result = CollectionUtil.collectProperty(collection, keyExtractor, collectionFactory);
+        Collection<String> result = collectProperty(sourceCollection, keyExtractor, collectionFactory);
         assertEquals(expectedResult, result);
     }
 
@@ -260,7 +291,7 @@ public class CollectionUtilTest {
     @DisplayName("concatUniqueElements: test cases")
     public void concatUniqueElements_testCases(List<Integer> collection1ToConcat, List<Integer> collection2ToConcat,
                                                List<Integer> collection3ToConcat, LinkedHashSet<Integer> expectedResult) {
-        Set<Integer> concatedValues = CollectionUtil.concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat);
+        Set<Integer> concatedValues = concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat);
         assertEquals(expectedResult, concatedValues);
     }
 
@@ -272,25 +303,25 @@ public class CollectionUtilTest {
         BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
         return Stream.of(
                 //@formatter:off
-                //            collection,   initialValue,   accumulator,  expectedException,                expectedResult
-                Arguments.of( null,         null,           null,         IllegalArgumentException.class,   null ),
-                Arguments.of( asList(),     1,              multiply,     null,                             1 ),
-                Arguments.of( integers,     0,              null,         null,                             0 ),
-                Arguments.of( integers,     1,              multiply,     null,                             15 ),
-                Arguments.of( strings,      0,              sumLength,    null,                             6 )
+                //            sourceCollection,   initialValue,   accumulator,  expectedException,                expectedResult
+                Arguments.of( null,               null,           null,         IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           1,              multiply,     null,                             1 ),
+                Arguments.of( integers,           0,              null,         null,                             0 ),
+                Arguments.of( integers,           1,              multiply,     null,                             15 ),
+                Arguments.of( strings,            0,              sumLength,    null,                             6 )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("foldLeftTestCases")
     @DisplayName("foldLeft: test cases")
-    public <T, E> void foldLeft_testCases(Collection<T> collection, E initialValue, BiFunction<E, ? super T, E> accumulator,
+    public <T, E> void foldLeft_testCases(Collection<T> sourceCollection, E initialValue, BiFunction<E, ? super T, E> accumulator,
                                           Class<? extends Exception> expectedException, E expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.foldLeft(collection, initialValue, accumulator));
+            assertThrows(expectedException, () -> foldLeft(sourceCollection, initialValue, accumulator));
         }
         else {
-            assertEquals(expectedResult, CollectionUtil.foldLeft(collection, initialValue, accumulator));
+            assertEquals(expectedResult, foldLeft(sourceCollection, initialValue, accumulator));
         }
     }
 
@@ -316,10 +347,10 @@ public class CollectionUtilTest {
     public <T> void iterate_testCases(T initialValue, UnaryOperator<T> applyFunction, Predicate<T> untilPredicate,
                                       Class<? extends Exception> expectedException, T expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.iterate(initialValue, applyFunction, untilPredicate));
+            assertThrows(expectedException, () -> iterate(initialValue, applyFunction, untilPredicate));
         }
         else {
-            assertEquals(expectedResult, CollectionUtil.iterate(initialValue, applyFunction, untilPredicate));
+            assertEquals(expectedResult, iterate(initialValue, applyFunction, untilPredicate));
         }
     }
 
@@ -348,44 +379,44 @@ public class CollectionUtilTest {
     @MethodSource("removeKeysTestCases")
     @DisplayName("removeKeys: test cases")
     public <T, E> void removeKeys_testCases(Map<T, E> sourceMap, Collection<T> keysToExclude, HashMap<T, E> expectedResult) {
-        Map<T, E> filteredMap = CollectionUtil.removeKeys(sourceMap, keysToExclude);
+        Map<T, E> filteredMap = removeKeys(sourceMap, keysToExclude);
         assertEquals(expectedResult, filteredMap);
     }
 
 
     static Stream<Arguments> sliceTestCases() {
-        Set<Integer> ints = new LinkedHashSet<>(asList(11, 12, 13, 14));
-        List<String> letters = asList("a", "b", "c", "d", "f");
+        Set<Integer> integers = new LinkedHashSet<>(asList(11, 12, 13, 14));
+        List<String> strings = asList("a", "b", "c", "d", "f");
         return Stream.of(
                 //@formatter:off
-                //            collection,   from,   to,   expectedException,                expectedResult
-                Arguments.of( null,         2,      1,    IllegalArgumentException.class,   null ),
-                Arguments.of( asList(),     3,      1,    IllegalArgumentException.class,   null ),
-                Arguments.of( ints,         1,      0,    IllegalArgumentException.class,   null ),
-                Arguments.of( null,         0,      1,    null,                             asList() ),
-                Arguments.of( asList(),     0,      1,    null,                             asList() ),
-                Arguments.of( ints,        -1,      0,    null,                             asList() ),
-                Arguments.of( ints,        -1,      3,    null,                             asList(11, 12, 13) ),
-                Arguments.of( ints,         1,      3,    null,                             asList(12, 13) ),
-                Arguments.of( ints,         2,      5,    null,                             asList(13, 14) ),
-                Arguments.of( ints,         6,      8,    null,                             asList() ),
-                Arguments.of( letters,     -1,      1,    null,                             asList("a") ),
-                Arguments.of( letters,      2,      3,    null,                             asList("c") ),
-                Arguments.of( letters,      4,      9,    null,                             asList("f") )
+                //            sourceCollection,   from,   to,   expectedException,                expectedResult
+                Arguments.of( null,               2,      1,    IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           3,      1,    IllegalArgumentException.class,   null ),
+                Arguments.of( integers,           1,      0,    IllegalArgumentException.class,   null ),
+                Arguments.of( null,               0,      1,    null,                             asList() ),
+                Arguments.of( asList(),           0,      1,    null,                             asList() ),
+                Arguments.of( integers,          -1,      0,    null,                             asList() ),
+                Arguments.of( integers,          -1,      3,    null,                             asList(11, 12, 13) ),
+                Arguments.of( integers,           1,      3,    null,                             asList(12, 13) ),
+                Arguments.of( integers,           2,      5,    null,                             asList(13, 14) ),
+                Arguments.of( integers,           6,      8,    null,                             asList() ),
+                Arguments.of( strings,           -1,      1,    null,                             asList("a") ),
+                Arguments.of( strings,            2,      3,    null,                             asList("c") ),
+                Arguments.of( strings,            4,      9,    null,                             asList("f") )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("sliceTestCases")
     @DisplayName("slice: test cases")
-    public <T> void slice_testCases(Collection<T> collection, int from, int until,
+    public <T> void slice_testCases(Collection<T> sourceCollection, int from, int until,
                                     Class<? extends Exception> expectedException,
                                     List<T> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> CollectionUtil.slice(collection, from, until));
+            assertThrows(expectedException, () -> slice(sourceCollection, from, until));
         }
         else {
-            assertEquals(expectedResult, CollectionUtil.slice(collection, from, until));
+            assertEquals(expectedResult, slice(sourceCollection, from, until));
         }
     }
 
@@ -400,21 +431,21 @@ public class CollectionUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            collectionToSlide,   size,                      expectedResult
-                Arguments.of( null,                5,                         new ArrayList<>() ),
-                Arguments.of( asList(),            0,                         new ArrayList<>() ),
-                Arguments.of( integers,            integers.size() + 1,       asList(integers) ),
-                Arguments.of( integers,            2,                         asList(asList(1, 3), asList(3, 5)) ),
-                Arguments.of( strings,             2,                         asList(asList("A", "E"), asList("E", "G"), asList("G", "M")) ),
-                Arguments.of( strings,             3,                         asList(asList("A", "E", "G"), asList("E", "G", "M")) )
+                //            sourceCollection,   size,                      expectedResult
+                Arguments.of( null,               5,                         new ArrayList<>() ),
+                Arguments.of( asList(),           0,                         new ArrayList<>() ),
+                Arguments.of( integers,           integers.size() + 1,       asList(integers) ),
+                Arguments.of( integers,           2,                         asList(asList(1, 3), asList(3, 5)) ),
+                Arguments.of( strings,            2,                         asList(asList("A", "E"), asList("E", "G"), asList("G", "M")) ),
+                Arguments.of( strings,            3,                         asList(asList("A", "E", "G"), asList("E", "G", "M")) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("slidingTestCases")
     @DisplayName("sliding: test cases")
-    public <T> void sliding_testCases(Collection<T> collectionToSlide, int size, List<List<T>> expectedResult) {
-        List<List<T>> slidedList = CollectionUtil.sliding(collectionToSlide, size);
+    public <T> void sliding_testCases(Collection<T> sourceCollection, int size, List<List<T>> expectedResult) {
+        List<List<T>> slidedList = sliding(sourceCollection, size);
         assertEquals(expectedResult, slidedList);
     }
 
@@ -429,20 +460,20 @@ public class CollectionUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            collectionToSplit,   size,                  expectedResult
-                Arguments.of( null,                5,                     new ArrayList<>() ),
-                Arguments.of( asList(),            0,                     new ArrayList<>() ),
-                Arguments.of( integers,            integers.size() + 1,   asList(integers) ),
-                Arguments.of( strings,             2,                     asList(asList("A", "E"), asList("G", "M")) ),
-                Arguments.of( strings,             3,                     asList(asList("A", "E", "G"), asList("M")) )
+                //            sourceCollection,   size,                  expectedResult
+                Arguments.of( null,               5,                     new ArrayList<>() ),
+                Arguments.of( asList(),           0,                     new ArrayList<>() ),
+                Arguments.of( integers,           integers.size() + 1,   asList(integers) ),
+                Arguments.of( strings,            2,                     asList(asList("A", "E"), asList("G", "M")) ),
+                Arguments.of( strings,            3,                     asList(asList("A", "E", "G"), asList("M")) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("splitTestCases")
     @DisplayName("split: test cases")
-    public <T> void split_testCases(Collection<T> collectionToSplit, int size, List<List<T>> expectedResult) {
-        List<List<T>> splittedList = CollectionUtil.split(collectionToSplit, size);
+    public <T> void split_testCases(Collection<T> sourceCollection, int size, List<List<T>> expectedResult) {
+        List<List<T>> splittedList = split(sourceCollection, size);
         assertEquals(expectedResult, splittedList);
     }
 
@@ -466,12 +497,23 @@ public class CollectionUtilTest {
         }};
         List<List<Integer>> differentInnerListSizes = asList(asList(1, 2), asList(0), asList(7, 8, 9));
 
-        List<List<Integer>> integersResult = asList(asList(1, 4), asList(2, 5), asList(3, 6));
-        List<List<String>> stringsResult = asList(asList("a1", "b1", "c1"), asList("a2", "b2", "c2"));
-        List<List<Integer>> differentInnerListSizesResult = asList(asList(1, 0, 7), asList(2, 8), asList(9));
+        List<List<Integer>> integersResult = asList(
+                asList(1, 4),
+                asList(2, 5),
+                asList(3, 6)
+        );
+        List<List<String>> stringsResult = asList(
+                asList("a1", "b1", "c1"),
+                asList("a2", "b2", "c2")
+        );
+        List<List<Integer>> differentInnerListSizesResult = asList(
+                asList(1, 0, 7),
+                asList(2, 8),
+                asList(9)
+        );
         return Stream.of(
                 //@formatter:off
-                //            collectionsToTranspose,    expectedResult
+                //            sourceCollection,          expectedResult
                 Arguments.of( null,                      new ArrayList<>() ),
                 Arguments.of( new ArrayList<>(),         new ArrayList<>() ),
                 Arguments.of( emptyLists,                new ArrayList<>() ),
@@ -484,8 +526,143 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("transposeTestCases")
     @DisplayName("transpose: test cases")
-    public <T> void transpose_testCases(Collection<Collection<T>> collectionsToTranspose, List<List<T>> expectedResult) {
-        assertEquals(expectedResult, CollectionUtil.transpose(collectionsToTranspose));
+    public <T> void transpose_testCases(Collection<Collection<T>> sourceCollection, List<List<T>> expectedResult) {
+        assertEquals(expectedResult, transpose(sourceCollection));
+    }
+
+
+    static Stream<Arguments> unzipTestCases() {
+        List<PairDto<String, Integer>> pairList = asList(PairDto.of("a", 1), PairDto.of("b", 2), PairDto.of("c", 3));
+        Set<PairDto<String, Boolean>> pairSet = new LinkedHashSet<>() {{
+            add(PairDto.of("true", true));
+            add(PairDto.of("false", false));
+        }};
+
+        PairDto emptyPairResult = PairDto.of(asList(), asList());
+        PairDto<List<String>, List<Integer>> pairListResult = PairDto.of(
+                asList("a", "b", "c"),
+                asList(1, 2, 3)
+        );
+        PairDto<List<String>, List<Boolean>> pairSetResult = PairDto.of(
+                asList("true", "false"),
+                asList(true, false)
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,    expectedResult
+                Arguments.of( null,                emptyPairResult ),
+                Arguments.of( new ArrayList<>(),   emptyPairResult ),
+                Arguments.of( pairList,            pairListResult ),
+                Arguments.of( pairSet,             pairSetResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("unzipTestCases")
+    @DisplayName("unzip: test cases")
+    public <T, E> void unzip_testCases(Collection<PairDto<T, E>> sourceCollection, PairDto<List<T>, List<E>> expectedResult) {
+        assertEquals(expectedResult, unzip(sourceCollection));
+    }
+
+
+    static Stream<Arguments> zipTestCases() {
+        List<Integer> integers = asList(11, 31, 55);
+        List<Boolean> booleans = asList(true, false);
+        List<String> strings = asList("h", "o", "p");
+
+        List<PairDto<Integer, Boolean>> integersBooleansResult = asList(
+                PairDto.of(11, true),
+                PairDto.of(31, false)
+        );
+        List<PairDto<Integer, String>> integersStringsResult = asList(
+                PairDto.of(11, "h"),
+                PairDto.of(31, "o"),
+                PairDto.of(55, "p")
+        );
+        List<PairDto<Boolean, String>> booleansStringsResult = asList(
+                PairDto.of(true, "h"),
+                PairDto.of(false, "o")
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceLeftCollection,   sourceRightCollection,   expectedResult
+                Arguments.of( null,                   null,                    asList() ),
+                Arguments.of( null,                   integers,                asList() ),
+                Arguments.of( integers,               null,                    asList() ),
+                Arguments.of( asList(),               integers,                asList() ),
+                Arguments.of( integers,               asList(),                asList() ),
+                Arguments.of( integers,               booleans,                integersBooleansResult ),
+                Arguments.of( integers,               strings,                 integersStringsResult ),
+                Arguments.of( booleans,               strings,                 booleansStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("zipTestCases")
+    @DisplayName("zip: test cases")
+    public <T, E> void zip_testCases(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection,
+                                     List<PairDto<T, E>> expectedResult) {
+        assertEquals(expectedResult, zip(sourceLeftCollection, sourceRightCollection));
+    }
+
+
+    static Stream<Arguments> zipAllTestCases() {
+        List<Integer> integers = asList(11, 31, 55);
+        List<Boolean> booleans = asList(true, false);
+        List<String> strings = asList("h", "o", "p");
+        Integer defaultIntegerValue = 99;
+        Boolean defaultBooleanValue = true;
+        String defaultStringValue = "x";
+
+        List<PairDto<Object, Boolean>> booleansWithNullResult = asList(
+                PairDto.of(null, true),
+                PairDto.of(null, false)
+        );
+        List<PairDto<Integer, Object>> integersWithNullResult = asList(
+                PairDto.of(11, null),
+                PairDto.of(31, null),
+                PairDto.of(55, null)
+        );
+        List<PairDto<Integer, Boolean>> integersBooleansResult = asList(
+                PairDto.of(11, true),
+                PairDto.of(31, false),
+                PairDto.of(55, defaultBooleanValue)
+        );
+        List<PairDto<Integer, String>> integersStringsResult = asList(
+                PairDto.of(11, "h"),
+                PairDto.of(31, "o"),
+                PairDto.of(55, "p")
+        );
+        List<PairDto<Boolean, String>> booleansStringsResult = asList(
+                PairDto.of(true, "h"),
+                PairDto.of(false, "o"),
+                PairDto.of(defaultBooleanValue, "p")
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceLeftCollection,   sourceRightCollection,   defaultLeftElement,    defaultRightElement,   expectedResult
+                Arguments.of( null,                   null,                    null,                  null,                  asList() ),
+                Arguments.of( null,                   booleans,                null,                  99,                    booleansWithNullResult ),
+                Arguments.of( integers,               null,                    91,                    null,                  integersWithNullResult ),
+                Arguments.of( asList(),               booleans,                null,                  75,                    booleansWithNullResult ),
+                Arguments.of( integers,               asList(),                49,                    null,                  integersWithNullResult ),
+                Arguments.of( integers,               booleans,                defaultIntegerValue,   defaultBooleanValue,   integersBooleansResult ),
+                Arguments.of( integers,               strings,                 defaultIntegerValue,   defaultStringValue,    integersStringsResult ),
+                Arguments.of( booleans,               strings,                 defaultBooleanValue,   defaultStringValue,    booleansStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("zipAllTestCases")
+    @DisplayName("zipAll: test cases")
+    public <T, E> void zipAll_testCases(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection,
+                                        T defaultLeftElement, E defaultRightElement,
+                                        List<PairDto<T, E>> expectedResult) {
+        assertEquals(expectedResult,
+                zipAll(
+                        sourceLeftCollection, sourceRightCollection, defaultLeftElement, defaultRightElement
+                )
+        );
     }
 
 
@@ -497,23 +674,32 @@ public class CollectionUtilTest {
             add("G");
             add("M");
         }};
-        List<PairDto<Integer, Integer>> integersResult = asList(PairDto.of(0, 1), PairDto.of(1, 3), PairDto.of(2, 5));
-        List<PairDto<Integer, String>> stringsResult = asList(PairDto.of(0, "A"), PairDto.of(1, "E"), PairDto.of(2, "G"), PairDto.of(3, "M"));
+        List<PairDto<Integer, Integer>> integersResult = asList(
+                PairDto.of(0, 1),
+                PairDto.of(1, 3),
+                PairDto.of(2, 5)
+        );
+        List<PairDto<Integer, String>> stringsResult = asList(
+                PairDto.of(0, "A"),
+                PairDto.of(1, "E"),
+                PairDto.of(2, "G"),
+                PairDto.of(3, "M")
+        );
         return Stream.of(
                 //@formatter:off
-                //            collectionToZip,   expectedResult
-                Arguments.of( null,              new ArrayList<>() ),
-                Arguments.of( asList(),          new ArrayList<>() ),
-                Arguments.of( integers,          integersResult ),
-                Arguments.of( strings,           stringsResult )
+                //            sourceCollection,   expectedResult
+                Arguments.of( null,               new ArrayList<>() ),
+                Arguments.of( asList(),           new ArrayList<>() ),
+                Arguments.of( integers,           integersResult ),
+                Arguments.of( strings,            stringsResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("zipWithIndexTestCases")
     @DisplayName("zipWithIndex: test cases")
-    public <T> void zipWithIndex_testCases(Collection<T> collectionToZip, List<PairDto<Integer, T>> expectedResult) {
-        List<PairDto<Integer, T>> zippedList = CollectionUtil.zipWithIndex(collectionToZip);
+    public <T> void zipWithIndex_testCases(Collection<T> sourceCollection, List<PairDto<Integer, T>> expectedResult) {
+        List<PairDto<Integer, T>> zippedList = zipWithIndex(sourceCollection);
         assertEquals(expectedResult, zippedList);
     }
 

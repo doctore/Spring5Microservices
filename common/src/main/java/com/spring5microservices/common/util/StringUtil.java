@@ -99,6 +99,73 @@ public class StringUtil {
 
 
     /**
+     * Loops through the provided {@link String} one position every time, returning sublists with {@code size}
+     *
+     * Examples:
+     *   "12"   with size = 5 => ["12"]
+     *   "789"  with size = 2 => ["78", "89"]
+     *
+     * @param sourceString
+     *    {@link String} to slide
+     * @param size
+     *    Size of every sublist
+     *
+     * @return {@link List} of {@link String}
+     */
+    public static List<String> sliding(final String sourceString,
+                                       final int size) {
+        if (Objects.isNull(sourceString)) {
+            return new ArrayList<>();
+        }
+        if (1 > size ||
+                size > sourceString.length()) {
+            return asList(sourceString);
+        }
+        List<String> parts = new ArrayList<>();
+        for (int i = 0; i < sourceString.length() - size + 1; i++) {
+            parts.add(sourceString.substring(i, i + size));
+        }
+        return parts;
+    }
+
+
+    /**
+     * Splits the given {@link String} in substrings with a size equal to the given {@code size}
+     *
+     * Examples:
+     *   "123",  4  =>  "123"
+     *   "123",  2  =>  ["12", "3"]
+     *
+     * @param sourceString
+     *    {@link String} to split
+     * @param size
+     *    Size of every substring
+     *
+     * @return {@link List} of {@link String}s
+     */
+    public static List<String> splitBySize(final String sourceString,
+                                           final int size) {
+        if (Objects.isNull(sourceString)) {
+            return new ArrayList<>();
+        }
+        if (1 > size ||
+                size > sourceString.length()) {
+            return asList(sourceString);
+        }
+        ArrayList<String> result = new ArrayList<>();
+        for (int i = 0; i < sourceString.length(); i += size) {
+            result.add(
+                    sourceString.substring(
+                            i,
+                            Math.min(sourceString.length(), i + size)
+                    )
+            );
+        }
+        return result;
+    }
+
+
+    /**
      *    Return a {@link List} splitting the given {@code source} in different parts, using {@code valueExtractor}
      * to know how to do it.
      *
@@ -196,12 +263,11 @@ public class StringUtil {
      * @return {@link Collection}
      *
      * @throws Exception if there is an splitted part that cannot extracted using {@code valueExtractor}.
+     *
      *                   For example:
      *                        source = "1,2,3"
      *                        chunkLimit = 2
      *                        valueExtractor = Integer::parseInt
-
-
      *
      *                   Splitted parts will be:
      *                        ["1", "2,3"] => second one could not be converted to an {@link Integer}
@@ -229,7 +295,7 @@ public class StringUtil {
                             : valueExtractedStream.collect(toCollection(collectionFactory));
                 })
                 .orElse(Objects.isNull(collectionFactory)
-                        ? asList()
+                        ? new ArrayList<>()
                         : collectionFactory.get());
     }
 

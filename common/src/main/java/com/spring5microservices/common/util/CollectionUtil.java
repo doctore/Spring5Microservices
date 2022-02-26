@@ -32,49 +32,49 @@ import static java.util.stream.Collectors.toList;
 public class CollectionUtil {
 
     /**
-     *    In the given {@code collection}, applies {@code defaultFunction} if the current element verifies
+     *    In the given {@code sourceCollection}, applies {@code defaultFunction} if the current element verifies
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
      * Example:
      *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2  =>  [2, 4, 4, 12]
      *
-     * @param collection
+     * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code collection}.
+     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
      * @param defaultFunction
-     *    {@link Function} to transform elements of {@code collection} that verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}.
      * @param orElseFunction
-     *    {@link Function} to transform elements of {@code collection} do not verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}.
      *
      * @return {@link List}
      *
      * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
      *                                  is {@code null}
      */
-    public static <T, E> List<E> applyOrElse(final Collection<T> collection,
+    public static <T, E> List<E> applyOrElse(final Collection<T> sourceCollection,
                                              final Predicate<? super T> filterPredicate,
                                              final Function<? super T, ? extends E> defaultFunction,
                                              final Function<? super T, ? extends E> orElseFunction) {
-        return (List)applyOrElse(collection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
+        return (List)applyOrElse(sourceCollection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
     }
 
 
     /**
-     *    In the given {@code collection}, applies {@code defaultFunction} if the current element verifies
+     *    In the given {@code sourceCollection}, applies {@code defaultFunction} if the current element verifies
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
      * Example:
      *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2,  ArrayList::new  =>  [2, 4, 4, 12]
      *
-     * @param collection
+     * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code collection}.
+     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
      * @param defaultFunction
-     *    {@link Function} to transform elements of {@code collection} that verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}.
      * @param orElseFunction
-     *    {@link Function} to transform elements of {@code collection} do not verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}.
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *
@@ -83,7 +83,7 @@ public class CollectionUtil {
      * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
      *                                  is {@code null}
      */
-    public static <T, E> Collection<E> applyOrElse(final Collection<T> collection,
+    public static <T, E> Collection<E> applyOrElse(final Collection<T> sourceCollection,
                                                    final Predicate<? super T> filterPredicate,
                                                    final Function<? super T, ? extends E> defaultFunction,
                                                    final Function<? super T, ? extends E> orElseFunction,
@@ -91,7 +91,7 @@ public class CollectionUtil {
         Assert.notNull(filterPredicate, "filterPredicate must be not null");
         Assert.notNull(defaultFunction, "defaultFunction must be not null");
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
-        if (CollectionUtils.isEmpty(collection)) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
         Supplier<Collection<E>> definitiveCollectionFactory =
@@ -99,7 +99,7 @@ public class CollectionUtil {
                         ? () -> new ArrayList<>()
                         : collectionFactory;
 
-        return collection.stream()
+        return sourceCollection.stream()
                 .map(elto ->
                         filterPredicate.test(elto)
                                 ? defaultFunction.apply(elto)
@@ -133,21 +133,21 @@ public class CollectionUtil {
      * Example:
      *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i.toString()  =>  ["1", "3"]
      *
-     * @param collection
+     * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code collection}.
+     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
      * @param mapFunction
-     *    {@link Function} to transform filtered elements from the source {@code collection}.
+     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}.
      *
      * @return {@link List}
      *
      * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
      */
-    public static <T, E> List<E> collect(final Collection<T> collection,
+    public static <T, E> List<E> collect(final Collection<T> sourceCollection,
                                          final Predicate<? super T> filterPredicate,
                                          final Function<? super T, ? extends E> mapFunction) {
-        return (List)collect(collection, filterPredicate, mapFunction, ArrayList::new);
+        return (List)collect(sourceCollection, filterPredicate, mapFunction, ArrayList::new);
     }
 
 
@@ -160,12 +160,12 @@ public class CollectionUtil {
      * Example:
      *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i.toString(),  ArrayList::new  =>  ["1", "3"]
      *
-     * @param collection
+     * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code collection}.
+     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
      * @param mapFunction
-     *    {@link Function} to transform filtered elements from the source {@code collection}.
+     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}.
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *
@@ -173,13 +173,13 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
      */
-    public static <T, E> Collection<E> collect(final Collection<T> collection,
+    public static <T, E> Collection<E> collect(final Collection<T> sourceCollection,
                                                final Predicate<? super T> filterPredicate,
                                                final Function<? super T, ? extends E> mapFunction,
                                                final Supplier<Collection<E>> collectionFactory) {
         Assert.notNull(filterPredicate, "filterPredicate must be not null");
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        if (CollectionUtils.isEmpty(collection)) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
         Supplier<Collection<E>> definitiveCollectionFactory =
@@ -187,7 +187,7 @@ public class CollectionUtil {
                         ? () -> new ArrayList<>()
                         : collectionFactory;
 
-        return collection
+        return sourceCollection
                 .stream()
                 .filter(filterPredicate)
                 .map(mapFunction)
@@ -196,25 +196,25 @@ public class CollectionUtil {
 
 
     /**
-     * Return a {@link Collection} with the extracted property of the given {@code collection}
+     * Return a {@link Collection} with the extracted property of the given {@code sourceCollection}
      *
-     * @param collection
+     * @param sourceCollection
      *    Source {@link Collection} with the property to extract.
      * @param keyExtractor
      *    {@link Function} used to get the key we want to use to include in returned {@link Collection}.
      *
      * @return {@link List}
      */
-    public static <T, E> List<E> collectProperty(final Collection<T> collection,
+    public static <T, E> List<E> collectProperty(final Collection<T> sourceCollection,
                                                  final Function<? super T, E> keyExtractor) {
-        return (List)collectProperty(collection, keyExtractor, ArrayList::new);
+        return (List)collectProperty(sourceCollection, keyExtractor, ArrayList::new);
     }
 
 
     /**
-     * Return a {@link Collection} with the extracted property of the given {@code collection}
+     * Return a {@link Collection} with the extracted property of the given {@code sourceCollection}
      *
-     * @param collection
+     * @param sourceCollection
      *    Source {@link Collection} with the property to extract.
      * @param keyExtractor
      *    {@link Function} used to get the key we want to use to include in returned {@link Collection}.
@@ -223,20 +223,23 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      */
-    public static <T, E> Collection<E> collectProperty(final Collection<T> collection,
+    public static <T, E> Collection<E> collectProperty(final Collection<T> sourceCollection,
                                                        final Function<? super T, E> keyExtractor,
                                                        final Supplier<Collection<E>> collectionFactory) {
-        return ofNullable(collection)
+        return ofNullable(sourceCollection)
                 .map(c -> {
                     if (null == keyExtractor) {
                         return null;
                     }
-                    Stream<E> keyExtractedStream = collection.stream().map(keyExtractor);
+                    Stream<E> keyExtractedStream = sourceCollection.stream().map(keyExtractor);
                     return null == collectionFactory
                             ? keyExtractedStream.collect(toList())
                             : keyExtractedStream.collect(toCollection(collectionFactory));
                 })
-                .orElseGet(() -> null == collectionFactory ? asList() : collectionFactory.get());
+                .orElseGet(() ->
+                        null == collectionFactory
+                                ? new ArrayList<>()
+                                : collectionFactory.get());
     }
 
 
@@ -258,13 +261,14 @@ public class CollectionUtil {
 
 
     /**
-     * Folds this elements from the left, starting with {@code initialValue} and successively calling {@code accumulator}.
+     *    Folds given {@link Collection} elements from the left, starting with {@code initialValue} and successively
+     * calling {@code accumulator}.
      *
      * Examples:
      *   [5, 7, 9],     1,  (a, b) -> a * b   => 315
      *   ["a", "h"],  "!",  (a, b) -> a + b   => "!ah"
      *
-     * @param collection
+     * @param sourceCollection
      *    {@link Collection} with elements to combine.
      * @param initialValue
      *    The initial value to start with.
@@ -275,11 +279,11 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code initialValue} is {@code null}
      */
-    public static <T, E> E foldLeft(final Collection<T> collection,
+    public static <T, E> E foldLeft(final Collection<T> sourceCollection,
                                     final E initialValue,
                                     final BiFunction<E, ? super T, E> accumulator) {
         Assert.notNull(initialValue, "initialValue must be not null");
-        return ofNullable(collection)
+        return ofNullable(sourceCollection)
                 .map(c -> {
                     E result = initialValue;
                     if (null != accumulator) {
@@ -327,7 +331,7 @@ public class CollectionUtil {
                     }
                     return result;
                 })
-                .orElseGet(() -> asList(initialValue));
+                .orElseGet(() -> new ArrayList<>(asList(initialValue)));
     }
 
 
@@ -410,21 +414,21 @@ public class CollectionUtil {
      *   [1, 2]    with size = 5  =>  [[1, 2]]
      *   [7, 8, 9] with size = 2  =>  [[7, 8], [8, 9]]
      *
-     * @param collectionToSlide
+     * @param sourceCollection
      *    {@link Collection} to slide
      * @param size
      *    Size of every sublist
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> sliding(final Collection<T> collectionToSlide,
+    public static <T> List<List<T>> sliding(final Collection<T> sourceCollection,
                                             final int size) {
-        if (CollectionUtils.isEmpty(collectionToSlide)) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-        List<T> listToSlide = new ArrayList<>(collectionToSlide);
+        List<T> listToSlide = new ArrayList<>(sourceCollection);
         if (size > listToSlide.size()) {
-            return asList(listToSlide);
+            return new ArrayList<>(asList(listToSlide));
         }
         return IntStream.range(0, listToSlide.size() - size + 1)
                 .mapToObj(start -> listToSlide.subList(start, start + size))
@@ -440,19 +444,19 @@ public class CollectionUtil {
      *   [1, 2, 3, 4] with size = 3  =>  [[1, 2, 3], [4]]
      *   [1, 2, 3, 4] with size = 5  =>  [[1, 2, 3, 4]]
      *
-     * @param collectionToSplit
+     * @param sourceCollection
      *    {@link Collection} to split
      * @param size
      *    Size of every sublist
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> split(final Collection<T> collectionToSplit,
+    public static <T> List<List<T>> split(final Collection<T> sourceCollection,
                                           final int size) {
-        if (CollectionUtils.isEmpty(collectionToSplit)) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-        List<T> listToSplit = new ArrayList<>(collectionToSplit);
+        List<T> listToSplit = new ArrayList<>(sourceCollection);
         int expectedSize = 0 == listToSplit.size() % size
                 ? listToSplit.size() / size
                 : (listToSplit.size() / size) + 1;
@@ -467,33 +471,35 @@ public class CollectionUtil {
 
 
     /**
-     * Transposes the given {@code collectionsToTranspose}.
+     * Transposes the rows and columns of the given {@code sourceCollection}.
      *
      * Examples:
      *   [[1, 2, 3], [4, 5, 6]]                     =>  [[1, 4], [2, 5], [3, 6]]
      *   [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]  =>  [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
      *   [[1, 2], [0], [7, 8, 9]]                   =>  [[1, 0, 7], [2, 8], [9]]
      *
-     * @param collectionsToTranspose
+     * @param sourceCollection
      *    {@link Collection} of {@link Collection}s to transpose
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> transpose(final Collection<? extends Collection<T>> collectionsToTranspose) {
-        if (CollectionUtils.isEmpty(collectionsToTranspose)) {
+    public static <T> List<List<T>> transpose(final Collection<? extends Collection<T>> sourceCollection) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
+
         int sizeOfLongestSubCollection = -1;
-        List<Iterator<T>> iteratorList = new ArrayList<>(collectionsToTranspose.size());
-        for (Collection<T> c: collectionsToTranspose) {
+        List<Iterator<T>> iteratorList = new ArrayList<>(sourceCollection.size());
+        for (Collection<T> c: sourceCollection) {
             if (sizeOfLongestSubCollection < c.size()) {
                 sizeOfLongestSubCollection = c.size();
             }
             iteratorList.add(c.iterator());
         }
+
         List<List<T>> result = new ArrayList<>(sizeOfLongestSubCollection);
         for (int i = 0; i < sizeOfLongestSubCollection; i++) {
-            List<T> newRow = new ArrayList<>(collectionsToTranspose.size());
+            List<T> newRow = new ArrayList<>(sourceCollection.size());
             for (Iterator<T> iterator: iteratorList) {
                 if (iterator.hasNext()) {
                     newRow.add(iterator.next());
@@ -506,24 +512,132 @@ public class CollectionUtil {
 
 
     /**
+     *    Converts given {@code sourceCollection} of {@link PairDto} into two {@link List} of the first and
+     * second half of each pair.
+     *
+     * Example:
+     *    [("d", 6), ("h", 7), ("y", 11)]  =>  [("d", "h", "y"), (6, 7, 11)]
+     *
+     * @param sourceCollection
+     *    {@link Collection} of {@link PairDto} to split its elements
+     *
+     * @return {@link PairDto} of two {@link List}
+     */
+    public static <T, E> PairDto<List<T>, List<E>> unzip(Collection<PairDto<T, E>> sourceCollection) {
+        return foldLeft(
+                sourceCollection,
+                PairDto.of(new ArrayList<>(), new ArrayList<>()),
+                (pairOfLists, currentElto) -> {
+                    pairOfLists.getFirst().add(currentElto.getFirst());
+                    pairOfLists.getSecond().add(currentElto.getSecond());
+                    return pairOfLists;
+                }
+        );
+    }
+
+
+    /**
+     *    Returns a {@link List} formed from {@code sourceLeftCollection} and {@code sourceRightCollection}
+     * by combining corresponding elements in {@link PairDto}. If one of the two collections is longer than
+     * the other, its remaining elements are ignored.
+     *
+     * Examples:
+     *   ["d", "h", "y"],  [6, 7, 11]  =>  [("d", 6), ("h", 7), ("y", 11)]
+     *   [4, 9, 14],       [23, 8]     =>  [(4, 23), (9, 8)]
+     *
+     * @param sourceLeftCollection
+     *    {@link Collection} with elements to be included as left side of returned {@link PairDto}
+     * @param sourceRightCollection
+     *    {@link Collection} with elements to be included as right side of returned {@link PairDto}
+     *
+     * @return {@link List} of {@link PairDto}
+     */
+    public static <T, E> List<PairDto<T, E>> zip(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection) {
+        if (CollectionUtils.isEmpty(sourceLeftCollection) ||
+                CollectionUtils.isEmpty(sourceRightCollection)) {
+            return new ArrayList<>();
+        }
+        int minCollectionsSize = Math.min(sourceLeftCollection.size(), sourceRightCollection.size());
+
+        Iterator<T> leftIterator = sourceLeftCollection.iterator();
+        Iterator<E> rightIterator = sourceRightCollection.iterator();
+        List<PairDto<T, E>> result = new ArrayList<>();
+        for (int i = 0; i < minCollectionsSize; i++) {
+            result.add(
+                    PairDto.of(leftIterator.next(), rightIterator.next())
+            );
+        }
+        return result;
+    }
+
+
+    /**
+     *    Returns a {@link List} formed from {@code sourceLeftCollection} and {@code sourceRightCollection}
+     * by combining corresponding elements in {@link PairDto}. If one of the two collections is shorter than
+     * the other, placeholder elements are used to extend the shorter collection to the length of the longer.
+     *
+     * Examples:
+     *   ["d", "h", "y"],  [6, 7, 11],      "z",   55  =>  [("d", 6), ("h", 7), ("y", 11)]
+     *   [4, 9, 14],       [23, 8],          17,   10  =>  [(4, 23), (9, 8), (14, 10)]
+     *   [4, 9],           ["f", "g", "m"],  11,  "u"  =>  [(4, "f"), (9, "g"), (11, "m")]
+     *
+     * @param sourceLeftCollection
+     *    {@link Collection} with elements to be included as left side of returned {@link PairDto}
+     * @param sourceRightCollection
+     *    {@link Collection} with elements to be included as right side of returned {@link PairDto}
+     * @param defaultLeftElement
+     *    Element to be used to fill up the result if {@code sourceLeftCollection} is shorter than {@code sourceRightCollection}
+     * @param defaultRightElement
+     *    Element to be used to fill up the result if {@code sourceRightCollection} is shorter than {@code sourceLeftCollection}
+     *
+     * @return {@link List} of {@link PairDto}
+     */
+    public static <T, E> List<PairDto<T, E>> zipAll(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection,
+                                                    T defaultLeftElement, E defaultRightElement) {
+        int maxCollectionSize = Math.max(
+                CollectionUtils.isEmpty(sourceLeftCollection) ? 0 : sourceLeftCollection.size(),
+                CollectionUtils.isEmpty(sourceRightCollection) ? 0 : sourceRightCollection.size()
+        );
+        Iterator<T> leftIterator = ofNullable(sourceLeftCollection).map(Collection::iterator).orElse(null);
+        Iterator<E> rightIterator = ofNullable(sourceRightCollection).map(Collection::iterator).orElse(null);
+        List<PairDto<T, E>> result = new ArrayList<>();
+        for (int i = 0; i < maxCollectionSize; i++) {
+            result.add(
+                    PairDto.of(
+                            ofNullable(leftIterator)
+                                    .filter(Iterator::hasNext)
+                                    .map(Iterator::next)
+                                    .orElseGet(() -> defaultLeftElement),
+                            ofNullable(rightIterator)
+                                    .filter(Iterator::hasNext)
+                                    .map(Iterator::next)
+                                    .orElseGet(() -> defaultRightElement)
+                    )
+            );
+        }
+        return result;
+    }
+
+
+    /**
      *    Returns a {@link List} containing pairs consisting of all elements of this iterable collection paired with
      * their index. Indices start at {@code 0}.
      *
      * Example:
      *   ["d", "h", "y"]  =>  [(0, "d"), (1, "h"), (2, "y")]
      *
-     * @param collectionToZip
+     * @param sourceCollection
      *    {@link Collection} to extract: index and element
      *
      * @return {@link List} of {@link PairDto}s
      */
-    public static <T> List<PairDto<Integer, T>> zipWithIndex(Collection<T> collectionToZip) {
-        if (CollectionUtils.isEmpty(collectionToZip)) {
+    public static <T> List<PairDto<Integer, T>> zipWithIndex(Collection<T> sourceCollection) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
         int i = 0;
-        List<PairDto<Integer, T>> result = new ArrayList<>(collectionToZip.size());
-        for (T element: collectionToZip) {
+        List<PairDto<Integer, T>> result = new ArrayList<>(sourceCollection.size());
+        for (T element: sourceCollection) {
             result.add(PairDto.of(i, element));
             i++;
         }
