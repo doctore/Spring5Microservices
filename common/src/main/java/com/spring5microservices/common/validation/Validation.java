@@ -137,7 +137,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @param mapper
      *    The mapping function to apply to a value of a {@link Valid} instance
      *
-     * @return {@code Validationulln}
+     * @return {@code Validation}
      *
      * @throws NullPointerException if {@code mapper} is {@code null} and the current instance is a {@link Valid} one
      */
@@ -284,7 +284,7 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
-     *    If the current {@code Validation} is an instance of {@Valid} wraps the stored value into an {@link Optional} object.
+     *    If the current {@code Validation} is an instance of {@link Valid} wraps the stored value into an {@link Optional} object.
      * Otherwise return {@code Optional.empty}
      *
      * @return {@link Optional}

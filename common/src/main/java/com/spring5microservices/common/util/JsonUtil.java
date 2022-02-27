@@ -5,7 +5,6 @@ import lombok.experimental.UtilityClass;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ import static java.util.Optional.ofNullable;
 @UtilityClass
 public class JsonUtil {
 
-    private static ObjectMapper mapper;
+    private static final ObjectMapper mapper;
     static {
         mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);

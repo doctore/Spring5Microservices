@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -24,6 +25,7 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
@@ -96,7 +98,7 @@ public class CollectionUtil {
         }
         Supplier<Collection<E>> definitiveCollectionFactory =
                 null == collectionFactory
-                        ? () -> new ArrayList<>()
+                        ? ArrayList::new
                         : collectionFactory;
 
         return sourceCollection.stream()
@@ -120,7 +122,7 @@ public class CollectionUtil {
     public static <T> Set<T> asSet(final T ...elements) {
         return ofNullable(elements)
                 .map(e -> new LinkedHashSet<>(asList(elements)))
-                .orElse(new LinkedHashSet<>());
+                .orElseGet(LinkedHashSet::new);
     }
 
 
@@ -184,7 +186,7 @@ public class CollectionUtil {
         }
         Supplier<Collection<E>> definitiveCollectionFactory =
                 null == collectionFactory
-                        ? () -> new ArrayList<>()
+                        ? ArrayList::new
                         : collectionFactory;
 
         return sourceCollection
@@ -261,6 +263,54 @@ public class CollectionUtil {
 
 
     /**
+     * Finds the first element of the given {@link Collection} satisfying the provided {@link Predicate}.
+     *
+     * @param sourceCollection
+     *    {@link Collection} to search
+     * @param filterPredicate
+     *    {@link Predicate} used to test elements of {@code sourceCollection}
+     *
+     * @return {@link Optional} containing the first element that satisfies {@code filterPredicate},
+     *         {@link Optional#empty()} otherwise.
+     */
+    public static <T> Optional<T> find(final Collection<T> sourceCollection,
+                                       final Predicate<? super T> filterPredicate) {
+        if (CollectionUtils.isEmpty(sourceCollection) ||
+                Objects.isNull(filterPredicate)) {
+            return empty();
+        }
+        return sourceCollection
+                .stream()
+                .filter(filterPredicate)
+                .findFirst();
+    }
+
+
+    /**
+     * Finds the last element of the given {@link Collection} satisfying the provided {@link Predicate}.
+     *
+     * @param sourceCollection
+     *    {@link Collection} to search
+     * @param filterPredicate
+     *    {@link Predicate} used to test elements of {@code sourceCollection}
+     *
+     * @return {@link Optional} containing the last element that satisfies {@code filterPredicate},
+     *         {@link Optional#empty()} otherwise.
+     */
+    public static <T> Optional<T> findLast(final Collection<T> sourceCollection,
+                                           final Predicate<? super T> filterPredicate) {
+        if (CollectionUtils.isEmpty(sourceCollection) ||
+                Objects.isNull(filterPredicate)) {
+            return empty();
+        }
+        return sourceCollection
+                .stream()
+                .filter(filterPredicate)
+                .reduce((previous, current) -> current);
+    }
+
+
+    /**
      *    Folds given {@link Collection} elements from the left, starting with {@code initialValue} and successively
      * calling {@code accumulator}.
      *
@@ -331,31 +381,7 @@ public class CollectionUtil {
                     }
                     return result;
                 })
-                .orElseGet(() -> new ArrayList<>(asList(initialValue)));
-    }
-
-
-    /**
-     * Return a {@link Map} with the information of the given {@code sourceMap} excluding the keys of {@code keysToExclude}
-     *
-     * @param sourceMap
-     *    {@link Map} with the information to filter
-     * @param keysToExclude
-     *    Keys to exclude from the provided {@link Map}
-     *
-     * @return {@link HashMap}
-     */
-    public static <T, E> Map<T, E> removeKeys(final Map<T, E> sourceMap,
-                                              final Collection<T> keysToExclude) {
-        return ofNullable(sourceMap)
-                .map(sm -> {
-                    Map<T, E> filteredMap = new HashMap<>(sourceMap);
-                    if (null != keysToExclude) {
-                        keysToExclude.forEach(filteredMap::remove);
-                    }
-                    return filteredMap;
-                })
-                .orElseGet(HashMap::new);
+                .orElseGet(() -> asList(initialValue));
     }
 
 
@@ -392,13 +418,14 @@ public class CollectionUtil {
         if (sourceCollection instanceof List) {
             return ((List<T>) sourceCollection).subList(finalFrom, finalUntil);
         }
+
         int i = 0;
         List<T> result = new ArrayList<>(Math.max(finalUntil - finalFrom, finalUntil - finalFrom - 1));
         for (T element: sourceCollection) {
             if (i >= finalUntil) {
                 break;
             }
-            if (i >= finalFrom && i < finalUntil) {
+            if (i >= finalFrom) {
                 result.add(element);
             }
             i++;
@@ -428,7 +455,7 @@ public class CollectionUtil {
         }
         List<T> listToSlide = new ArrayList<>(sourceCollection);
         if (size > listToSlide.size()) {
-            return new ArrayList<>(asList(listToSlide));
+            return asList(listToSlide);
         }
         return IntStream.range(0, listToSlide.size() - size + 1)
                 .mapToObj(start -> listToSlide.subList(start, start + size))
@@ -460,6 +487,7 @@ public class CollectionUtil {
         int expectedSize = 0 == listToSplit.size() % size
                 ? listToSplit.size() / size
                 : (listToSplit.size() / size) + 1;
+
         List<List<T>> splits = new ArrayList<>(expectedSize);
         for (int i = 0; i < listToSplit.size(); i += size) {
             splits.add(new ArrayList<>(
@@ -601,6 +629,7 @@ public class CollectionUtil {
         Iterator<T> leftIterator = ofNullable(sourceLeftCollection).map(Collection::iterator).orElse(null);
         Iterator<E> rightIterator = ofNullable(sourceRightCollection).map(Collection::iterator).orElse(null);
         List<PairDto<T, E>> result = new ArrayList<>();
+
         for (int i = 0; i < maxCollectionSize; i++) {
             result.add(
                     PairDto.of(

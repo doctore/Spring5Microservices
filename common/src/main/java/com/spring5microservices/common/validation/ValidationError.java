@@ -11,8 +11,8 @@ import static java.util.Optional.ofNullable;
 @EqualsAndHashCode
 public class ValidationError implements Comparable<ValidationError> {
 
-    private int priority;          // Greater means more priority
-    private String errorMessage;
+    private final int priority;          // Greater means more priority
+    private final String errorMessage;
 
 
     /**
