@@ -53,10 +53,9 @@ public class StringUtil {
                             : putInTheMiddle;
 
                     if (sourceString.length() > (2 * sizeOfEveryChunk)) {
-                        int startPos = sizeOfEveryChunk;
                         int endPos = sourceString.length() - sizeOfEveryChunk;
 
-                        return sourceString.substring(0, startPos)
+                        return sourceString.substring(0, sizeOfEveryChunk)
                                 + finalPutInTheMiddle
                                 + sourceString.substring(endPos);
                     }

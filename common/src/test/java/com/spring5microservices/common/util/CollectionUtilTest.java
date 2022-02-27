@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -28,9 +29,10 @@ import static com.spring5microservices.common.util.CollectionUtil.asSet;
 import static com.spring5microservices.common.util.CollectionUtil.collect;
 import static com.spring5microservices.common.util.CollectionUtil.collectProperty;
 import static com.spring5microservices.common.util.CollectionUtil.concatUniqueElements;
+import static com.spring5microservices.common.util.CollectionUtil.find;
+import static com.spring5microservices.common.util.CollectionUtil.findLast;
 import static com.spring5microservices.common.util.CollectionUtil.foldLeft;
 import static com.spring5microservices.common.util.CollectionUtil.iterate;
-import static com.spring5microservices.common.util.CollectionUtil.removeKeys;
 import static com.spring5microservices.common.util.CollectionUtil.slice;
 import static com.spring5microservices.common.util.CollectionUtil.sliding;
 import static com.spring5microservices.common.util.CollectionUtil.split;
@@ -40,6 +42,8 @@ import static com.spring5microservices.common.util.CollectionUtil.zip;
 import static com.spring5microservices.common.util.CollectionUtil.zipAll;
 import static com.spring5microservices.common.util.CollectionUtil.zipWithIndex;
 import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -296,6 +300,66 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> findTestCases() {
+        List<Integer> integers = asList(3, 7, 9, 11, 15);
+        Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        Predicate<Integer> upperThan10 = i -> 10 < i;
+        Predicate<Integer> upperThan20 = i -> 20 < i;
+        Predicate<String> moreThan2Characters = s -> 2 < s.length();
+        Predicate<String> moreThan5Characters = s -> 5 < s.length();
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,       expectedResult
+                Arguments.of( null,               null,                  empty() ),
+                Arguments.of( null,               upperThan10,           empty() ),
+                Arguments.of( asList(),           null,                  empty() ),
+                Arguments.of( integers,           null,                  empty() ),
+                Arguments.of( integers,           upperThan20,           empty() ),
+                Arguments.of( strings,            moreThan5Characters,   empty() ),
+                Arguments.of( integers,           upperThan10,           of(11) ),
+                Arguments.of( strings,            moreThan2Characters,   of("YTGH") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("findTestCases")
+    @DisplayName("find: test cases")
+    public <T> void find_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
+                                   Optional<T> expectedResult) {
+        assertEquals(expectedResult, find(sourceCollection, filterPredicate));
+    }
+
+
+    static Stream<Arguments> findLastTestCases() {
+        List<Integer> integers = asList(3, 7, 9, 11, 15);
+        Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        Predicate<Integer> upperThan10 = i -> 10 < i;
+        Predicate<Integer> upperThan20 = i -> 20 < i;
+        Predicate<String> moreThan2Characters = s -> 2 < s.length();
+        Predicate<String> moreThan5Characters = s -> 5 < s.length();
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,       expectedResult
+                Arguments.of( null,               null,                  empty() ),
+                Arguments.of( null,               upperThan10,           empty() ),
+                Arguments.of( asList(),           null,                  empty() ),
+                Arguments.of( integers,           null,                  empty() ),
+                Arguments.of( integers,           upperThan20,           empty() ),
+                Arguments.of( strings,            moreThan5Characters,   empty() ),
+                Arguments.of( integers,           upperThan10,           of(15) ),
+                Arguments.of( strings,            moreThan2Characters,   of("IOP") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("findLastTestCases")
+    @DisplayName("findLast: test cases")
+    public <T> void findLast_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
+                                   Optional<T> expectedResult) {
+        assertEquals(expectedResult, findLast(sourceCollection, filterPredicate));
+    }
+
+
     static Stream<Arguments> foldLeftTestCases() {
         List<Integer> integers = asList(1, 3, 5);
         List<String> strings = asList("AB", "E", "GMT");
@@ -352,35 +416,6 @@ public class CollectionUtilTest {
         else {
             assertEquals(expectedResult, iterate(initialValue, applyFunction, untilPredicate));
         }
-    }
-
-
-    static Stream<Arguments> removeKeysTestCases() {
-        Map<String, Integer> sourceMap = new HashMap<>() {{
-            put("A", 1);
-            put("B", 2);
-        }};
-        Map<String, Integer> sourceMapFiltered = new HashMap<>() {{
-            put("A", 1);
-        }};
-        List<String> keysToExcludeIncluded = asList("B");
-        List<String> keysToExcludeNotIncluded = asList("C");
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,   keysToExclude,              expectedResult
-                Arguments.of( null,        null,                       new HashMap<>() ),
-                Arguments.of( null,        keysToExcludeIncluded,      new HashMap<>() ),
-                Arguments.of( sourceMap,   keysToExcludeNotIncluded,   sourceMap ),
-                Arguments.of( sourceMap,   keysToExcludeIncluded,      sourceMapFiltered )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("removeKeysTestCases")
-    @DisplayName("removeKeys: test cases")
-    public <T, E> void removeKeys_testCases(Map<T, E> sourceMap, Collection<T> keysToExclude, HashMap<T, E> expectedResult) {
-        Map<T, E> filteredMap = removeKeys(sourceMap, keysToExclude);
-        assertEquals(expectedResult, filteredMap);
     }
 
 
