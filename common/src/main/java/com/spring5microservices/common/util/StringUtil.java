@@ -176,8 +176,8 @@ public class StringUtil {
      * @return {@link List}
      */
     public static <T> List<T> splitFromString(final String source,
-                                              final Function<String, T> valueExtractor) {
-        return (List)splitFromString(source, valueExtractor, DEFAULT_STRING_SEPARATOR, ArrayList::new);
+                                              final Function<String, ? extends T> valueExtractor) {
+        return (List<T>)splitFromString(source, valueExtractor, DEFAULT_STRING_SEPARATOR, ArrayList::new);
     }
 
 
@@ -197,7 +197,7 @@ public class StringUtil {
     public static <T> List<T> splitFromString(final String source,
                                               final String separator,
                                               final int chunkLimit) {
-        return (List)splitFromString(source, separator, chunkLimit, DEFAULT_STRING_EXTRACTOR, ArrayList::new);
+        return (List<T>)splitFromString(source, separator, chunkLimit, DEFAULT_STRING_EXTRACTOR, ArrayList::new);
     }
 
 
@@ -215,9 +215,9 @@ public class StringUtil {
      * @return {@link List}
      */
     public static <T> List<T> splitFromString(final String source,
-                                              final Function<String, T> valueExtractor,
+                                              final Function<String, ? extends T> valueExtractor,
                                               final String separator) {
-        return (List)splitFromString(source, valueExtractor, separator, ArrayList::new);
+        return (List<T>)splitFromString(source, valueExtractor, separator, ArrayList::new);
     }
 
 
@@ -237,7 +237,7 @@ public class StringUtil {
      * @return {@link Collection}
      */
     public static <T> Collection<T> splitFromString(final String source,
-                                                    final Function<String, T> valueExtractor,
+                                                    final Function<String, ? extends T> valueExtractor,
                                                     final String separator,
                                                     final Supplier<Collection<T>> collectionFactory) {
         return splitFromString(source, separator, -1, valueExtractor, collectionFactory);
@@ -274,7 +274,7 @@ public class StringUtil {
     public static <T> Collection<T> splitFromString(final String source,
                                                     final String separator,
                                                     final int chunkLimit,
-                                                    final Function<String, T> valueExtractor,
+                                                    final Function<String, ? extends T> valueExtractor,
                                                     final Supplier<Collection<T>> collectionFactory) {
         return ofNullable(source)
                 .map(s -> {

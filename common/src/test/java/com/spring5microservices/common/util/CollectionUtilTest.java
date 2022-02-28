@@ -10,13 +10,15 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -33,6 +35,7 @@ import static com.spring5microservices.common.util.CollectionUtil.find;
 import static com.spring5microservices.common.util.CollectionUtil.findLast;
 import static com.spring5microservices.common.util.CollectionUtil.foldLeft;
 import static com.spring5microservices.common.util.CollectionUtil.iterate;
+import static com.spring5microservices.common.util.CollectionUtil.reverseList;
 import static com.spring5microservices.common.util.CollectionUtil.slice;
 import static com.spring5microservices.common.util.CollectionUtil.sliding;
 import static com.spring5microservices.common.util.CollectionUtil.split;
@@ -416,6 +419,41 @@ public class CollectionUtilTest {
         else {
             assertEquals(expectedResult, iterate(initialValue, applyFunction, untilPredicate));
         }
+    }
+
+
+    static Stream<Arguments> reverseListTestCases() {
+        List<Integer> integersList = asList(3, 7, 9, 11, 15);
+        Set<String> stringsLinkedSet = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+
+        TreeSet<Integer> integersTreeSet = new TreeSet<>(Collections.reverseOrder());
+        integersTreeSet.addAll(asList(45, 71, 9, 11, 35));
+
+        PriorityQueue<Long> longsPriorityQueue = new PriorityQueue<>(Comparator.naturalOrder());
+        longsPriorityQueue.addAll(asList(54l, 78l, 12l));
+
+        List<Integer> reverseIntegersList = asList(15, 11, 9, 7, 3);
+        List<String> reverseStringsLinkedSet = asList("IOP", "YTGH", "BT", "A");
+        List<Integer> reverseIntegersTreeSet = asList(9, 11, 35, 45, 71);
+        List<Long> reverseLongsPriorityQueue = asList(78l, 54l, 12l);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,     expectedResult
+                Arguments.of( null,                 asList() ),
+                Arguments.of( asList(),             asList() ),
+                Arguments.of( integersList,         reverseIntegersList ),
+                Arguments.of( integersTreeSet,      reverseIntegersTreeSet ),
+                Arguments.of( stringsLinkedSet,     reverseStringsLinkedSet ),
+                Arguments.of( longsPriorityQueue,   reverseLongsPriorityQueue )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("reverseListTestCases")
+    @DisplayName("reverseList: test cases")
+    public <T> void reverseList_testCases(Collection<T> sourceCollection,
+                                          List<T> expectedResult) {
+        assertEquals(expectedResult, reverseList(sourceCollection));
     }
 
 

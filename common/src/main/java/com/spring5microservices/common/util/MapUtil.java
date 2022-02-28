@@ -24,8 +24,8 @@ public class MapUtil {
      *
      * @return {@link HashMap}
      */
-    public static <T, E> Map<T, E> removeKeys(final Map<T, E> sourceMap,
-                                              final Collection<T> keysToExclude) {
+    public static <T, E> Map<T, E> removeKeys(final Map<? extends T, ? extends E> sourceMap,
+                                              final Collection<? extends T> keysToExclude) {
         return ofNullable(sourceMap)
                 .map(sm -> {
                     Map<T, E> filteredMap = new HashMap<>(sourceMap);
@@ -48,8 +48,8 @@ public class MapUtil {
      *
      * @return updated {@link Map}
      */
-    public static <T, U, R> Map<T, R> transform(final Map<T, U> sourceMap,
-                                                final BiFunction<T, ? super U, R> mapFunction) {
+    public static <T, U, R> Map<T, R> transform(final Map<? extends T, ? extends U> sourceMap,
+                                                final BiFunction<? super T, ? super U, ? extends R> mapFunction) {
         Assert.notNull(mapFunction, "mapFunction must be not null");
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
