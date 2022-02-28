@@ -64,7 +64,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code mapper} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final <U> Validation<E, U> map(Function<? super T, ? extends U> mapper) {
+    public final <U> Validation<E, U> map(final Function<? super T, ? extends U> mapper) {
         if (isValid()) {
             Objects.requireNonNull(mapper, "mapper is null");
             final T value = get();
@@ -86,7 +86,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code mapper} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final <U> Validation<U, T> mapError(Function<Collection<? super E>, Collection<U>> mapper) {
+    public final <U> Validation<U, T> mapError(final Function<Collection<? super E>, Collection<U>> mapper) {
         if (!isValid()) {
             Objects.requireNonNull(mapper, "mapper is null");
             final Collection<E> errors = getErrors();
@@ -116,8 +116,8 @@ public abstract class Validation<E, T> implements Serializable {
      * @throws NullPointerException if {@code mapperValid} is {@code null} and the current instance is a {@link Valid} one
      *                              or {@code mapperInvalid} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final <E2, T2> Validation<E2, T2> bimap(Function<? super T, ? extends T2> mapperValid,
-                                                   Function<Collection<? super E>, Collection<E2>> mapperInvalid) {
+    public final <E2, T2> Validation<E2, T2> bimap(final Function<? super T, ? extends T2> mapperValid,
+                                                   final Function<Collection<? super E>, Collection<E2>> mapperInvalid) {
         if (isValid()) {
             Objects.requireNonNull(mapperValid, "mapperValid is null");
             final T value = get();
@@ -141,7 +141,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code mapper} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final <U> Validation<E, U> flatMap(Function<? super T, ? extends Validation<E, ? extends U>> mapper) {
+    public final <U> Validation<E, U> flatMap(final Function<? super T, ? extends Validation<E, ? extends U>> mapper) {
         if (isValid()) {
             Objects.requireNonNull(mapper, "mapper is null");
             return (Validation<E, U>) mapper.apply(get());
@@ -160,7 +160,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code action} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final Validation<E, T> peek(Consumer<? super T> action) {
+    public final Validation<E, T> peek(final Consumer<? super T> action) {
         if (isValid()) {
             Objects.requireNonNull(action, "action is null");
             action.accept(get());
@@ -179,7 +179,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code action} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final Validation<E, T> peekError(Consumer<Collection<? super E>> action) {
+    public final Validation<E, T> peekError(final Consumer<Collection<? super E>> action) {
         if (!isValid()) {
             Objects.requireNonNull(action, "action is null");
             action.accept(getErrors());
@@ -203,7 +203,8 @@ public abstract class Validation<E, T> implements Serializable {
      * @throws NullPointerException if {@code actionValid} is {@code null} and the current instance is a {@link Valid} one
      *                              or {@code actionInvalid} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final Validation<E, T> bipeek(Consumer<? super T> actionValid, Consumer<Collection<? super E>> actionInvalid) {
+    public final Validation<E, T> bipeek(final Consumer<? super T> actionValid,
+                                         final Consumer<Collection<? super E>> actionInvalid) {
         if (isValid()) {
             Objects.requireNonNull(actionValid, "actionValid is null");
             actionValid.accept(get());
@@ -226,7 +227,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code predicate} is {@code null} and the current instance is a {@link Valid} one
      */
-    public final Optional<Validation<E, T>> filter(Predicate<? super T> predicate) {
+    public final Optional<Validation<E, T>> filter(final Predicate<? super T> predicate) {
         if (!isValid()) {
             return of(this);
         }
@@ -252,7 +253,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @return {@code Validation}
      */
-    public final Validation<E, T> ap(Validation<E, T> validation) {
+    public final Validation<E, T> ap(final Validation<E, T> validation) {
         if (Objects.isNull(validation)) {
             return this;
         }
@@ -304,7 +305,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @return {@code Validation}
      */
-    public final Validation<E, T> orElse(Validation<? extends E, ? extends T> other) {
+    public final Validation<E, T> orElse(final Validation<? extends E, ? extends T> other) {
         return isValid()
                 ? this
                 : (Validation<E, T>) other;
@@ -321,7 +322,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code supplier} is {@code null} and the current instance is a {@link Invalid} one
      */
-    public final Validation<E, T> orElse(Supplier<Validation<? extends E, ? extends T>> supplier) {
+    public final Validation<E, T> orElse(final Supplier<Validation<? extends E, ? extends T>> supplier) {
         if (isValid()) {
             return this;
         }
@@ -341,7 +342,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @throws NullPointerException if {@code exceptionSupplier} is {@code null} and the current instance is a {@link Invalid} one
      * @throws X if is an {@link Invalid}
      */
-    public final <X extends Throwable> T getOrElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public final <X extends Throwable> T getOrElseThrow(final Supplier<X> exceptionSupplier) throws X {
         if (isValid()) {
             return get();
         }
