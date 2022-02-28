@@ -7,13 +7,13 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -54,11 +54,11 @@ public class CollectionUtil {
      * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
      *                                  is {@code null}
      */
-    public static <T, E> List<E> applyOrElse(final Collection<T> sourceCollection,
+    public static <T, E> List<E> applyOrElse(final Collection<? extends T> sourceCollection,
                                              final Predicate<? super T> filterPredicate,
                                              final Function<? super T, ? extends E> defaultFunction,
                                              final Function<? super T, ? extends E> orElseFunction) {
-        return (List)applyOrElse(sourceCollection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
+        return (List<E>)applyOrElse(sourceCollection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
     }
 
 
@@ -85,7 +85,7 @@ public class CollectionUtil {
      * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
      *                                  is {@code null}
      */
-    public static <T, E> Collection<E> applyOrElse(final Collection<T> sourceCollection,
+    public static <T, E> Collection<E> applyOrElse(final Collection<? extends T> sourceCollection,
                                                    final Predicate<? super T> filterPredicate,
                                                    final Function<? super T, ? extends E> defaultFunction,
                                                    final Function<? super T, ? extends E> orElseFunction,
@@ -146,10 +146,10 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
      */
-    public static <T, E> List<E> collect(final Collection<T> sourceCollection,
+    public static <T, E> List<E> collect(final Collection<? extends T> sourceCollection,
                                          final Predicate<? super T> filterPredicate,
                                          final Function<? super T, ? extends E> mapFunction) {
-        return (List)collect(sourceCollection, filterPredicate, mapFunction, ArrayList::new);
+        return (List<E>)collect(sourceCollection, filterPredicate, mapFunction, ArrayList::new);
     }
 
 
@@ -175,7 +175,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
      */
-    public static <T, E> Collection<E> collect(final Collection<T> sourceCollection,
+    public static <T, E> Collection<E> collect(final Collection<? extends T> sourceCollection,
                                                final Predicate<? super T> filterPredicate,
                                                final Function<? super T, ? extends E> mapFunction,
                                                final Supplier<Collection<E>> collectionFactory) {
@@ -207,9 +207,9 @@ public class CollectionUtil {
      *
      * @return {@link List}
      */
-    public static <T, E> List<E> collectProperty(final Collection<T> sourceCollection,
-                                                 final Function<? super T, E> keyExtractor) {
-        return (List)collectProperty(sourceCollection, keyExtractor, ArrayList::new);
+    public static <T, E> List<E> collectProperty(final Collection<? extends T> sourceCollection,
+                                                 final Function<? super T, ? extends E> keyExtractor) {
+        return (List<E>)collectProperty(sourceCollection, keyExtractor, ArrayList::new);
     }
 
 
@@ -225,8 +225,8 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      */
-    public static <T, E> Collection<E> collectProperty(final Collection<T> sourceCollection,
-                                                       final Function<? super T, E> keyExtractor,
+    public static <T, E> Collection<E> collectProperty(final Collection<? extends T> sourceCollection,
+                                                       final Function<? super T, ? extends E> keyExtractor,
                                                        final Supplier<Collection<E>> collectionFactory) {
         return ofNullable(sourceCollection)
                 .map(c -> {
@@ -273,7 +273,7 @@ public class CollectionUtil {
      * @return {@link Optional} containing the first element that satisfies {@code filterPredicate},
      *         {@link Optional#empty()} otherwise.
      */
-    public static <T> Optional<T> find(final Collection<T> sourceCollection,
+    public static <T> Optional<? extends T> find(final Collection<? extends T> sourceCollection,
                                        final Predicate<? super T> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceCollection) ||
                 Objects.isNull(filterPredicate)) {
@@ -297,7 +297,7 @@ public class CollectionUtil {
      * @return {@link Optional} containing the last element that satisfies {@code filterPredicate},
      *         {@link Optional#empty()} otherwise.
      */
-    public static <T> Optional<T> findLast(final Collection<T> sourceCollection,
+    public static <T> Optional<? extends T> findLast(final Collection<? extends T> sourceCollection,
                                            final Predicate<? super T> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceCollection) ||
                 Objects.isNull(filterPredicate)) {
@@ -329,7 +329,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code initialValue} is {@code null}
      */
-    public static <T, E> E foldLeft(final Collection<T> sourceCollection,
+    public static <T, E> E foldLeft(final Collection<? extends T> sourceCollection,
                                     final E initialValue,
                                     final BiFunction<E, ? super T, E> accumulator) {
         Assert.notNull(initialValue, "initialValue must be not null");
@@ -368,7 +368,7 @@ public class CollectionUtil {
      */
     public static <T> List<T> iterate(final T initialValue,
                                       final UnaryOperator<T> applyFunction,
-                                      final Predicate<T> untilPredicate) {
+                                      final Predicate<? super T> untilPredicate) {
         Assert.notNull(initialValue, "initialValue must be not null");
         Assert.notNull(untilPredicate, "untilPredicate must be not null");
         return ofNullable(applyFunction)
@@ -382,6 +382,40 @@ public class CollectionUtil {
                     return result;
                 })
                 .orElseGet(() -> asList(initialValue));
+    }
+
+
+    /**
+     *    Returns an {@link List} used to loop through given {@code sourceCollection} in reverse order. When provided
+     * {@link Collection} does not provide any kind of internal ordination, the returned {@link List} could return
+     * same values with but in different positions every time.
+     *
+     * @param sourceCollection
+     *    {@link Collection} to get elements in reverse order.
+     *
+     * @return {@link List}
+     */
+    public static <T> List<T> reverseList(final Collection<? extends T> sourceCollection) {
+        return ofNullable(sourceCollection)
+                .map(sc -> {
+                    if (sc instanceof List) {
+                        return (List<T>) sc;
+                    }
+                    if (sc instanceof PriorityQueue) {
+                        PriorityQueue<T> cloneQueue = new PriorityQueue<>(sc);
+                        List<T> result = new ArrayList<>(sc.size());
+                        for (int i = 0; i < sc.size(); i++) {
+                            result.add(cloneQueue.poll());
+                        }
+                        return result;
+                    }
+                    return new ArrayList<T>(sc);
+                })
+                .map(sl -> {
+                    Collections.reverse(sl);
+                    return sl;
+                })
+                .orElseGet(ArrayList::new);
     }
 
 
@@ -405,7 +439,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code from} is upper than {@code until}
      */
-    public static <T> List<T> slice(final Collection<T> sourceCollection,
+    public static <T> List<T> slice(final Collection<? extends T> sourceCollection,
                                     final int from,
                                     final int until) {
         Assert.isTrue(from < until, format("from: %d must be lower than to: %d", from, until));
@@ -448,7 +482,7 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> sliding(final Collection<T> sourceCollection,
+    public static <T> List<List<T>> sliding(final Collection<? extends T> sourceCollection,
                                             final int size) {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
@@ -478,7 +512,7 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link List}s
      */
-    public static <T> List<List<T>> split(final Collection<T> sourceCollection,
+    public static <T> List<List<T>> split(final Collection<? extends T> sourceCollection,
                                           final int size) {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
@@ -551,7 +585,7 @@ public class CollectionUtil {
      *
      * @return {@link PairDto} of two {@link List}
      */
-    public static <T, E> PairDto<List<T>, List<E>> unzip(Collection<PairDto<T, E>> sourceCollection) {
+    public static <T, E> PairDto<List<T>, List<E>> unzip(final Collection<PairDto<T, E>> sourceCollection) {
         return foldLeft(
                 sourceCollection,
                 PairDto.of(new ArrayList<>(), new ArrayList<>()),
@@ -580,15 +614,16 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link PairDto}
      */
-    public static <T, E> List<PairDto<T, E>> zip(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection) {
+    public static <T, E> List<PairDto<T, E>> zip(final Collection<? extends T> sourceLeftCollection,
+                                                 final Collection<? extends E> sourceRightCollection) {
         if (CollectionUtils.isEmpty(sourceLeftCollection) ||
                 CollectionUtils.isEmpty(sourceRightCollection)) {
             return new ArrayList<>();
         }
         int minCollectionsSize = Math.min(sourceLeftCollection.size(), sourceRightCollection.size());
 
-        Iterator<T> leftIterator = sourceLeftCollection.iterator();
-        Iterator<E> rightIterator = sourceRightCollection.iterator();
+        Iterator<? extends T> leftIterator = sourceLeftCollection.iterator();
+        Iterator<? extends E> rightIterator = sourceRightCollection.iterator();
         List<PairDto<T, E>> result = new ArrayList<>();
         for (int i = 0; i < minCollectionsSize; i++) {
             result.add(
@@ -620,8 +655,10 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link PairDto}
      */
-    public static <T, E> List<PairDto<T, E>> zipAll(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection,
-                                                    T defaultLeftElement, E defaultRightElement) {
+    public static <T, E> List<PairDto<T, E>> zipAll(final Collection<T> sourceLeftCollection,
+                                                    final Collection<E> sourceRightCollection,
+                                                    final T defaultLeftElement,
+                                                    final E defaultRightElement) {
         int maxCollectionSize = Math.max(
                 CollectionUtils.isEmpty(sourceLeftCollection) ? 0 : sourceLeftCollection.size(),
                 CollectionUtils.isEmpty(sourceRightCollection) ? 0 : sourceRightCollection.size()
@@ -660,7 +697,7 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link PairDto}s
      */
-    public static <T> List<PairDto<Integer, T>> zipWithIndex(Collection<T> sourceCollection) {
+    public static <T> List<PairDto<Integer, T>> zipWithIndex(Collection<? extends T> sourceCollection) {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
