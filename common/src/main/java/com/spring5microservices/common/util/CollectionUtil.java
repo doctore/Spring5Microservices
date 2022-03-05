@@ -119,6 +119,7 @@ public class CollectionUtil {
      *
      * @return {@link LinkedHashSet}
      */
+    @SafeVarargs
     public static <T> Set<T> asSet(final T ...elements) {
         return ofNullable(elements)
                 .map(e -> new LinkedHashSet<>(asList(elements)))
@@ -253,6 +254,7 @@ public class CollectionUtil {
      *
      * @return {@link LinkedHashSet}
      */
+    @SafeVarargs
     public static <T> Set<T> concatUniqueElements(final Collection<T> ...collections) {
         return ofNullable(collections)
                 .map(c -> Stream.of(c).filter(Objects::nonNull)
@@ -274,7 +276,7 @@ public class CollectionUtil {
      *         {@link Optional#empty()} otherwise.
      */
     public static <T> Optional<? extends T> find(final Collection<? extends T> sourceCollection,
-                                       final Predicate<? super T> filterPredicate) {
+                                                 final Predicate<? super T> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceCollection) ||
                 Objects.isNull(filterPredicate)) {
             return empty();
@@ -298,7 +300,7 @@ public class CollectionUtil {
      *         {@link Optional#empty()} otherwise.
      */
     public static <T> Optional<? extends T> findLast(final Collection<? extends T> sourceCollection,
-                                           final Predicate<? super T> filterPredicate) {
+                                                     final Predicate<? super T> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceCollection) ||
                 Objects.isNull(filterPredicate)) {
             return empty();

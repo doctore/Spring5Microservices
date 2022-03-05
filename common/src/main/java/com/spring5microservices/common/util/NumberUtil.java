@@ -67,7 +67,7 @@ public class NumberUtil {
                 .map(s -> {
                     try {
                         Constructor<T> ctor = clazzReturnedInstance.getConstructor(String.class);
-                        return ctor.newInstance(new Object[] { s });
+                        return ctor.newInstance(s);
                     }
                     catch (Exception e) {
                         return null;

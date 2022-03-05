@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -155,7 +156,7 @@ public class CollectionUtilTest {
 
     @Test
     public void asSet_whenSeveralParametersAreGiven_thenNewSetWithGivenParametersIsReturned() {
-        Set result = asSet(2, 5, 8, 9, 11);
+        Set<Integer> result = asSet(2, 5, 8, 9, 11);
         assertEquals(result, new LinkedHashSet<>(asList(2, 5, 8, 9, 11)));
     }
 
@@ -163,7 +164,7 @@ public class CollectionUtilTest {
     static Stream<Arguments> collectNoCollectionFactoryTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
-        Function<Integer, String> fromIntegerToString = i -> i.toString();
+        Function<Integer, String> fromIntegerToString = Objects::toString;
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   mapFunction,           expectedException,                expectedResult
@@ -180,7 +181,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectNoCollectionFactoryTestCases")
     @DisplayName("collect: without collection factory test cases")
-    public <T, E> void collectNoCollectionFactory_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
+    public <T, E> void collectNoCollectionFactory_testCases(Collection<T> sourceCollection,
+                                                            Predicate<? super T> filterPredicate,
                                                             Function<? super T, ? extends E> mapFunction,
                                                             Class<? extends Exception> expectedException,
                                                             List<E> expectedResult) {
@@ -197,7 +199,7 @@ public class CollectionUtilTest {
         List<Integer> ints = asList(1, 2, 3, 6);
         Set<String> collectedInts = new HashSet<>(asList("1", "3"));
         Predicate<Integer> isOdd = i -> i % 2 == 1;
-        Function<Integer, String> fromIntegerToString = i -> i.toString();
+        Function<Integer, String> fromIntegerToString = Object::toString;
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         return Stream.of(
                 //@formatter:off
@@ -216,7 +218,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectAllParametersTestCases")
     @DisplayName("collect: with all parameters test cases")
-    public <T, E> void collectAllParameters_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
+    public <T, E> void collectAllParameters_testCases(Collection<T> sourceCollection,
+                                                      Predicate<? super T> filterPredicate,
                                                       Function<? super T, ? extends E> mapFunction,
                                                       Supplier<Collection<E>> collectionFactory,
                                                       Class<? extends Exception> expectedException,
@@ -430,12 +433,12 @@ public class CollectionUtilTest {
         integersTreeSet.addAll(asList(45, 71, 9, 11, 35));
 
         PriorityQueue<Long> longsPriorityQueue = new PriorityQueue<>(Comparator.naturalOrder());
-        longsPriorityQueue.addAll(asList(54l, 78l, 12l));
+        longsPriorityQueue.addAll(asList(54L, 78L, 12L));
 
         List<Integer> reverseIntegersList = asList(15, 11, 9, 7, 3);
         List<String> reverseStringsLinkedSet = asList("IOP", "YTGH", "BT", "A");
         List<Integer> reverseIntegersTreeSet = asList(9, 11, 35, 45, 71);
-        List<Long> reverseLongsPriorityQueue = asList(78l, 54l, 12l);
+        List<Long> reverseLongsPriorityQueue = asList(78L, 54L, 12L);
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,     expectedResult
