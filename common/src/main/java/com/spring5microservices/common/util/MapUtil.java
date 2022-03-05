@@ -8,11 +8,56 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 import static java.util.Optional.ofNullable;
 
 @UtilityClass
 public class MapUtil {
+
+    /**
+     * Return a {@link Map} after:
+     *
+     *  - Filter its elements using {@code filterPredicate}
+     *  - Transform its filtered elements using {@code mapFunction}
+     *
+     * Example:
+     *   [(1, "Hi"), (2, "Hello")],  (k, v) -> k % 2 == 0,  (k, v) -> k + v.length()  =>  [(2, 6)]
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from the source {@code sourceMap}.
+     * @param mapFunction
+     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}.
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     */
+    public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
+                                              final BiPredicate<? super T, ? super E> filterPredicate,
+                                              final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
+        Assert.notNull(filterPredicate, "filterPredicate must be not null");
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return new HashMap<>();
+        }
+        Map<T, R> result = new HashMap<>();
+        sourceMap.forEach(
+                (k, v) -> {
+                    if (filterPredicate.test(k, v)) {
+                        result.put(
+                                k,
+                                mapFunction.apply(k, v)
+                        );
+                    }
+                }
+        );
+        return result;
+    }
+
+
 
     /**
      * Return a {@link Map} with the information of the given {@code sourceMap} excluding the keys of {@code keysToExclude}
@@ -41,6 +86,9 @@ public class MapUtil {
     /**
      * Transforms all the values of given {@code sourceMap} using the provided {@code mapFunction}
      *
+     * Example:
+     *   [(1, "A"), (3, "C")],  (k, v) -> k + v.length()  =>  [(1, 2), (3, 4)]
+     *
      * @param sourceMap
      *    {@link Map} to update its values
      * @param mapFunction
@@ -48,8 +96,8 @@ public class MapUtil {
      *
      * @return updated {@link Map}
      */
-    public static <T, U, R> Map<T, R> transform(final Map<? extends T, ? extends U> sourceMap,
-                                                final BiFunction<? super T, ? super U, ? extends R> mapFunction) {
+    public static <T, E, R> Map<T, R> transform(final Map<? extends T, ? extends E> sourceMap,
+                                                final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
         Assert.notNull(mapFunction, "mapFunction must be not null");
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
@@ -57,7 +105,10 @@ public class MapUtil {
         Map<T, R> result = new HashMap<>();
         sourceMap.forEach(
                 (k, v) ->
-                        result.put(k, mapFunction.apply(k, v))
+                        result.put(
+                                k,
+                                mapFunction.apply(k, v)
+                        )
         );
         return result;
     }

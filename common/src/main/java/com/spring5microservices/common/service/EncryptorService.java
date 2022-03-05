@@ -162,8 +162,7 @@ public class EncryptorService {
                                    int iterationCount, int keyLength) throws NoSuchAlgorithmException, InvalidKeySpecException {
         SecretKeyFactory factory = SecretKeyFactory.getInstance(secretKeyAlgorithm);
         KeySpec spec = new PBEKeySpec(password, salt, iterationCount, keyLength);
-        SecretKey secret = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), symmetricAlgorithm);
-        return secret;
+        return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), symmetricAlgorithm);
     }
 
 

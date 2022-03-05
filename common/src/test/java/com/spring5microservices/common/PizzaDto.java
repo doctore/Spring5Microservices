@@ -1,6 +1,6 @@
 package com.spring5microservices.common;
 
-import com.spring5microservices.common.validator.annotation.EnumHasInternalStringValue;
+import com.spring5microservices.common.validator.enums.EnumHasInternalStringValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

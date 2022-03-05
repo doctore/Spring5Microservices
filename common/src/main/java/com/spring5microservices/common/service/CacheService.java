@@ -15,7 +15,7 @@ import static java.util.Optional.ofNullable;
 @Service
 public class CacheService {
 
-    private CacheManager cacheManager;
+    private final CacheManager cacheManager;
 
     @Autowired
     public CacheService(@Lazy CacheManager cacheManager) {
@@ -114,7 +114,9 @@ public class CacheService {
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
     public <K, V> boolean putIfAbsent(String cacheName, K key, V value) {
-        return contains(cacheName, key) ? false: put(cacheName, key, value);
+        return contains(cacheName, key)
+                ? false
+                : put(cacheName, key, value);
     }
 
 
@@ -131,7 +133,9 @@ public class CacheService {
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
     public <K, V> boolean putIfPresent(String cacheName, K key, V value) {
-        return contains(cacheName, key) ? put(cacheName, key, value) : false;
+        return contains(cacheName, key)
+                ? put(cacheName, key, value)
+                : false;
     }
 
 
@@ -145,7 +149,7 @@ public class CacheService {
      *
      * @return {@code true} if no problem was found during the operation, {@code false} otherwise
      */
-    public <K, V> boolean remove(String cacheName, K key) {
+    public <K> boolean remove(String cacheName, K key) {
         return ofNullable(cacheName)
                 .map(cacheManager::getCache)
                 .map(c -> {
