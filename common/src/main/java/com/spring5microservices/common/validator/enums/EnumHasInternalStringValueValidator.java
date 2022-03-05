@@ -20,6 +20,7 @@ public class EnumHasInternalStringValueValidator implements ConstraintValidator<
 	String constraintTemplate;
 	private boolean isNullAccepted;
 
+
 	@Override
     public void initialize(final EnumHasInternalStringValue hasInternalStringValue) {
 		enumValidValues = Arrays.stream(hasInternalStringValue.enumClass().getEnumConstants())

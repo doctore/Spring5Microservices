@@ -36,7 +36,7 @@ public class Invalid<E, T> extends Validation<E, T> implements Serializable {
      * @return an empty {@code Invalid}
      */
     public static <E, T> Invalid<E, T> empty() {
-        return new Invalid(new ArrayList());
+        return new Invalid<>(new ArrayList<>());
     }
 
 
@@ -51,7 +51,7 @@ public class Invalid<E, T> extends Validation<E, T> implements Serializable {
      * @throws NullPointerException if {@code error} is {@code null}
      */
     public static <E, T> Invalid<E, T> of(Collection<E> errors) {
-        return new Invalid(Objects.requireNonNull(errors));
+        return new Invalid<>(Objects.requireNonNull(errors));
     }
 
 

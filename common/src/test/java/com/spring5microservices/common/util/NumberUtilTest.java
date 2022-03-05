@@ -20,9 +20,9 @@ public class NumberUtilTest {
     static Stream<Arguments> compareBigDecimalTestCases() {
         BigDecimal bg1 = new BigDecimal(100);
         BigDecimal bg2 = new BigDecimal(111);
-        BigDecimal bg3 = new BigDecimal(100.1241);
-        BigDecimal bg4 = new BigDecimal(100.1251);
-        BigDecimal bg5 = new BigDecimal(100.1242);
+        BigDecimal bg3 = new BigDecimal("100.1241");
+        BigDecimal bg4 = new BigDecimal("100.1251");
+        BigDecimal bg5 = new BigDecimal("100.1242");
         return Stream.of(
                 //@formatter:off
                 //            one,    two,    numberOfDecimals,   expectedException,                expectedResult
@@ -50,7 +50,7 @@ public class NumberUtilTest {
             int result = NumberUtil.compare(one, two, numberOfDecimals);
             switch (expectedResult) {
                 case LESS_THAN_ZERO: assertTrue(0 > result); break;
-                case ZERO: assertTrue(0 == result); break;
+                case ZERO: assertEquals(0, result); break;
                 case GREATER_THAN_ZERO: assertTrue(0 < result); break;
             }
         }
@@ -64,9 +64,9 @@ public class NumberUtilTest {
                 Arguments.of( null,              null,                    IllegalArgumentException.class,   null ),
                 Arguments.of( "12",              null,                    IllegalArgumentException.class,   null ),
                 Arguments.of( "aa",              Integer.class,           null,                             empty() ),
-                Arguments.of( "12",              Integer.class,           null,                             of(Integer.valueOf(12)) ),
+                Arguments.of( "12",              Integer.class,           null,                             of(12) ),
                 Arguments.of( "aa",              Long.class,              null,                             empty() ),
-                Arguments.of( "12",              Long.class,              null,                             of(Long.valueOf(12)) )
+                Arguments.of( "12",              Long.class,              null,                             of(12L) )
         ); //@formatter:on
     }
 
@@ -92,7 +92,7 @@ public class NumberUtilTest {
                 Arguments.of( null,              empty() ),
                 Arguments.of( "aa",              empty() ),
                 Arguments.of( "12.1",            empty() ),
-                Arguments.of( "12",              of(Integer.valueOf(12)) )
+                Arguments.of( "12",              of(12) )
         ); //@formatter:on
     }
 

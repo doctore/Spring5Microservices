@@ -23,7 +23,7 @@ public class ValidationUtilTest {
         Validation<String, Integer> validInt4 = Validation.valid(4);
         Validation<String, Integer> invalidProb1 = Validation.invalid(asList("problem1"));
         Validation<String, Integer> invalidProb2 = Validation.invalid(asList("problem2"));
-        Validation<String, Integer> allValidationsArray[] = new Validation[] { validInt1, invalidProb1, validInt4, invalidProb2 };
+        Validation<String, Integer>[] allValidationsArray = new Validation[] { validInt1, invalidProb1, validInt4, invalidProb2 };
 
         List<String> allErrors = new ArrayList<>(invalidProb1.getErrors());
         allErrors.addAll(invalidProb2.getErrors());
@@ -45,7 +45,7 @@ public class ValidationUtilTest {
     @ParameterizedTest
     @MethodSource("combineTestCases")
     @DisplayName("combine: test cases")
-    public <E, T> void combine_testCases(Validation<E, T> validations[],
+    public <E, T> void combine_testCases(Validation<E, T>[] validations,
                                          Validation<E, T> expectedResult) {
         assertEquals(expectedResult, ValidationUtil.combine(validations));
     }

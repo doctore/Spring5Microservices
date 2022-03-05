@@ -72,7 +72,7 @@ public class ValidationTest {
     static Stream<Arguments> mapTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
-        Function<Integer, String> fromIntegerToString = i -> i.toString();
+        Function<Integer, String> fromIntegerToString = Object::toString;
         return Stream.of(
                 //@formatter:off
                 //            validation,   mapper,                expectedException,            expectedResult
@@ -132,7 +132,7 @@ public class ValidationTest {
     static Stream<Arguments> bimapTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
-        Function<Integer, String> fromIntegerToString = i -> i.toString();
+        Function<Integer, String> fromIntegerToString = Object::toString;
         Function<List<String>, List<String>> addALetter = i -> i.stream().map(elto -> elto + "2").collect(toList());
         return Stream.of(
                 //@formatter:off

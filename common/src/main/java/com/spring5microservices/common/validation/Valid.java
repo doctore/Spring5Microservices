@@ -35,7 +35,7 @@ public final class Valid<E, T> extends Validation<E, T> implements Serializable 
      * @return an empty {@code Valid}
      */
     public static <E, T> Valid<E, T> empty() {
-        return new Valid(null);
+        return new Valid<>(null);
     }
 
 
@@ -50,7 +50,7 @@ public final class Valid<E, T> extends Validation<E, T> implements Serializable 
      * @throws NullPointerException if value is {@code null}
      */
     public static <E, T> Valid<E, T> of(T value) {
-        return new Valid(Objects.requireNonNull(value));
+        return new Valid<>(Objects.requireNonNull(value));
     }
 
 
