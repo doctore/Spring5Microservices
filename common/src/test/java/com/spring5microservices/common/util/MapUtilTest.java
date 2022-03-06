@@ -13,6 +13,7 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.transform;
@@ -22,6 +23,74 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MapUtilTest {
 
+    static Stream<Arguments> applyOrElseTestCases() {
+        Map<Integer, String> emptyMap = new HashMap<>();
+
+        BiPredicate<Integer, String> isKeyOddAndValueVowel =
+                (k, v) ->
+                        k % 2 == 1 && "AEIOUaeiou".contains(v);
+
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength =
+                (k, v) ->
+                        (long) (k * 2 + v.length());
+
+        BiFunction<Integer, String, Long> sumKeyPlusValueLength =
+                (k, v) ->
+                        (long) (k + v.length());
+
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(3, "C");
+            put(4, "o");
+        }};
+
+        Map<Integer, Long> emptyMapResult = new HashMap<>();
+        Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 3L);
+            put(3, 4L);
+            put(4, 5L);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,         defaultFunction,               orElseFunction,          expectedException,                expectedResult
+                Arguments.of( null,             null,                    null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( emptyMap,         null,                    null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( emptyMap,         isKeyOddAndValueVowel,   null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( emptyMap,         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             emptyMapResult ),
+                Arguments.of( emptyMap,         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             emptyMapResult ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseTestCases")
+    @DisplayName("applyOrElse: test cases")
+    public <T, E, R> void applyOrElse_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                BiPredicate<? super T, ? super E> filterPredicate,
+                                                BiFunction<? super T, ? super E, ? extends R> defaultFunction,
+                                                BiFunction<? super T, ? super E, ? extends R> orElseFunction,
+                                                Class<? extends Exception> expectedException,
+                                                Map<T, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> applyOrElse(
+                            sourceMap, filterPredicate, defaultFunction, orElseFunction
+                    )
+            );
+        }
+        else {
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceMap, filterPredicate, defaultFunction, orElseFunction
+                    )
+            );
+        }
+    }
+
+
     static Stream<Arguments> collectTestCases() {
         Map<Integer, String> emptyMap = new HashMap<>();
 
@@ -29,28 +98,30 @@ public class MapUtilTest {
                 (k, v) ->
                         k % 2 == 0 && "AEIOUaeiou".contains(v);
 
-        BiFunction<Integer, String, Long> fromIntegerStringToLong =
-                (i, s) ->
-                        (long) (i * 2 + s.length());
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength =
+                (k, v) ->
+                        (long) (k * 2 + v.length());
 
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
             put(4, "o");
         }};
+
+        Map<Integer, Long> emptyMapResult = new HashMap<>();
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
             put(4, 9L);
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,        filterPredicate,          mapFunction,               expectedException,                expectedResult
-                Arguments.of( null,             null,                     null,                      IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         null,                     null,                      IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         null,                     null,                      IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         isKeyEvenAndValueVowel,   null,                      IllegalArgumentException.class,   null ),
-                Arguments.of( null,             isKeyEvenAndValueVowel,   fromIntegerStringToLong,   null,                             emptyMap ),
-                Arguments.of( emptyMap,         isKeyEvenAndValueVowel,   fromIntegerStringToLong,   null,                             emptyMap ),
-                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   fromIntegerStringToLong,   null,                             intsAndStringsResult )
+                //            sourceMap,        filterPredicate,          mapFunction,                   expectedException,                expectedResult
+                Arguments.of( null,             null,                     null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( emptyMap,         null,                     null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( emptyMap,         null,                     null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( emptyMap,         isKeyEvenAndValueVowel,   null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             emptyMapResult ),
+                Arguments.of( emptyMap,         isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             emptyMapResult ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             intsAndStringsResult )
         ); //@formatter:on
     }
 

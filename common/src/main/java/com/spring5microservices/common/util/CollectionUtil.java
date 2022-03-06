@@ -281,7 +281,7 @@ public class CollectionUtil {
                 Objects.isNull(filterPredicate)) {
             return empty();
         }
-        return sourceCollection
+        return getCollectionKeepingInternalOrdination(sourceCollection)
                 .stream()
                 .filter(filterPredicate)
                 .findFirst();
@@ -305,10 +305,10 @@ public class CollectionUtil {
                 Objects.isNull(filterPredicate)) {
             return empty();
         }
-        return sourceCollection
+        return reverseList(sourceCollection)
                 .stream()
                 .filter(filterPredicate)
-                .reduce((previous, current) -> current);
+                .findFirst();
     }
 
 
@@ -399,20 +399,8 @@ public class CollectionUtil {
      */
     public static <T> List<T> reverseList(final Collection<? extends T> sourceCollection) {
         return ofNullable(sourceCollection)
-                .map(sc -> {
-                    if (sc instanceof List) {
-                        return (List<T>) sc;
-                    }
-                    if (sc instanceof PriorityQueue) {
-                        PriorityQueue<T> cloneQueue = new PriorityQueue<>(sc);
-                        List<T> result = new ArrayList<>(sc.size());
-                        for (int i = 0; i < sc.size(); i++) {
-                            result.add(cloneQueue.poll());
-                        }
-                        return result;
-                    }
-                    return new ArrayList<T>(sc);
-                })
+                .map(CollectionUtil::getCollectionKeepingInternalOrdination)
+                .map(sc -> new ArrayList<T>(sc))
                 .map(sl -> {
                     Collections.reverse(sl);
                     return sl;
@@ -457,7 +445,7 @@ public class CollectionUtil {
 
         int i = 0;
         List<T> result = new ArrayList<>(Math.max(finalUntil - finalFrom, finalUntil - finalFrom - 1));
-        for (T element: sourceCollection) {
+        for (T element: getCollectionKeepingInternalOrdination(sourceCollection)) {
             if (i >= finalUntil) {
                 break;
             }
@@ -489,7 +477,9 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-        List<T> listToSlide = new ArrayList<>(sourceCollection);
+        List<T> listToSlide = new ArrayList<>(
+                getCollectionKeepingInternalOrdination(sourceCollection)
+        );
         if (size > listToSlide.size()) {
             return asList(listToSlide);
         }
@@ -519,7 +509,9 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-        List<T> listToSplit = new ArrayList<>(sourceCollection);
+        List<T> listToSplit = new ArrayList<>(
+                getCollectionKeepingInternalOrdination(sourceCollection)
+        );
         int expectedSize = 0 == listToSplit.size() % size
                 ? listToSplit.size() / size
                 : (listToSplit.size() / size) + 1;
@@ -710,6 +702,30 @@ public class CollectionUtil {
             i++;
         }
         return result;
+    }
+
+
+    /**
+     *    Returns a {@link Collection} with the elements of the given {@code sourceCollection} considering special use
+     * cases like {@link PriorityQueue}, on which internal {@link Iterator} does not take into account internal ordering.
+     *
+     * @param sourceCollection
+     *    {@link Collection} to iterate.
+     *
+     * @return {@link Collection}
+     */
+    private static <T> Collection<T> getCollectionKeepingInternalOrdination(Collection<T> sourceCollection) {
+        if (sourceCollection instanceof PriorityQueue) {
+            PriorityQueue<T> cloneQueue = new PriorityQueue<>(sourceCollection);
+            List<T> result = new ArrayList<>(sourceCollection.size());
+            for (int i = 0; i < sourceCollection.size(); i++) {
+                result.add(cloneQueue.poll());
+            }
+            return result;
+        }
+        else {
+            return sourceCollection;
+        }
     }
 
 }

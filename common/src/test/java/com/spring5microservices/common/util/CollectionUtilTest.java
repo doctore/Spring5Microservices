@@ -309,8 +309,12 @@ public class CollectionUtilTest {
     static Stream<Arguments> findTestCases() {
         List<Integer> integers = asList(3, 7, 9, 11, 15);
         Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 78L, 12L));
+
         Predicate<Integer> upperThan10 = i -> 10 < i;
         Predicate<Integer> upperThan20 = i -> 20 < i;
+        Predicate<Long> upperThan50 = l -> 50 < l;
         Predicate<String> moreThan2Characters = s -> 2 < s.length();
         Predicate<String> moreThan5Characters = s -> 5 < s.length();
         return Stream.of(
@@ -323,7 +327,8 @@ public class CollectionUtilTest {
                 Arguments.of( integers,           upperThan20,           empty() ),
                 Arguments.of( strings,            moreThan5Characters,   empty() ),
                 Arguments.of( integers,           upperThan10,           of(11) ),
-                Arguments.of( strings,            moreThan2Characters,   of("YTGH") )
+                Arguments.of( strings,            moreThan2Characters,   of("YTGH") ),
+                Arguments.of( longs,              upperThan50,           of(54L) )
         ); //@formatter:on
     }
 
@@ -339,8 +344,12 @@ public class CollectionUtilTest {
     static Stream<Arguments> findLastTestCases() {
         List<Integer> integers = asList(3, 7, 9, 11, 15);
         Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 78L, 12L));
+
         Predicate<Integer> upperThan10 = i -> 10 < i;
         Predicate<Integer> upperThan20 = i -> 20 < i;
+        Predicate<Long> upperThan50 = l -> 50 < l;
         Predicate<String> moreThan2Characters = s -> 2 < s.length();
         Predicate<String> moreThan5Characters = s -> 5 < s.length();
         return Stream.of(
@@ -353,7 +362,8 @@ public class CollectionUtilTest {
                 Arguments.of( integers,           upperThan20,           empty() ),
                 Arguments.of( strings,            moreThan5Characters,   empty() ),
                 Arguments.of( integers,           upperThan10,           of(15) ),
-                Arguments.of( strings,            moreThan2Characters,   of("IOP") )
+                Arguments.of( strings,            moreThan2Characters,   of("IOP") ),
+                Arguments.of( longs,              upperThan50,           of(78L) )
         ); //@formatter:on
     }
 
@@ -361,7 +371,7 @@ public class CollectionUtilTest {
     @MethodSource("findLastTestCases")
     @DisplayName("findLast: test cases")
     public <T> void findLast_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
-                                   Optional<T> expectedResult) {
+                                       Optional<T> expectedResult) {
         assertEquals(expectedResult, findLast(sourceCollection, filterPredicate));
     }
 
@@ -463,6 +473,8 @@ public class CollectionUtilTest {
     static Stream<Arguments> sliceTestCases() {
         Set<Integer> integers = new LinkedHashSet<>(asList(11, 12, 13, 14));
         List<String> strings = asList("a", "b", "c", "d", "f");
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 78L, 12L));
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   from,   to,   expectedException,                expectedResult
@@ -478,7 +490,9 @@ public class CollectionUtilTest {
                 Arguments.of( integers,           6,      8,    null,                             asList() ),
                 Arguments.of( strings,           -1,      1,    null,                             asList("a") ),
                 Arguments.of( strings,            2,      3,    null,                             asList("c") ),
-                Arguments.of( strings,            4,      9,    null,                             asList("f") )
+                Arguments.of( strings,            4,      9,    null,                             asList("f") ),
+                Arguments.of( longs,              0,      1,    null,                             asList(12L) ),
+                Arguments.of( longs,              1,      2,    null,                             asList(54L) )
         ); //@formatter:on
     }
 
@@ -505,6 +519,8 @@ public class CollectionUtilTest {
             add("G");
             add("M");
         }};
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 78L, 12L));
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   size,                      expectedResult
@@ -513,7 +529,8 @@ public class CollectionUtilTest {
                 Arguments.of( integers,           integers.size() + 1,       asList(integers) ),
                 Arguments.of( integers,           2,                         asList(asList(1, 3), asList(3, 5)) ),
                 Arguments.of( strings,            2,                         asList(asList("A", "E"), asList("E", "G"), asList("G", "M")) ),
-                Arguments.of( strings,            3,                         asList(asList("A", "E", "G"), asList("E", "G", "M")) )
+                Arguments.of( strings,            3,                         asList(asList("A", "E", "G"), asList("E", "G", "M")) ),
+                Arguments.of( longs,              2,                         asList(asList(12L, 54L), asList(54L, 78L)) )
         ); //@formatter:on
     }
 
@@ -534,6 +551,8 @@ public class CollectionUtilTest {
             add("G");
             add("M");
         }};
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 78L, 12L));
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   size,                  expectedResult
@@ -541,7 +560,8 @@ public class CollectionUtilTest {
                 Arguments.of( asList(),           0,                     new ArrayList<>() ),
                 Arguments.of( integers,           integers.size() + 1,   asList(integers) ),
                 Arguments.of( strings,            2,                     asList(asList("A", "E"), asList("G", "M")) ),
-                Arguments.of( strings,            3,                     asList(asList("A", "E", "G"), asList("M")) )
+                Arguments.of( strings,            3,                     asList(asList("A", "E", "G"), asList("M")) ),
+                Arguments.of( longs,              2,                     asList(asList(12L, 54L), asList(78L)) )
         ); //@formatter:on
     }
 
