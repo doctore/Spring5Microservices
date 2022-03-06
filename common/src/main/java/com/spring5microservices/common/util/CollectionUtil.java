@@ -336,10 +336,11 @@ public class CollectionUtil {
                                     final BiFunction<E, ? super T, E> accumulator) {
         Assert.notNull(initialValue, "initialValue must be not null");
         return ofNullable(sourceCollection)
-                .map(c -> {
+                .map(CollectionUtil::getCollectionKeepingInternalOrdination)
+                .map(sc -> {
                     E result = initialValue;
-                    if (null != accumulator) {
-                        for (T element : c) {
+                    if (Objects.nonNull(accumulator)) {
+                        for (T element : sc) {
                             result = accumulator.apply(result, element);
                         }
                     }

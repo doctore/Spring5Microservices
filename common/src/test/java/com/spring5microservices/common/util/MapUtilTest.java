@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.interfaces.functional.TriFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
+import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.transform;
 import static java.util.Arrays.asList;
@@ -138,6 +140,49 @@ public class MapUtilTest {
         }
         else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction));
+        }
+    }
+
+
+    static Stream<Arguments> foldLeftTestCases() {
+        Map<Integer, String> emptyMap = new HashMap<>();
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        Map<Integer, Long> intsAndLongs = new HashMap<>() {{
+            put(7, 3L);
+            put(11, 6L);
+            put(21, 9L);
+        }};
+        TriFunction<Integer, Integer, String, Integer> multiply = (a, b, c) -> a * b * c.length();
+        TriFunction<Long, Integer, Long, Long> sum = (a, b, c) -> a + (long)b + c;
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        initialValue,   accumulator,   expectedException,                expectedResult
+                Arguments.of( null,             null,           null,          IllegalArgumentException.class,   null ),
+                Arguments.of( emptyMap,         2,              null,          null,                             2 ),
+                Arguments.of( emptyMap,         1,              multiply,      null,                             1 ),
+                Arguments.of( intsAndStrings,   0,              null,          null,                             0 ),
+                Arguments.of( intsAndStrings,   1,              multiply,      null,                             8 ),
+                Arguments.of( intsAndLongs,     5L,             sum,           null,                             62L )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldLeftTestCases")
+    @DisplayName("foldLeft: test cases")
+    public <T, E, R> void foldLeft_testCases(Map<T, E> sourceMap,
+                                             R initialValue,
+                                             TriFunction<R, ? super T, ?super E, R> accumulator,
+                                             Class<? extends Exception> expectedException,
+                                             R expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> foldLeft(sourceMap, initialValue, accumulator));
+        }
+        else {
+            assertEquals(expectedResult, foldLeft(sourceMap, initialValue, accumulator));
         }
     }
 

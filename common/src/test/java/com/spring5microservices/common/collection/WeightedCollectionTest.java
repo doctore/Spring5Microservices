@@ -84,7 +84,7 @@ public class WeightedCollectionTest {
         WeightedCollection<String> emptyWeightedCollection = WeightedCollection.of(new SecureRandom());
         WeightedCollection<String> nonEmptyWeightedCollection = emptyWeightedCollection.addAndThen(10, "1").addAndThen(20, "2");
         WeightedCollection<String> nonEmptyWeightedCollectionSameElements = emptyWeightedCollection.addAndThen(10, "1").addAndThen(20, "2");
-        WeightedCollection<Integer> differentTypeRandomCollection = WeightedCollection.of(new SecureRandom()).addAndThen(10, 1).addAndThen(20, 2);
+        WeightedCollection<Integer> differentTypeRandomCollection = WeightedCollection.<Integer>of(new SecureRandom()).addAndThen(10, 1).addAndThen(20, 2);
         return Stream.of(
                 //@formatter:off
                 //            currentWeightedCollection,                   weightedCollectionToCompare,                 expectedResult

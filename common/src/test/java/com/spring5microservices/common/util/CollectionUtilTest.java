@@ -250,7 +250,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectPropertyNoCollectionFactoryTestCases")
     @DisplayName("collectProperty: without collection factory test cases")
-    public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> sourceCollection, Function<PizzaDto, String> keyExtractor,
+    public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> sourceCollection,
+                                                             Function<PizzaDto, String> keyExtractor,
                                                              Collection<String> expectedResult) {
         Collection<String> result = collectProperty(sourceCollection, keyExtractor);
         assertEquals(expectedResult, result);
@@ -278,8 +279,10 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectPropertyAllParametersTestCases")
     @DisplayName("collectProperty: with all parameters test cases")
-    public void collectPropertyAllParameters_testCases(List<PizzaDto> sourceCollection, Function<PizzaDto, String> keyExtractor,
-                                                       Supplier<Collection<String>> collectionFactory, Collection<String> expectedResult) {
+    public void collectPropertyAllParameters_testCases(List<PizzaDto> sourceCollection,
+                                                       Function<PizzaDto, String> keyExtractor,
+                                                       Supplier<Collection<String>> collectionFactory,
+                                                       Collection<String> expectedResult) {
         Collection<String> result = collectProperty(sourceCollection, keyExtractor, collectionFactory);
         assertEquals(expectedResult, result);
     }
@@ -299,8 +302,10 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("concatUniqueElementsTestCases")
     @DisplayName("concatUniqueElements: test cases")
-    public void concatUniqueElements_testCases(List<Integer> collection1ToConcat, List<Integer> collection2ToConcat,
-                                               List<Integer> collection3ToConcat, LinkedHashSet<Integer> expectedResult) {
+    public void concatUniqueElements_testCases(List<Integer> collection1ToConcat,
+                                               List<Integer> collection2ToConcat,
+                                               List<Integer> collection3ToConcat,
+                                               LinkedHashSet<Integer> expectedResult) {
         Set<Integer> concatedValues = concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat);
         assertEquals(expectedResult, concatedValues);
     }
@@ -335,7 +340,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("findTestCases")
     @DisplayName("find: test cases")
-    public <T> void find_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
+    public <T> void find_testCases(Collection<T> sourceCollection,
+                                   Predicate<? super T> filterPredicate,
                                    Optional<T> expectedResult) {
         assertEquals(expectedResult, find(sourceCollection, filterPredicate));
     }
@@ -370,7 +376,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("findLastTestCases")
     @DisplayName("findLast: test cases")
-    public <T> void findLast_testCases(Collection<T> sourceCollection, Predicate<? super T> filterPredicate,
+    public <T> void findLast_testCases(Collection<T> sourceCollection,
+                                       Predicate<? super T> filterPredicate,
                                        Optional<T> expectedResult) {
         assertEquals(expectedResult, findLast(sourceCollection, filterPredicate));
     }
@@ -379,24 +386,33 @@ public class CollectionUtilTest {
     static Stream<Arguments> foldLeftTestCases() {
         List<Integer> integers = asList(1, 3, 5);
         List<String> strings = asList("AB", "E", "GMT");
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 75L, 12L));
+
         BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
         BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
+        BiFunction<Long, Long, Long> subtract = (a, b) -> a - b;
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   initialValue,   accumulator,  expectedException,                expectedResult
-                Arguments.of( null,               null,           null,         IllegalArgumentException.class,   null ),
-                Arguments.of( asList(),           1,              multiply,     null,                             1 ),
-                Arguments.of( integers,           0,              null,         null,                             0 ),
-                Arguments.of( integers,           1,              multiply,     null,                             15 ),
-                Arguments.of( strings,            0,              sumLength,    null,                             6 )
+                //            sourceCollection,   initialValue,   accumulator,   expectedException,                expectedResult
+                Arguments.of( null,               null,           null,          IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           2,              null,          null,                             2 ),
+                Arguments.of( asList(),           1,              multiply,      null,                             1 ),
+                Arguments.of( integers,           0,              null,          null,                             0 ),
+                Arguments.of( integers,           1,              multiply,      null,                             15 ),
+                Arguments.of( strings,            0,              sumLength,     null,                             6 ),
+                Arguments.of( longs,              10L,            subtract,      null,                             -131L )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("foldLeftTestCases")
     @DisplayName("foldLeft: test cases")
-    public <T, E> void foldLeft_testCases(Collection<T> sourceCollection, E initialValue, BiFunction<E, ? super T, E> accumulator,
-                                          Class<? extends Exception> expectedException, E expectedResult) {
+    public <T, E> void foldLeft_testCases(Collection<T> sourceCollection,
+                                          E initialValue,
+                                          BiFunction<E, ? super T, E> accumulator,
+                                          Class<? extends Exception> expectedException,
+                                          E expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> foldLeft(sourceCollection, initialValue, accumulator));
         }
@@ -424,8 +440,11 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("iterateTestCases")
     @DisplayName("iterate: test cases")
-    public <T> void iterate_testCases(T initialValue, UnaryOperator<T> applyFunction, Predicate<T> untilPredicate,
-                                      Class<? extends Exception> expectedException, T expectedResult) {
+    public <T> void iterate_testCases(T initialValue,
+                                      UnaryOperator<T> applyFunction,
+                                      Predicate<T> untilPredicate,
+                                      Class<? extends Exception> expectedException,
+                                      T expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> iterate(initialValue, applyFunction, untilPredicate));
         }
@@ -499,7 +518,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("sliceTestCases")
     @DisplayName("slice: test cases")
-    public <T> void slice_testCases(Collection<T> sourceCollection, int from, int until,
+    public <T> void slice_testCases(Collection<T> sourceCollection,
+                                    int from, int until,
                                     Class<? extends Exception> expectedException,
                                     List<T> expectedResult) {
         if (null != expectedException) {
@@ -537,7 +557,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("slidingTestCases")
     @DisplayName("sliding: test cases")
-    public <T> void sliding_testCases(Collection<T> sourceCollection, int size, List<List<T>> expectedResult) {
+    public <T> void sliding_testCases(Collection<T> sourceCollection, int size,
+                                      List<List<T>> expectedResult) {
         List<List<T>> slidedList = sliding(sourceCollection, size);
         assertEquals(expectedResult, slidedList);
     }
@@ -568,7 +589,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("splitTestCases")
     @DisplayName("split: test cases")
-    public <T> void split_testCases(Collection<T> sourceCollection, int size, List<List<T>> expectedResult) {
+    public <T> void split_testCases(Collection<T> sourceCollection, int size,
+                                    List<List<T>> expectedResult) {
         List<List<T>> splittedList = split(sourceCollection, size);
         assertEquals(expectedResult, splittedList);
     }
@@ -622,7 +644,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("transposeTestCases")
     @DisplayName("transpose: test cases")
-    public <T> void transpose_testCases(Collection<Collection<T>> sourceCollection, List<List<T>> expectedResult) {
+    public <T> void transpose_testCases(Collection<Collection<T>> sourceCollection,
+                                        List<List<T>> expectedResult) {
         assertEquals(expectedResult, transpose(sourceCollection));
     }
 
@@ -656,7 +679,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("unzipTestCases")
     @DisplayName("unzip: test cases")
-    public <T, E> void unzip_testCases(Collection<PairDto<T, E>> sourceCollection, PairDto<List<T>, List<E>> expectedResult) {
+    public <T, E> void unzip_testCases(Collection<PairDto<T, E>> sourceCollection,
+                                       PairDto<List<T>, List<E>> expectedResult) {
         assertEquals(expectedResult, unzip(sourceCollection));
     }
 
@@ -752,7 +776,8 @@ public class CollectionUtilTest {
     @MethodSource("zipAllTestCases")
     @DisplayName("zipAll: test cases")
     public <T, E> void zipAll_testCases(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection,
-                                        T defaultLeftElement, E defaultRightElement,
+                                        T defaultLeftElement,
+                                        E defaultRightElement,
                                         List<PairDto<T, E>> expectedResult) {
         assertEquals(expectedResult,
                 zipAll(
@@ -794,7 +819,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("zipWithIndexTestCases")
     @DisplayName("zipWithIndex: test cases")
-    public <T> void zipWithIndex_testCases(Collection<T> sourceCollection, List<PairDto<Integer, T>> expectedResult) {
+    public <T> void zipWithIndex_testCases(Collection<T> sourceCollection,
+                                           List<PairDto<Integer, T>> expectedResult) {
         List<PairDto<Integer, T>> zippedList = zipWithIndex(sourceCollection);
         assertEquals(expectedResult, zippedList);
     }

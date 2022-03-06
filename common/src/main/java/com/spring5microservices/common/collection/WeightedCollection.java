@@ -33,8 +33,8 @@ public class WeightedCollection<T> {
         this.randomElementSelector = randomElementSelector;
     }
 
-    public static WeightedCollection of(SecureRandom randomElementSelector) {
-        return new WeightedCollection(randomElementSelector);
+    public static <T> WeightedCollection<T> of(SecureRandom randomElementSelector) {
+        return new WeightedCollection<>(randomElementSelector);
     }
 
 
