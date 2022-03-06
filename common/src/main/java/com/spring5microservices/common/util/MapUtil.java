@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.interfaces.functional.TriFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -7,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
@@ -107,6 +109,42 @@ public class MapUtil {
                 }
         );
         return result;
+    }
+
+
+    /**
+     *    Folds given {@link Map} values from the left, starting with {@code initialValue} and successively
+     * calling {@code accumulator}.
+     *
+     * Example:
+     *   [(1, "Hi"), (2, "Hello")],  0,  (k, v) -> k + v.length()  =>  10
+     *
+     * @param sourceMap
+     *    {@link Map} with elements to combine.
+     * @param initialValue
+     *    The initial value to start with.
+     * @param accumulator
+     *    A {@link TriFunction} which combines elements.
+     *
+     * @return a folded value
+     *
+     * @throws IllegalArgumentException if {@code initialValue} is {@code null}
+     */
+    public static <T, E, R> R foldLeft(final Map<? extends T, ? extends E> sourceMap,
+                                       final R initialValue,
+                                       final TriFunction<R, ? super T, ?super E, R> accumulator) {
+        Assert.notNull(initialValue, "initialValue must be not null");
+        return ofNullable(sourceMap)
+                .map(sm -> {
+                    R result = initialValue;
+                    if (Objects.nonNull(accumulator)) {
+                        for (var entry : sm.entrySet()) {
+                            result = accumulator.apply(result, entry.getKey(), entry.getValue());
+                        }
+                    }
+                    return result;
+                })
+                .orElse(initialValue);
     }
 
 
