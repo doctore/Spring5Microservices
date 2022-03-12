@@ -668,11 +668,11 @@ public class CollectionUtil {
                             ofNullable(leftIterator)
                                     .filter(Iterator::hasNext)
                                     .map(Iterator::next)
-                                    .orElseGet(() -> defaultLeftElement),
+                                    .orElse(defaultLeftElement),
                             ofNullable(rightIterator)
                                     .filter(Iterator::hasNext)
                                     .map(Iterator::next)
-                                    .orElseGet(() -> defaultRightElement)
+                                    .orElse(defaultRightElement)
                     )
             );
         }
