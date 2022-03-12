@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.dto.PairDto;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
@@ -9,9 +10,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 @UtilityClass
@@ -113,6 +117,32 @@ public class MapUtil {
 
 
     /**
+     * Finds the first element of the given {@link Map} satisfying the provided {@link BiPredicate}.
+     *
+     * @param sourceMap
+     *    {@link Map} to search
+     * @param filterPredicate
+     *    {@link BiPredicate} used to test elements of {@code sourceMap}
+     *
+     * @return {@link Optional} of {@link PairDto} containing the first element that satisfies {@code filterPredicate},
+     *         {@link Optional#empty()} otherwise.
+     */
+    public static <T, E> Optional<PairDto<T, E>> find(final Map<? extends T, ? extends E> sourceMap,
+                                                      final BiPredicate<? super T, ? super E> filterPredicate) {
+        if (CollectionUtils.isEmpty(sourceMap) ||
+                Objects.isNull(filterPredicate)) {
+            return empty();
+        }
+        for (var entry : sourceMap.entrySet()) {
+            if (filterPredicate.test(entry.getKey(), entry.getValue())) {
+                return of(PairDto.of(entry.getKey(), entry.getValue()));
+            }
+        }
+        return empty();
+    }
+
+
+    /**
      *    Folds given {@link Map} values from the left, starting with {@code initialValue} and successively
      * calling {@code accumulator}.
      *
@@ -132,7 +162,7 @@ public class MapUtil {
      */
     public static <T, E, R> R foldLeft(final Map<? extends T, ? extends E> sourceMap,
                                        final R initialValue,
-                                       final TriFunction<R, ? super T, ?super E, R> accumulator) {
+                                       final TriFunction<R, ? super T, ? super E, R> accumulator) {
         Assert.notNull(initialValue, "initialValue must be not null");
         return ofNullable(sourceMap)
                 .map(sm -> {
