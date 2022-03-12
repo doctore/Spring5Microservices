@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.dto.PairDto;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -8,18 +9,24 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
+import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.transform;
 import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -27,6 +34,12 @@ public class MapUtilTest {
 
     static Stream<Arguments> applyOrElseTestCases() {
         Map<Integer, String> emptyMap = new HashMap<>();
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(3, "C");
+            put(4, "o");
+        }};
 
         BiPredicate<Integer, String> isKeyOddAndValueVowel =
                 (k, v) ->
@@ -39,13 +52,6 @@ public class MapUtilTest {
         BiFunction<Integer, String, Long> sumKeyPlusValueLength =
                 (k, v) ->
                         (long) (k + v.length());
-
-        Map<Integer, String> intsAndStrings = new HashMap<>() {{
-            put(1, "A");
-            put(2, "B");
-            put(3, "C");
-            put(4, "o");
-        }};
 
         Map<Integer, Long> emptyMapResult = new HashMap<>();
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
@@ -95,6 +101,11 @@ public class MapUtilTest {
 
     static Stream<Arguments> collectTestCases() {
         Map<Integer, String> emptyMap = new HashMap<>();
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
 
         BiPredicate<Integer, String> isKeyEvenAndValueVowel =
                 (k, v) ->
@@ -103,12 +114,6 @@ public class MapUtilTest {
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength =
                 (k, v) ->
                         (long) (k * 2 + v.length());
-
-        Map<Integer, String> intsAndStrings = new HashMap<>() {{
-            put(1, "A");
-            put(2, "B");
-            put(4, "o");
-        }};
 
         Map<Integer, Long> emptyMapResult = new HashMap<>();
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
@@ -141,6 +146,56 @@ public class MapUtilTest {
         else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction));
         }
+    }
+
+
+    static Stream<Arguments> findTestCases() {
+        Map<Integer, String> emptyMap = new HashMap<>();
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+            put(8, "E");
+        }};
+        Map<String, Long> stringsAndLongs = new TreeMap<>() {{
+            put("HY", 23L);
+            put("ZW", 62L);
+            put("ZZ", 63L);
+            put("TZ", 69L);
+        }};
+
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel =
+                (k, v) ->
+                        k % 2 == 0 && "AEIOUaeiou".contains(v);
+
+        BiPredicate<Integer, String> isValueContainsZ =
+                (k, v) ->
+                        v.toUpperCase().contains("Z");
+
+        BiPredicate<String, Long> isKeyContainsZAndValueIsOdd =
+                (k, v) ->
+                        k.toUpperCase().contains("Z") && v % 2 == 1;
+
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         filterPredicate,               expectedResult
+                Arguments.of( null,              null,                          empty() ),
+                Arguments.of( emptyMap,          null,                          empty() ),
+                Arguments.of( null,              isKeyEvenAndValueVowel,        empty() ),
+                Arguments.of( emptyMap,          isKeyEvenAndValueVowel,        empty() ),
+                Arguments.of( intsAndStrings,    isValueContainsZ,              empty() ),
+                Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        of(PairDto.of(4, "o")) ),
+                Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   of(PairDto.of("TZ", 69L)) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("findTestCases")
+    @DisplayName("find: test cases")
+    public <T, E> void find_testCases(Map<? extends T, ? extends E> sourceMap,
+                                         BiPredicate<? super T, ? super E> filterPredicate,
+                                         Optional<PairDto<T, E>> expectedResult) {
+        assertEquals(expectedResult, find(sourceMap, filterPredicate));
     }
 
 
