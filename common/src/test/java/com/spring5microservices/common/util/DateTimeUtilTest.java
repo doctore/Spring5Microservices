@@ -15,6 +15,8 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.DateTimeUtil.fromDateToLocalDateTime;
+import static com.spring5microservices.common.util.DateTimeUtil.fromLocalDateTimeToDate;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -91,8 +93,7 @@ public class DateTimeUtilTest {
     @MethodSource("fromLocalDateTimeToDateTestCases")
     @DisplayName("fromLocalDateTimeToDate: test cases")
     public void fromLocalDateTimeToDate_testCases(LocalDateTime localDateTime, ZoneId zoneId, Optional<Date> expectedResult) {
-        Optional<Date> result = DateTimeUtil.fromLocalDateTimeToDate(localDateTime, zoneId);
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, fromLocalDateTimeToDate(localDateTime, zoneId));
     }
 
 
@@ -118,8 +119,7 @@ public class DateTimeUtilTest {
     @MethodSource("fromDateToLocalDateTimeTestCases")
     @DisplayName("fromDateToLocalDateTime: test cases")
     public void fromDateToLocalDateTime_testCases(Date date, ZoneId zoneId, Optional<LocalDateTime> expectedResult) {
-        Optional<LocalDateTime> result = DateTimeUtil.fromDateToLocalDateTime(date, zoneId);
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, fromDateToLocalDateTime(date, zoneId));
     }
 
 
