@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import static com.spring5microservices.common.util.CollectionUtil.asSet;
 import static com.spring5microservices.common.util.StringUtil.abbreviateMiddle;
 import static com.spring5microservices.common.util.StringUtil.containsIgnoreCase;
+import static com.spring5microservices.common.util.StringUtil.keepOnlyDigits;
 import static com.spring5microservices.common.util.StringUtil.sliding;
 import static com.spring5microservices.common.util.StringUtil.splitBySize;
 import static com.spring5microservices.common.util.StringUtil.splitFromString;
@@ -45,14 +46,16 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("abbreviateMiddleTestCases")
     @DisplayName("abbreviateMiddle: test cases")
-    public void compareToBigDecimal_testCases(String sourceString, String putInTheMiddle, int sizeOfEveryChunk,
-                                              Class<? extends Exception> expectedException, Optional<String> expectedResult) {
+    public void compareToBigDecimal_testCases(String sourceString,
+                                              String putInTheMiddle,
+                                              int sizeOfEveryChunk,
+                                              Class<? extends Exception> expectedException,
+                                              Optional<String> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk));
         }
         else {
-            Optional<String> result = abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk);
-            assertEquals(expectedResult, result);
+            assertEquals(expectedResult, abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk));
         }
     }
 
@@ -76,9 +79,10 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("containsIgnoreCaseTestCases")
     @DisplayName("containsIgnoreCase: test cases")
-    public void containsIgnoreCase_testCases(String sourceString, String stringToSearch, boolean expectedResult) {
-        boolean result = containsIgnoreCase(sourceString, stringToSearch);
-        assertEquals(expectedResult, result);
+    public void containsIgnoreCase_testCases(String sourceString,
+                                             String stringToSearch,
+                                             boolean expectedResult) {
+        assertEquals(expectedResult, containsIgnoreCase(sourceString, stringToSearch));
     }
 
 
@@ -98,9 +102,9 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("keepOnlyDigitsTestCases")
     @DisplayName("keepOnlyDigits: test cases")
-    public void keepOnlyDigits_testCases(String sourceString, Optional<String> expectedResult) {
-        Optional<String> result = StringUtil.keepOnlyDigits(sourceString);
-        assertEquals(expectedResult, result);
+    public void keepOnlyDigits_testCases(String sourceString,
+                                         Optional<String> expectedResult) {
+        assertEquals(expectedResult, keepOnlyDigits(sourceString));
     }
 
 
@@ -122,10 +126,10 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("splitBySizeTestCases")
     @DisplayName("splitBySize: test cases")
-    public void splitBySize_testCases(String sourceString, int size,
+    public void splitBySize_testCases(String sourceString,
+                                      int size,
                                       List<String> expectedResult) {
-        List<String> result = splitBySize(sourceString, size);
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, splitBySize(sourceString, size));
     }
 
 
@@ -152,9 +156,10 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("slidingTestCases")
     @DisplayName("sliding: test cases")
-    public void sliding_testCases(String sourceString, int size, List<String> expectedResult) {
-        List<String> result = sliding(sourceString, size);
-        assertEquals(expectedResult, result);
+    public void sliding_testCases(String sourceString,
+                                  int size,
+                                  List<String> expectedResult) {
+        assertEquals(expectedResult, sliding(sourceString, size));
     }
 
 
@@ -176,10 +181,10 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("splitFromStringWithSourceAndValueExtractorTestCases")
     @DisplayName("splitFromString: with source and value extractor test cases")
-    public <T> void splitFromStringWithSourceAndValueExtractor_testCases(String source, Function<String, T> valueExtractor,
+    public <T> void splitFromStringWithSourceAndValueExtractor_testCases(String source,
+                                                                         Function<String, T> valueExtractor,
                                                                          Collection<T> expectedResult) {
-        Collection<T> splittedValues = splitFromString(source, valueExtractor);
-        assertEquals(expectedResult, splittedValues);
+        assertEquals(expectedResult, splitFromString(source, valueExtractor));
     }
 
 
@@ -203,10 +208,11 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("splitFromStringWithSourceAndSeparatorAndChunkLimitTestCases")
     @DisplayName("splitFromString: with source, separator and chunkLimit test cases")
-    public <T> void splitFromStringWithSourceAndSeparatorAndChunkLimit_testCases(String source, String separator, int chunkLimit,
+    public <T> void splitFromStringWithSourceAndSeparatorAndChunkLimit_testCases(String source,
+                                                                                 String separator,
+                                                                                 int chunkLimit,
                                                                                  Collection<T> expectedResult) {
-        Collection<T> splittedValues = splitFromString(source, separator, chunkLimit);
-        assertEquals(expectedResult, splittedValues);
+        assertEquals(expectedResult, splitFromString(source, separator, chunkLimit));
     }
 
 
@@ -240,8 +246,7 @@ public class StringUtilTest {
                                                                                                          Function<String, T> valueExtractor,
                                                                                                          Supplier<Collection<T>> collectionFactory,
                                                                                                          Collection<T> expectedResult) {
-        Collection<T> splittedValues = splitFromString(source, valueExtractor, separator, collectionFactory);
-        assertEquals(expectedResult, splittedValues);
+        assertEquals(expectedResult, splitFromString(source, valueExtractor, separator, collectionFactory));
     }
 
 
@@ -277,11 +282,13 @@ public class StringUtilTest {
     @ParameterizedTest
     @MethodSource("splitFromStringAllParametersTestCases")
     @DisplayName("splitFromString: all parameters test cases")
-    public <T> void splitFromStringAllParameters_testCases(String source, String separator, int chunkLimit,
-                                                           Function<String, T> valueExtractor, Supplier<Collection<T>> collectionFactory,
+    public <T> void splitFromStringAllParameters_testCases(String source,
+                                                           String separator,
+                                                           int chunkLimit,
+                                                           Function<String, T> valueExtractor,
+                                                           Supplier<Collection<T>> collectionFactory,
                                                            Collection<T> expectedResult) {
-        Collection<T> splittedValues = splitFromString(source, separator, chunkLimit, valueExtractor, collectionFactory);
-        assertEquals(expectedResult, splittedValues);
+        assertEquals(expectedResult, splitFromString(source, separator, chunkLimit, valueExtractor, collectionFactory));
     }
 
 }

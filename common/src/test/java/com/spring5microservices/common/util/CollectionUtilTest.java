@@ -56,8 +56,10 @@ public class CollectionUtilTest {
     static Stream<Arguments> applyOrElseNoCollectionFactoryTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
+
         Function<Integer, String> plus1String = i -> String.valueOf(i + 1);
         Function<Integer, String> multiply2String = i -> String.valueOf(i * 2);
+
         List<String> expectedIntsResult = asList("2", "3", "6", "7");
         return Stream.of(
                 //@formatter:off
@@ -101,8 +103,10 @@ public class CollectionUtilTest {
     static Stream<Arguments> applyOrElseAllParametersTestCases() {
         List<Integer> ints = asList(1, 2, 3, 6);
         Predicate<Integer> isOdd = i -> i % 2 == 1;
+
         Function<Integer, String> plus1String = i -> String.valueOf(i + 1);
         Function<Integer, String> multiply2String = i -> String.valueOf(i * 2);
+
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         List<String> expectedIntsResultList = asList("2", "4", "4", "12");
         Set<String> expectedIntsResultSet = new HashSet<>(expectedIntsResultList);
@@ -198,6 +202,7 @@ public class CollectionUtilTest {
     static Stream<Arguments> collectAllParametersTestCases() {
         List<Integer> ints = asList(1, 2, 3, 6);
         Set<String> collectedInts = new HashSet<>(asList("1", "3"));
+
         Predicate<Integer> isOdd = i -> i % 2 == 1;
         Function<Integer, String> fromIntegerToString = Object::toString;
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
@@ -236,6 +241,7 @@ public class CollectionUtilTest {
     static Stream<Arguments> collectPropertyNoCollectionFactoryTestCases() {
         PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
         PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
+
         Function<PizzaDto, String> getName = PizzaDto::getName;
         Function<PizzaDto, Double> getCost = PizzaDto::getCost;
         return Stream.of(
@@ -253,14 +259,14 @@ public class CollectionUtilTest {
     public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> sourceCollection,
                                                              Function<PizzaDto, String> keyExtractor,
                                                              Collection<String> expectedResult) {
-        Collection<String> result = collectProperty(sourceCollection, keyExtractor);
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, collectProperty(sourceCollection, keyExtractor));
     }
 
 
     static Stream<Arguments> collectPropertyAllParametersTestCases() {
         PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
         PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
+
         Function<PizzaDto, String> getName = PizzaDto::getName;
         Function<PizzaDto, Double> getCost = PizzaDto::getCost;
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
@@ -283,8 +289,7 @@ public class CollectionUtilTest {
                                                        Function<PizzaDto, String> keyExtractor,
                                                        Supplier<Collection<String>> collectionFactory,
                                                        Collection<String> expectedResult) {
-        Collection<String> result = collectProperty(sourceCollection, keyExtractor, collectionFactory);
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, collectProperty(sourceCollection, keyExtractor, collectionFactory));
     }
 
 
@@ -306,8 +311,7 @@ public class CollectionUtilTest {
                                                List<Integer> collection2ToConcat,
                                                List<Integer> collection3ToConcat,
                                                LinkedHashSet<Integer> expectedResult) {
-        Set<Integer> concatedValues = concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat);
-        assertEquals(expectedResult, concatedValues);
+        assertEquals(expectedResult, concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat));
     }
 
 
@@ -492,6 +496,7 @@ public class CollectionUtilTest {
     static Stream<Arguments> sliceTestCases() {
         Set<Integer> integers = new LinkedHashSet<>(asList(11, 12, 13, 14));
         List<String> strings = asList("a", "b", "c", "d", "f");
+
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
         longs.addAll(asList(54L, 78L, 12L));
         return Stream.of(
@@ -519,7 +524,8 @@ public class CollectionUtilTest {
     @MethodSource("sliceTestCases")
     @DisplayName("slice: test cases")
     public <T> void slice_testCases(Collection<T> sourceCollection,
-                                    int from, int until,
+                                    int from,
+                                    int until,
                                     Class<? extends Exception> expectedException,
                                     List<T> expectedResult) {
         if (null != expectedException) {
@@ -557,10 +563,10 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("slidingTestCases")
     @DisplayName("sliding: test cases")
-    public <T> void sliding_testCases(Collection<T> sourceCollection, int size,
+    public <T> void sliding_testCases(Collection<T> sourceCollection,
+                                      int size,
                                       List<List<T>> expectedResult) {
-        List<List<T>> slidedList = sliding(sourceCollection, size);
-        assertEquals(expectedResult, slidedList);
+        assertEquals(expectedResult, sliding(sourceCollection, size));
     }
 
 
@@ -591,8 +597,7 @@ public class CollectionUtilTest {
     @DisplayName("split: test cases")
     public <T> void split_testCases(Collection<T> sourceCollection, int size,
                                     List<List<T>> expectedResult) {
-        List<List<T>> splittedList = split(sourceCollection, size);
-        assertEquals(expectedResult, splittedList);
+        assertEquals(expectedResult, split(sourceCollection, size));
     }
 
 
@@ -720,7 +725,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("zipTestCases")
     @DisplayName("zip: test cases")
-    public <T, E> void zip_testCases(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection,
+    public <T, E> void zip_testCases(Collection<T> sourceLeftCollection,
+                                     Collection<E> sourceRightCollection,
                                      List<PairDto<T, E>> expectedResult) {
         assertEquals(expectedResult, zip(sourceLeftCollection, sourceRightCollection));
     }
@@ -730,6 +736,7 @@ public class CollectionUtilTest {
         List<Integer> integers = asList(11, 31, 55);
         List<Boolean> booleans = asList(true, false);
         List<String> strings = asList("h", "o", "p");
+
         Integer defaultIntegerValue = 99;
         Boolean defaultBooleanValue = true;
         String defaultStringValue = "x";
@@ -775,7 +782,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("zipAllTestCases")
     @DisplayName("zipAll: test cases")
-    public <T, E> void zipAll_testCases(Collection<T> sourceLeftCollection, Collection<E> sourceRightCollection,
+    public <T, E> void zipAll_testCases(Collection<T> sourceLeftCollection,
+                                        Collection<E> sourceRightCollection,
                                         T defaultLeftElement,
                                         E defaultRightElement,
                                         List<PairDto<T, E>> expectedResult) {
@@ -821,8 +829,7 @@ public class CollectionUtilTest {
     @DisplayName("zipWithIndex: test cases")
     public <T> void zipWithIndex_testCases(Collection<T> sourceCollection,
                                            List<PairDto<Integer, T>> expectedResult) {
-        List<PairDto<Integer, T>> zippedList = zipWithIndex(sourceCollection);
-        assertEquals(expectedResult, zippedList);
+        assertEquals(expectedResult, zipWithIndex(sourceCollection));
     }
 
 }

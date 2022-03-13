@@ -122,7 +122,7 @@ public class MapUtil {
      * @param sourceMap
      *    {@link Map} to search
      * @param filterPredicate
-     *    {@link BiPredicate} used to test elements of {@code sourceMap}
+     *    {@link BiPredicate} used to filter elements of {@code sourceMap}
      *
      * @return {@link Optional} of {@link PairDto} containing the first element that satisfies {@code filterPredicate},
      *         {@link Optional#empty()} otherwise.
@@ -179,14 +179,47 @@ public class MapUtil {
 
 
     /**
-     * Return a {@link Map} with the information of the given {@code sourceMap} excluding the keys of {@code keysToExclude}
+     *    Returns a {@link Map} of {@link Boolean} as key, on which {@code true} contains all elements that satisfy given
+     * {@code filterPredicate} and {@code false}, all elements that do not.
+     *
+     * Example:
+     *   [(1, "Hi"), (2, "Hello")],  (k, v) -> k % 2 == 0  =>  [(true,  [(2, "Hello")]
+     *                                                          (false, [(1, "Hi")]]
+     * @param sourceMap
+     *    {@link Map} to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} used to filter elements of {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
+                                                           final BiPredicate<? super T, ? super E> filterPredicate) {
+        if (CollectionUtils.isEmpty(sourceMap) ||
+                Objects.isNull(filterPredicate)) {
+            return new HashMap<>();
+        }
+        Map<Boolean, Map<T, E>> result = new HashMap<>() {{
+            put(Boolean.TRUE, new HashMap<>());
+            put(Boolean.FALSE, new HashMap<>());
+        }};
+        sourceMap.forEach(
+                (k, v) ->
+                    result.get(filterPredicate.test(k, v))
+                            .put(k, v)
+        );
+        return result;
+    }
+
+
+    /**
+     * Returns a {@link Map} with the information of the given {@code sourceMap} excluding the keys of {@code keysToExclude}
      *
      * @param sourceMap
      *    {@link Map} with the information to filter
      * @param keysToExclude
      *    Keys to exclude from the provided {@link Map}
      *
-     * @return {@link HashMap}
+     * @return {@link Map}
      */
     public static <T, E> Map<T, E> removeKeys(final Map<? extends T, ? extends E> sourceMap,
                                               final Collection<? extends T> keysToExclude) {

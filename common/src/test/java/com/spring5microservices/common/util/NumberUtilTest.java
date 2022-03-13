@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.NumberUtil.fromString;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,11 +78,10 @@ public class NumberUtilTest {
                                                                  Class<? extends Exception> expectedException,
                                                                  Optional<T> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> NumberUtil.fromString(potentialNumber, clazzReturnedInstance));
+            assertThrows(expectedException, () -> fromString(potentialNumber, clazzReturnedInstance));
         }
         else {
-            Optional<T> result = NumberUtil.fromString(potentialNumber, clazzReturnedInstance);
-            assertEquals(expectedResult, result);
+            assertEquals(expectedResult, fromString(potentialNumber, clazzReturnedInstance));
         }
     }
 
@@ -100,8 +100,7 @@ public class NumberUtilTest {
     @MethodSource("fromStringTestCases")
     @DisplayName("fromString: test cases")
     public void fromString_testCases(String potentialNumber, Optional<Integer> expectedResult) {
-        Optional<Integer> result = NumberUtil.fromString(potentialNumber);
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, fromString(potentialNumber));
     }
 
 
