@@ -270,7 +270,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    {@link Collection} to search
      * @param filterPredicate
-     *    {@link Predicate} used to test elements of {@code sourceCollection}
+     *    {@link Predicate} used to filter elements of {@code sourceCollection}
      *
      * @return {@link Optional} containing the first element that satisfies {@code filterPredicate},
      *         {@link Optional#empty()} otherwise.
@@ -294,7 +294,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    {@link Collection} to search
      * @param filterPredicate
-     *    {@link Predicate} used to test elements of {@code sourceCollection}
+     *    {@link Predicate} used to filter elements of {@code sourceCollection}
      *
      * @return {@link Optional} containing the last element that satisfies {@code filterPredicate},
      *         {@link Optional#empty()} otherwise.

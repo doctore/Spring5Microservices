@@ -36,7 +36,9 @@ public class ValidationTest {
     @ParameterizedTest
     @MethodSource("validTestCases")
     @DisplayName("valid: test cases")
-    public <E, T> void valid_testCases(T value, Class<? extends Exception> expectedException, Validation<E, T> expectedResult) {
+    public <E, T> void valid_testCases(T value,
+                                       Class<? extends Exception> expectedException,
+                                       Validation<E, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Validation.valid(value));
         }
@@ -59,7 +61,9 @@ public class ValidationTest {
     @ParameterizedTest
     @MethodSource("invalidTestCases")
     @DisplayName("invalid: test cases")
-    public <E, T> void invalid_testCases(List<String> value, Class<? extends Exception> expectedException, Validation<E, T> expectedResult) {
+    public <E, T> void invalid_testCases(List<String> value,
+                                         Class<? extends Exception> expectedException,
+                                         Validation<E, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Validation.invalid(value));
         }
@@ -476,7 +480,8 @@ public class ValidationTest {
     @ParameterizedTest
     @MethodSource("isEmptyTestCases")
     @DisplayName("isEmpty: test cases")
-    public <E, T> void isEmpty_testCases(Validation<E, T> validation, boolean expectedResult) {
+    public <E, T> void isEmpty_testCases(Validation<E, T> validation,
+                                         boolean expectedResult) {
         assertEquals(expectedResult, validation.isEmpty());
     }
 

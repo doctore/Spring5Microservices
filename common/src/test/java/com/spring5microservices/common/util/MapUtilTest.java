@@ -22,6 +22,7 @@ import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
 import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
+import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.transform;
 import static java.util.Arrays.asList;
@@ -41,17 +42,9 @@ public class MapUtilTest {
             put(4, "o");
         }};
 
-        BiPredicate<Integer, String> isKeyOddAndValueVowel =
-                (k, v) ->
-                        k % 2 == 1 && "AEIOUaeiou".contains(v);
-
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength =
-                (k, v) ->
-                        (long) (k * 2 + v.length());
-
-        BiFunction<Integer, String, Long> sumKeyPlusValueLength =
-                (k, v) ->
-                        (long) (k + v.length());
+        BiPredicate<Integer, String> isKeyOddAndValueVowel = (k, v) -> k % 2 == 1 && "AEIOUaeiou".contains(v);
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
+        BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
 
         Map<Integer, Long> emptyMapResult = new HashMap<>();
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
@@ -107,13 +100,8 @@ public class MapUtilTest {
             put(4, "o");
         }};
 
-        BiPredicate<Integer, String> isKeyEvenAndValueVowel =
-                (k, v) ->
-                        k % 2 == 0 && "AEIOUaeiou".contains(v);
-
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength =
-                (k, v) ->
-                        (long) (k * 2 + v.length());
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
 
         Map<Integer, Long> emptyMapResult = new HashMap<>();
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
@@ -150,7 +138,6 @@ public class MapUtilTest {
 
 
     static Stream<Arguments> findTestCases() {
-        Map<Integer, String> emptyMap = new HashMap<>();
         Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -180,9 +167,9 @@ public class MapUtilTest {
                 //@formatter:off
                 //            sourceMap,         filterPredicate,               expectedResult
                 Arguments.of( null,              null,                          empty() ),
-                Arguments.of( emptyMap,          null,                          empty() ),
+                Arguments.of( new HashMap<>(),   null,                          empty() ),
                 Arguments.of( null,              isKeyEvenAndValueVowel,        empty() ),
-                Arguments.of( emptyMap,          isKeyEvenAndValueVowel,        empty() ),
+                Arguments.of( new HashMap<>(),   isKeyEvenAndValueVowel,        empty() ),
                 Arguments.of( intsAndStrings,    isValueContainsZ,              empty() ),
                 Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        of(PairDto.of(4, "o")) ),
                 Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   of(PairDto.of("TZ", 69L)) )
@@ -193,14 +180,13 @@ public class MapUtilTest {
     @MethodSource("findTestCases")
     @DisplayName("find: test cases")
     public <T, E> void find_testCases(Map<? extends T, ? extends E> sourceMap,
-                                         BiPredicate<? super T, ? super E> filterPredicate,
-                                         Optional<PairDto<T, E>> expectedResult) {
+                                      BiPredicate<? super T, ? super E> filterPredicate,
+                                      Optional<PairDto<T, E>> expectedResult) {
         assertEquals(expectedResult, find(sourceMap, filterPredicate));
     }
 
 
     static Stream<Arguments> foldLeftTestCases() {
-        Map<Integer, String> emptyMap = new HashMap<>();
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -215,13 +201,13 @@ public class MapUtilTest {
         TriFunction<Long, Integer, Long, Long> sum = (a, b, c) -> a + (long)b + c;
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,        initialValue,   accumulator,   expectedException,                expectedResult
-                Arguments.of( null,             null,           null,          IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         2,              null,          null,                             2 ),
-                Arguments.of( emptyMap,         1,              multiply,      null,                             1 ),
-                Arguments.of( intsAndStrings,   0,              null,          null,                             0 ),
-                Arguments.of( intsAndStrings,   1,              multiply,      null,                             8 ),
-                Arguments.of( intsAndLongs,     5L,             sum,           null,                             62L )
+                //            sourceMap,         initialValue,   accumulator,   expectedException,                expectedResult
+                Arguments.of( null,              null,           null,          IllegalArgumentException.class,   null ),
+                Arguments.of( new HashMap<>(),   2,              null,          null,                             2 ),
+                Arguments.of( new HashMap<>(),   1,              multiply,      null,                             1 ),
+                Arguments.of( intsAndStrings,    0,              null,          null,                             0 ),
+                Arguments.of( intsAndStrings,    1,              multiply,      null,                             8 ),
+                Arguments.of( intsAndLongs,      5L,             sum,           null,                             62L )
         ); //@formatter:on
     }
 
@@ -239,6 +225,69 @@ public class MapUtilTest {
         else {
             assertEquals(expectedResult, foldLeft(sourceMap, initialValue, accumulator));
         }
+    }
+
+
+    static Stream<Arguments> partitionTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        Map<Integer, Long> intsAndLongs = new HashMap<>() {{
+            put(7, 3L);
+            put(11, 6L);
+            put(21, 9L);
+        }};
+
+        BiPredicate<Integer, String> isKeyEven = (k, v) -> k % 2 == 0;
+        BiPredicate<Integer, Long> isKeyPlusValueOdd = (k, v) -> (k + v) % 2 == 1;
+
+        Map<Boolean, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
+            put(Boolean.TRUE,
+                    new HashMap<>() {{
+                        put(2, "B");
+                        put(4, "o");
+                    }}
+            );
+            put(Boolean.FALSE,
+                    new HashMap<>() {{
+                        put(1, "A");
+                    }}
+            );
+        }};
+        Map<Boolean, Map<Integer, Long>> intsAndLongsResult = new HashMap<>() {{
+            put(Boolean.TRUE,
+                    new HashMap<>() {{
+                        put(11, 6L);
+                    }}
+            );
+            put(Boolean.FALSE,
+                    new HashMap<>() {{
+                        put(7, 3L);
+                        put(21, 9L);
+                    }}
+            );
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         filterPredicate,     expectedResult
+                Arguments.of( null,              null,                new HashMap<>() ),
+                Arguments.of( null,              isKeyEven,           new HashMap<>() ),
+                Arguments.of( new HashMap<>(),   null,                new HashMap<>() ),
+                Arguments.of( new HashMap<>(),   isKeyEven,           new HashMap<>() ),
+                Arguments.of( intsAndStrings,    isKeyEven,           intsAndStringsResult ),
+                Arguments.of( intsAndLongs,      isKeyPlusValueOdd,   intsAndLongsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("partitionTestCases")
+    @DisplayName("partition: test cases")
+    public <T, E> void partition_testCases(Map<T, E> sourceMap,
+                                           BiPredicate<? super T, ? super E> filterPredicate,
+                                           Map<Boolean, Map<T, E>> expectedResult) {
+        assertEquals(expectedResult, partition(sourceMap, filterPredicate));
     }
 
 
@@ -265,10 +314,10 @@ public class MapUtilTest {
     @ParameterizedTest
     @MethodSource("removeKeysTestCases")
     @DisplayName("removeKeys: test cases")
-    public <T, E> void removeKeys_testCases(Map<T, E> sourceMap, Collection<T> keysToExclude,
+    public <T, E> void removeKeys_testCases(Map<T, E> sourceMap,
+                                            Collection<T> keysToExclude,
                                             HashMap<T, E> expectedResult) {
-        Map<T, E> filteredMap = removeKeys(sourceMap, keysToExclude);
-        assertEquals(expectedResult, filteredMap);
+        assertEquals(expectedResult, removeKeys(sourceMap, keysToExclude));
     }
 
 
@@ -298,7 +347,8 @@ public class MapUtilTest {
     @ParameterizedTest
     @MethodSource("transformTestCases")
     @DisplayName("transform: test cases")
-    public <T, U, R> void transform_testCases(Map<T, U> sourceMap, BiFunction<T, ? super U, R> mapFunction,
+    public <T, U, R> void transform_testCases(Map<T, U> sourceMap,
+                                              BiFunction<T, ? super U, R> mapFunction,
                                               Class<? extends Exception> expectedException,
                                               Map<T, R> expectedResult) {
         if (null != expectedException) {
