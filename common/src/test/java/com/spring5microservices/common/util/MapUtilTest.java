@@ -22,6 +22,7 @@ import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
 import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
+import static com.spring5microservices.common.util.MapUtil.groupBy;
 import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.transform;
@@ -228,6 +229,78 @@ public class MapUtilTest {
     }
 
 
+    static Stream<Arguments> groupByTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        Map<Integer, Long> intsAndLongs = new HashMap<>() {{
+            put(7, 3L);
+            put(11, 6L);
+            put(21, 9L);
+        }};
+
+        BiFunction<Integer, String, Integer> isKeyEven = (k, v) -> k % 2;
+        BiFunction<Integer, Long, Long> isKeyPlusValueModThree = (k, v) -> (k + v) % 3;
+
+        Map<Integer, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
+            put(
+                    0,
+                    new HashMap<>() {{
+                        put(2, "B");
+                        put(4, "o");
+                    }}
+            );
+            put(
+                    1,
+                    new HashMap<>() {{
+                        put(1, "A");
+                    }}
+            );
+        }};
+        Map<Long, Map<Integer, Long>> intsAndLongsResult = new HashMap<>() {{
+            put(
+                    0L,
+                    new HashMap<>() {{
+                        put(21, 9L);
+                    }}
+            );
+            put(
+                    1L,
+                    new HashMap<>() {{
+                        put(7, 3L);
+                    }}
+            );
+            put(
+                    2L,
+                    new HashMap<>() {{
+                        put(11, 6L);
+                    }}
+            );
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         discriminator,            expectedResult
+                Arguments.of( null,              null,                     new HashMap<>() ),
+                Arguments.of( null,              isKeyEven,                new HashMap<>() ),
+                Arguments.of( new HashMap<>(),   null,                     new HashMap<>() ),
+                Arguments.of( new HashMap<>(),   isKeyEven,                new HashMap<>() ),
+                Arguments.of( intsAndStrings,    isKeyEven,                intsAndStringsResult ),
+                Arguments.of( intsAndLongs,      isKeyPlusValueModThree,   intsAndLongsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByTestCases")
+    @DisplayName("groupBy: test cases")
+    public <T, E, R> void groupBy_testCases(Map<T, E> sourceMap,
+                                            BiFunction<? super T, ? super E, ? extends R> discriminator,
+                                            Map<R, Map<T, E>> expectedResult) {
+        assertEquals(expectedResult, groupBy(sourceMap, discriminator));
+    }
+
+
     static Stream<Arguments> partitionTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
@@ -244,25 +317,29 @@ public class MapUtilTest {
         BiPredicate<Integer, Long> isKeyPlusValueOdd = (k, v) -> (k + v) % 2 == 1;
 
         Map<Boolean, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
-            put(Boolean.TRUE,
+            put(
+                    Boolean.TRUE,
                     new HashMap<>() {{
                         put(2, "B");
                         put(4, "o");
                     }}
             );
-            put(Boolean.FALSE,
+            put(
+                    Boolean.FALSE,
                     new HashMap<>() {{
                         put(1, "A");
                     }}
             );
         }};
         Map<Boolean, Map<Integer, Long>> intsAndLongsResult = new HashMap<>() {{
-            put(Boolean.TRUE,
+            put(
+                    Boolean.TRUE,
                     new HashMap<>() {{
                         put(11, 6L);
                     }}
             );
-            put(Boolean.FALSE,
+            put(
+                    Boolean.FALSE,
                     new HashMap<>() {{
                         put(7, 3L);
                         put(21, 9L);
@@ -271,7 +348,7 @@ public class MapUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,         filterPredicate,     expectedResult
+                //            sourceMap,         discriminator,       expectedResult
                 Arguments.of( null,              null,                new HashMap<>() ),
                 Arguments.of( null,              isKeyEven,           new HashMap<>() ),
                 Arguments.of( new HashMap<>(),   null,                new HashMap<>() ),
@@ -285,9 +362,9 @@ public class MapUtilTest {
     @MethodSource("partitionTestCases")
     @DisplayName("partition: test cases")
     public <T, E> void partition_testCases(Map<T, E> sourceMap,
-                                           BiPredicate<? super T, ? super E> filterPredicate,
+                                           BiPredicate<? super T, ? super E> discriminator,
                                            Map<Boolean, Map<T, E>> expectedResult) {
-        assertEquals(expectedResult, partition(sourceMap, filterPredicate));
+        assertEquals(expectedResult, partition(sourceMap, discriminator));
     }
 
 
