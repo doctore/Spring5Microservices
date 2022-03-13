@@ -15,8 +15,8 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 
 @UtilityClass
 public class MapUtil {
@@ -52,24 +52,26 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        Map<T, R> result = new HashMap<>();
-        sourceMap.forEach(
-                (k, v) -> {
-                    if (filterPredicate.test(k, v)) {
-                        result.put(
-                                k,
-                                defaultFunction.apply(k, v)
-                        );
-                    }
-                    else {
-                        result.put(
-                                k,
-                                orElseFunction.apply(k, v)
-                        );
-                    }
-                }
-        );
-        return result;
+        return sourceMap.entrySet()
+                .stream()
+                .map(entry ->
+                        filterPredicate.test(entry.getKey(), entry.getValue())
+                                ? Map.entry(
+                                        entry.getKey(),
+                                        defaultFunction.apply(entry.getKey(), entry.getValue())
+                                )
+                                : Map.entry(
+                                        entry.getKey(),
+                                        orElseFunction.apply(entry.getKey(), entry.getValue())
+                                )
+                )
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                (oldValue, newValue) -> newValue
+                        )
+                );
     }
 
 
@@ -101,18 +103,16 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        Map<T, R> result = new HashMap<>();
-        sourceMap.forEach(
-                (k, v) -> {
-                    if (filterPredicate.test(k, v)) {
-                        result.put(
-                                k,
-                                mapFunction.apply(k, v)
-                        );
-                    }
-                }
-        );
-        return result;
+        return sourceMap.entrySet()
+                .stream()
+                .filter(entry -> filterPredicate.test(entry.getKey(), entry.getValue()))
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
+                                (oldValue, newValue) -> newValue
+                        )
+                );
     }
 
 
@@ -133,12 +133,11 @@ public class MapUtil {
                 Objects.isNull(filterPredicate)) {
             return empty();
         }
-        for (var entry : sourceMap.entrySet()) {
-            if (filterPredicate.test(entry.getKey(), entry.getValue())) {
-                return of(PairDto.of(entry.getKey(), entry.getValue()));
-            }
-        }
-        return empty();
+        return sourceMap.entrySet()
+                .stream()
+                .filter(entry -> filterPredicate.test(entry.getKey(), entry.getValue()))
+                .findFirst()
+                .map(entry -> PairDto.of(entry.getKey(), entry.getValue()));
     }
 
 
@@ -179,23 +178,55 @@ public class MapUtil {
 
 
     /**
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     *
+     * Example:
+     *   [(1, "Hi"), (2, "Hello"), (5, "World")],  (k, v) -> k % 2  =>  [(0,  [(2, "Hello")]
+     *                                                                   (1,  [(1, "Hi"), (5, "World")]]
+     * @param sourceMap
+     *    {@link Map} to filter
+     * @param discriminator
+     *    {@link BiFunction} used to split the elements of {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
+                                                      final BiFunction<? super T, ? super E, ? extends R> discriminator) {
+        if (CollectionUtils.isEmpty(sourceMap) ||
+                Objects.isNull(discriminator)) {
+            return new HashMap<>();
+        }
+        Map<R, Map<T, E>> result = new HashMap<>();
+        sourceMap.forEach(
+                (k, v) -> {
+                    R discriminatorResult = discriminator.apply(k, v);
+                    result.putIfAbsent(discriminatorResult, new HashMap<>());
+                    result.get(discriminatorResult)
+                            .put(k, v);
+                }
+        );
+        return result;
+    }
+
+
+    /**
      *    Returns a {@link Map} of {@link Boolean} as key, on which {@code true} contains all elements that satisfy given
-     * {@code filterPredicate} and {@code false}, all elements that do not.
+     * {@code discriminator} and {@code false}, all elements that do not.
      *
      * Example:
      *   [(1, "Hi"), (2, "Hello")],  (k, v) -> k % 2 == 0  =>  [(true,  [(2, "Hello")]
      *                                                          (false, [(1, "Hi")]]
      * @param sourceMap
      *    {@link Map} to filter
-     * @param filterPredicate
-     *    {@link BiPredicate} used to filter elements of {@code sourceMap}
+     * @param discriminator
+     *    {@link BiPredicate} used to split the elements of {@code sourceMap}
      *
      * @return {@link Map}
      */
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
-                                                           final BiPredicate<? super T, ? super E> filterPredicate) {
+                                                           final BiPredicate<? super T, ? super E> discriminator) {
         if (CollectionUtils.isEmpty(sourceMap) ||
-                Objects.isNull(filterPredicate)) {
+                Objects.isNull(discriminator)) {
             return new HashMap<>();
         }
         Map<Boolean, Map<T, E>> result = new HashMap<>() {{
@@ -204,7 +235,7 @@ public class MapUtil {
         }};
         sourceMap.forEach(
                 (k, v) ->
-                    result.get(filterPredicate.test(k, v))
+                    result.get(discriminator.test(k, v))
                             .put(k, v)
         );
         return result;
@@ -254,15 +285,15 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        Map<T, R> result = new HashMap<>();
-        sourceMap.forEach(
-                (k, v) ->
-                        result.put(
-                                k,
-                                mapFunction.apply(k, v)
+        return sourceMap.entrySet()
+                .stream()
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
+                                (oldValue, newValue) -> newValue
                         )
-        );
-        return result;
+                );
     }
 
 }
