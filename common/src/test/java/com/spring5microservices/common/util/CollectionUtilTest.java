@@ -35,6 +35,7 @@ import static com.spring5microservices.common.util.CollectionUtil.concatUniqueEl
 import static com.spring5microservices.common.util.CollectionUtil.find;
 import static com.spring5microservices.common.util.CollectionUtil.findLast;
 import static com.spring5microservices.common.util.CollectionUtil.foldLeft;
+import static com.spring5microservices.common.util.CollectionUtil.foldRight;
 import static com.spring5microservices.common.util.CollectionUtil.iterate;
 import static com.spring5microservices.common.util.CollectionUtil.reverseList;
 import static com.spring5microservices.common.util.CollectionUtil.slice;
@@ -395,6 +396,7 @@ public class CollectionUtilTest {
 
         BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
         BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
+        BiFunction<String, String, String> concat = (a, b) -> a + b;
         BiFunction<Long, Long, Long> subtract = (a, b) -> a - b;
         return Stream.of(
                 //@formatter:off
@@ -405,6 +407,7 @@ public class CollectionUtilTest {
                 Arguments.of( integers,           0,              null,          null,                             0 ),
                 Arguments.of( integers,           1,              multiply,      null,                             15 ),
                 Arguments.of( strings,            0,              sumLength,     null,                             6 ),
+                Arguments.of( strings,            "-",            concat,        null,                             "-ABEGMT" ),
                 Arguments.of( longs,              10L,            subtract,      null,                             -131L )
         ); //@formatter:on
     }
@@ -422,6 +425,47 @@ public class CollectionUtilTest {
         }
         else {
             assertEquals(expectedResult, foldLeft(sourceCollection, initialValue, accumulator));
+        }
+    }
+
+
+    static Stream<Arguments> foldRightTestCases() {
+        List<Integer> integers = asList(1, 3, 5);
+        List<String> strings = asList("AB", "E", "GMT");
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 75L, 12L));
+
+        BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
+        BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
+        BiFunction<String, String, String> concat = (a, b) -> a + b;
+        BiFunction<Long, Long, Long> subtract = (a, b) -> a - b;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   initialValue,   accumulator,   expectedException,                expectedResult
+                Arguments.of( null,               null,           null,          IllegalArgumentException.class,   null ),
+                Arguments.of( asList(),           2,              null,          null,                             2 ),
+                Arguments.of( asList(),           1,              multiply,      null,                             1 ),
+                Arguments.of( integers,           0,              null,          null,                             0 ),
+                Arguments.of( integers,           1,              multiply,      null,                             15 ),
+                Arguments.of( strings,            0,              sumLength,     null,                             6 ),
+                Arguments.of( strings,            "-",            concat,        null,                             "-GMTEAB" ),
+                Arguments.of( longs,              10L,            subtract,      null,                             -131L )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldRightTestCases")
+    @DisplayName("foldRight: test cases")
+    public <T, E> void foldRight_testCases(Collection<T> sourceCollection,
+                                           E initialValue,
+                                           BiFunction<E, ? super T, E> accumulator,
+                                           Class<? extends Exception> expectedException,
+                                           E expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> foldRight(sourceCollection, initialValue, accumulator));
+        }
+        else {
+            assertEquals(expectedResult, foldRight(sourceCollection, initialValue, accumulator));
         }
     }
 
