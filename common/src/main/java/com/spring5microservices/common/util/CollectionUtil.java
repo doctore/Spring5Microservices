@@ -313,8 +313,8 @@ public class CollectionUtil {
 
 
     /**
-     *    Folds given {@link Collection} elements from the left, starting with {@code initialValue} and successively
-     * calling {@code accumulator}.
+     *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
+     * elements of {@code sourceCollection}, going left to right.
      *
      * Examples:
      *   [5, 7, 9],     1,  (a, b) -> a * b   => 315
@@ -327,7 +327,8 @@ public class CollectionUtil {
      * @param accumulator
      *    A {@link BiFunction} which combines elements.
      *
-     * @return a folded value
+     * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
+     *         left to right with the start value {@code initialValue} on the left.
      *
      * @throws IllegalArgumentException if {@code initialValue} is {@code null}
      */
@@ -347,6 +348,37 @@ public class CollectionUtil {
                     return result;
                 })
                 .orElse(initialValue);
+    }
+
+
+    /**
+     *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
+     * elements of {@code sourceCollection}, going right to left.
+     *
+     * Examples:
+     *   [5, 7, 9],     1,  (a, b) -> a * b   => 315
+     *   ["a", "h"],  "!",  (a, b) -> a + b   => "!ha"
+     *
+     * @param sourceCollection
+     *    {@link Collection} with elements to combine.
+     * @param initialValue
+     *    The initial value to start with.
+     * @param accumulator
+     *    A {@link BiFunction} which combines elements.
+     *
+     * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
+     *         right to left with the start value {@code initialValue} on the right.
+     *
+     * @throws IllegalArgumentException if {@code initialValue} is {@code null}
+     */
+    public static <T, E> E foldRight(final Collection<? extends T> sourceCollection,
+                                     final E initialValue,
+                                     final BiFunction<E, ? super T, E> accumulator) {
+        return foldLeft(
+                reverseList(sourceCollection),
+                initialValue,
+                accumulator
+        );
     }
 
 
