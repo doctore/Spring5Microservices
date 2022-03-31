@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ValidationUtilTest {
@@ -21,8 +20,8 @@ public class ValidationUtilTest {
     static Stream<Arguments> combineTestCases() {
         Validation<String, Integer> validInt1 = Validation.valid(1);
         Validation<String, Integer> validInt4 = Validation.valid(4);
-        Validation<String, Integer> invalidProb1 = Validation.invalid(asList("problem1"));
-        Validation<String, Integer> invalidProb2 = Validation.invalid(asList("problem2"));
+        Validation<String, Integer> invalidProb1 = Validation.invalid(List.of("problem1"));
+        Validation<String, Integer> invalidProb2 = Validation.invalid(List.of("problem2"));
         Validation<String, Integer>[] allValidationsArray = new Validation[] { validInt1, invalidProb1, validInt4, invalidProb2 };
 
         List<String> allErrors = new ArrayList<>(invalidProb1.getErrors());
@@ -54,8 +53,8 @@ public class ValidationUtilTest {
     static Stream<Arguments> getFirstInvalidTestCases() {
         Validation<String, Integer> validInt1 = Validation.valid(1);
         Validation<String, Integer> validInt4 = Validation.valid(4);
-        Validation<String, Integer> invalidProb1 = Validation.invalid(asList("problem1"));
-        Validation<String, Integer> invalidProb2 = Validation.invalid(asList("problem2"));
+        Validation<String, Integer> invalidProb1 = Validation.invalid(List.of("problem1"));
+        Validation<String, Integer> invalidProb2 = Validation.invalid(List.of("problem2"));
 
         Supplier<Validation<String, Integer>> supValidInt1 = () -> validInt1;
         Supplier<Validation<String, Integer>> supValidInt4 = () -> validInt4;
@@ -80,7 +79,7 @@ public class ValidationUtilTest {
                                                  Supplier<Validation<E, T>> supplier2,
                                                  Supplier<Validation<E, T>> supplier3,
                                                  Validation<E, T> expectedResult) {
-        Validation<E, T> result = null;
+        Validation<E, T> result;
         if (Objects.isNull(supplier1) && Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
             result = ValidationUtil.getFirstInvalid();
         }
