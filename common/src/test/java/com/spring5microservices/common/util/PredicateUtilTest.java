@@ -28,11 +28,11 @@ public class PredicateUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            initialCollection,                            keyExtractor,   expectedResult
-                Arguments.of( asList(),                                     getName,        asList() ),
-                Arguments.of( asList(carbonaraCheap, carbonaraExpense),     getName,        asList(carbonaraCheap) ),
-                Arguments.of( asList(carbonaraCheap, margheritaCheap),      getName,        asList(carbonaraCheap, margheritaCheap) ),
-                Arguments.of( asList(margheritaCheap, margheritaExpense),   getCost,        asList(margheritaCheap, margheritaExpense) ),
-                Arguments.of( asList(carbonaraCheap, margheritaCheap),      getCost,        asList(carbonaraCheap) )
+                Arguments.of( List.of(),                                     getName,        List.of() ),
+                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),     getName,        List.of(carbonaraCheap) ),
+                Arguments.of( List.of(carbonaraCheap, margheritaCheap),      getName,        List.of(carbonaraCheap, margheritaCheap) ),
+                Arguments.of( List.of(margheritaCheap, margheritaExpense),   getCost,        List.of(margheritaCheap, margheritaExpense) ),
+                Arguments.of( List.of(carbonaraCheap, margheritaCheap),      getCost,        List.of(carbonaraCheap) )
         ); //@formatter:on
     }
 
