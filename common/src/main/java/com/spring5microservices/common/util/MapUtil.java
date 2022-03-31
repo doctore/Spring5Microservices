@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -69,7 +70,7 @@ public class MapUtil {
                         toMap(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
-                                (oldValue, newValue) -> newValue
+                                overwriteWithNew()
                         )
                 );
     }
@@ -110,7 +111,7 @@ public class MapUtil {
                         toMap(
                                 Map.Entry::getKey,
                                 entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
-                                (oldValue, newValue) -> newValue
+                                overwriteWithNew()
                         )
                 );
     }
@@ -291,9 +292,14 @@ public class MapUtil {
                         toMap(
                                 Map.Entry::getKey,
                                 entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
-                                (oldValue, newValue) -> newValue
+                                overwriteWithNew()
                         )
                 );
+    }
+
+
+    private static <T> BinaryOperator<T> overwriteWithNew() {
+        return (oldValue, newValue) -> newValue;
     }
 
 }

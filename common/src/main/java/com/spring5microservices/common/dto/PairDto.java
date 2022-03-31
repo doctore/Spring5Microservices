@@ -26,7 +26,7 @@ public class PairDto<T, E> {
         } else if (!(o instanceof PairDto)) {
             return false;
         } else {
-            PairDto p = (PairDto)o;
+            PairDto<?, ?> p = (PairDto<?, ?>)o;
             return equals(this.first, p.first) && equals(this.second, p.second);
         }
     }

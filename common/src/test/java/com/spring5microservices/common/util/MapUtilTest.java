@@ -26,7 +26,6 @@ import static com.spring5microservices.common.util.MapUtil.groupBy;
 import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.transform;
-import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -376,8 +375,8 @@ public class MapUtilTest {
         Map<String, Integer> sourceMapFiltered = new HashMap<>() {{
             put("A", 1);
         }};
-        List<String> keysToExcludeIncluded = asList("B");
-        List<String> keysToExcludeNotIncluded = asList("C");
+        List<String> keysToExcludeIncluded = List.of("B");
+        List<String> keysToExcludeNotIncluded = List.of("C");
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,   keysToExclude,              expectedResult

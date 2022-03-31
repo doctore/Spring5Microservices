@@ -5,7 +5,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -21,7 +20,6 @@ import static com.spring5microservices.common.util.StringUtil.keepOnlyDigits;
 import static com.spring5microservices.common.util.StringUtil.sliding;
 import static com.spring5microservices.common.util.StringUtil.splitBySize;
 import static com.spring5microservices.common.util.StringUtil.splitFromString;
-import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -112,14 +110,14 @@ public class StringUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceString,   size,   expectedResult
-                Arguments.of( null,           -1,     asList() ),
-                Arguments.of( null,            3,     asList() ),
-                Arguments.of( "",             -1,     asList("") ),
-                Arguments.of( "",              3,     asList("") ),
-                Arguments.of( "12345",        -1,     asList("12345") ),
-                Arguments.of( "12345",         8,     asList("12345") ),
-                Arguments.of( "12345",         3,     asList("123", "45") ),
-                Arguments.of( "1234",          2,     asList("12", "34") )
+                Arguments.of( null,           -1,     List.of() ),
+                Arguments.of( null,            3,     List.of() ),
+                Arguments.of( "",             -1,     List.of("") ),
+                Arguments.of( "",              3,     List.of("") ),
+                Arguments.of( "12345",        -1,     List.of("12345") ),
+                Arguments.of( "12345",         8,     List.of("12345") ),
+                Arguments.of( "12345",         3,     List.of("123", "45") ),
+                Arguments.of( "1234",          2,     List.of("12", "34") )
         ); //@formatter:on
     }
 
@@ -138,15 +136,15 @@ public class StringUtilTest {
         String stringValue1 = "abcdefg";
         String stringValue2 = "1234";
 
-        List<String> stringValue1Size8Result = asList("abcdefg");
-        List<String> stringValue1Size3Result = asList("abc", "bcd", "cde", "def", "efg");
-        List<String> stringValue2Size2Result = asList("12", "23", "34");
+        List<String> stringValue1Size8Result = List.of("abcdefg");
+        List<String> stringValue1Size3Result = List.of("abc", "bcd", "cde", "def", "efg");
+        List<String> stringValue2Size2Result = List.of("12", "23", "34");
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   size,   expectedResult
-                Arguments.of( null,               5,      new ArrayList<>() ),
-                Arguments.of( emptyString,        0,      asList("") ),
-                Arguments.of( emptyString,        5,      asList("") ),
+                Arguments.of( null,               5,      List.of() ),
+                Arguments.of( emptyString,        0,      List.of("") ),
+                Arguments.of( emptyString,        5,      List.of("") ),
                 Arguments.of( stringValue1,       8,      stringValue1Size8Result ),
                 Arguments.of( stringValue1,       3,      stringValue1Size3Result ),
                 Arguments.of( stringValue2,       2,      stringValue2Size2Result )
@@ -171,10 +169,10 @@ public class StringUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            source,       valueExtractor,        expectedResult
-                Arguments.of( null,         null,                  asList() ),
-                Arguments.of( integers,     null,                  asList() ),
-                Arguments.of( integers,     fromStringToInteger,   asList(1,2,3) ),
-                Arguments.of( characters,   fromStringToString,    asList("A","B","3") )
+                Arguments.of( null,         null,                  List.of() ),
+                Arguments.of( integers,     null,                  List.of() ),
+                Arguments.of( integers,     fromStringToInteger,   List.of(1,2,3) ),
+                Arguments.of( characters,   fromStringToString,    List.of("A","B","3") )
         ); //@formatter:on
     }
 
@@ -194,14 +192,14 @@ public class StringUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            source,       separator,   chunkLimit,        expectedResult
-                Arguments.of( null,         null,        -1,                asList() ),
-                Arguments.of( null,         null,         2,                asList() ),
-                Arguments.of( integers,     null,        -1,                asList("1", "2", "3") ),
-                Arguments.of( integers,     null,         3,                asList("1", "2", "3") ),
-                Arguments.of( integers,     ",",         -1,                asList("1", "2", "3") ),
-                Arguments.of( integers,     ",",          3,                asList("1", "2", "3") ),
-                Arguments.of( characters,   null,        -1,                asList("A","B","3") ),
-                Arguments.of( characters,   null,         2,                asList("A","B,  3") )
+                Arguments.of( null,         null,        -1,                List.of() ),
+                Arguments.of( null,         null,         2,                List.of() ),
+                Arguments.of( integers,     null,        -1,                List.of("1", "2", "3") ),
+                Arguments.of( integers,     null,         3,                List.of("1", "2", "3") ),
+                Arguments.of( integers,     ",",         -1,                List.of("1", "2", "3") ),
+                Arguments.of( integers,     ",",          3,                List.of("1", "2", "3") ),
+                Arguments.of( characters,   null,        -1,                List.of("A","B","3") ),
+                Arguments.of( characters,   null,         2,                List.of("A","B,  3") )
         ); //@formatter:on
     }
 
@@ -227,11 +225,11 @@ public class StringUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            source,       separator,   valueExtractor,         collectionFactory,         expectedResult
-                Arguments.of( null,         null,        null,                   null,                      asList() ),
-                Arguments.of( integers,     null,        null,                   null,                      asList() ),
-                Arguments.of( integers,     ",",         null,                   null,                      asList() ),
-                Arguments.of( integers,     ",",         fromStringToInteger,    null,                      asList(1, 2, 3, 2) ),
-                Arguments.of( roles,        ",",         fromToStringWithTrim,   null,                      asList("R1", "R2", "R3", "R3")),
+                Arguments.of( null,         null,        null,                   null,                      List.of() ),
+                Arguments.of( integers,     null,        null,                   null,                      List.of() ),
+                Arguments.of( integers,     ",",         null,                   null,                      List.of() ),
+                Arguments.of( integers,     ",",         fromStringToInteger,    null,                      List.of(1, 2, 3, 2) ),
+                Arguments.of( roles,        ",",         fromToStringWithTrim,   null,                      List.of("R1", "R2", "R3", "R3")),
                 Arguments.of( integers,     ",",         fromStringToInteger,    setSupplier,               asSet(1, 2, 3) ),
                 Arguments.of( characters,   "-",         fromStringToString,     setSupplier,               asSet("A", "B", "3") ),
                 Arguments.of( roles,        ",",         fromToStringWithTrim,   setSupplier,               asSet("R1", "R2", "R3"))
@@ -261,16 +259,16 @@ public class StringUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            source,       separator,   chunkLimit,   valueExtractor,         collectionFactory,         expectedResult
-                Arguments.of( null,         null,        -1,           null,                   null,                      asList() ),
-                Arguments.of( null,         null,         2,           null,                   null,                      asList() ),
-                Arguments.of( integers,     null,        -1,           null,                   null,                      asList() ),
-                Arguments.of( integers,     null,         2,           null,                   null,                      asList() ),
-                Arguments.of( integers,     ",",         -1,           null,                   null,                      asList() ),
-                Arguments.of( integers,     ",",          2,           null,                   null,                      asList() ),
-                Arguments.of( integers,     ",",         -1,           fromStringToInteger,    null,                      asList(1, 2, 3, 2) ),
-                Arguments.of( integers,     ",",          4,           fromStringToInteger,    null,                      asList(1, 2, 3, 2) ),
-                Arguments.of( integers,     ",",         10,           fromStringToInteger,    null,                      asList(1, 2, 3, 2) ),
-                Arguments.of( roles,        ",",          2,           fromToStringWithTrim,   null,                      asList("R1", "R2, R3,R3")),
+                Arguments.of( null,         null,        -1,           null,                   null,                      List.of() ),
+                Arguments.of( null,         null,         2,           null,                   null,                      List.of() ),
+                Arguments.of( integers,     null,        -1,           null,                   null,                      List.of() ),
+                Arguments.of( integers,     null,         2,           null,                   null,                      List.of() ),
+                Arguments.of( integers,     ",",         -1,           null,                   null,                      List.of() ),
+                Arguments.of( integers,     ",",          2,           null,                   null,                      List.of() ),
+                Arguments.of( integers,     ",",         -1,           fromStringToInteger,    null,                      List.of(1, 2, 3, 2) ),
+                Arguments.of( integers,     ",",          4,           fromStringToInteger,    null,                      List.of(1, 2, 3, 2) ),
+                Arguments.of( integers,     ",",         10,           fromStringToInteger,    null,                      List.of(1, 2, 3, 2) ),
+                Arguments.of( roles,        ",",          2,           fromToStringWithTrim,   null,                      List.of("R1", "R2, R3,R3")),
                 Arguments.of( integers,     ",",         -1,           fromStringToInteger,    setSupplier,               asSet(1, 2, 3) ),
                 Arguments.of( characters,   "-",         -1,           fromStringToString,     setSupplier,               asSet("A", "B", "3") ),
                 Arguments.of( characters,   "-",          1,           fromStringToString,     setSupplier,               asSet("A-B-3-B") ),
