@@ -43,7 +43,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}.
      * @param defaultFunction
      *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}.
      * @param orElseFunction
@@ -72,7 +72,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}.
      * @param defaultFunction
      *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}.
      * @param orElseFunction
@@ -112,7 +112,7 @@ public class CollectionUtil {
 
 
     /**
-     * Return a {@link LinkedHashSet} with the provided {@code elements}.
+     * Returns a {@link LinkedHashSet} with the provided {@code elements}.
      *
      * @param elements
      *    Elements to include.
@@ -128,7 +128,7 @@ public class CollectionUtil {
 
 
     /**
-     * Return a {@link Collection} after:
+     * Returns a {@link Collection} after:
      *
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
@@ -139,7 +139,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}.
      * @param mapFunction
      *    {@link Function} to transform filtered elements from the source {@code sourceCollection}.
      *
@@ -155,7 +155,7 @@ public class CollectionUtil {
 
 
     /**
-     * Return a {@link Collection} after:
+     * Returns a {@link Collection} after:
      *
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
@@ -166,7 +166,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from the source {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}.
      * @param mapFunction
      *    {@link Function} to transform filtered elements from the source {@code sourceCollection}.
      * @param collectionFactory
@@ -199,7 +199,7 @@ public class CollectionUtil {
 
 
     /**
-     * Return a {@link Collection} with the extracted property of the given {@code sourceCollection}
+     * Returns a {@link Collection} with the extracted property of the given {@code sourceCollection}
      *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract.
@@ -215,7 +215,7 @@ public class CollectionUtil {
 
 
     /**
-     * Return a {@link Collection} with the extracted property of the given {@code sourceCollection}
+     * Returns a {@link Collection} with the extracted property of the given {@code sourceCollection}
      *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract.
@@ -247,7 +247,7 @@ public class CollectionUtil {
 
 
     /**
-     * Return the unique elements of the given {@link Collection}s.
+     * Returns the unique elements of the given {@link Collection}s.
      *
      * @param collections
      *    {@link Collection}s to concat.
@@ -261,6 +261,32 @@ public class CollectionUtil {
                                       .flatMap(Collection::stream)
                                       .collect(toCollection(LinkedHashSet::new)))
                 .orElseGet(LinkedHashSet::new);
+    }
+
+
+    /**
+     * Counts the number of elements in the {@code sourceCollection} which satisfy the {@code filterPredicate}.
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *   {@link Predicate} to filter elements from {@code sourceCollection}
+     *
+     * @return the number of elements satisfying the {@link Predicate} {@code filterPredicate}
+     */
+    public static <T> int count(final Collection<? extends T> sourceCollection,
+                                final Predicate<? super T> filterPredicate) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return 0;
+        }
+        if (Objects.isNull(filterPredicate)) {
+            return sourceCollection.size();
+        }
+        return sourceCollection
+                .stream()
+                .filter(filterPredicate)
+                .mapToInt(elto -> 1)
+                .sum();
     }
 
 

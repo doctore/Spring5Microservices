@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
+import static com.spring5microservices.common.util.MapUtil.count;
 import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.groupBy;
@@ -34,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class MapUtilTest {
 
     static Stream<Arguments> applyOrElseTestCases() {
-        Map<Integer, String> emptyMap = new HashMap<>();
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -46,7 +46,6 @@ public class MapUtilTest {
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
         BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
 
-        Map<Integer, Long> emptyMapResult = new HashMap<>();
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
             put(1, 3L);
             put(2, 3L);
@@ -57,11 +56,11 @@ public class MapUtilTest {
                 //@formatter:off
                 //            sourceMap,        filterPredicate,         defaultFunction,               orElseFunction,          expectedException,                expectedResult
                 Arguments.of( null,             null,                    null,                          null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         null,                    null,                          null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         isKeyOddAndValueVowel,   null,                          null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             emptyMapResult ),
-                Arguments.of( emptyMap,         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             emptyMapResult ),
+                Arguments.of( Map.of(),         null,                    null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             Map.of() ),
                 Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             intsAndStringsResult )
         ); //@formatter:on
     }
@@ -93,7 +92,6 @@ public class MapUtilTest {
 
 
     static Stream<Arguments> collectTestCases() {
-        Map<Integer, String> emptyMap = new HashMap<>();
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -103,7 +101,6 @@ public class MapUtilTest {
         BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
 
-        Map<Integer, Long> emptyMapResult = new HashMap<>();
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
             put(4, 9L);
         }};
@@ -111,11 +108,11 @@ public class MapUtilTest {
                 //@formatter:off
                 //            sourceMap,        filterPredicate,          mapFunction,                   expectedException,                expectedResult
                 Arguments.of( null,             null,                     null,                          IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         null,                     null,                          IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         null,                     null,                          IllegalArgumentException.class,   null ),
-                Arguments.of( emptyMap,         isKeyEvenAndValueVowel,   null,                          IllegalArgumentException.class,   null ),
-                Arguments.of( null,             isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             emptyMapResult ),
-                Arguments.of( emptyMap,         isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             emptyMapResult ),
+                Arguments.of( Map.of(),         null,                     null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         null,                     null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             Map.of() ),
                 Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             intsAndStringsResult )
         ); //@formatter:on
     }
@@ -134,6 +131,49 @@ public class MapUtilTest {
         else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction));
         }
+    }
+
+
+    static Stream<Arguments> countTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "i");
+            put(4, "o");
+            put(8, "E");
+        }};
+        Map<String, Long> stringsAndLongs = new TreeMap<>() {{
+            put("HY", 23L);
+            put("ZW", 62L);
+            put("ZZ", 63L);
+            put("TZ", 69L);
+        }};
+
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel =
+                (k, v) ->
+                        k % 2 == 0 && "AEIOUaeiou".contains(v);
+
+        BiPredicate<String, Long> isKeyContainsZAndValueIsOdd =
+                (k, v) ->
+                        k.toUpperCase().contains("Z") && v % 2 == 1;
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         filterPredicate,               expectedResult
+                Arguments.of( null,              null,                          0 ),
+                Arguments.of( Map.of(),          null,                          0 ),
+                Arguments.of( null,              isKeyEvenAndValueVowel,        0 ),
+                Arguments.of( Map.of(),          isKeyEvenAndValueVowel,        0 ),
+                Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        3 ),
+                Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   2 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("countTestCases")
+    @DisplayName("count: test cases")
+    public <T, E> void count_testCases(Map<? extends T, ? extends E> sourceMap,
+                                       BiPredicate<? super T, ? super E> filterPredicate,
+                                       int expectedResult) {
+        assertEquals(expectedResult, count(sourceMap, filterPredicate));
     }
 
 
@@ -167,9 +207,9 @@ public class MapUtilTest {
                 //@formatter:off
                 //            sourceMap,         filterPredicate,               expectedResult
                 Arguments.of( null,              null,                          empty() ),
-                Arguments.of( new HashMap<>(),   null,                          empty() ),
+                Arguments.of( Map.of(),          null,                          empty() ),
                 Arguments.of( null,              isKeyEvenAndValueVowel,        empty() ),
-                Arguments.of( new HashMap<>(),   isKeyEvenAndValueVowel,        empty() ),
+                Arguments.of( Map.of(),          isKeyEvenAndValueVowel,        empty() ),
                 Arguments.of( intsAndStrings,    isValueContainsZ,              empty() ),
                 Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        of(PairDto.of(4, "o")) ),
                 Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   of(PairDto.of("TZ", 69L)) )
@@ -281,10 +321,10 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         discriminator,            expectedResult
-                Arguments.of( null,              null,                     new HashMap<>() ),
-                Arguments.of( null,              isKeyEven,                new HashMap<>() ),
-                Arguments.of( new HashMap<>(),   null,                     new HashMap<>() ),
-                Arguments.of( new HashMap<>(),   isKeyEven,                new HashMap<>() ),
+                Arguments.of( null,              null,                     Map.of() ),
+                Arguments.of( null,              isKeyEven,                Map.of() ),
+                Arguments.of( Map.of(),          null,                     Map.of() ),
+                Arguments.of( Map.of(),          isKeyEven,                Map.of() ),
                 Arguments.of( intsAndStrings,    isKeyEven,                intsAndStringsResult ),
                 Arguments.of( intsAndLongs,      isKeyPlusValueModThree,   intsAndLongsResult )
         ); //@formatter:on
@@ -348,10 +388,10 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         discriminator,       expectedResult
-                Arguments.of( null,              null,                new HashMap<>() ),
-                Arguments.of( null,              isKeyEven,           new HashMap<>() ),
-                Arguments.of( new HashMap<>(),   null,                new HashMap<>() ),
-                Arguments.of( new HashMap<>(),   isKeyEven,           new HashMap<>() ),
+                Arguments.of( null,              null,                Map.of() ),
+                Arguments.of( null,              isKeyEven,           Map.of() ),
+                Arguments.of( Map.of(),          null,                Map.of() ),
+                Arguments.of( Map.of(),          isKeyEven,           Map.of() ),
                 Arguments.of( intsAndStrings,    isKeyEven,           intsAndStringsResult ),
                 Arguments.of( intsAndLongs,      isKeyPlusValueOdd,   intsAndLongsResult )
         ); //@formatter:on
@@ -414,8 +454,8 @@ public class MapUtilTest {
                 //@formatter:off
                 //            sourceMap,         mapFunction,                     expectedException,                expectedResult
                 Arguments.of( null,              null,                            IllegalArgumentException.class,   null ),
-                Arguments.of( new HashMap<>(),   null,                            IllegalArgumentException.class,   null ),
-                Arguments.of( new HashMap<>(),   add1ToValueAndConvertToString,   null,                             new HashMap<>() ),
+                Arguments.of( Map.of(),          null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                             Map.of() ),
                 Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                             integersMapResult )
         ); //@formatter:on
     }

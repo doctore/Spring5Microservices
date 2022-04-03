@@ -16,7 +16,7 @@ import static java.util.Optional.ofNullable;
 public class DateTimeUtil {
 
     /**
-     * Compare provided {@link LocalDateTime}s taking into account the given {@code epsilon} and {@code timeUnit}.
+     * Compares provided {@link LocalDateTime}s taking into account the given {@code epsilon} and {@code timeUnit}.
      *
      * @param one
      *    {@link LocalDateTime} of the "left side" of compare method
@@ -62,7 +62,7 @@ public class DateTimeUtil {
 
 
     /**
-     * Convert to an instance of {@link Date} the given {@link LocalDateTime} using the provided {@link ZoneId}
+     * Converts to an instance of {@link Date} the given {@link LocalDateTime} using the provided {@link ZoneId}
      *
      * @param localDateTime
      *    {@link LocalDateTime} value to convert
@@ -87,7 +87,7 @@ public class DateTimeUtil {
 
 
     /**
-     * Convert to an instance of {@link Date} the given {@link LocalDateTime} using {@link ZoneId#systemDefault()}
+     * Converts to an instance of {@link Date} the given {@link LocalDateTime} using {@link ZoneId#systemDefault()}
      *
      * @param localDateTime
      *    {@link LocalDateTime} value to convert
@@ -100,7 +100,7 @@ public class DateTimeUtil {
 
 
     /**
-     * Convert to an instance of {@link LocalDateTime} the given {@link Date} using the provided {@link ZoneId}
+     * Converts to an instance of {@link LocalDateTime} the given {@link Date} using the provided {@link ZoneId}
      *
      * @param date
      *    {@link Date} value to convert
@@ -125,7 +125,7 @@ public class DateTimeUtil {
 
 
     /**
-     * Convert to an instance of {@link LocalDateTime} the given {@link Date} using {@link ZoneId#systemDefault()}
+     * Converts to an instance of {@link LocalDateTime} the given {@link Date} using {@link ZoneId#systemDefault()}
      *
      * @param date
      *    {@link Date} value to convert
