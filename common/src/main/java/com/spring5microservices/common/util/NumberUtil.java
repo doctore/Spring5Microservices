@@ -14,7 +14,7 @@ import static java.util.Optional.ofNullable;
 public class NumberUtil {
 
     /**
-     *    Compare provided {@link BigDecimal}s taking into account the number of decimals included in the parameter
+     *    Compares provided {@link BigDecimal}s taking into account the number of decimals included in the parameter
      * {@code numberOfDecimals}.
      *
      * @param one
@@ -45,7 +45,7 @@ public class NumberUtil {
 
 
     /**
-     * Return an instance of the provided {@link Class} if is possible to do the conversion of given {@code potentialNumber}.
+     * Returns an instance of the provided {@link Class} if is possible to do the conversion of given {@code potentialNumber}.
      *
      * @param potentialNumber
      *    {@link String} to convert into a {@link Number} instance.
@@ -77,7 +77,7 @@ public class NumberUtil {
 
 
     /**
-     * Return an {@link Integer} instance if is possible to do the conversion of given {@code potentialNumber}.
+     * Returns an {@link Integer} instance if is possible to do the conversion of given {@code potentialNumber}.
      *
      * @param potentialNumber
      *    {@link String} to convert into a {@link Integer} instance.

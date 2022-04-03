@@ -23,7 +23,7 @@ public class JsonUtil {
 
 
     /**
-     * Convert the incoming object into a JSON-formatted string.
+     * Converts the incoming object into a JSON-formatted string.
      *
      * @param object
      *    Object to map into string
@@ -46,7 +46,7 @@ public class JsonUtil {
 
 
     /**
-     * Transform the given JSON-formatted into an instance of a given {@link Class}.
+     * Transforms the given JSON-formatted into an instance of a given {@link Class}.
      *
      * @param json
      *    Json string to transform

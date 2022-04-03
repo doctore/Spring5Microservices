@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -32,7 +33,7 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from the source {@code sourceMap}.
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
      * @param defaultFunction
      *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}.
      * @param orElseFunction
@@ -77,7 +78,7 @@ public class MapUtil {
 
 
     /**
-     * Return a {@link Map} after:
+     * Returns a {@link Map} after:
      *
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
@@ -88,7 +89,7 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from the source {@code sourceMap}.
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
      * @param mapFunction
      *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}.
      *
@@ -114,6 +115,32 @@ public class MapUtil {
                                 overwriteWithNew()
                         )
                 );
+    }
+
+
+    /**
+     * Counts the number of elements in the {@code sourceMap} which satisfy the {@code filterPredicate}.
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *   {@link Predicate} to filter elements from {@code sourceCollection}
+     *
+     * @return the number of elements satisfying the {@link Predicate} {@code filterPredicate}
+     */
+    public static <T, E> int count(final Map<? extends T, ? extends E> sourceMap,
+                                   final BiPredicate<? super T, ? super E> filterPredicate) {
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return 0;
+        }
+        if (Objects.isNull(filterPredicate)) {
+            return sourceMap.size();
+        }
+        return sourceMap.entrySet()
+                .stream()
+                .filter(entry -> filterPredicate.test(entry.getKey(), entry.getValue()))
+                .mapToInt(elto -> 1)
+                .sum();
     }
 
 
@@ -258,7 +285,7 @@ public class MapUtil {
         return ofNullable(sourceMap)
                 .map(sm -> {
                     Map<T, E> filteredMap = new HashMap<>(sourceMap);
-                    if (null != keysToExclude) {
+                    if (Objects.nonNull(keysToExclude)) {
                         keysToExclude.forEach(filteredMap::remove);
                     }
                     return filteredMap;
