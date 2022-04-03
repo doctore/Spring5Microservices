@@ -65,7 +65,7 @@ public class StringUtil {
 
 
     /**
-     * Verify if the given {@code sourceString} contains {@code stringToSearch} ignoring case.
+     * Verifies if the given {@code sourceString} contains {@code stringToSearch} ignoring case.
      *
      * @param sourceString
      *    {@link String} to check if contains {@code stringToSearch}
@@ -84,7 +84,7 @@ public class StringUtil {
 
 
     /**
-     * Remove from the given {@code sourceString} all non-numeric characters.
+     * Removes from the given {@code sourceString} all non-numeric characters.
      *
      * @param sourceString
      *    {@link String} to delete all non-numeric characters.
@@ -165,7 +165,7 @@ public class StringUtil {
 
 
     /**
-     *    Return a {@link List} splitting the given {@code source} in different parts, using {@code valueExtractor}
+     *    Returns a {@link List} splitting the given {@code source} in different parts, using {@code valueExtractor}
      * to know how to do it.
      *
      * @param source
@@ -182,7 +182,7 @@ public class StringUtil {
 
 
     /**
-     *    Return a {@link Collection} splitting the given {@code source} in different parts, using {@code separator}
+     *    Returns a {@link Collection} splitting the given {@code source} in different parts, using {@code separator}
      * to know how to split it.
      *
      * @param source
@@ -202,7 +202,7 @@ public class StringUtil {
 
 
     /**
-     *    Return a {@link List} splitting the given {@code source} in different parts, using {@code valueExtractor}
+     *    Returns a {@link List} splitting the given {@code source} in different parts, using {@code valueExtractor}
      * to know how to do it.
      *
      * @param source
@@ -222,7 +222,7 @@ public class StringUtil {
 
 
     /**
-     *    Return a {@link Collection} splitting the given {@code source} in different parts, using {@code valueExtractor}
+     *    Returns a {@link Collection} splitting the given {@code source} in different parts, using {@code valueExtractor}
      * to know how to do it.
      *
      * @param source
@@ -245,7 +245,7 @@ public class StringUtil {
 
 
     /**
-     *    Return a {@link Collection} splitting the given {@code source} in different parts, using {@code valueExtractor}
+     *    Returns a {@link Collection} splitting the given {@code source} in different parts, using {@code valueExtractor}
      * to know how to do it.
      *
      * @param source

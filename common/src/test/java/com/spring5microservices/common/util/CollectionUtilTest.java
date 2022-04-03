@@ -32,6 +32,7 @@ import static com.spring5microservices.common.util.CollectionUtil.asSet;
 import static com.spring5microservices.common.util.CollectionUtil.collect;
 import static com.spring5microservices.common.util.CollectionUtil.collectProperty;
 import static com.spring5microservices.common.util.CollectionUtil.concatUniqueElements;
+import static com.spring5microservices.common.util.CollectionUtil.count;
 import static com.spring5microservices.common.util.CollectionUtil.find;
 import static com.spring5microservices.common.util.CollectionUtil.findLast;
 import static com.spring5microservices.common.util.CollectionUtil.foldLeft;
@@ -313,6 +314,38 @@ public class CollectionUtilTest {
                                                List<Integer> collection3ToConcat,
                                                LinkedHashSet<Integer> expectedResult) {
         assertEquals(expectedResult, concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat));
+    }
+
+
+    static Stream<Arguments> countTestCases() {
+        List<Integer> integers = asList(3, 7, 9, 11, 15);
+        Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
+        longs.addAll(asList(54L, 78L, 12L));
+
+        Predicate<Integer> upperThan10 = i -> 10 < i;
+        Predicate<String> lengthGreaterThan3 = i -> 3 < i.length();
+        Predicate<Long> upperThan80 = l -> 80 < l;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,      expectedResult
+                Arguments.of( null,               null,                 0 ),
+                Arguments.of( List.of(),          null,                 0 ),
+                Arguments.of( null,               upperThan10,          0 ),
+                Arguments.of( List.of(),          upperThan10,          0 ),
+                Arguments.of( integers,           upperThan10,          2 ),
+                Arguments.of( strings,            lengthGreaterThan3,   1 ),
+                Arguments.of( longs,              upperThan80,          0 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("countTestCases")
+    @DisplayName("count: test cases")
+    public <T> void count_testCases(Collection<T> sourceCollection,
+                                    Predicate<? super T> filterPredicate,
+                                    int expectedResult) {
+        assertEquals(expectedResult, count(sourceCollection, filterPredicate));
     }
 
 
