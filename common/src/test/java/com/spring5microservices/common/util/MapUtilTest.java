@@ -25,9 +25,9 @@ import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.groupBy;
 import static com.spring5microservices.common.util.MapUtil.map;
+import static com.spring5microservices.common.util.MapUtil.mapValues;
 import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
-import static com.spring5microservices.common.util.MapUtil.transform;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -440,6 +440,45 @@ public class MapUtilTest {
     }
 
 
+    static Stream<Arguments> mapValuesTestCases() {
+        Map<Integer, Integer> integersMap = new HashMap<>() {{
+            put(1, 21);
+            put(4, 43);
+            put(9, 101);
+        }};
+        BiFunction<Integer, Integer, String> add1ToValueAndConvertToString = (k, v) -> String.valueOf(v + 1);
+
+        Map<Integer, String> integersMapResult = new HashMap<>() {{
+            put(1, "22");
+            put(4, "44");
+            put(9, "102");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         mapFunction,                     expectedException,                expectedResult
+                Arguments.of( null,              null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),          null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                             Map.of() ),
+                Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                             integersMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapValuesTestCases")
+    @DisplayName("mapValues: test cases")
+    public <T, E, R> void mapValues_testCases(Map<? extends T, ? extends E> sourceMap,
+                                              BiFunction<? super T, ? super E, ? extends R> mapFunction,
+                                              Class<? extends Exception> expectedException,
+                                              Map<T, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> mapValues(sourceMap, mapFunction));
+        }
+        else {
+            assertEquals(expectedResult, mapValues(sourceMap, mapFunction));
+        }
+    }
+
+
     @ParameterizedTest
     @MethodSource("partitionTestCases")
     @DisplayName("partition: test cases")
@@ -477,45 +516,6 @@ public class MapUtilTest {
                                             Collection<T> keysToExclude,
                                             HashMap<T, E> expectedResult) {
         assertEquals(expectedResult, removeKeys(sourceMap, keysToExclude));
-    }
-
-
-    static Stream<Arguments> transformTestCases() {
-        Map<Integer, Integer> integersMap = new HashMap<>() {{
-           put(1, 21);
-           put(4, 43);
-           put(9, 101);
-        }};
-        BiFunction<Integer, Integer, String> add1ToValueAndConvertToString = (k, v) -> String.valueOf(v + 1);
-
-        Map<Integer, String> integersMapResult = new HashMap<>() {{
-            put(1, "22");
-            put(4, "44");
-            put(9, "102");
-        }};
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,         mapFunction,                     expectedException,                expectedResult
-                Arguments.of( null,              null,                            IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),          null,                            IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                             Map.of() ),
-                Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                             integersMapResult )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("transformTestCases")
-    @DisplayName("transform: test cases")
-    public <T, E, R> void transform_testCases(Map<? extends T, ? extends E> sourceMap,
-                                              BiFunction<? super T, ? super E, ? extends R> mapFunction,
-                                              Class<? extends Exception> expectedException,
-                                              Map<T, R> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> transform(sourceMap, mapFunction));
-        }
-        else {
-            assertEquals(expectedResult, transform(sourceMap, mapFunction));
-        }
     }
 
 }

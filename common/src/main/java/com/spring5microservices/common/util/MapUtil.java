@@ -269,6 +269,37 @@ public class MapUtil {
 
 
     /**
+     * Builds a new {@link Map} by applying a function to all values of {@code sourceMap}.
+     *
+     * Example:
+     *   [(1, "A"), (3, "C")],  (k, v) -> k + v.length()  =>  [(1, 2), (3, 4)]
+     *
+     * @param sourceMap
+     *    {@link Map} to used as source of the new one
+     * @param mapFunction
+     *    {@link BiFunction} used to transform given {@link Map} values
+     *
+     * @return updated {@link Map}
+     */
+    public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
+                                                final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return new HashMap<>();
+        }
+        return sourceMap.entrySet()
+                .stream()
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
+                                overwriteWithNew()
+                        )
+                );
+    }
+
+
+    /**
      *    Returns a {@link Map} of {@link Boolean} as key, on which {@code true} contains all elements that satisfy given
      * {@code discriminator} and {@code false}, all elements that do not.
      *
@@ -322,37 +353,6 @@ public class MapUtil {
                     return filteredMap;
                 })
                 .orElseGet(HashMap::new);
-    }
-
-
-    /**
-     * Transforms all the values of given {@code sourceMap} using the provided {@code mapFunction}
-     *
-     * Example:
-     *   [(1, "A"), (3, "C")],  (k, v) -> k + v.length()  =>  [(1, 2), (3, 4)]
-     *
-     * @param sourceMap
-     *    {@link Map} to update its values
-     * @param mapFunction
-     *    {@link BiFunction} used to update given {@link Map} values
-     *
-     * @return updated {@link Map}
-     */
-    public static <T, E, R> Map<T, R> transform(final Map<? extends T, ? extends E> sourceMap,
-                                                final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
-        Assert.notNull(mapFunction, "mapFunction must be not null");
-        if (CollectionUtils.isEmpty(sourceMap)) {
-            return new HashMap<>();
-        }
-        return sourceMap.entrySet()
-                .stream()
-                .collect(
-                        toMap(
-                                Map.Entry::getKey,
-                                entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
-                                overwriteWithNew()
-                        )
-                );
     }
 
 
