@@ -28,7 +28,7 @@ public class MapUtil {
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
      * Example:
-     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2  =>  [2, 4, 4, 12]
+     *   [("A", 1), ("B", 2)],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2  =>  [("A", 2), ("B", 4)]
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform.
@@ -234,6 +234,37 @@ public class MapUtil {
                 }
         );
         return result;
+    }
+
+
+    /**
+     * Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}.
+     *
+     * @param sourceMap
+     *    {@link Map} to used as source of the new one
+     * @param mapFunction
+     *    {@link BiFunction} used to transform given {@link Map} elements
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
+     */
+    public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiFunction<? super T, ? super E, PairDto<? extends R, ? extends V>> mapFunction) {
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return new HashMap<>();
+        }
+        return sourceMap.entrySet()
+                .stream()
+                .map(entry -> mapFunction.apply(entry.getKey(), entry.getValue()))
+                .collect(
+                        toMap(
+                                PairDto::getFirst,
+                                PairDto::getSecond,
+                                overwriteWithNew()
+                        )
+                );
     }
 
 

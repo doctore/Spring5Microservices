@@ -24,6 +24,7 @@ import static com.spring5microservices.common.util.MapUtil.count;
 import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.groupBy;
+import static com.spring5microservices.common.util.MapUtil.map;
 import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.transform;
@@ -397,10 +398,52 @@ public class MapUtilTest {
         ); //@formatter:on
     }
 
+
+    static Stream<Arguments> mapTestCases() {
+        Map<Integer, Integer> integersMap = new HashMap<>() {{
+            put(1, 21);
+            put(4, 43);
+            put(9, 101);
+        }};
+        BiFunction<Integer, Integer, PairDto<String, String>> add1ToValueAndConvertToString =
+                (k, v) -> PairDto.of(String.valueOf(k + 1), String.valueOf(v * 2));
+
+        Map<String, String> integersMapResult = new HashMap<>() {{
+            put("2", "42");
+            put("5", "86");
+            put("10", "202");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         mapFunction,                     expectedException,                expectedResult
+                Arguments.of( null,              null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),          null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( null,              add1ToValueAndConvertToString,   null,                             Map.of() ),
+                Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                             Map.of() ),
+                Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                             integersMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapTestCases")
+    @DisplayName("map: test cases")
+    public <T, E, R, V> void map_testCases(Map<? extends T, ? extends E> sourceMap,
+                                           BiFunction<? super T, ? super E, PairDto<? extends R, ? extends V>> mapFunction,
+                                           Class<? extends Exception> expectedException,
+                                           Map<R, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> map(sourceMap, mapFunction));
+        }
+        else {
+            assertEquals(expectedResult, map(sourceMap, mapFunction));
+        }
+    }
+
+
     @ParameterizedTest
     @MethodSource("partitionTestCases")
     @DisplayName("partition: test cases")
-    public <T, E> void partition_testCases(Map<T, E> sourceMap,
+    public <T, E> void partition_testCases(Map<? extends T, ? extends E> sourceMap,
                                            BiPredicate<? super T, ? super E> discriminator,
                                            Map<Boolean, Map<T, E>> expectedResult) {
         assertEquals(expectedResult, partition(sourceMap, discriminator));
@@ -463,8 +506,8 @@ public class MapUtilTest {
     @ParameterizedTest
     @MethodSource("transformTestCases")
     @DisplayName("transform: test cases")
-    public <T, U, R> void transform_testCases(Map<T, U> sourceMap,
-                                              BiFunction<T, ? super U, R> mapFunction,
+    public <T, E, R> void transform_testCases(Map<? extends T, ? extends E> sourceMap,
+                                              BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                               Class<? extends Exception> expectedException,
                                               Map<T, R> expectedResult) {
         if (null != expectedException) {
