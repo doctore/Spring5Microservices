@@ -1,13 +1,17 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.dto.PairDto;
+import com.spring5microservices.common.collection.tuple.Tuple;
+import com.spring5microservices.common.collection.tuple.Tuple2;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,7 +19,11 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
@@ -152,11 +160,11 @@ public class MapUtil {
      * @param filterPredicate
      *    {@link BiPredicate} used to filter elements of {@code sourceMap}
      *
-     * @return {@link Optional} of {@link PairDto} containing the first element that satisfies {@code filterPredicate},
+     * @return {@link Optional} of {@link Tuple2} containing the first element that satisfies {@code filterPredicate},
      *         {@link Optional#empty()} otherwise.
      */
-    public static <T, E> Optional<PairDto<T, E>> find(final Map<? extends T, ? extends E> sourceMap,
-                                                      final BiPredicate<? super T, ? super E> filterPredicate) {
+    public static <T, E> Optional<Tuple2<T, E>> find(final Map<? extends T, ? extends E> sourceMap,
+                                                     final BiPredicate<? super T, ? super E> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceMap) ||
                 Objects.isNull(filterPredicate)) {
             return empty();
@@ -165,7 +173,7 @@ public class MapUtil {
                 .stream()
                 .filter(entry -> filterPredicate.test(entry.getKey(), entry.getValue()))
                 .findFirst()
-                .map(entry -> PairDto.of(entry.getKey(), entry.getValue()));
+                .map(entry -> Tuple.of(entry.getKey(), entry.getValue()));
     }
 
 
@@ -250,7 +258,7 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
      */
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
-                                             final BiFunction<? super T, ? super E, PairDto<? extends R, ? extends V>> mapFunction) {
+                                             final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction) {
         Assert.notNull(mapFunction, "mapFunction must be not null");
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
@@ -260,8 +268,8 @@ public class MapUtil {
                 .map(entry -> mapFunction.apply(entry.getKey(), entry.getValue()))
                 .collect(
                         toMap(
-                                PairDto::getFirst,
-                                PairDto::getSecond,
+                                Tuple2::get_1,
+                                Tuple2::get_2,
                                 overwriteWithNew()
                         )
                 );
@@ -353,6 +361,145 @@ public class MapUtil {
                     return filteredMap;
                 })
                 .orElseGet(HashMap::new);
+    }
+
+
+    /**
+     *    Using the provided {@code sourceMap}, return all elements beginning at index {@code from} and afterwards,
+     * up to index {@code until} (excluding this one).
+     *
+     * Examples:
+     *    [(1, "Hi"), (2, "Hello")],   1,  3  =>  [(2, "Hello")]
+     *    [(1, "Hi"), (2, "Hello")],   0,  1  =>  [(1, "Hi")]
+     *    [(1, "Hi"), (2, "Hello")],  -1,  2  =>  [(1, "Hi"), (2, "Hello")]
+     *
+     * @param sourceMap
+     *    {@link Map} to slice
+     * @param from
+     *    Lower limit of the chunk to extract from provided {@link Map} (starting from {@code 0})
+     * @param until
+     *    Upper limit of the chunk to extract from provided {@link Map} (up to {@link Map#size()})
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code from} is upper than {@code until}
+     */
+    public static <T, E> Map<T, E> slice(final Map<? extends T, ? extends E> sourceMap,
+                                         final int from,
+                                         final int until) {
+        Assert.isTrue(from < until, format("from: %d must be lower than to: %d", from, until));
+        if (CollectionUtils.isEmpty(sourceMap) ||
+                from > sourceMap.size() - 1) {
+            return new HashMap<>();
+        }
+        int finalFrom = Math.max(0, from);
+        int finalUntil = Math.min(sourceMap.size(), until);
+
+        int i = 0;
+        Map<T, E> result = new LinkedHashMap<>(Math.max(finalUntil - finalFrom, finalUntil - finalFrom - 1));
+        for (var entry : sourceMap.entrySet()) {
+            if (i >= finalUntil) {
+                break;
+            }
+            if (i >= finalFrom) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+            i++;
+        }
+        return result;
+    }
+
+
+    /**
+     * Loops through the provided {@link Map} one position every time, returning sublists with {@code size}
+     *
+     * Examples:
+     *   [(1, "A"), (3, "C")]           with size = 5  =>  [[(1, "A"), (3, "C")]]
+     *   [(1, "A"), (3, "C"), (8, "Z")] with size = 2  =>  [[(1, "A"), (3, "C")], [(3, "C"), (8, "Z")]]
+     *
+     * @param sourceMap
+     *    {@link Map} to slide
+     * @param size
+     *    Size of every sublist
+     *
+     * @return {@link List} of {@link Map}s
+     *
+     * @throws IllegalArgumentException if {@code size} is lower than 0
+     */
+    public static <T, E> List<Map<T, E>> sliding(final Map<T, E> sourceMap,
+                                                 final int size) {
+        Assert.isTrue(0 <= size, "size must be a positive value");
+        if (CollectionUtils.isEmpty(sourceMap) ||
+                0 == size) {
+            return new ArrayList<>();
+        }
+        if (size >= sourceMap.size()) {
+            return asList(sourceMap);
+        }
+        int expectedSize = sourceMap.size() - size + 1;
+
+        List<Map<T, E>> slides = IntStream.range(0, expectedSize)
+                .mapToObj(index -> new LinkedHashMap<T, E>())
+                .collect(Collectors.toList());
+
+        int i = 0;
+        for (var entry : sourceMap.entrySet()) {
+            int xCoordinate = Math.min(i, expectedSize - 1);
+            int yCoordinate = slides.get(xCoordinate).size();
+
+            int window = xCoordinate;
+            while (0 <= window && size > yCoordinate) {
+                slides.get(window).put(entry.getKey(), entry.getValue());
+                yCoordinate = slides.get(window).size();
+                window--;
+            }
+            i++;
+        }
+        return slides;
+    }
+
+
+    /**
+     * Splits the given {@link Map} in sublists with a size equal to the given {@code size}
+     *
+     * Examples:
+     *   [(1, "A"), (3, "C"), (8, "Z")] with size = 2  =>  [[(1, "A"), (3, "C")], [(8, "Z")]]
+     *   [(1, "A"), (3, "C")]           with size = 3  =>  [[(1, "A"), (3, "C")]]
+     *
+     * @param sourceMap
+     *    {@link Map} to split
+     * @param size
+     *    Size of every sublist
+     *
+     * @return {@link List} of {@link Map}s
+     *
+     * @throws IllegalArgumentException if {@code size} is lower than 0
+     */
+    public static <T, E> List<Map<T, E>> split(final Map<? extends T, ? extends E> sourceMap,
+                                               final int size) {
+        Assert.isTrue(0 <= size, "size must be a positive value");
+        if (CollectionUtils.isEmpty(sourceMap) ||
+                0 == size) {
+            return new ArrayList<>();
+        }
+        int expectedSize = 0 == sourceMap.size() % size
+                ? sourceMap.size() / size
+                : (sourceMap.size() / size) + 1;
+
+        List<Map<T, E>> splits = IntStream.range(0, expectedSize)
+                .mapToObj(index -> new LinkedHashMap<T, E>())
+                .collect(Collectors.toList());
+
+        int i = 0, currentSplit = 0;
+        for (var entry : sourceMap.entrySet()) {
+            splits.get(currentSplit).put(entry.getKey(), entry.getValue());
+            i++;
+            if (i == size) {
+                currentSplit++;
+                i = 0;
+            }
+        }
+        return splits;
     }
 
 

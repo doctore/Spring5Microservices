@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.dto.PairDto;
+import com.spring5microservices.common.collection.tuple.Tuple;
+import com.spring5microservices.common.collection.tuple.Tuple2;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,6 +29,9 @@ import static com.spring5microservices.common.util.MapUtil.map;
 import static com.spring5microservices.common.util.MapUtil.mapValues;
 import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
+import static com.spring5microservices.common.util.MapUtil.slice;
+import static com.spring5microservices.common.util.MapUtil.sliding;
+import static com.spring5microservices.common.util.MapUtil.split;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -212,8 +216,8 @@ public class MapUtilTest {
                 Arguments.of( null,              isKeyEvenAndValueVowel,        empty() ),
                 Arguments.of( Map.of(),          isKeyEvenAndValueVowel,        empty() ),
                 Arguments.of( intsAndStrings,    isValueContainsZ,              empty() ),
-                Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        of(PairDto.of(4, "o")) ),
-                Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   of(PairDto.of("TZ", 69L)) )
+                Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        of(Tuple.of(4, "o")) ),
+                Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   of(Tuple.of("TZ", 69L)) )
         ); //@formatter:on
     }
 
@@ -222,7 +226,7 @@ public class MapUtilTest {
     @DisplayName("find: test cases")
     public <T, E> void find_testCases(Map<? extends T, ? extends E> sourceMap,
                                       BiPredicate<? super T, ? super E> filterPredicate,
-                                      Optional<PairDto<T, E>> expectedResult) {
+                                      Optional<Tuple2<T, E>> expectedResult) {
         assertEquals(expectedResult, find(sourceMap, filterPredicate));
     }
 
@@ -405,8 +409,8 @@ public class MapUtilTest {
             put(4, 43);
             put(9, 101);
         }};
-        BiFunction<Integer, Integer, PairDto<String, String>> add1ToValueAndConvertToString =
-                (k, v) -> PairDto.of(String.valueOf(k + 1), String.valueOf(v * 2));
+        BiFunction<Integer, Integer, Tuple2<String, String>> add1ToValueAndConvertToString =
+                (k, v) -> Tuple.of(String.valueOf(k + 1), String.valueOf(v * 2));
 
         Map<String, String> integersMapResult = new HashMap<>() {{
             put("2", "42");
@@ -428,7 +432,7 @@ public class MapUtilTest {
     @MethodSource("mapTestCases")
     @DisplayName("map: test cases")
     public <T, E, R, V> void map_testCases(Map<? extends T, ? extends E> sourceMap,
-                                           BiFunction<? super T, ? super E, PairDto<? extends R, ? extends V>> mapFunction,
+                                           BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
                                            Class<? extends Exception> expectedException,
                                            Map<R, V> expectedResult) {
         if (null != expectedException) {
@@ -516,6 +520,196 @@ public class MapUtilTest {
                                             Collection<T> keysToExclude,
                                             HashMap<T, E> expectedResult) {
         assertEquals(expectedResult, removeKeys(sourceMap, keysToExclude));
+    }
+
+
+    static Stream<Arguments> sliceTestCases() {
+        Map<String, Integer> sourceMap = new LinkedHashMap<>() {{
+            put("A", 1);
+            put("B", 2);
+            put("C", 3);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   from,   to,                 expectedException,                expectedResult
+                Arguments.of( null,        2,      1,                  IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),    3,      1,                  IllegalArgumentException.class,   null ),
+                Arguments.of( sourceMap,   1,      0,                  IllegalArgumentException.class,   null ),
+                Arguments.of( null,        0,      1,                  null,                             Map.of() ),
+                Arguments.of( Map.of(),    0,      1,                  null,                             Map.of() ),
+                Arguments.of( Map.of(),   -1,      0,                  null,                             Map.of() ),
+                Arguments.of( Map.of(),    3,      4,                  null,                             Map.of() ),
+                Arguments.of( sourceMap,  -1,      2,                  null,                             Map.of("A", 1, "B", 2) ),
+                Arguments.of( sourceMap,   1,      3,                  null,                             Map.of("B", 2, "C", 3) ),
+                Arguments.of( sourceMap,   0,      sourceMap.size(),   null,                             sourceMap )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("sliceTestCases")
+    @DisplayName("slice: test cases")
+    public <T, E> void slice_testCases(Map<T, E> sourceMap,
+                                       int from,
+                                       int until,
+                                       Class<? extends Exception> expectedException,
+                                       Map<T, E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> slice(sourceMap, from, until));
+        }
+        else {
+            assertEquals(expectedResult, slice(sourceMap, from, until));
+        }
+    }
+
+
+    static Stream<Arguments> slidingTestCases() {
+        Map<Integer, String> sourceMap = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(3, "C");
+            put(4, "D");
+            put(5, "F");
+        }};
+        List<Map<Integer, String>> size1Result = List.of(
+                Map.of(1, "A"),
+                Map.of(2, "B"),
+                Map.of(3, "C"),
+                Map.of(4, "D"),
+                Map.of(5, "F")
+        );
+        List<Map<Integer, String>> size2Result = List.of(
+                new LinkedHashMap<>() {{
+                    put(1, "A");
+                    put(2, "B");
+                }},
+                new LinkedHashMap<>() {{
+                    put(2, "B");
+                    put(3, "C");
+                }},
+                new LinkedHashMap<>() {{
+                    put(3, "C");
+                    put(4, "D");
+                }},
+                new LinkedHashMap<>() {{
+                    put(4, "D");
+                    put(5, "F");
+                }}
+        );
+        List<Map<Integer, String>> size3Result = List.of(
+                new LinkedHashMap<>() {{
+                    put(1, "A");
+                    put(2, "B");
+                    put(3, "C");
+                }},
+                new LinkedHashMap<>() {{
+                    put(2, "B");
+                    put(3, "C");
+                    put(4, "D");
+                }},
+                new LinkedHashMap<>() {{
+                    put(3, "C");
+                    put(4, "D");
+                    put(5, "F");
+                }}
+        );
+        List<Map<Integer, String>> size4Result = List.of(
+                new LinkedHashMap<>() {{
+                    put(1, "A");
+                    put(2, "B");
+                    put(3, "C");
+                    put(4, "D");
+                }},
+                new LinkedHashMap<>() {{
+                    put(2, "B");
+                    put(3, "C");
+                    put(4, "D");
+                    put(5, "F");
+                }}
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   size,                   expectedException,                expectedResult
+                Arguments.of( null,       -1,                      IllegalArgumentException.class,   null ),
+                Arguments.of( null,        5,                      null,                             List.of() ),
+                Arguments.of( sourceMap,   0,                      null,                             List.of() ),
+                Arguments.of( sourceMap,   sourceMap.size(),       null,                             List.of(sourceMap) ),
+                Arguments.of( sourceMap,   sourceMap.size() + 1,   null,                             List.of(sourceMap) ),
+                Arguments.of( sourceMap,   1,                      null,                             size1Result ),
+                Arguments.of( sourceMap,   2,                      null,                             size2Result ),
+                Arguments.of( sourceMap,   3,                      null,                             size3Result ),
+                Arguments.of( sourceMap,   4,                      null,                             size4Result )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("slidingTestCases")
+    @DisplayName("sliding: test cases")
+    public <T, E> void sliding_testCases(Map<T, E> sourceMap,
+                                         int size,
+                                         Class<? extends Exception> expectedException,
+                                         List<Map<T, E>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> sliding(sourceMap, size));
+        }
+        else {
+            assertEquals(expectedResult, sliding(sourceMap, size));
+        }
+    }
+
+
+    static Stream<Arguments> splitTestCases() {
+        Map<String, Integer> sourceMap = new LinkedHashMap<>() {{
+            put("A", 1);
+            put("B", 2);
+            put("C", 3);
+            put("D", 4);
+        }};
+        List<Map<String, Integer>> size2Result = List.of(
+                new LinkedHashMap<>() {{
+                    put("A", 1);
+                    put("B", 2);
+                }},
+                new LinkedHashMap<>() {{
+                    put("C", 3);
+                    put("D", 4);
+                }}
+        );
+        List<Map<String, Integer>> size3Result = List.of(
+                new LinkedHashMap<>() {{
+                    put("A", 1);
+                    put("B", 2);
+                    put("C", 3);
+                }},
+                new LinkedHashMap<>() {{
+                    put("D", 4);
+                }}
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   size,                   expectedException,                expectedResult
+                Arguments.of( null,       -1,                      IllegalArgumentException.class,   null ),
+                Arguments.of( null,        5,                      null,                             List.of() ),
+                Arguments.of( sourceMap,   0,                      null,                             List.of() ),
+                Arguments.of( sourceMap,   sourceMap.size(),       null,                             List.of(sourceMap) ),
+                Arguments.of( sourceMap,   sourceMap.size() + 1,   null,                             List.of(sourceMap) ),
+                Arguments.of( sourceMap,   2,                      null,                             size2Result ),
+                Arguments.of( sourceMap,   3,                      null,                             size3Result )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("splitTestCases")
+    @DisplayName("split: test cases")
+    public <T, E> void split_testCases(Map<T, E> sourceMap,
+                                       int size,
+                                       Class<? extends Exception> expectedException,
+                                       List<Map<T, E>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> split(sourceMap, size));
+        }
+        else {
+            assertEquals(expectedResult, split(sourceMap, size));
+        }
     }
 
 }
