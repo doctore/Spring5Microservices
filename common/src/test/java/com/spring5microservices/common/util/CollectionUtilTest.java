@@ -1,7 +1,8 @@
 package com.spring5microservices.common.util;
 
 import com.spring5microservices.common.PizzaDto;
-import com.spring5microservices.common.dto.PairDto;
+import com.spring5microservices.common.collection.tuple.Tuple;
+import com.spring5microservices.common.collection.tuple.Tuple2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -626,14 +627,16 @@ public class CollectionUtilTest {
         longs.addAll(asList(54L, 78L, 12L));
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   size,                      expectedResult
-                Arguments.of( null,               5,                         List.of() ),
-                Arguments.of( List.of(),          0,                         List.of() ),
-                Arguments.of( integers,           integers.size() + 1,       List.of(integers) ),
-                Arguments.of( integers,           2,                         List.of(asList(1, 3), asList(3, 5)) ),
-                Arguments.of( strings,            2,                         List.of(asList("A", "E"), asList("E", "G"), asList("G", "M")) ),
-                Arguments.of( strings,            3,                         List.of(asList("A", "E", "G"), asList("E", "G", "M")) ),
-                Arguments.of( longs,              2,                         List.of(asList(12L, 54L), asList(54L, 78L)) )
+                //            sourceCollection,   size,                  expectedException,                expectedResult
+                Arguments.of( null,              -1,                     IllegalArgumentException.class,   null ),
+                Arguments.of( null,               5,                     null,                             List.of() ),
+                Arguments.of( integers,           0,                     null,                             List.of() ),
+                Arguments.of( integers,           integers.size(),       null,                             List.of(integers) ),
+                Arguments.of( integers,           integers.size() + 1,   null,                             List.of(integers) ),
+                Arguments.of( integers,           2,                     null,                             List.of(asList(1, 3), asList(3, 5)) ),
+                Arguments.of( strings,            2,                     null,                             List.of(asList("A", "E"), asList("E", "G"), asList("G", "M")) ),
+                Arguments.of( strings,            3,                     null,                             List.of(asList("A", "E", "G"), asList("E", "G", "M")) ),
+                Arguments.of( longs,              2,                     null,                             List.of(asList(12L, 54L), asList(54L, 78L)) )
         ); //@formatter:on
     }
 
@@ -642,13 +645,19 @@ public class CollectionUtilTest {
     @DisplayName("sliding: test cases")
     public <T> void sliding_testCases(Collection<T> sourceCollection,
                                       int size,
+                                      Class<? extends Exception> expectedException,
                                       List<List<T>> expectedResult) {
-        assertEquals(expectedResult, sliding(sourceCollection, size));
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> sliding(sourceCollection, size));
+        }
+        else {
+            assertEquals(expectedResult, sliding(sourceCollection, size));
+        }
     }
 
 
     static Stream<Arguments> splitTestCases() {
-        List<Integer> integers = asList(1, 3, 5);
+        List<Integer> integers = List.of(1, 3, 5);
         Set<String> strings = new LinkedHashSet<>() {{
             add("A");
             add("E");
@@ -656,25 +665,34 @@ public class CollectionUtilTest {
             add("M");
         }};
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 78L, 12L));
+        longs.addAll(List.of(54L, 78L, 12L));
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   size,                  expectedResult
-                Arguments.of( null,               5,                     List.of() ),
-                Arguments.of( List.of(),          0,                     List.of() ),
-                Arguments.of( integers,           integers.size() + 1,   List.of(integers) ),
-                Arguments.of( strings,            2,                     List.of(List.of("A", "E"), List.of("G", "M")) ),
-                Arguments.of( strings,            3,                     List.of(List.of("A", "E", "G"), List.of("M")) ),
-                Arguments.of( longs,              2,                     List.of(List.of(12L, 54L), List.of(78L)) )
+                //            sourceCollection,   size,                  expectedException,                expectedResult
+                Arguments.of( null,              -1,                     IllegalArgumentException.class,   null ),
+                Arguments.of( null,               5,                     null,                             List.of() ),
+                Arguments.of( integers,           0,                     null,                             List.of() ),
+                Arguments.of( integers,           integers.size(),       null,                             List.of(integers) ),
+                Arguments.of( integers,           integers.size() + 1,   null,                             List.of(integers) ),
+                Arguments.of( strings,            2,                     null,                             List.of(List.of("A", "E"), List.of("G", "M")) ),
+                Arguments.of( strings,            3,                     null,                             List.of(List.of("A", "E", "G"), List.of("M")) ),
+                Arguments.of( longs,              2,                     null,                             List.of(List.of(12L, 54L), List.of(78L)) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("splitTestCases")
     @DisplayName("split: test cases")
-    public <T> void split_testCases(Collection<T> sourceCollection, int size,
+    public <T> void split_testCases(Collection<T> sourceCollection,
+                                    int size,
+                                    Class<? extends Exception> expectedException,
                                     List<List<T>> expectedResult) {
-        assertEquals(expectedResult, split(sourceCollection, size));
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> split(sourceCollection, size));
+        }
+        else {
+            assertEquals(expectedResult, split(sourceCollection, size));
+        }
     }
 
 
@@ -733,18 +751,18 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> unzipTestCases() {
-        List<PairDto<String, Integer>> pairList = List.of(PairDto.of("a", 1), PairDto.of("b", 2), PairDto.of("c", 3));
-        Set<PairDto<String, Boolean>> pairSet = new LinkedHashSet<>() {{
-            add(PairDto.of("true", true));
-            add(PairDto.of("false", false));
+        List<Tuple2<String, Integer>> pairList = List.of(Tuple.of("a", 1), Tuple.of("b", 2), Tuple.of("c", 3));
+        Set<Tuple2<String, Boolean>> pairSet = new LinkedHashSet<>() {{
+            add(Tuple.of("true", true));
+            add(Tuple.of("false", false));
         }};
 
-        PairDto<List<Object>, List<Object>> emptyPairResult = PairDto.of(List.of(), List.of());
-        PairDto<List<String>, List<Integer>> pairListResult = PairDto.of(
+        Tuple2<List<Object>, List<Object>> emptyPairResult = Tuple.of(List.of(), List.of());
+        Tuple2<List<String>, List<Integer>> pairListResult = Tuple.of(
                 List.of("a", "b", "c"),
                 List.of(1, 2, 3)
         );
-        PairDto<List<String>, List<Boolean>> pairSetResult = PairDto.of(
+        Tuple2<List<String>, List<Boolean>> pairSetResult = Tuple.of(
                 List.of("true", "false"),
                 List.of(true, false)
         );
@@ -761,8 +779,8 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("unzipTestCases")
     @DisplayName("unzip: test cases")
-    public <T, E> void unzip_testCases(Collection<PairDto<T, E>> sourceCollection,
-                                       PairDto<List<T>, List<E>> expectedResult) {
+    public <T, E> void unzip_testCases(Collection<Tuple2<T, E>> sourceCollection,
+                                       Tuple2<List<T>, List<E>> expectedResult) {
         assertEquals(expectedResult, unzip(sourceCollection));
     }
 
@@ -772,18 +790,18 @@ public class CollectionUtilTest {
         List<Boolean> booleans = asList(true, false);
         List<String> strings = asList("h", "o", "p");
 
-        List<PairDto<Integer, Boolean>> integersBooleansResult = asList(
-                PairDto.of(11, true),
-                PairDto.of(31, false)
+        List<Tuple2<Integer, Boolean>> integersBooleansResult = asList(
+                Tuple.of(11, true),
+                Tuple.of(31, false)
         );
-        List<PairDto<Integer, String>> integersStringsResult = asList(
-                PairDto.of(11, "h"),
-                PairDto.of(31, "o"),
-                PairDto.of(55, "p")
+        List<Tuple2<Integer, String>> integersStringsResult = asList(
+                Tuple.of(11, "h"),
+                Tuple.of(31, "o"),
+                Tuple.of(55, "p")
         );
-        List<PairDto<Boolean, String>> booleansStringsResult = asList(
-                PairDto.of(true, "h"),
-                PairDto.of(false, "o")
+        List<Tuple2<Boolean, String>> booleansStringsResult = asList(
+                Tuple.of(true, "h"),
+                Tuple.of(false, "o")
         );
         return Stream.of(
                 //@formatter:off
@@ -804,7 +822,7 @@ public class CollectionUtilTest {
     @DisplayName("zip: test cases")
     public <T, E> void zip_testCases(Collection<T> sourceLeftCollection,
                                      Collection<E> sourceRightCollection,
-                                     List<PairDto<T, E>> expectedResult) {
+                                     List<Tuple2<T, E>> expectedResult) {
         assertEquals(expectedResult, zip(sourceLeftCollection, sourceRightCollection));
     }
 
@@ -818,29 +836,29 @@ public class CollectionUtilTest {
         Boolean defaultBooleanValue = true;
         String defaultStringValue = "x";
 
-        List<PairDto<Object, Boolean>> booleansWithNullResult = List.of(
-                PairDto.of(null, true),
-                PairDto.of(null, false)
+        List<Tuple2<Object, Boolean>> booleansWithNullResult = List.of(
+                Tuple.of(null, true),
+                Tuple.of(null, false)
         );
-        List<PairDto<Integer, Object>> integersWithNullResult = List.of(
-                PairDto.of(11, null),
-                PairDto.of(31, null),
-                PairDto.of(55, null)
+        List<Tuple2<Integer, Object>> integersWithNullResult = List.of(
+                Tuple.of(11, null),
+                Tuple.of(31, null),
+                Tuple.of(55, null)
         );
-        List<PairDto<Integer, Boolean>> integersBooleansResult = List.of(
-                PairDto.of(11, true),
-                PairDto.of(31, false),
-                PairDto.of(55, defaultBooleanValue)
+        List<Tuple2<Integer, Boolean>> integersBooleansResult = List.of(
+                Tuple.of(11, true),
+                Tuple.of(31, false),
+                Tuple.of(55, defaultBooleanValue)
         );
-        List<PairDto<Integer, String>> integersStringsResult = List.of(
-                PairDto.of(11, "h"),
-                PairDto.of(31, "o"),
-                PairDto.of(55, "p")
+        List<Tuple2<Integer, String>> integersStringsResult = List.of(
+                Tuple.of(11, "h"),
+                Tuple.of(31, "o"),
+                Tuple.of(55, "p")
         );
-        List<PairDto<Boolean, String>> booleansStringsResult = List.of(
-                PairDto.of(true, "h"),
-                PairDto.of(false, "o"),
-                PairDto.of(defaultBooleanValue, "p")
+        List<Tuple2<Boolean, String>> booleansStringsResult = List.of(
+                Tuple.of(true, "h"),
+                Tuple.of(false, "o"),
+                Tuple.of(defaultBooleanValue, "p")
         );
         return Stream.of(
                 //@formatter:off
@@ -863,7 +881,7 @@ public class CollectionUtilTest {
                                         Collection<E> sourceRightCollection,
                                         T defaultLeftElement,
                                         E defaultRightElement,
-                                        List<PairDto<T, E>> expectedResult) {
+                                        List<Tuple2<T, E>> expectedResult) {
         assertEquals(expectedResult,
                 zipAll(
                         sourceLeftCollection, sourceRightCollection, defaultLeftElement, defaultRightElement
@@ -880,16 +898,16 @@ public class CollectionUtilTest {
             add("G");
             add("M");
         }};
-        List<PairDto<Integer, Integer>> integersResult = asList(
-                PairDto.of(0, 1),
-                PairDto.of(1, 3),
-                PairDto.of(2, 5)
+        List<Tuple2<Integer, Integer>> integersResult = asList(
+                Tuple.of(0, 1),
+                Tuple.of(1, 3),
+                Tuple.of(2, 5)
         );
-        List<PairDto<Integer, String>> stringsResult = asList(
-                PairDto.of(0, "A"),
-                PairDto.of(1, "E"),
-                PairDto.of(2, "G"),
-                PairDto.of(3, "M")
+        List<Tuple2<Integer, String>> stringsResult = asList(
+                Tuple.of(0, "A"),
+                Tuple.of(1, "E"),
+                Tuple.of(2, "G"),
+                Tuple.of(3, "M")
         );
         return Stream.of(
                 //@formatter:off
@@ -905,7 +923,7 @@ public class CollectionUtilTest {
     @MethodSource("zipWithIndexTestCases")
     @DisplayName("zipWithIndex: test cases")
     public <T> void zipWithIndex_testCases(Collection<T> sourceCollection,
-                                           List<PairDto<Integer, T>> expectedResult) {
+                                           List<Tuple2<Integer, T>> expectedResult) {
         assertEquals(expectedResult, zipWithIndex(sourceCollection));
     }
 

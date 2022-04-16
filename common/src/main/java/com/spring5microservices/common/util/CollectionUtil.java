@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.dto.PairDto;
+import com.spring5microservices.common.collection.tuple.Tuple;
+import com.spring5microservices.common.collection.tuple.Tuple2;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -530,16 +531,20 @@ public class CollectionUtil {
      *    Size of every sublist
      *
      * @return {@link List} of {@link List}s
+     *
+     * @throws IllegalArgumentException if {@code size} is lower than 0
      */
     public static <T> List<List<T>> sliding(final Collection<? extends T> sourceCollection,
                                             final int size) {
-        if (CollectionUtils.isEmpty(sourceCollection)) {
+        Assert.isTrue(0 <= size, "size must be a positive value");
+        if (CollectionUtils.isEmpty(sourceCollection) ||
+                0 == size) {
             return new ArrayList<>();
         }
         List<T> listToSlide = new ArrayList<>(
                 getCollectionKeepingInternalOrdination(sourceCollection)
         );
-        if (size > listToSlide.size()) {
+        if (size >= listToSlide.size()) {
             return asList(listToSlide);
         }
         return IntStream.range(0, listToSlide.size() - size + 1)
@@ -562,10 +567,14 @@ public class CollectionUtil {
      *    Size of every sublist
      *
      * @return {@link List} of {@link List}s
+     *
+     * @throws IllegalArgumentException if {@code size} is lower than 0
      */
     public static <T> List<List<T>> split(final Collection<? extends T> sourceCollection,
                                           final int size) {
-        if (CollectionUtils.isEmpty(sourceCollection)) {
+        Assert.isTrue(0 <= size, "size must be a positive value");
+        if (CollectionUtils.isEmpty(sourceCollection) ||
+                0 == size) {
             return new ArrayList<>();
         }
         List<T> listToSplit = new ArrayList<>(
@@ -627,25 +636,25 @@ public class CollectionUtil {
 
 
     /**
-     *    Converts given {@code sourceCollection} of {@link PairDto} into two {@link List} of the first and
+     *    Converts given {@code sourceCollection} of {@link Tuple2} into two {@link List} of the first and
      * second half of each pair.
      *
      * Example:
      *    [("d", 6), ("h", 7), ("y", 11)]  =>  [("d", "h", "y"), (6, 7, 11)]
      *
      * @param sourceCollection
-     *    {@link Collection} of {@link PairDto} to split its elements
+     *    {@link Collection} of {@link Tuple2} to split its elements
      *
-     * @return {@link PairDto} of two {@link List}
+     * @return {@link Tuple2} of two {@link List}
      */
-    public static <T, E> PairDto<List<T>, List<E>> unzip(final Collection<PairDto<T, E>> sourceCollection) {
+    public static <T, E> Tuple2<List<T>, List<E>> unzip(final Collection<Tuple2<T, E>> sourceCollection) {
         return foldLeft(
                 sourceCollection,
-                PairDto.of(new ArrayList<>(), new ArrayList<>()),
-                (pairOfLists, currentElto) -> {
-                    pairOfLists.getFirst().add(currentElto.getFirst());
-                    pairOfLists.getSecond().add(currentElto.getSecond());
-                    return pairOfLists;
+                Tuple.of(new ArrayList<>(), new ArrayList<>()),
+                (tupleOfLists, currentElto) -> {
+                    tupleOfLists.get_1().add(currentElto.get_1());
+                    tupleOfLists.get_2().add(currentElto.get_2());
+                    return tupleOfLists;
                 }
         );
     }
@@ -653,7 +662,7 @@ public class CollectionUtil {
 
     /**
      *    Returns a {@link List} formed from {@code sourceLeftCollection} and {@code sourceRightCollection}
-     * by combining corresponding elements in {@link PairDto}. If one of the two collections is longer than
+     * by combining corresponding elements in {@link Tuple2}. If one of the two collections is longer than
      * the other, its remaining elements are ignored.
      *
      * Examples:
@@ -661,14 +670,14 @@ public class CollectionUtil {
      *   [4, 9, 14],       [23, 8]     =>  [(4, 23), (9, 8)]
      *
      * @param sourceLeftCollection
-     *    {@link Collection} with elements to be included as left side of returned {@link PairDto}
+     *    {@link Collection} with elements to be included as left side of returned {@link Tuple2}
      * @param sourceRightCollection
-     *    {@link Collection} with elements to be included as right side of returned {@link PairDto}
+     *    {@link Collection} with elements to be included as right side of returned {@link Tuple2}
      *
-     * @return {@link List} of {@link PairDto}
+     * @return {@link List} of {@link Tuple2}
      */
-    public static <T, E> List<PairDto<T, E>> zip(final Collection<? extends T> sourceLeftCollection,
-                                                 final Collection<? extends E> sourceRightCollection) {
+    public static <T, E> List<Tuple2<T, E>> zip(final Collection<? extends T> sourceLeftCollection,
+                                                final Collection<? extends E> sourceRightCollection) {
         if (CollectionUtils.isEmpty(sourceLeftCollection) ||
                 CollectionUtils.isEmpty(sourceRightCollection)) {
             return new ArrayList<>();
@@ -677,10 +686,10 @@ public class CollectionUtil {
 
         Iterator<? extends T> leftIterator = sourceLeftCollection.iterator();
         Iterator<? extends E> rightIterator = sourceRightCollection.iterator();
-        List<PairDto<T, E>> result = new ArrayList<>();
+        List<Tuple2<T, E>> result = new ArrayList<>();
         for (int i = 0; i < minCollectionsSize; i++) {
             result.add(
-                    PairDto.of(leftIterator.next(), rightIterator.next())
+                    Tuple.of(leftIterator.next(), rightIterator.next())
             );
         }
         return result;
@@ -689,7 +698,7 @@ public class CollectionUtil {
 
     /**
      *    Returns a {@link List} formed from {@code sourceLeftCollection} and {@code sourceRightCollection}
-     * by combining corresponding elements in {@link PairDto}. If one of the two collections is shorter than
+     * by combining corresponding elements in {@link Tuple2}. If one of the two collections is shorter than
      * the other, placeholder elements are used to extend the shorter collection to the length of the longer.
      *
      * Examples:
@@ -698,31 +707,31 @@ public class CollectionUtil {
      *   [4, 9],           ["f", "g", "m"],  11,  "u"  =>  [(4, "f"), (9, "g"), (11, "m")]
      *
      * @param sourceLeftCollection
-     *    {@link Collection} with elements to be included as left side of returned {@link PairDto}
+     *    {@link Collection} with elements to be included as left side of returned {@link Tuple2}
      * @param sourceRightCollection
-     *    {@link Collection} with elements to be included as right side of returned {@link PairDto}
+     *    {@link Collection} with elements to be included as right side of returned {@link Tuple2}
      * @param defaultLeftElement
      *    Element to be used to fill up the result if {@code sourceLeftCollection} is shorter than {@code sourceRightCollection}
      * @param defaultRightElement
      *    Element to be used to fill up the result if {@code sourceRightCollection} is shorter than {@code sourceLeftCollection}
      *
-     * @return {@link List} of {@link PairDto}
+     * @return {@link List} of {@link Tuple2}
      */
-    public static <T, E> List<PairDto<T, E>> zipAll(final Collection<T> sourceLeftCollection,
-                                                    final Collection<E> sourceRightCollection,
-                                                    final T defaultLeftElement,
-                                                    final E defaultRightElement) {
+    public static <T, E> List<Tuple2<T, E>> zipAll(final Collection<T> sourceLeftCollection,
+                                                   final Collection<E> sourceRightCollection,
+                                                   final T defaultLeftElement,
+                                                   final E defaultRightElement) {
         int maxCollectionSize = Math.max(
                 CollectionUtils.isEmpty(sourceLeftCollection) ? 0 : sourceLeftCollection.size(),
                 CollectionUtils.isEmpty(sourceRightCollection) ? 0 : sourceRightCollection.size()
         );
         Iterator<T> leftIterator = ofNullable(sourceLeftCollection).map(Collection::iterator).orElse(null);
         Iterator<E> rightIterator = ofNullable(sourceRightCollection).map(Collection::iterator).orElse(null);
-        List<PairDto<T, E>> result = new ArrayList<>();
+        List<Tuple2<T, E>> result = new ArrayList<>();
 
         for (int i = 0; i < maxCollectionSize; i++) {
             result.add(
-                    PairDto.of(
+                    Tuple.of(
                             ofNullable(leftIterator)
                                     .filter(Iterator::hasNext)
                                     .map(Iterator::next)
@@ -748,16 +757,16 @@ public class CollectionUtil {
      * @param sourceCollection
      *    {@link Collection} to extract: index and element
      *
-     * @return {@link List} of {@link PairDto}s
+     * @return {@link List} of {@link Tuple2}s
      */
-    public static <T> List<PairDto<Integer, T>> zipWithIndex(Collection<? extends T> sourceCollection) {
+    public static <T> List<Tuple2<Integer, T>> zipWithIndex(Collection<? extends T> sourceCollection) {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
         int i = 0;
-        List<PairDto<Integer, T>> result = new ArrayList<>(sourceCollection.size());
+        List<Tuple2<Integer, T>> result = new ArrayList<>(sourceCollection.size());
         for (T element: sourceCollection) {
-            result.add(PairDto.of(i, element));
+            result.add(Tuple.of(i, element));
             i++;
         }
         return result;
