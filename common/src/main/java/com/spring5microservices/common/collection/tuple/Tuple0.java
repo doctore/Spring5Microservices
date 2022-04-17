@@ -31,7 +31,7 @@ public final class Tuple0 implements Tuple {
     }
 
 
-    public static  Comparator<Tuple0> comparator() {
+    public static Comparator<Tuple0> comparator() {
         return COMPARATOR;
     }
 

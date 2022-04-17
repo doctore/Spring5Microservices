@@ -1,7 +1,6 @@
 package com.spring5microservices.common.collection.tuple;
 
 import com.spring5microservices.common.interfaces.functional.TriFunction;
-import lombok.Getter;
 import org.springframework.util.Assert;
 
 import java.util.Comparator;
@@ -15,7 +14,6 @@ import java.util.function.Function;
  * @param <T2> type of the 2nd element
  * @param <T3> type of the 3rd element
  */
-@Getter
 public final class Tuple3<T1, T2, T3> implements Tuple {
 
     /**

@@ -1,6 +1,5 @@
 package com.spring5microservices.common.collection.tuple;
 
-import lombok.Getter;
 import org.springframework.util.Assert;
 
 import java.util.Comparator;
@@ -12,7 +11,6 @@ import java.util.function.Function;
  *
  * @param <T1> type of the 1st element
  */
-@Getter
 public final class Tuple1<T1> implements Tuple {
 
     /**
@@ -39,7 +37,7 @@ public final class Tuple1<T1> implements Tuple {
 
     @SuppressWarnings("unchecked")
     public static <U1 extends Comparable<? super U1>> int compareTo(final Tuple1<?> o1,
-                                                                     final Tuple1<?> o2) {
+                                                                    final Tuple1<?> o2) {
         final Tuple1<U1> t1 = (Tuple1<U1>) o1;
         final Tuple1<U1> t2 = (Tuple1<U1>) o2;
         return t1._1.compareTo(t2._1);
