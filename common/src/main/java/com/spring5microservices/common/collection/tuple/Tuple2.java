@@ -1,6 +1,5 @@
 package com.spring5microservices.common.collection.tuple;
 
-import lombok.Getter;
 import org.springframework.util.Assert;
 
 import java.util.AbstractMap;
@@ -16,7 +15,6 @@ import java.util.function.Function;
  * @param <T1> type of the 1st element
  * @param <T2> type of the 2nd element
  */
-@Getter
 public final class Tuple2<T1, T2> implements Tuple {
 
     /**

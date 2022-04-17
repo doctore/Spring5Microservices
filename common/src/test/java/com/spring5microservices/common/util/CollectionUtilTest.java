@@ -155,6 +155,7 @@ public class CollectionUtilTest {
 
 
     @Test
+    @DisplayName("asSet: when null is given then new empty set is returned")
     public void asSet_whenNullIsGiven_thenNewEmptySetIsReturned() {
         Set<Object> result = asSet(null);
         assertEquals(result, new LinkedHashSet<>());
@@ -162,6 +163,7 @@ public class CollectionUtilTest {
 
 
     @Test
+    @DisplayName("asSet: when several parameters are given then new set is returned with provided parameters")
     public void asSet_whenSeveralParametersAreGiven_thenNewSetWithGivenParametersIsReturned() {
         Set<Integer> result = asSet(2, 5, 8, 9, 11);
         assertEquals(result, new LinkedHashSet<>(asList(2, 5, 8, 9, 11)));
