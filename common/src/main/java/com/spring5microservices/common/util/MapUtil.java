@@ -268,8 +268,8 @@ public class MapUtil {
                 .map(entry -> mapFunction.apply(entry.getKey(), entry.getValue()))
                 .collect(
                         toMap(
-                                Tuple2::get_1,
-                                Tuple2::get_2,
+                                t -> t._1,
+                                t -> t._2,
                                 overwriteWithNew()
                         )
                 );

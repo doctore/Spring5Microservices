@@ -652,8 +652,8 @@ public class CollectionUtil {
                 sourceCollection,
                 Tuple.of(new ArrayList<>(), new ArrayList<>()),
                 (tupleOfLists, currentElto) -> {
-                    tupleOfLists.get_1().add(currentElto.get_1());
-                    tupleOfLists.get_2().add(currentElto.get_2());
+                    tupleOfLists._1.add(currentElto._1);
+                    tupleOfLists._2.add(currentElto._2);
                     return tupleOfLists;
                 }
         );
