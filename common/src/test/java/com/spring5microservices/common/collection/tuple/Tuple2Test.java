@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.AbstractMap;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -164,14 +165,14 @@ public class Tuple2Test {
 
     static Stream<Arguments> swapTestCases() {
         Tuple2<String, Integer> stringIntegerTuple = Tuple2.of("A", 1);
-        Tuple2<Integer, String> swappedStringIntegerTuple = Tuple2.of(1, "A");
+        Tuple2<Integer, String> swappedIntegerStringTuple = Tuple2.of(1, "A");
         return Stream.of(
                 //@formatter:off
                 //            tuple,                   expectedResult
                 Arguments.of( Tuple2.of(null, null),   Tuple2.of(null, null) ),
                 Arguments.of( Tuple2.of(null, "C"),    Tuple2.of("C", null) ),
                 Arguments.of( Tuple2.of(3, null),      Tuple2.of(null, 3) ),
-                Arguments.of( stringIntegerTuple,      swappedStringIntegerTuple )
+                Arguments.of( stringIntegerTuple,      swappedIntegerStringTuple )
         ); //@formatter:on
     }
 
@@ -215,13 +216,13 @@ public class Tuple2Test {
         BiFunction<String, Integer, Tuple2<Integer, Long>> fromStringIntegerToTuple =
                 (s, i) -> Tuple2.of(i * 2, (long) s.length());
 
-        Tuple2<Integer, Long> mappedIntegerStringTuple = Tuple2.of(4, 1L);
+        Tuple2<Integer, Long> mappedIntegerLongTuple = Tuple2.of(4, 1L);
         return Stream.of(
                 //@formatter:off
                 //            tuple,                mapper,                     expectedException,                expectedResult
                 Arguments.of( stringIntegerTuple,   null,                       IllegalArgumentException.class,   null ),
                 Arguments.of( stringIntegerTuple,   identity,                   null,                             stringIntegerTuple ),
-                Arguments.of( stringIntegerTuple,   fromStringIntegerToTuple,   null,                             mappedIntegerStringTuple )
+                Arguments.of( stringIntegerTuple,   fromStringIntegerToTuple,   null,                             mappedIntegerLongTuple )
         ); //@formatter:on
     }
 
@@ -243,33 +244,241 @@ public class Tuple2Test {
 
     static Stream<Arguments> mapFunctionTestCases() {
         Tuple2<String, Integer> stringIntegerTuple = Tuple2.of("AB", 2);
-        Function<String, Long> fromStringToLong = s -> (long) (3 + s.length());
+        Function<String, Long> fromStringToLong = s -> 3L + s.length();
         Function<Integer, String> fromIntegerToString = i -> String.valueOf(i - 2);
-        Tuple2<Long, String> mappedStringIntegerTuple = Tuple2.of(5L, "0");
+        Tuple2<Long, String> mappedLongStringTuple = Tuple2.of(5L, "0");
         return Stream.of(
                 //@formatter:off
-                //            t,                    f1,                 f2,                    expectedException,                expectedResult
+                //            tuple,                f1,                 f2,                    expectedException,                expectedResult
                 Arguments.of( stringIntegerTuple,   null,               null,                  IllegalArgumentException.class,   null ),
                 Arguments.of( stringIntegerTuple,   fromStringToLong,   null,                  IllegalArgumentException.class,   null ),
                 Arguments.of( stringIntegerTuple,   null,               fromIntegerToString,   IllegalArgumentException.class,   null ),
-                Arguments.of( stringIntegerTuple,   fromStringToLong,   fromIntegerToString,   null,                             mappedStringIntegerTuple )
+                Arguments.of( stringIntegerTuple,   fromStringToLong,   fromIntegerToString,   null,                             mappedLongStringTuple )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("mapFunctionTestCases")
     @DisplayName("map: using Function test cases")
-    public <T1, T2, U1, U2> void mapFunction_testCases(Tuple2<T1, T2> t,
+    public <T1, T2, U1, U2> void mapFunction_testCases(Tuple2<T1, T2> tuple,
                                                        Function<? super T1, ? extends U1> f1,
                                                        Function<? super T2, ? extends U2> f2,
                                                        Class<? extends Exception> expectedException,
                                                        Tuple2<U1, U2> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> t.map(f1, f2));
+            assertThrows(expectedException, () -> tuple.map(f1, f2));
         }
         else {
-            assertEquals(expectedResult, t.map(f1, f2));
+            assertEquals(expectedResult, tuple.map(f1, f2));
         }
+    }
+
+
+    static Stream<Arguments> map1TestCases() {
+        Tuple2<String, Integer> stringIntegerTuple = Tuple2.of("AB", 2);
+        Function<String, Long> fromStringToLong = s -> 3L + s.length();
+        Tuple2<Long, Integer> mappedLongIntegerTuple = Tuple2.of(5L, 2);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,                mapper,                expectedException,                expectedResult
+                Arguments.of( stringIntegerTuple,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( stringIntegerTuple,   Function.identity(),   null,                             stringIntegerTuple ),
+                Arguments.of( stringIntegerTuple,   fromStringToLong,      null,                             mappedLongIntegerTuple )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("map1TestCases")
+    @DisplayName("map1: test cases")
+    public <T1, T2, U> void map1_testCases(Tuple2<T1, T2> tuple,
+                                           Function<? super T1, ? extends U> mapper,
+                                           Class<? extends Exception> expectedException,
+                                           Tuple2<U, T2> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> tuple.map1(mapper));
+        }
+        else {
+            assertEquals(expectedResult, tuple.map1(mapper));
+        }
+    }
+
+
+    static Stream<Arguments> map2TestCases() {
+        Tuple2<Integer, String> integerStringTuple = Tuple2.of(4, "CFD");
+        Function<String, Long> fromStringToLong = s -> 1L + s.length();
+        Tuple2<Integer, Long> mappedIntegerLongTuple = Tuple2.of(4, 4L);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,                mapper,                expectedException,                expectedResult
+                Arguments.of( integerStringTuple,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( integerStringTuple,   Function.identity(),   null,                             integerStringTuple ),
+                Arguments.of( integerStringTuple,   fromStringToLong,      null,                            mappedIntegerLongTuple )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("map2TestCases")
+    @DisplayName("map2: test cases")
+    public <T1, T2, U> void map2_testCases(Tuple2<T1, T2> tuple,
+                                           Function<? super T2, ? extends U> mapper,
+                                           Class<? extends Exception> expectedException,
+                                           Tuple2<T1, U> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> tuple.map2(mapper));
+        }
+        else {
+            assertEquals(expectedResult, tuple.map2(mapper));
+        }
+    }
+
+
+    static Stream<Arguments> applyTestCases() {
+        Tuple2<Integer, Long> integerLongTuple = Tuple2.of(41, 22L);
+        BiFunction<Integer, Long, Long> fromIntegerLongToLong = Long::sum;
+        BiFunction<Integer, Long, String> fromIntegerLongToString = (i, l) -> String.valueOf(i - l);
+        Long appliedLong = 63L;
+        String appliedString = "19";
+        return Stream.of(
+                //@formatter:off
+                //            tuple,              f,                         expectedException,                expectedResult
+                Arguments.of( integerLongTuple,   null,                      IllegalArgumentException.class,   null ),
+                Arguments.of( integerLongTuple,   fromIntegerLongToLong,     null,                             appliedLong ),
+                Arguments.of( integerLongTuple,   fromIntegerLongToString,   null,                             appliedString )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyTestCases")
+    @DisplayName("apply: test cases")
+    public <T1, T2, U> void apply_testCases(Tuple2<T1, T2> tuple,
+                                            BiFunction<? super T1, ? super T2, ? extends U> f,
+                                            Class<? extends Exception> expectedException,
+                                            U expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> tuple.apply(f));
+        }
+        else {
+            assertEquals(expectedResult, tuple.apply(f));
+        }
+    }
+
+
+    static Stream<Arguments> prependTestCases() {
+        Tuple2<String, Integer> stringIntegerTuple = Tuple2.of("ZZ", 77);
+        Long longValue = 34L;
+        Integer integerValue = 55;
+        return Stream.of(
+                //@formatter:off
+                //            tuple,                value,          expectedResult
+                Arguments.of( stringIntegerTuple,   null,           Tuple3.of(null, stringIntegerTuple._1, stringIntegerTuple._2) ),
+                Arguments.of( stringIntegerTuple,   longValue,      Tuple3.of(longValue, stringIntegerTuple._1, stringIntegerTuple._2) ),
+                Arguments.of( stringIntegerTuple,   integerValue,   Tuple3.of(integerValue, stringIntegerTuple._1, stringIntegerTuple._2) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("prependTestCases")
+    @DisplayName("prepend: test cases")
+    public <T, T1, T2> void prepend_testCases(Tuple2<T1, T2> tuple,
+                                              T value,
+                                              Tuple3<T, T1, T2> expectedResult) {
+        assertEquals(expectedResult, tuple.prepend(value));
+    }
+
+
+    static Stream<Arguments> appendTestCases() {
+        Tuple2<String, Integer> stringIntegerTuple = Tuple2.of("ABC", 41);
+        Long longValue = 11L;
+        Integer integerValue = 66;
+        return Stream.of(
+                //@formatter:off
+                //            tuple,                value,          expectedResult
+                Arguments.of( stringIntegerTuple,   null,           Tuple3.of(stringIntegerTuple._1, stringIntegerTuple._2, null) ),
+                Arguments.of( stringIntegerTuple,   longValue,      Tuple3.of(stringIntegerTuple._1, stringIntegerTuple._2, longValue) ),
+                Arguments.of( stringIntegerTuple,   integerValue,   Tuple3.of(stringIntegerTuple._1, stringIntegerTuple._2, integerValue) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("appendTestCases")
+    @DisplayName("append: test cases")
+    public <T, T1, T2> void append_testCases(Tuple2<T1, T2> tuple,
+                                             T value,
+                                             Tuple3<T1, T2, T> expectedResult) {
+        assertEquals(expectedResult, tuple.append(value));
+    }
+
+
+    static Stream<Arguments> concatTuple1TestCases() {
+        Tuple2<String, Integer> stringIntegerTuple = Tuple2.of("YHG", 33);
+        Tuple1<Long> longTuple = Tuple1.of(21L);
+        Tuple1<Integer> nullValueTuple = Tuple1.of(null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,                tupleToConcat,    expectedException,                expectedResult
+                Arguments.of( stringIntegerTuple,   null,             IllegalArgumentException.class,   null ),
+                Arguments.of( stringIntegerTuple,   nullValueTuple,   null,                             Tuple3.of(stringIntegerTuple._1, stringIntegerTuple._2, null) ),
+                Arguments.of( stringIntegerTuple,   longTuple,        null,                             Tuple3.of(stringIntegerTuple._1, stringIntegerTuple._2, longTuple._1) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple1TestCases")
+    @DisplayName("concat: using Tuple1 test cases")
+    public <T1, T2, T3> void concatTuple1_testCases(Tuple2<T1, T2> tuple,
+                                                    Tuple1<T3> tupleToConcat,
+                                                    Class<? extends Exception> expectedException,
+                                                    Tuple3<T1, T2, T3> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> tuple.concat(tupleToConcat));
+        }
+        else {
+            assertEquals(expectedResult, tuple.concat(tupleToConcat));
+        }
+    }
+
+
+    static Stream<Arguments> equalsTestCases() {
+        Tuple2<String, Long> stringLongTuple = Tuple2.of("TYHG", 21L);
+        Tuple2<Long, String> longStringTuple = Tuple2.of(21L, "TYHG");
+        return Stream.of(
+                //@formatter:off
+                //            tuple,             objectToCompare,      expectedResult
+                Arguments.of( stringLongTuple,   "1",                  false ),
+                Arguments.of( longStringTuple,   longStringTuple._1,   false ),
+                Arguments.of( stringLongTuple,   longStringTuple,      false ),
+                Arguments.of( stringLongTuple,   stringLongTuple,      true ),
+                Arguments.of( longStringTuple,   longStringTuple,      true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("equalsTestCases")
+    @DisplayName("equals: test cases")
+    public <T1, T2> void equals_testCases(Tuple2<T1, T2> tuple,
+                                          Object objectToCompare,
+                                          boolean expectedResult) {
+        assertEquals(expectedResult, tuple.equals(objectToCompare));
+    }
+
+
+    @Test
+    @DisplayName("hashCode: when is invoked then hash of internal elements is returned")
+    public void hashCode_whenIsInvoked_thenHashCodeOfInternalElementsIsReturned() {
+        Tuple2<String, Integer> tuple = Tuple2.of("123", 98);
+        int expectedHashCode = Objects.hash(tuple._1, tuple._2);
+
+        assertEquals(expectedHashCode, tuple.hashCode());
+    }
+
+
+    @Test
+    @DisplayName("toString: when is invoked then toString of internal elements is returned")
+    public void toString_whenIsInvoked_thenToStringOfInternalElementsIsReturned() {
+        Tuple2<Integer, Long> tuple = Tuple2.of(778, 43L);
+        String expectedToString = "(" + tuple._1 + ", " + tuple._2 + ")";
+
+        assertEquals(expectedToString, tuple.toString());
     }
 
 }
