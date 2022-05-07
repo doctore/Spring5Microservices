@@ -114,4 +114,36 @@ public class TupleTest {
         assertEquals(expectedResult, Tuple.of(t1, t2, t3));
     }
 
+
+    static Stream<Arguments> ofTuple4TestCases() {
+        String stringValue = "ABC";
+        Integer integerValue = 25;
+        Long longValue = 33L;
+        Boolean booleanValue = Boolean.TRUE;
+        return Stream.of(
+                //@formatter:off
+                //            t1,             t2,             t3,             t4,             expectedResult
+                Arguments.of( null,           null,           null,           null,           Tuple4.of(null, null, null, null) ),
+                Arguments.of( stringValue,    null,           null,           null,           Tuple4.of(stringValue, null, null, null) ),
+                Arguments.of( null,           stringValue,    null,           null,           Tuple4.of(null, stringValue, null, null) ),
+                Arguments.of( null,           null,           stringValue,    null,           Tuple4.of(null, null, stringValue, null) ),
+                Arguments.of( null,           null,           null,           stringValue,    Tuple4.of(null, null, null, stringValue) ),
+                Arguments.of( null,           stringValue,    integerValue,   null,           Tuple4.of(null, stringValue, integerValue, null) ),
+                Arguments.of( stringValue,    integerValue,   null,           null,           Tuple4.of(stringValue, integerValue, null, null) ),
+                Arguments.of( null,           null,           stringValue,    integerValue,   Tuple4.of(null, null, stringValue, integerValue) ),
+                Arguments.of( stringValue,    integerValue,   longValue,      booleanValue,   Tuple4.of(stringValue, integerValue, longValue, booleanValue) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofTuple4TestCases")
+    @DisplayName("of: returning Tuple4 test cases")
+    public <T1, T2, T3, T4> void ofTuple4_testCases(T1 t1,
+                                                    T2 t2,
+                                                    T3 t3,
+                                                    T4 t4,
+                                                    Tuple4<T1, T2, T3, T4> expectedResult) {
+        assertEquals(expectedResult, Tuple.of(t1, t2, t3, t4));
+    }
+
 }

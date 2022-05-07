@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * A {@link Tuple} of one element.
  *
@@ -29,6 +31,11 @@ public final class Tuple1<T1> implements Tuple {
     }
 
 
+    public static <T1> Tuple1<T1> empty() {
+        return new Tuple1<>(null);
+    }
+
+
     public static <T1> Comparator<Tuple1<T1>> comparator(final Comparator<? super T1> t1Comp) {
         return (t1, t2) ->
                 t1Comp.compare(t1._1, t2._1);
@@ -47,6 +54,31 @@ public final class Tuple1<T1> implements Tuple {
     @Override
     public int arity() {
         return 1;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof Tuple1)) {
+            return false;
+        } else {
+            final Tuple1<?> that = (Tuple1<?>) o;
+            return Objects.equals(this._1, that._1);
+        }
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(_1);
+    }
+
+
+    @Override
+    public String toString() {
+        return "(" + _1 + ")";
     }
 
 
@@ -77,7 +109,7 @@ public final class Tuple1<T1> implements Tuple {
      * Maps the components of this {@link Tuple1} using a mapper function.
      *
      * @param mapper
-     *    The mapper function
+     *    The mapper {@link Function}
      *
      * @return A new {@link Tuple1}
      *
@@ -93,7 +125,7 @@ public final class Tuple1<T1> implements Tuple {
      * Transforms this {@link Tuple1} to an object of type U.
      *
      * @param f
-     *    Transformation which creates a new object of type U based on this tuple's contents.
+     *    Transformation {@link Function} which creates a new object of type U based on this tuple's contents.
      *
      * @return An object of type U
      *
@@ -138,12 +170,11 @@ public final class Tuple1<T1> implements Tuple {
      *    The {@link Tuple1} to concat
      *
      * @return a new {@link Tuple2} with the tuple values appended
-     *
-     * @throws IllegalArgumentException if {@code tuple} is {@code null}
      */
     public <T2> Tuple2<T1, T2> concat(final Tuple1<T2> tuple) {
-        Assert.notNull(tuple, "tuple must be not null");
-        return Tuple.of(_1, tuple._1);
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, t._1))
+                .orElseGet(() -> Tuple.of(_1, null));
     }
 
 
@@ -154,37 +185,26 @@ public final class Tuple1<T1> implements Tuple {
      *    The {@link Tuple2} to concat
      *
      * @return a new {@link Tuple3} with the tuple values appended
-     *
-     * @throws IllegalArgumentException if {@code tuple} is {@code null}
      */
     public <T2, T3> Tuple3<T1, T2, T3> concat(final Tuple2<T2, T3> tuple) {
-        Assert.notNull(tuple, "tuple must be not null");
-        return Tuple.of(_1, tuple._1, tuple._2);
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, t._1, t._2))
+                .orElseGet(() -> Tuple.of(_1, null, null));
     }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        } else if (!(o instanceof Tuple1)) {
-            return false;
-        } else {
-            final Tuple1<?> that = (Tuple1<?>) o;
-            return Objects.equals(this._1, that._1);
-        }
-    }
-
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(_1);
-    }
-
-
-    @Override
-    public String toString() {
-        return "(" + _1 + ")";
+    /**
+     * Concat a {@link Tuple3}'s values to this {@link Tuple1}.
+     *
+     * @param tuple
+     *    The {@link Tuple3} to concat
+     *
+     * @return a new {@link Tuple4} with the tuple values appended
+     */
+    public <T2, T3, T4> Tuple4<T1, T2, T3, T4> concat(final Tuple3<T2, T3, T4> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, t._1, t._2, t._3))
+                .orElseGet(() -> Tuple.of(_1, null, null, null));
     }
 
 }
