@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * A {@link Tuple} of two elements.
  *
@@ -37,6 +39,11 @@ public final class Tuple2<T1, T2> implements Tuple {
     public static <T1, T2> Tuple2<T1, T2> of(final T1 t1,
                                              final T2 t2) {
         return new Tuple2<>(t1, t2);
+    }
+
+
+    public static <T1, T2> Tuple2<T1, T2> empty() {
+        return new Tuple2<>(null, null);
     }
 
 
@@ -69,6 +76,32 @@ public final class Tuple2<T1, T2> implements Tuple {
     @Override
     public int arity() {
         return 2;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof Tuple2)) {
+            return false;
+        } else {
+            final Tuple2<?, ?> that = (Tuple2<?, ?>) o;
+            return Objects.equals(this._1, that._1)
+                    && Objects.equals(this._2, that._2);
+        }
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_1, _2);
+    }
+
+
+    @Override
+    public String toString() {
+        return "(" + _1 + ", " + _2 + ")";
     }
 
 
@@ -144,7 +177,7 @@ public final class Tuple2<T1, T2> implements Tuple {
      * Maps the components of this {@link Tuple2} using a mapper function.
      *
      * @param mapper
-     *    The mapper function
+     *    The mapper {@link BiFunction}
      *
      * @return A new {@link Tuple2}
      *
@@ -160,9 +193,9 @@ public final class Tuple2<T1, T2> implements Tuple {
      * Maps the components of this {@link Tuple2} using a mapper function for each component.
      *
      * @param f1
-     *    The mapper function of the 1st component
+     *    The mapper {@link Function} of the 1st component
      * @param f2
-     *    The mapper function of the 2nd component
+     *    The mapper {@link Function} of the 2nd component
      *
      * @return A new {@link Tuple2}.
      *
@@ -180,7 +213,7 @@ public final class Tuple2<T1, T2> implements Tuple {
      * Maps the 1st component of this {@link Tuple2} to a new value.
      *
      * @param mapper
-     *    A mapping function
+     *    A mapping {@link Function}
      *
      * @return a new {@link Tuple2} based on this one and substituted 1st component
      *
@@ -197,7 +230,7 @@ public final class Tuple2<T1, T2> implements Tuple {
      * Maps the 2nd component of this {@link Tuple2} to a new value.
      *
      * @param mapper
-     *    A mapping function
+     *    A mapping {@link Function}
      *
      * @return a new {@link Tuple2} based on this one and substituted 2nd component
      *
@@ -214,7 +247,7 @@ public final class Tuple2<T1, T2> implements Tuple {
      * Transforms this {@link Tuple2} to an object of type U.
      *
      * @param f
-     *    Transformation which creates a new object of type U based on this tuple's contents.
+     *    Transformation {@link BiFunction} which creates a new object of type U based on this tuple's contents.
      *
      * @return An object of type U
      *
@@ -259,38 +292,26 @@ public final class Tuple2<T1, T2> implements Tuple {
      *    The {@link Tuple1} to concat
      *
      * @return a new {@link Tuple3} with the tuple values appended
-     *
-     * @throws IllegalArgumentException if {@code tuple} is {@code null}
      */
     public <T3> Tuple3<T1, T2, T3> concat(final Tuple1<T3> tuple) {
-        Assert.notNull(tuple, "tuple must be not null");
-        return Tuple.of(_1, _2, tuple._1);
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, t._1))
+                .orElseGet(() -> Tuple.of(_1, _2, null));
     }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        } else if (!(o instanceof Tuple2)) {
-            return false;
-        } else {
-            final Tuple2<?, ?> that = (Tuple2<?, ?>) o;
-            return Objects.equals(this._1, that._1)
-                    && Objects.equals(this._2, that._2);
-        }
-    }
-
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(_1, _2);
-    }
-
-
-    @Override
-    public String toString() {
-        return "(" + _1 + ", " + _2 + ")";
+    /**
+     * Concat a {@link Tuple2}'s values to this {@link Tuple2}.
+     *
+     * @param tuple
+     *    The {@link Tuple2} to concat
+     *
+     * @return a new {@link Tuple4} with the tuple values appended
+     */
+    public <T3, T4> Tuple4<T1, T2, T3, T4> concat(final Tuple2<T3, T4> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, t._1, t._2))
+                .orElseGet(() -> Tuple.of(_1, _2, null, null));
     }
 
 }

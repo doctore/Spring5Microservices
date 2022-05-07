@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * A {@link Tuple} of three elements.
  *
@@ -43,6 +45,11 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
                                                      final T2 t2,
                                                      final T3 t3) {
         return new Tuple3<>(t1, t2, t3);
+    }
+
+
+    public static <T1, T2, T3> Tuple3<T1, T2, T3> empty() {
+        return new Tuple3<>(null, null, null);
     }
 
 
@@ -84,6 +91,33 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
     @Override
     public int arity() {
         return 3;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof Tuple3)) {
+            return false;
+        } else {
+            final Tuple3<?, ?, ?> that = (Tuple3<?, ?, ?>) o;
+            return Objects.equals(this._1, that._1)
+                    && Objects.equals(this._2, that._2)
+                    && Objects.equals(this._3, that._3);
+        }
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_1, _2, _3);
+    }
+
+
+    @Override
+    public String toString() {
+        return "(" + _1 + ", " + _2 + ", " + _3 + ")";
     }
 
 
@@ -160,7 +194,8 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
      * Maps the components of this {@link Tuple3} using a mapper function.
      *
      * @param mapper
-     *    The mapper function
+     *    The mapper {@link TriFunction}
+     *
      * @return A new {@link Tuple3} of same arity
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null}
@@ -175,11 +210,11 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
      * Maps the components of this {@link Tuple3} using a mapper function for each component.
      *
      * @param f1
-     *    The mapper function of the 1st component
+     *    The mapper {@link Function} of the 1st component
      * @param f2
-     *    The mapper function of the 2nd component
+     *    The mapper {@link Function} of the 2nd component
      * @param f3
-     *    The mapper function of the 3rd component
+     *    The mapper {@link Function} of the 3rd component
      *
      * @return A new {@link Tuple3} of same arity.
      *
@@ -199,7 +234,7 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
      * Maps the 1st component of this {@link Tuple3} to a new value.
      *
      * @param mapper
-     *    A mapping function
+     *    A mapping {@link Function}
      *
      * @return a new {@link Tuple3} based on this one and substituted 1st component
      *
@@ -216,7 +251,7 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
      * Maps the 2nd component of this {@link Tuple3} to a new value.
      *
      * @param mapper
-     *    A mapping function
+     *    A mapping {@link Function}
      *
      * @return a new {@link Tuple3} based on this one and substituted 2nd component
      *
@@ -233,7 +268,7 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
      * Maps the 3rd component of this {@link Tuple3} to a new value.
      *
      * @param mapper
-     *    A mapping function
+     *    A mapping {@link Function}
      *
      * @return a new {@link Tuple3} based on this one and substituted 3rd component
      *
@@ -250,7 +285,7 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
      * Transforms this {@link Tuple3} to an object of type U.
      *
      * @param f
-     *    Transformation which creates a new object of type U based on this tuple's contents.
+     *    Transformation {@link TriFunction} which creates a new object of type U based on this tuple's contents.
      *
      * @return An object of type U
      *
@@ -262,30 +297,44 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
     }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        } else if (!(o instanceof Tuple3)) {
-            return false;
-        } else {
-            final Tuple3<?, ?, ?> that = (Tuple3<?, ?, ?>) o;
-            return Objects.equals(this._1, that._1)
-                    && Objects.equals(this._2, that._2)
-                    && Objects.equals(this._3, that._3);
-        }
+    /**
+     * Prepend a value to this {@link Tuple3}.
+     *
+     * @param t
+     *    The value to prepend
+     *
+     * @return a new {@link Tuple4} with the value prepended
+     */
+    public <T> Tuple4<T, T1, T2, T3> prepend(final T t) {
+        return Tuple.of(t, _1, _2, _3);
     }
 
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(_1, _2, _3);
+    /**
+     * Append a value to this {@link Tuple3}.
+     *
+     * @param t
+     *    The value to append
+     *
+     * @return a new {@link Tuple4} with the value appended
+     */
+    public <T> Tuple4<T1, T2, T3, T> append(final T t) {
+        return Tuple.of(_1, _2, _3, t);
     }
 
 
-    @Override
-    public String toString() {
-        return "(" + _1 + ", " + _2 + ", " + _3 + ")";
+    /**
+     * Concat a {@link Tuple2}'s values to this {@link Tuple2}.
+     *
+     * @param tuple
+     *    The {@link Tuple2} to concat
+     *
+     * @return a new {@link Tuple4} with the tuple values appended
+     */
+    public <T4> Tuple4<T1, T2, T3, T4> concat(final Tuple1<T4> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, _3, t._1))
+                .orElseGet(() -> Tuple.of(_1, _2, _3, null));
     }
 
 }

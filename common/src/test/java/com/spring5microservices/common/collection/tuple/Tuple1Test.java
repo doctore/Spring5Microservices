@@ -11,8 +11,10 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static java.lang.Boolean.TRUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class Tuple1Test {
@@ -35,6 +37,15 @@ public class Tuple1Test {
     public <T1> void of_testCases(T1 value,
                                   Tuple1<T1> expectedResult) {
         assertEquals(expectedResult, Tuple1.of(value));
+    }
+
+
+    @Test
+    @DisplayName("empty: when is invoked then a tuple with all values a null is returned")
+    public void empty_whenIsInvoked_thenTupleWithAllValuesEqualsNullIsReturned() {
+        Tuple1<?> result = Tuple1.empty();
+        assertNotNull(result);
+        assertNull(result._1);
     }
 
 
@@ -92,6 +103,50 @@ public class Tuple1Test {
     public void arity_whenIsInvoked_then0IsReturned() {
         int result = Tuple1.of(1).arity();
         assertEquals(1, result);
+    }
+
+
+    static Stream<Arguments> equalsTestCases() {
+        Tuple1<String> stringTuple = Tuple1.of("TYHG");
+        Tuple1<Long> longTuple = Tuple1.of(21L);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,         objectToCompare,   expectedResult
+                Arguments.of( stringTuple,   "1",               false ),
+                Arguments.of( longTuple,     longTuple._1,      false ),
+                Arguments.of( stringTuple,   longTuple,         false ),
+                Arguments.of( stringTuple,   stringTuple,       true ),
+                Arguments.of( longTuple,     longTuple,         true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("equalsTestCases")
+    @DisplayName("equals: test cases")
+    public <T1> void equals_testCases(Tuple1<T1> tuple,
+                                      Object objectToCompare,
+                                      boolean expectedResult) {
+        assertEquals(expectedResult, tuple.equals(objectToCompare));
+    }
+
+
+    @Test
+    @DisplayName("hashCode: when is invoked then hashcode of internal elements is returned")
+    public void hashCode_whenIsInvoked_thenHashCodeOfInternalElementsIsReturned() {
+        Tuple1<String> tuple = Tuple1.of("123");
+        int expectedHashCode = Objects.hashCode(tuple._1);
+
+        assertEquals(expectedHashCode, tuple.hashCode());
+    }
+
+
+    @Test
+    @DisplayName("toString: when is invoked then toString of internal elements is returned")
+    public void toString_whenIsInvoked_thenToStringOfInternalElementsIsReturned() {
+        Tuple1<Integer> tuple = Tuple1.of(778);
+        String expectedToString = "(" + tuple._1.toString() + ")";
+
+        assertEquals(expectedToString, tuple.toString());
     }
 
 
@@ -237,12 +292,12 @@ public class Tuple1Test {
         Tuple1<Integer> nullValueTuple = Tuple1.of(null);
         return Stream.of(
                 //@formatter:off
-                //            tuple,            tupleToConcat,    expectedException,                expectedResult
-                Arguments.of( stringTuple,      null,             IllegalArgumentException.class,   null ),
-                Arguments.of( stringTuple,      nullValueTuple,   null,                             Tuple2.of(stringTuple._1, null) ),
-                Arguments.of( nullValueTuple,   longTuple,        null,                             Tuple2.of(null, longTuple._1) ),
-                Arguments.of( stringTuple,      longTuple,        null,                             Tuple2.of(stringTuple._1, longTuple._1) ),
-                Arguments.of( longTuple,        stringTuple,      null,                             Tuple2.of(longTuple._1, stringTuple._1) )
+                //            tuple,            tupleToConcat,    expectedResult
+                Arguments.of( stringTuple,      null,             Tuple2.of(stringTuple._1, null) ),
+                Arguments.of( stringTuple,      nullValueTuple,   Tuple2.of(stringTuple._1, null) ),
+                Arguments.of( nullValueTuple,   longTuple,        Tuple2.of(null, longTuple._1) ),
+                Arguments.of( stringTuple,      longTuple,        Tuple2.of(stringTuple._1, longTuple._1) ),
+                Arguments.of( longTuple,        stringTuple,      Tuple2.of(longTuple._1, stringTuple._1) )
         ); //@formatter:on
     }
 
@@ -251,14 +306,8 @@ public class Tuple1Test {
     @DisplayName("concat: using Tuple1 test cases")
     public <T1, T2> void concatTuple1_testCases(Tuple1<T1> tuple,
                                                 Tuple1<T2> tupleToConcat,
-                                                Class<? extends Exception> expectedException,
                                                 Tuple2<T1, T2> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> tuple.concat(tupleToConcat));
-        }
-        else {
-            assertEquals(expectedResult, tuple.concat(tupleToConcat));
-        }
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 
 
@@ -268,10 +317,10 @@ public class Tuple1Test {
         Tuple2<Integer, Integer> nullValueTuple = Tuple2.of(null, null);
         return Stream.of(
                 //@formatter:off
-                //            tuple,         tupleToConcat,      expectedException,                expectedResult
-                Arguments.of( stringTuple,   null,               IllegalArgumentException.class,   null ),
-                Arguments.of( stringTuple,   nullValueTuple,     null,                             Tuple3.of(stringTuple._1, null, null) ),
-                Arguments.of( stringTuple,   longIntegerTuple,   null,                             Tuple3.of(stringTuple._1, longIntegerTuple._1, longIntegerTuple._2) )
+                //            tuple,         tupleToConcat,      expectedResult
+                Arguments.of( stringTuple,   null,               Tuple3.of(stringTuple._1, null, null) ),
+                Arguments.of( stringTuple,   nullValueTuple,     Tuple3.of(stringTuple._1, null, null) ),
+                Arguments.of( stringTuple,   longIntegerTuple,   Tuple3.of(stringTuple._1, longIntegerTuple._1, longIntegerTuple._2) )
         ); //@formatter:on
     }
 
@@ -280,58 +329,31 @@ public class Tuple1Test {
     @DisplayName("concat: using Tuple2 test cases")
     public <T1, T2, T3> void concatTuple2_testCases(Tuple1<T1> tuple,
                                                     Tuple2<T2, T3> tupleToConcat,
-                                                    Class<? extends Exception> expectedException,
                                                     Tuple3<T1, T2, T3> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> tuple.concat(tupleToConcat));
-        }
-        else {
-            assertEquals(expectedResult, tuple.concat(tupleToConcat));
-        }
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 
 
-    static Stream<Arguments> equalsTestCases() {
+    static Stream<Arguments> concatTuple3TestCases() {
         Tuple1<String> stringTuple = Tuple1.of("TYHG");
-        Tuple1<Long> longTuple = Tuple1.of(21L);
+        Tuple3<Long, Integer, Boolean> longIntegerBooleanTuple = Tuple3.of(17L, 87, TRUE);
+        Tuple3<Integer, Integer, Long> nullValueTuple = Tuple3.of(null, null, null);
         return Stream.of(
                 //@formatter:off
-                //            tuple,         objectToCompare,   expectedResult
-                Arguments.of( stringTuple,   "1",               false ),
-                Arguments.of( longTuple,     longTuple._1,      false ),
-                Arguments.of( stringTuple,   longTuple,         false ),
-                Arguments.of( stringTuple,   stringTuple,       true ),
-                Arguments.of( longTuple,     longTuple,         true )
+                //            tuple,         tupleToConcat,             expectedResult
+                Arguments.of( stringTuple,   null,                      Tuple4.of(stringTuple._1, null, null, null) ),
+                Arguments.of( stringTuple,   nullValueTuple,            Tuple4.of(stringTuple._1, null, null, null) ),
+                Arguments.of( stringTuple,   longIntegerBooleanTuple,   Tuple4.of(stringTuple._1, longIntegerBooleanTuple._1, longIntegerBooleanTuple._2, longIntegerBooleanTuple._3) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("equalsTestCases")
-    @DisplayName("equals: test cases")
-    public <T1> void equals_testCases(Tuple1<T1> tuple,
-                                      Object objectToCompare,
-                                      boolean expectedResult) {
-        assertEquals(expectedResult, tuple.equals(objectToCompare));
-    }
-
-
-    @Test
-    @DisplayName("hashCode: when is invoked then hashcode of internal elements is returned")
-    public void hashCode_whenIsInvoked_thenHashCodeOfInternalElementsIsReturned() {
-        Tuple1<String> tuple = Tuple1.of("123");
-        int expectedHashCode = Objects.hashCode(tuple._1);
-
-        assertEquals(expectedHashCode, tuple.hashCode());
-    }
-
-
-    @Test
-    @DisplayName("toString: when is invoked then toString of internal elements is returned")
-    public void toString_whenIsInvoked_thenToStringOfInternalElementsIsReturned() {
-        Tuple1<Integer> tuple = Tuple1.of(778);
-        String expectedToString = "(" + tuple._1.toString() + ")";
-
-        assertEquals(expectedToString, tuple.toString());
+    @MethodSource("concatTuple3TestCases")
+    @DisplayName("concat: using Tuple3 test cases")
+    public <T1, T2, T3, T4> void concatTuple3_testCases(Tuple1<T1> tuple,
+                                                        Tuple3<T2, T3, T4> tupleToConcat,
+                                                        Tuple4<T1, T2, T3, T4> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 
 }
