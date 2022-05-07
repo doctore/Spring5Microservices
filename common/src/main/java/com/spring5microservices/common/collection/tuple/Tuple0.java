@@ -5,6 +5,8 @@ import org.springframework.util.Assert;
 import java.util.Comparator;
 import java.util.function.Supplier;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * A {@link Tuple} of no elements.
  */
@@ -42,11 +44,29 @@ public final class Tuple0 implements Tuple {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return 1;
+    }
+
+
+    @Override
+    public String toString() {
+        return "()";
+    }
+
+
     /**
      * Transforms this {@link Tuple0} to an object of type U.
      *
      * @param f
-     *    Transformation which creates a new object of type U based on this tuple's contents.
+     *    Transformation {@link Supplier} which creates a new object of type U based on this tuple's contents.
      *
      * @return An object of type U
      *
@@ -95,8 +115,9 @@ public final class Tuple0 implements Tuple {
      * @throws IllegalArgumentException if {@code tuple} is {@code null}
      */
     public <T1> Tuple1<T1> concat(final Tuple1<T1> tuple) {
-        Assert.notNull(tuple, "tuple must be not null");
-        return Tuple.of(tuple._1);
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(t._1))
+                .orElseGet(Tuple1::empty);
     }
 
 
@@ -107,12 +128,11 @@ public final class Tuple0 implements Tuple {
      *    The {@link Tuple2} to concat
      *
      * @return a new {@link Tuple2} with the tuple values appended
-     *
-     * @throws IllegalArgumentException if {@code tuple} is {@code null}
      */
     public <T1, T2> Tuple2<T1, T2> concat(final Tuple2<T1, T2> tuple) {
-        Assert.notNull(tuple, "tuple must be not null");
-        return Tuple.of(tuple._1, tuple._2);
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(t._1, t._2))
+                .orElseGet(Tuple2::empty);
     }
 
 
@@ -123,30 +143,26 @@ public final class Tuple0 implements Tuple {
      *   The {@link Tuple3} to concat
      *
      * @return a new {@link Tuple3} with the tuple values appended
-     *
-     * @throws IllegalArgumentException if {@code tuple} is {@code null}
      */
     public <T1, T2, T3> Tuple3<T1, T2, T3> concat(final Tuple3<T1, T2, T3> tuple) {
-        Assert.notNull(tuple, "tuple must be not null");
-        return Tuple.of(tuple._1, tuple._2, tuple._3);
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(t._1, t._2, t._3))
+                .orElseGet(Tuple3::empty);
     }
 
 
-    @Override
-    public boolean equals(Object o) {
-        return o == this;
-    }
-
-
-    @Override
-    public int hashCode() {
-        return 1;
-    }
-
-
-    @Override
-    public String toString() {
-        return "()";
+    /**
+     * Concat a {@link Tuple4}'s values to this {@link Tuple0}.
+     *
+     * @param tuple
+     *   The {@link Tuple4} to concat
+     *
+     * @return a new {@link Tuple4} with the tuple values appended
+     */
+    public <T1, T2, T3, T4> Tuple4<T1, T2, T3, T4> concat(final Tuple4<T1, T2, T3, T4> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(t._1, t._2, t._3, t._4))
+                .orElseGet(Tuple4::empty);
     }
 
 }

@@ -29,7 +29,9 @@ public class TriFunctionTest {
     @ParameterizedTest
     @MethodSource("applyTestCases")
     @DisplayName("apply: test cases")
-    public <T, U, V, R> void apply_testCases(T t, U u, V v,
+    public <T, U, V, R> void apply_testCases(T t,
+                                             U u,
+                                             V v,
                                              TriFunction<T, U, V, R> triFunction,
                                              R expectedResult) {
         assertEquals(expectedResult, triFunction.apply(t, u, v));
@@ -57,7 +59,9 @@ public class TriFunctionTest {
     @ParameterizedTest
     @MethodSource("andThenTestCases")
     @DisplayName("andThen: test cases")
-    public <T, U, V, R, Z> void andThen_testCases(T t, U u, V v,
+    public <T, U, V, R, Z> void andThen_testCases(T t,
+                                                  U u,
+                                                  V v,
                                                   TriFunction<T, U, V, R> triFunction,
                                                   Function<? super R, ? extends Z> afterFunction,
                                                   Class<? extends Exception> expectedException,
