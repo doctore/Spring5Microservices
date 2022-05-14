@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,9 +44,7 @@ public class StringUtil {
     public static Optional<String> abbreviateMiddle(final String sourceString,
                                                     final String putInTheMiddle,
                                                     final int sizeOfEveryChunk) {
-        if (1 > sizeOfEveryChunk) {
-            throw new IllegalArgumentException("sizeOfEveryChunk must be a positive value");
-        }
+        Assert.isTrue(0 < sizeOfEveryChunk, "sizeOfEveryChunk must be a positive value");
         return ofNullable(sourceString)
                 .map(s -> {
                     String finalPutInTheMiddle = Objects.isNull(putInTheMiddle) || putInTheMiddle.trim().isEmpty()
