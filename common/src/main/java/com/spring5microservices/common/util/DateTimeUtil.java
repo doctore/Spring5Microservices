@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
+import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,9 +39,7 @@ public class DateTimeUtil {
                               final LocalDateTime two,
                               final long epsilon,
                               final ChronoUnit timeUnit) {
-        if (0 > epsilon) {
-            throw new IllegalArgumentException("epsilon must be equals or greater than 0");
-        }
+        Assert.isTrue(0 <= epsilon, "epsilon must be equals or greater than 0");
         if (Objects.isNull(one)) {
             return null == two ? 0 : -1;
         }
@@ -58,6 +57,19 @@ public class DateTimeUtil {
         return abs(difference) <= epsilon
                 ? 0
                 : 0 < difference ? -1 : 1;
+    }
+
+
+    /**
+     * Converts to an instance of {@link Date} the given {@link LocalDateTime} using {@link ZoneId#systemDefault()}
+     *
+     * @param localDateTime
+     *    {@link LocalDateTime} value to convert
+     *
+     * @return {@link Optional} of {@link Date}
+     */
+    public static Optional<Date> fromLocalDateTimeToDate(LocalDateTime localDateTime) {
+        return fromLocalDateTimeToDate(localDateTime, ZoneId.systemDefault());
     }
 
 
@@ -87,15 +99,15 @@ public class DateTimeUtil {
 
 
     /**
-     * Converts to an instance of {@link Date} the given {@link LocalDateTime} using {@link ZoneId#systemDefault()}
+     * Converts to an instance of {@link LocalDateTime} the given {@link Date} using {@link ZoneId#systemDefault()}
      *
-     * @param localDateTime
-     *    {@link LocalDateTime} value to convert
+     * @param date
+     *    {@link Date} value to convert
      *
-     * @return {@link Optional} of {@link Date}
+     * @return {@link Optional} of {@link LocalDateTime}
      */
-    public static Optional<Date> fromLocalDateTimeToDate(LocalDateTime localDateTime) {
-        return fromLocalDateTimeToDate(localDateTime, ZoneId.systemDefault());
+    public static Optional<LocalDateTime> fromDateToLocalDateTime(final Date date) {
+        return fromDateToLocalDateTime(date, ZoneId.systemDefault());
     }
 
 
@@ -121,19 +133,6 @@ public class DateTimeUtil {
                             .atZone(finalZoneId)
                             .toLocalDateTime();
                 });
-    }
-
-
-    /**
-     * Converts to an instance of {@link LocalDateTime} the given {@link Date} using {@link ZoneId#systemDefault()}
-     *
-     * @param date
-     *    {@link Date} value to convert
-     *
-     * @return {@link Optional} of {@link LocalDateTime}
-     */
-    public static Optional<LocalDateTime> fromDateToLocalDateTime(final Date date) {
-        return fromDateToLocalDateTime(date, ZoneId.systemDefault());
     }
 
 }

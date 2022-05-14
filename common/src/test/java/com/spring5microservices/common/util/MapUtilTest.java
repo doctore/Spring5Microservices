@@ -46,7 +46,6 @@ public class MapUtilTest {
             put(3, "C");
             put(4, "o");
         }};
-
         BiPredicate<Integer, String> isKeyOddAndValueVowel = (k, v) -> k % 2 == 1 && "AEIOUaeiou".contains(v);
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
         BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
@@ -102,7 +101,6 @@ public class MapUtilTest {
             put(2, "B");
             put(4, "o");
         }};
-
         BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
 
@@ -152,7 +150,6 @@ public class MapUtilTest {
             put("ZZ", 63L);
             put("TZ", 69L);
         }};
-
         BiPredicate<Integer, String> isKeyEvenAndValueVowel =
                 (k, v) ->
                         k % 2 == 0 && "AEIOUaeiou".contains(v);
@@ -195,7 +192,6 @@ public class MapUtilTest {
             put("ZZ", 63L);
             put("TZ", 69L);
         }};
-
         BiPredicate<Integer, String> isKeyEvenAndValueVowel =
                 (k, v) ->
                         k % 2 == 0 && "AEIOUaeiou".contains(v);
@@ -284,7 +280,6 @@ public class MapUtilTest {
             put(11, 6L);
             put(21, 9L);
         }};
-
         BiFunction<Integer, String, Integer> isKeyEven = (k, v) -> k % 2;
         BiFunction<Integer, Long, Long> isKeyPlusValueModThree = (k, v) -> (k + v) % 3;
 
@@ -356,7 +351,6 @@ public class MapUtilTest {
             put(11, 6L);
             put(21, 9L);
         }};
-
         BiPredicate<Integer, String> isKeyEven = (k, v) -> k % 2 == 0;
         BiPredicate<Integer, Long> isKeyPlusValueOdd = (k, v) -> (k + v) % 2 == 1;
 
