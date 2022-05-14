@@ -6,6 +6,7 @@ import org.springframework.util.Assert;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
@@ -15,7 +16,7 @@ public class NumberUtil {
 
     /**
      *    Compares provided {@link BigDecimal}s taking into account the number of decimals included in the parameter
-     * {@code numberOfDecimals}.
+     * {@code numberOfDecimals}. {@link RoundingMode#HALF_UP} will be used in the comparison.
      *
      * @param one
      *    {@link BigDecimal} of the "left side" of compare method
@@ -31,15 +32,43 @@ public class NumberUtil {
     public static int compare(final BigDecimal one,
                               final BigDecimal two,
                               final int numberOfDecimals) {
+        return compare(one, two, numberOfDecimals, RoundingMode.HALF_UP);
+    }
+
+
+    /**
+     *    Compares provided {@link BigDecimal}s taking into account the number of decimals included in the parameter
+     * {@code numberOfDecimals}.
+     *
+     * @param one
+     *    {@link BigDecimal} of the "left side" of compare method
+     * @param two
+     *    {@link BigDecimal} of the "right side" of compare method
+     * @param numberOfDecimals
+     *    Number of decimals used for comparison
+     * @param roundingMode
+     *    {@link RoundingMode} used in the comparison. {@link RoundingMode#HALF_UP} if {@code null}
+     *
+     * @return {@code one#compareTo(two)} using {@code numberOfDecimals} as precision.
+     *
+     * @throws IllegalArgumentException if {@code numberOfDecimals} is less than {@code zero}
+     */
+    public static int compare(final BigDecimal one,
+                              final BigDecimal two,
+                              final int numberOfDecimals,
+                              final RoundingMode roundingMode) {
         Assert.isTrue(0 <= numberOfDecimals, "numberOfDecimals must be equals or greater than 0");
-        if (null == one) {
+        if (Objects.isNull(one)) {
             return null == two ? 0 : -1;
         }
-        if (null == two) {
+        if (Objects.isNull(two)) {
             return 1;
         }
-        BigDecimal oneWithProvidedPrecision = one.setScale(numberOfDecimals, RoundingMode.HALF_UP);
-        BigDecimal twoWithProvidedPrecision = two.setScale(numberOfDecimals, RoundingMode.HALF_UP);
+        RoundingMode finalRoundingMode = Objects.isNull(roundingMode)
+                ? RoundingMode.HALF_UP
+                : roundingMode;
+        BigDecimal oneWithProvidedPrecision = one.setScale(numberOfDecimals, finalRoundingMode);
+        BigDecimal twoWithProvidedPrecision = two.setScale(numberOfDecimals, finalRoundingMode);
         return oneWithProvidedPrecision.compareTo(twoWithProvidedPrecision);
     }
 
