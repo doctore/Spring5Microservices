@@ -85,13 +85,14 @@ public class ValidationUseCasesTest {
 }
 
 
-class PizzaDtoValidatorCombine {
+class PizzaDtoValidatorCombine implements Validate<PizzaDto> {
 
     private static final String VALID_NAME_CHARS = "[a-zA-Z ]";
     private static final int MIN_COST = 0;
 
+    @Override
     public Validation<ValidationError, PizzaDto> validate(PizzaDto p) {
-        return ValidationUtil.combine(validateName(p), validateAge(p));
+        return ValidationUtil.combine(validateName(p), validateCost(p));
     }
 
     private Validation<ValidationError, PizzaDto> validateName(PizzaDto p) {
@@ -105,7 +106,7 @@ class PizzaDtoValidatorCombine {
         );
     }
 
-    private Validation<ValidationError, PizzaDto> validateAge(PizzaDto p) {
+    private Validation<ValidationError, PizzaDto> validateCost(PizzaDto p) {
         return p.getCost() >= MIN_COST
                 ? Validation.valid(p)
                 : Validation.invalid(
@@ -118,11 +119,13 @@ class PizzaDtoValidatorCombine {
 }
 
 
-class PizzaDtoValidatorGetFirstInvalid {
+class PizzaDtoValidatorGetFirstInvalid implements Validate<PizzaDto> {
 
     private static final String VALID_NAME_CHARS = "[a-zA-Z ]";
     private static final int MIN_COST = 0;
 
+
+    @Override
     public Validation<ValidationError, PizzaDto> validate(PizzaDto p) {
         return ValidationUtil.getFirstInvalid(() -> validateName(p), () -> validateCost(p));
     }
