@@ -11,12 +11,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.MapUtil.applyOrElse;
@@ -25,6 +29,8 @@ import static com.spring5microservices.common.util.MapUtil.count;
 import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.groupBy;
+import static com.spring5microservices.common.util.MapUtil.groupMap;
+import static com.spring5microservices.common.util.MapUtil.groupMapReduce;
 import static com.spring5microservices.common.util.MapUtil.map;
 import static com.spring5microservices.common.util.MapUtil.mapValues;
 import static com.spring5microservices.common.util.MapUtil.partition;
@@ -32,6 +38,7 @@ import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.slice;
 import static com.spring5microservices.common.util.MapUtil.sliding;
 import static com.spring5microservices.common.util.MapUtil.split;
+import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -280,53 +287,48 @@ public class MapUtilTest {
             put(11, 6L);
             put(21, 9L);
         }};
-        BiFunction<Integer, String, Integer> isKeyEven = (k, v) -> k % 2;
-        BiFunction<Integer, Long, Long> isKeyPlusValueModThree = (k, v) -> (k + v) % 3;
+        BiFunction<Integer, String, Integer> keyMod2 = (k, v) -> k % 2;
+        BiFunction<Integer, Long, Long> keyPlusValueMod3 = (k, v) -> (k + v) % 3;
 
         Map<Integer, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
-            put(
-                    0,
-                    new HashMap<>() {{
-                        put(2, "B");
-                        put(4, "o");
-                    }}
+            put(0,
+                new HashMap<>() {{
+                    put(2, "B");
+                    put(4, "o");
+                }}
             );
-            put(
-                    1,
-                    new HashMap<>() {{
-                        put(1, "A");
-                    }}
+            put(1,
+                new HashMap<>() {{
+                    put(1, "A");
+                }}
             );
         }};
         Map<Long, Map<Integer, Long>> intsAndLongsResult = new HashMap<>() {{
-            put(
-                    0L,
-                    new HashMap<>() {{
-                        put(21, 9L);
-                    }}
+            put(0L,
+                new HashMap<>() {{
+                    put(21, 9L);
+                }}
             );
-            put(
-                    1L,
-                    new HashMap<>() {{
-                        put(7, 3L);
-                    }}
+            put(1L,
+                new HashMap<>() {{
+                    put(7, 3L);
+                }}
             );
-            put(
-                    2L,
-                    new HashMap<>() {{
-                        put(11, 6L);
-                    }}
+            put(2L,
+                new HashMap<>() {{
+                    put(11, 6L);
+                }}
             );
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,         discriminator,            expectedResult
-                Arguments.of( null,              null,                     Map.of() ),
-                Arguments.of( null,              isKeyEven,                Map.of() ),
-                Arguments.of( Map.of(),          null,                     Map.of() ),
-                Arguments.of( Map.of(),          isKeyEven,                Map.of() ),
-                Arguments.of( intsAndStrings,    isKeyEven,                intsAndStringsResult ),
-                Arguments.of( intsAndLongs,      isKeyPlusValueModThree,   intsAndLongsResult )
+                //            sourceMap,         discriminator,      expectedResult
+                Arguments.of( null,              null,               Map.of() ),
+                Arguments.of( null,              keyMod2,            Map.of() ),
+                Arguments.of( Map.of(),          null,               Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,            Map.of() ),
+                Arguments.of( intsAndStrings,    keyMod2,            intsAndStringsResult ),
+                Arguments.of( intsAndLongs,      keyPlusValueMod3,   intsAndLongsResult )
         ); //@formatter:on
     }
 
@@ -337,6 +339,147 @@ public class MapUtilTest {
                                             BiFunction<? super T, ? super E, ? extends R> discriminator,
                                             Map<R, Map<T, E>> expectedResult) {
         assertEquals(expectedResult, groupBy(sourceMap, discriminator));
+    }
+
+
+    static Stream<Arguments> groupMapNoCollectionFactoryTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "Hi");
+            put(2, "Hello");
+            put(5, "World");
+            put(6, "!");
+        }};
+        BiFunction<Integer, String, Integer> keyMod3 = (k, v) -> k % 3;
+        BiFunction<Integer, String, Integer> valueLenght = (k, v) -> v.length();
+        Map<Integer, List<Integer>> usingKeyMod3AsDiscriminatorKey = new HashMap<>() {{
+            put(0, List.of(1));
+            put(1, List.of(2));
+            put(2, List.of(5, 5));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        discriminatorKey,   valueMapper,   expectedException,                expectedResult
+                Arguments.of( null,             null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   keyMod3,            null,          IllegalArgumentException.class,   null ),
+                Arguments.of( null,             keyMod3,            valueLenght,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         keyMod3,            valueLenght,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   keyMod3,            valueLenght,   null,                             usingKeyMod3AsDiscriminatorKey )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapNoCollectionFactoryTestCases")
+    @DisplayName("groupMap: without collection factory test cases")
+    public <T, E, R, V> void groupMapNoCollectionFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                   BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                                   BiFunction<? super T, ? super E, ? extends V> valueMapper,
+                                                                   Class<? extends Exception> expectedException,
+                                                                   Map<R, List<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceMap, discriminatorKey, valueMapper));
+        }
+        else {
+            assertEquals(expectedResult, groupMap(sourceMap, discriminatorKey, valueMapper));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapAllParametersTestCases() {
+        Map<String, Integer> stringsAndIntegers = new LinkedHashMap<>() {{
+            put("A", 10);
+            put("BY", 20);
+            put("C", 30);
+            put("DH", 40);
+        }};
+        BiFunction<String, Integer, Integer> keyLenght = (k, v) -> k.length();
+        BiFunction<String, Integer, Integer> valuePlus5 = (k, v) -> v + 5;
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Map<Integer, List<Integer>> resultWithDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of(15, 35));
+            put(2, List.of(25, 45));
+        }};
+        Map<Integer, Set<Integer>> resultWithSetCollectionFactory = new HashMap<>() {{
+            put(1, new LinkedHashSet<>(asList(15, 35)));
+            put(2, new LinkedHashSet<>(asList(25, 45)));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,            discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,                 null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),             null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   keyLenght,          null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 keyLenght,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             keyLenght,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   keyLenght,          valuePlus5,    null,                null,                             resultWithDefaultCollectionFactory ),
+                Arguments.of( stringsAndIntegers,   keyLenght,          valuePlus5,    setSupplier,         null,                             resultWithSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapAllParametersTestCases")
+    @DisplayName("groupMap: with all parameters test cases")
+    public <T, E, R, V> void groupMapAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                             BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                             BiFunction<? super T, ? super E, ? extends V> valueMapper,
+                                                             Supplier<Collection<V>> collectionFactory,
+                                                             Class<? extends Exception> expectedException,
+                                                             Map<R, Collection<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceMap, discriminatorKey, valueMapper, collectionFactory));
+        }
+        else {
+            assertEquals(expectedResult, groupMap(sourceMap, discriminatorKey, valueMapper, collectionFactory));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapReduceTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "AB");
+            put(2, "BCD");
+            put(3, "Z3");
+            put(4, "oPQRT");
+        }};
+        BiFunction<Integer, String, Integer> keyMod2 = (k, v) -> k % 2;
+        BiFunction<Integer, String, Integer> valueLenght = (k, v) -> v.length();
+        BinaryOperator<Integer> multiplyAll = (i1, i2) -> i1 * i2;
+        Map<Integer, Integer> expectedResult = new HashMap<>() {{
+            put(0, 15);
+            put(1, 4);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        discriminatorKey,   valueMapper,   reduceValues,   expectedException,                expectedResult
+                Arguments.of( null,             null,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         null,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   keyMod2,            null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   keyMod2,            valueLenght,   null,           IllegalArgumentException.class,   null ),
+                Arguments.of( null,             keyMod2,            valueLenght,   multiplyAll,    null,                             Map.of() ),
+                Arguments.of( Map.of(),         keyMod2,            valueLenght,   multiplyAll,    null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   keyMod2,            valueLenght,   multiplyAll,    null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapReduceTestCases")
+    @DisplayName("groupMapReduce: test cases")
+    public <T, E, R, V> void groupMapReduce_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                      BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                      BiFunction<? super T, ? super E, V> valueMapper,
+                                                      BinaryOperator<V> reduceValues,
+                                                      Class<? extends Exception> expectedException,
+                                                      Map<R, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMapReduce(sourceMap, discriminatorKey, valueMapper, reduceValues));
+        }
+        else {
+            assertEquals(expectedResult, groupMapReduce(sourceMap, discriminatorKey, valueMapper, reduceValues));
+        }
     }
 
 
@@ -355,33 +498,29 @@ public class MapUtilTest {
         BiPredicate<Integer, Long> isKeyPlusValueOdd = (k, v) -> (k + v) % 2 == 1;
 
         Map<Boolean, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
-            put(
-                    Boolean.TRUE,
-                    new HashMap<>() {{
-                        put(2, "B");
-                        put(4, "o");
-                    }}
+            put(Boolean.TRUE,
+                new HashMap<>() {{
+                    put(2, "B");
+                    put(4, "o");
+                }}
             );
-            put(
-                    Boolean.FALSE,
-                    new HashMap<>() {{
-                        put(1, "A");
-                    }}
+            put(Boolean.FALSE,
+                new HashMap<>() {{
+                    put(1, "A");
+                }}
             );
         }};
         Map<Boolean, Map<Integer, Long>> intsAndLongsResult = new HashMap<>() {{
-            put(
-                    Boolean.TRUE,
-                    new HashMap<>() {{
-                        put(11, 6L);
-                    }}
+            put(Boolean.TRUE,
+                new HashMap<>() {{
+                    put(11, 6L);
+                }}
             );
-            put(
-                    Boolean.FALSE,
-                    new HashMap<>() {{
-                        put(7, 3L);
-                        put(21, 9L);
-                    }}
+            put(Boolean.FALSE,
+                new HashMap<>() {{
+                    put(7, 3L);
+                    put(21, 9L);
+                }}
             );
         }};
         return Stream.of(

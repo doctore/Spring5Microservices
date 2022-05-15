@@ -99,9 +99,17 @@ public class StringUtil {
     /**
      * Loops through the provided {@link String} one position every time, returning sublists with {@code size}
      *
-     * Examples:
-     *   "12"   with size = 5 => ["12"]
-     *   "789"  with size = 2 => ["78", "89"]
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    "12"                     ["12"]
+     *    5
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    "789"                    ["78", "89"]
+     *    2
      *
      * @param sourceString
      *    {@link String} to slide
@@ -130,9 +138,17 @@ public class StringUtil {
     /**
      * Splits the given {@link String} in substrings with a size equal to the given {@code size}
      *
-     * Examples:
-     *   "123",  4  =>  "123"
-     *   "123",  2  =>  ["12", "3"]
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    "123"                    ["123"]
+     *    4
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    "123"                    ["12", "3"]
+     *    2
      *
      * @param sourceString
      *    {@link String} to split

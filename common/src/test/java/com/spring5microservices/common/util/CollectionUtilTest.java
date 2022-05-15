@@ -13,15 +13,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -38,6 +41,8 @@ import static com.spring5microservices.common.util.CollectionUtil.find;
 import static com.spring5microservices.common.util.CollectionUtil.findLast;
 import static com.spring5microservices.common.util.CollectionUtil.foldLeft;
 import static com.spring5microservices.common.util.CollectionUtil.foldRight;
+import static com.spring5microservices.common.util.CollectionUtil.groupMap;
+import static com.spring5microservices.common.util.CollectionUtil.groupMapReduce;
 import static com.spring5microservices.common.util.CollectionUtil.iterate;
 import static com.spring5microservices.common.util.CollectionUtil.reverseList;
 import static com.spring5microservices.common.util.CollectionUtil.slice;
@@ -181,9 +186,9 @@ public class CollectionUtilTest {
                 Arguments.of( List.of(),          null,              null,                  IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         null,              null,                  IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isEven,            null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( null,               isEven,            fromIntegerToString,   null,                             List.of()),
-                Arguments.of( List.of(),          isEven,            fromIntegerToString,   null,                             List.of()),
-                Arguments.of( ints,               isEven,            fromIntegerToString,   null,                             List.of("2", "6"))
+                Arguments.of( null,               isEven,            fromIntegerToString,   null,                             List.of() ),
+                Arguments.of( List.of(),          isEven,            fromIntegerToString,   null,                             List.of() ),
+                Arguments.of( ints,               isEven,            fromIntegerToString,   null,                             List.of("2", "6") )
         ); //@formatter:on
     }
 
@@ -502,6 +507,135 @@ public class CollectionUtilTest {
         }
         else {
             assertEquals(expectedResult, foldRight(sourceCollection, initialValue, accumulator));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapNoCollectionFactoryTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
+        Function<Integer, Integer> mod3 = i -> i % 3;
+        Function<Integer, Integer> square = i -> i * i;
+        Map<Integer, List<Integer>> usingMod3AsDiscriminatorKey = new HashMap<>() {{
+            put(0, List.of(9, 36));
+            put(1, List.of(1));
+            put(2, List.of(4));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,   valueMapper,   expectedException,                expectedResult
+                Arguments.of( null,               null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         mod3,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( null,               mod3,               square,        null,                             Map.of() ),
+                Arguments.of( List.of(),          mod3,               square,        null,                             Map.of() ),
+                Arguments.of( ints,               mod3,               square,        null,                             usingMod3AsDiscriminatorKey )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapNoCollectionFactoryTestCases")
+    @DisplayName("groupMap: without collection factory test cases")
+    public <T, K, V> void groupMapNoCollectionFactory_testCases(Collection<? extends T> sourceCollection,
+                                                                Function<? super T, ? extends K> discriminatorKey,
+                                                                Function<? super T, ? extends V> valueMapper,
+                                                                Class<? extends Exception> expectedException,
+                                                                Map<K, List<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey, valueMapper));
+        }
+        else {
+            assertEquals(expectedResult, groupMap(sourceCollection, discriminatorKey, valueMapper));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapAllParametersTestCases() {
+        List<String> strings = asList("AA", "BFF", "5TR", "H", "B");
+        Function<String, Integer> lenght = String::length;
+        Function<String, String> version2 = s -> s + "2";
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Map<Integer, List<String>> resultWithDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of("H2", "B2"));
+            put(2, List.of("AA2"));
+            put(3, List.of("BFF2", "5TR2"));
+        }};
+        Map<Integer, Set<String>> resultWithSetCollectionFactory = new HashMap<>() {{
+            put(1, new LinkedHashSet<>(asList("H2", "B2")));
+            put(2, new LinkedHashSet<>(asList("AA2")));
+            put(3, new LinkedHashSet<>(asList("BFF2", "5TR2")));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         lenght,             null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               lenght,             version2,      null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          lenght,             version2,      null,                null,                             Map.of() ),
+                Arguments.of( strings,            lenght,             version2,      null,                null,                             resultWithDefaultCollectionFactory ),
+                Arguments.of( strings,            lenght,             version2,      setSupplier,         null,                             resultWithSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapAllParametersTestCases")
+    @DisplayName("groupMap: with all parameters test cases")
+    public <T, K, V> void groupMapAllParameters_testCases(Collection<? extends T> sourceCollection,
+                                                          Function<? super T, ? extends K> discriminatorKey,
+                                                          Function<? super T, ? extends V> valueMapper,
+                                                          Supplier<Collection<V>> collectionFactory,
+                                                          Class<? extends Exception> expectedException,
+                                                          Map<K, Collection<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey, valueMapper, collectionFactory));
+        }
+        else {
+            assertEquals(expectedResult, groupMap(sourceCollection, discriminatorKey, valueMapper, collectionFactory));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapReduceTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(2, 4, 5, 7, 9, 12));
+        Function<Integer, Integer> mod3 = i -> i % 3;
+        Function<Integer, Integer> square = i -> i * i;
+        BinaryOperator<Integer> sumAll = Integer::sum;
+        Map<Integer, Integer> expectedResult = new HashMap<>() {{
+            put(0, 225);
+            put(1, 65);
+            put(2, 29);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,   valueMapper,   reduceValues,   expectedException,                expectedResult
+                Arguments.of( null,               null,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         mod3,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         mod3,               square,        null,           IllegalArgumentException.class,   null ),
+                Arguments.of( null,               mod3,               square,        sumAll,         null,                             Map.of() ),
+                Arguments.of( List.of(),          mod3,               square,        sumAll,         null,                             Map.of() ),
+                Arguments.of( ints,               mod3,               square,        sumAll,         null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapReduceTestCases")
+    @DisplayName("groupMapReduce: test cases")
+    public <T, K, V> void groupMapReduce_testCases(Collection<? extends T> sourceCollection,
+                                                   Function<? super T, ? extends K> discriminatorKey,
+                                                   Function<? super T, V> valueMapper,
+                                                   BinaryOperator<V> reduceValues,
+                                                   Class<? extends Exception> expectedException,
+                                                   Map<K, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMapReduce(sourceCollection, discriminatorKey, valueMapper, reduceValues));
+        }
+        else {
+            assertEquals(expectedResult, groupMapReduce(sourceCollection, discriminatorKey, valueMapper, reduceValues));
         }
     }
 

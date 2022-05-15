@@ -66,7 +66,7 @@ public abstract class Validation<E, T> implements Serializable {
      */
     public final <U> Validation<E, U> map(final Function<? super T, ? extends U> mapper) {
         if (isValid()) {
-            Objects.requireNonNull(mapper, "mapper is null");
+            Objects.requireNonNull(mapper, "mapper must be not null");
             final T value = get();
             return Validation.valid(mapper.apply(value));
         } else {
@@ -88,7 +88,7 @@ public abstract class Validation<E, T> implements Serializable {
      */
     public final <U> Validation<U, T> mapError(final Function<Collection<? super E>, Collection<U>> mapper) {
         if (!isValid()) {
-            Objects.requireNonNull(mapper, "mapper is null");
+            Objects.requireNonNull(mapper, "mapper must be not null");
             final Collection<E> errors = getErrors();
             return Validation.invalid(mapper.apply(errors));
         } else {
@@ -119,11 +119,11 @@ public abstract class Validation<E, T> implements Serializable {
     public final <E2, T2> Validation<E2, T2> bimap(final Function<? super T, ? extends T2> mapperValid,
                                                    final Function<Collection<? super E>, Collection<E2>> mapperInvalid) {
         if (isValid()) {
-            Objects.requireNonNull(mapperValid, "mapperValid is null");
+            Objects.requireNonNull(mapperValid, "mapperValid must be not null");
             final T value = get();
             return Validation.valid(mapperValid.apply(value));
         } else {
-            Objects.requireNonNull(mapperInvalid, "mapperInvalid is null");
+            Objects.requireNonNull(mapperInvalid, "mapperInvalid must be not null");
             final Collection<E> errors = getErrors();
             return Validation.invalid(mapperInvalid.apply(errors));
         }
@@ -143,7 +143,7 @@ public abstract class Validation<E, T> implements Serializable {
      */
     public final <U> Validation<E, U> flatMap(final Function<? super T, ? extends Validation<E, ? extends U>> mapper) {
         if (isValid()) {
-            Objects.requireNonNull(mapper, "mapper is null");
+            Objects.requireNonNull(mapper, "mapper must be not null");
             return (Validation<E, U>) mapper.apply(get());
         }
         return (Validation<E, U>) this;
@@ -162,7 +162,7 @@ public abstract class Validation<E, T> implements Serializable {
      */
     public final Validation<E, T> peek(final Consumer<? super T> action) {
         if (isValid()) {
-            Objects.requireNonNull(action, "action is null");
+            Objects.requireNonNull(action, "action must be not null");
             action.accept(get());
         }
         return this;
@@ -181,7 +181,7 @@ public abstract class Validation<E, T> implements Serializable {
      */
     public final Validation<E, T> peekError(final Consumer<Collection<? super E>> action) {
         if (!isValid()) {
-            Objects.requireNonNull(action, "action is null");
+            Objects.requireNonNull(action, "action must be not null");
             action.accept(getErrors());
         }
         return this;
@@ -206,10 +206,10 @@ public abstract class Validation<E, T> implements Serializable {
     public final Validation<E, T> bipeek(final Consumer<? super T> actionValid,
                                          final Consumer<Collection<? super E>> actionInvalid) {
         if (isValid()) {
-            Objects.requireNonNull(actionValid, "actionValid is null");
+            Objects.requireNonNull(actionValid, "actionValid must be not null");
             actionValid.accept(get());
         } else {
-            Objects.requireNonNull(actionInvalid, "actionInvalid is null");
+            Objects.requireNonNull(actionInvalid, "actionInvalid must be not null");
             actionInvalid.accept(getErrors());
         }
         return this;
@@ -231,7 +231,7 @@ public abstract class Validation<E, T> implements Serializable {
         if (!isValid()) {
             return of(this);
         }
-        Objects.requireNonNull(predicate, "predicate is null");
+        Objects.requireNonNull(predicate, "predicate must be not null");
         return predicate.test(get())
                 ? of(this)
                 : empty();
@@ -257,13 +257,13 @@ public abstract class Validation<E, T> implements Serializable {
         if (Objects.isNull(validation)) {
             return this;
         }
-        // this is a Valid instance
+        // This is a Valid instance
         if (isValid()) {
             // Only if current and given validation are Valid, a Valid instance will be returned
             if (validation.isValid()) {
                 return valid(validation.get());
 
-                // this is Valid but validation is Invalid
+            // This is Valid but validation is Invalid
             } else {
                 final Collection<E> errors = validation.getErrors();
                 return invalid(errors);
@@ -274,7 +274,7 @@ public abstract class Validation<E, T> implements Serializable {
                 final Collection<E> errors = this.getErrors();
                 return invalid(errors);
 
-                // Add both errors of this and validation
+            // Add both errors of this and validation
             } else {
                 final Collection<E> errors = new ArrayList<>(this.getErrors());
                 errors.addAll(validation.getErrors());
@@ -326,7 +326,7 @@ public abstract class Validation<E, T> implements Serializable {
         if (isValid()) {
             return this;
         }
-        Objects.requireNonNull(supplier, "supplier is null");
+        Objects.requireNonNull(supplier, "supplier must be not null");
         return (Validation<E, T>) supplier.get();
     }
 
@@ -346,7 +346,7 @@ public abstract class Validation<E, T> implements Serializable {
         if (isValid()) {
             return get();
         }
-        Objects.requireNonNull(exceptionSupplier, "exceptionSupplier is null");
+        Objects.requireNonNull(exceptionSupplier, "exceptionSupplier must be not null");
         throw exceptionSupplier.get();
     }
 

@@ -75,7 +75,10 @@ public class Invalid<E, T> extends Validation<E, T> implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj == this) || (obj instanceof Invalid && Objects.equals(errors, ((Invalid<?, ?>) obj).errors));
+        return obj == this ||
+                (obj instanceof Invalid &&
+                        Objects.equals(errors, ((Invalid<?, ?>) obj).errors)
+                );
     }
 
 
