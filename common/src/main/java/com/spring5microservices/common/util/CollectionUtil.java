@@ -9,14 +9,17 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -26,6 +29,7 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
@@ -39,7 +43,12 @@ public class CollectionUtil {
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
      * Example:
-     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2  =>  [2, 4, 4, 12]
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [2, 4, 4, 12]
+     *    i -> i % 2 == 1
+     *    i -> i + 1
+     *    i -> i * 2
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
@@ -68,7 +77,13 @@ public class CollectionUtil {
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
      * Example:
-     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2,  ArrayList::new  =>  [2, 4, 4, 12]
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [2, 4, 4, 12]
+     *    i -> i % 2 == 1
+     *    i -> i + 1
+     *    i -> i * 2
+     *    ArrayList::new
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
@@ -97,8 +112,8 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-        Supplier<Collection<E>> definitiveCollectionFactory =
-                null == collectionFactory
+        Supplier<Collection<E>> finalCollectionFactory =
+                isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
 
@@ -108,7 +123,7 @@ public class CollectionUtil {
                                 ? defaultFunction.apply(elto)
                                 : orElseFunction.apply(elto)
                 )
-                .collect(toCollection(definitiveCollectionFactory));
+                .collect(toCollection(finalCollectionFactory));
     }
 
 
@@ -135,7 +150,11 @@ public class CollectionUtil {
      *  - Transform its filtered elements using {@code mapFunction}
      *
      * Example:
-     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i.toString()  =>  ["1", "3"]
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             ["1", "3"]
+     *    i -> i % 2 == 1
+     *    i -> i.toString()
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
@@ -162,7 +181,12 @@ public class CollectionUtil {
      *  - Transform its filtered elements using {@code mapFunction}
      *
      * Example:
-     *   [1, 2, 3, 6],  i -> i % 2 == 1,  i -> i.toString(),  ArrayList::new  =>  ["1", "3"]
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             ["1", "3"]
+     *    i -> i % 2 == 1
+     *    i -> i.toString()
+     *    ArrayList::new
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
@@ -186,8 +210,8 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-        Supplier<Collection<E>> definitiveCollectionFactory =
-                null == collectionFactory
+        Supplier<Collection<E>> finalCollectionFactory =
+                isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
 
@@ -195,7 +219,7 @@ public class CollectionUtil {
                 .stream()
                 .filter(filterPredicate)
                 .map(mapFunction)
-                .collect(toCollection(definitiveCollectionFactory));
+                .collect(toCollection(finalCollectionFactory));
     }
 
 
@@ -236,12 +260,12 @@ public class CollectionUtil {
                         return null;
                     }
                     Stream<E> keyExtractedStream = sourceCollection.stream().map(keyExtractor);
-                    return null == collectionFactory
+                    return isNull(collectionFactory)
                             ? keyExtractedStream.collect(toList())
                             : keyExtractedStream.collect(toCollection(collectionFactory));
                 })
                 .orElseGet(() ->
-                        null == collectionFactory
+                        isNull(collectionFactory)
                                 ? new ArrayList<>()
                                 : collectionFactory.get());
     }
@@ -280,7 +304,7 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return 0;
         }
-        if (Objects.isNull(filterPredicate)) {
+        if (isNull(filterPredicate)) {
             return sourceCollection.size();
         }
         return sourceCollection
@@ -305,7 +329,7 @@ public class CollectionUtil {
     public static <T> Optional<? extends T> find(final Collection<? extends T> sourceCollection,
                                                  final Predicate<? super T> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceCollection) ||
-                Objects.isNull(filterPredicate)) {
+                isNull(filterPredicate)) {
             return empty();
         }
         return getCollectionKeepingInternalOrdination(sourceCollection)
@@ -329,7 +353,7 @@ public class CollectionUtil {
     public static <T> Optional<? extends T> findLast(final Collection<? extends T> sourceCollection,
                                                      final Predicate<? super T> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceCollection) ||
-                Objects.isNull(filterPredicate)) {
+                isNull(filterPredicate)) {
             return empty();
         }
         return reverseList(sourceCollection)
@@ -343,9 +367,19 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
      * elements of {@code sourceCollection}, going left to right.
      *
-     * Examples:
-     *   [5, 7, 9],     1,  (a, b) -> a * b   => 315
-     *   ["a", "h"],  "!",  (a, b) -> a + b   => "!ah"
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    [5, 7, 9]                315
+     *    1
+     *    (a, b) -> a * b
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    ["a", "h"]               "!ah"
+     *    "!"
+     *    (a, b) -> a + b
      *
      * @param sourceCollection
      *    {@link Collection} with elements to combine.
@@ -382,9 +416,19 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
      * elements of {@code sourceCollection}, going right to left.
      *
-     * Examples:
-     *   [5, 7, 9],     1,  (a, b) -> a * b   => 315
-     *   ["a", "h"],  "!",  (a, b) -> a + b   => "!ha"
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    [5, 7, 9]                315
+     *    1
+     *    (a, b) -> a * b
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    ["a", "h"]               "!ha"
+     *    "!"
+     *    (a, b) -> a + b
      *
      * @param sourceCollection
      *    {@link Collection} with elements to combine.
@@ -410,12 +454,160 @@ public class CollectionUtil {
 
 
     /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
+     *
+     * It is equivalent to:
+     *
+     *    Map<K, List<T>> groupedMap = sourceCollection.stream().collect(groupingBy(discriminatorKey))
+     *    Map<K, List<V>> finalMap = mapValues(groupedMap, valueMapper)
+     *
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [(0,  [4, 7])
+     *    k -> i % 3                (1,  [2])
+     *    i -> i + 1                (2,  [3])]
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform.
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                     final Function<? super T, ? extends K> discriminatorKey,
+                                                     final Function<? super T, ? extends V> valueMapper) {
+        return (Map)groupMap(sourceCollection, discriminatorKey, valueMapper, ArrayList::new);
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
+     *
+     * It is equivalent to:
+     *
+     *    Map<K, List<T>> groupedMap = sourceCollection.stream().collect(groupingBy(discriminatorKey))
+     *    Map<K, List<V>> finalMap = mapValues(groupedMap, valueMapper)
+     *
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [(0,  [4, 7])
+     *    k -> i % 3                (1,  [2])
+     *    i -> i + 1                (2,  [3])]
+     *    ArrayList::new
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform.
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                           final Function<? super T, ? extends K> discriminatorKey,
+                                                           final Function<? super T, ? extends V> valueMapper,
+                                                           final Supplier<Collection<V>> collectionFactory) {
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        Assert.notNull(valueMapper, "valueMapper must be not null");
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
+        Supplier<Collection<V>> finalCollectionFactory =
+                isNull(collectionFactory)
+                        ? ArrayList::new
+                        : collectionFactory;
+        Map<K, Collection<V>> result = new HashMap<>();
+        sourceCollection.forEach(
+                e -> {
+                    K discriminatorKeyResult = discriminatorKey.apply(e);
+                    result.putIfAbsent(discriminatorKeyResult, finalCollectionFactory.get());
+                    result.get(discriminatorKeyResult)
+                            .add(valueMapper.apply(e));
+                }
+        );
+        return result;
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * All the values that have the same discriminator are then transformed by the {@code valueMapper} {@link Function} and
+     * then reduced into a single value with {@code reduceValues}.
+     *
+     * Example:
+     *
+     *   Parameters:              Intermediate Map:          Result:
+     *    [1, 2, 3, 6]             [(0,  [4, 7])               [(0, 11), (1, 2), (2, 3)]
+     *    k -> i % 3                (1,  [2])
+     *    i -> i + 1                (2,  [3])]
+     *    v -> v++
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform and reduce.
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection}
+     * @param reduceValues
+     *    {@link BinaryOperator} used to reduces the values related with same key
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
+     *         is {@code null}
+     */
+    public static <T, K, V> Map<K, V> groupMapReduce(final Collection<? extends T> sourceCollection,
+                                                     final Function<? super T, ? extends K> discriminatorKey,
+                                                     final Function<? super T, V> valueMapper,
+                                                     final BinaryOperator<V> reduceValues) {
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        Assert.notNull(valueMapper, "valueMapper must be not null");
+        Assert.notNull(reduceValues, "reduceValues must be not null");
+
+        Map<K, V> result = new HashMap<>();
+        groupMap(sourceCollection, discriminatorKey, valueMapper)
+                .forEach(
+                        (k, v) ->
+                            result.put(
+                                    k,
+                                    v.stream().reduce(reduceValues).get()
+                            )
+                );
+        return result;
+    }
+
+
+    /**
      *    Using {@code initialValue} as first element, apply {@code applyFunction} up to {@code untilPredicate} function
      * is {@code true}. The accumulated results are returned in a {@link List}.
      *
-     * Examples:
-     *    42,  a -> a / 10,  a -> 50 >= a  =>  []
-     *    42,  a -> a / 10,  a -> 0 >= a   =>  [42, 4]
+     * Example 1:
+     *
+     *   Parameters:             Result:
+     *    42                      []
+     *    a -> a / 10
+     *    a -> 50 >= a
+     *
+     * Example 2:
+     *
+     *   Parameters:             Result:
+     *    42                      [42, 4]
+     *    a -> a / 10
+     *    a -> 0 >= a
      *
      * @param initialValue
      *    The initial value to start with
@@ -473,10 +665,26 @@ public class CollectionUtil {
      *    Using the provided {@code sourceCollection}, return all elements beginning at index {@code from} and afterwards,
      * up to index {@code until} (excluding this one).
      *
-     * Examples:
-     *    [5, 7, 9, 6],   1,  3  =>  [7, 9]
-     *    [a, b, c, d],   3,  7  =>  [d]
-     *    [a, b, c, d],  -1,  2  =>  [a, b]
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    [5, 7, 9, 6]             [7, 9]
+     *    1
+     *    3
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    [a, b, c, d]             [d]
+     *    3
+     *    7
+     *
+     * Example 3:
+     *
+     *   Parameters:              Result:
+     *    [a, b, c, d]             [a, b]
+     *    -1
+     *    2
      *
      * @param sourceCollection
      *    {@link Collection} to slice
@@ -521,9 +729,17 @@ public class CollectionUtil {
     /**
      * Loops through the provided {@link Collection} one position every time, returning sublists with {@code size}
      *
-     * Examples:
-     *   [1, 2]    with size = 5  =>  [[1, 2]]
-     *   [7, 8, 9] with size = 2  =>  [[7, 8], [8, 9]]
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    [1, 2]                   [[1, 2]]
+     *    5
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    [7, 8, 9]                [[7, 8], [8, 9]]
+     *    2
      *
      * @param sourceCollection
      *    {@link Collection} to slide
@@ -556,10 +772,23 @@ public class CollectionUtil {
     /**
      * Splits the given {@link Collection} in sublists with a size equal to the given {@code size}
      *
-     * Examples:
-     *   [1, 2, 3, 4] with size = 2  =>  [[1, 2], [3, 4]]
-     *   [1, 2, 3, 4] with size = 3  =>  [[1, 2, 3], [4]]
-     *   [1, 2, 3, 4] with size = 5  =>  [[1, 2, 3, 4]]
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 4]             [[1, 2], [3, 4]]
+     *    2
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 4]             [[1, 2, 3], [4]]
+     *    3
+     *
+     * Example 3:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 4]             [[1, 2, 3, 4]]
+     *    5
      *
      * @param sourceCollection
      *    {@link Collection} to split
@@ -597,10 +826,20 @@ public class CollectionUtil {
     /**
      * Transposes the rows and columns of the given {@code sourceCollection}.
      *
-     * Examples:
-     *   [[1, 2, 3], [4, 5, 6]]                     =>  [[1, 4], [2, 5], [3, 6]]
-     *   [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]  =>  [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
-     *   [[1, 2], [0], [7, 8, 9]]                   =>  [[1, 0, 7], [2, 8], [9]]
+     * Example 1:
+     *
+     *   Parameters:                                   Result:
+     *    [[1, 2, 3], [4, 5, 6]]                        [[1, 4], [2, 5], [3, 6]]
+     *
+     * Example 2:
+     *
+     *   Parameters:                                   Result:
+     *    [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]     [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
+     *
+     * Example 3:
+     *
+     *   Parameters:                                   Result:
+     *    [[1, 2], [0], [7, 8, 9]]                      [[1, 0, 7], [2, 8], [9]]
      *
      * @param sourceCollection
      *    {@link Collection} of {@link Collection}s to transpose
@@ -640,7 +879,9 @@ public class CollectionUtil {
      * second half of each pair.
      *
      * Example:
-     *    [("d", 6), ("h", 7), ("y", 11)]  =>  [("d", "h", "y"), (6, 7, 11)]
+     *
+     *   Parameters:                           Result:
+     *    [("d", 6), ("h", 7), ("y", 11)]       [("d", "h", "y"), (6, 7, 11)]
      *
      * @param sourceCollection
      *    {@link Collection} of {@link Tuple2} to split its elements
@@ -665,9 +906,17 @@ public class CollectionUtil {
      * by combining corresponding elements in {@link Tuple2}. If one of the two collections is longer than
      * the other, its remaining elements are ignored.
      *
-     * Examples:
-     *   ["d", "h", "y"],  [6, 7, 11]  =>  [("d", 6), ("h", 7), ("y", 11)]
-     *   [4, 9, 14],       [23, 8]     =>  [(4, 23), (9, 8)]
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    ["d", "h", "y"]          [("d", 6), ("h", 7), ("y", 11)]
+     *    [6, 7, 11]
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    [4, 9, 14]               [(4, 23), (9, 8)]
+     *    [23, 8]
      *
      * @param sourceLeftCollection
      *    {@link Collection} with elements to be included as left side of returned {@link Tuple2}
@@ -701,10 +950,29 @@ public class CollectionUtil {
      * by combining corresponding elements in {@link Tuple2}. If one of the two collections is shorter than
      * the other, placeholder elements are used to extend the shorter collection to the length of the longer.
      *
-     * Examples:
-     *   ["d", "h", "y"],  [6, 7, 11],      "z",   55  =>  [("d", 6), ("h", 7), ("y", 11)]
-     *   [4, 9, 14],       [23, 8],          17,   10  =>  [(4, 23), (9, 8), (14, 10)]
-     *   [4, 9],           ["f", "g", "m"],  11,  "u"  =>  [(4, "f"), (9, "g"), (11, "m")]
+     * Example 1:
+     *
+     *   Parameters:              Result:
+     *    ["d", "h", "y"]          [("d", 6), ("h", 7), ("y", 11)]
+     *    [6, 7, 11]
+     *    "z"
+     *    55
+     *
+     * Example 2:
+     *
+     *   Parameters:              Result:
+     *    [4, 9, 14]               [(4, 23), (9, 8), (14, 10)]
+     *    [23, 8]
+     *    17
+     *    10
+     *
+     * Example 3:
+     *
+     *   Parameters:              Result:
+     *    [4, 9]                   [(4, "f"), (9, "g"), (11, "m")]
+     *    ["f", "g", "m"]
+     *    11
+     *    "u"
      *
      * @param sourceLeftCollection
      *    {@link Collection} with elements to be included as left side of returned {@link Tuple2}
@@ -752,7 +1020,9 @@ public class CollectionUtil {
      * their index. Indices start at {@code 0}.
      *
      * Example:
-     *   ["d", "h", "y"]  =>  [(0, "d"), (1, "h"), (2, "y")]
+     *
+     *   Parameters:              Result:
+     *    ["d", "h", "y"]          [(0, "d"), (1, "h"), (2, "y")]
      *
      * @param sourceCollection
      *    {@link Collection} to extract: index and element

@@ -19,11 +19,13 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
@@ -36,7 +38,12 @@ public class MapUtil {
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
      * Example:
-     *   [("A", 1), ("B", 2)],  i -> i % 2 == 1,  i -> i + 1,  i -> i * 2  =>  [("A", 2), ("B", 4)]
+     *
+     *   Parameters:              Result:
+     *    [("A", 1), ("B", 2)]     [("A", 2), ("B", 4)]
+     *    i -> i % 2 == 1
+     *    i -> i + 1
+     *    i -> i * 2
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform.
@@ -92,7 +99,11 @@ public class MapUtil {
      *  - Transform its filtered elements using {@code mapFunction}
      *
      * Example:
-     *   [(1, "Hi"), (2, "Hello")],  (k, v) -> k % 2 == 0,  (k, v) -> k + v.length()  =>  [(2, 6)]
+     *
+     *   Parameters:                   Result:
+     *    [(1, "Hi"), (2, "Hello")]     [("A", 2), ("B", 4)]
+     *    (k, v) -> k % 2 == 0
+     *    (k, v) -> k + v.length()
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform.
@@ -141,7 +152,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return 0;
         }
-        if (Objects.isNull(filterPredicate)) {
+        if (isNull(filterPredicate)) {
             return sourceMap.size();
         }
         return sourceMap.entrySet()
@@ -166,7 +177,7 @@ public class MapUtil {
     public static <T, E> Optional<Tuple2<T, E>> find(final Map<? extends T, ? extends E> sourceMap,
                                                      final BiPredicate<? super T, ? super E> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceMap) ||
-                Objects.isNull(filterPredicate)) {
+                isNull(filterPredicate)) {
             return empty();
         }
         return sourceMap.entrySet()
@@ -182,7 +193,11 @@ public class MapUtil {
      * calling {@code accumulator}.
      *
      * Example:
-     *   [(1, "Hi"), (2, "Hello")],  0,  (k, v) -> k + v.length()  =>  10
+     *
+     *   Parameters:                        Result:
+     *    [(1, "Hi"), (2, "Hello")]          10
+     *    0
+     *    (k, v) -> k + v.length()
      *
      * @param sourceMap
      *    {@link Map} with elements to combine.
@@ -217,8 +232,11 @@ public class MapUtil {
      * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
      *
      * Example:
-     *   [(1, "Hi"), (2, "Hello"), (5, "World")],  (k, v) -> k % 2  =>  [(0,  [(2, "Hello")]
-     *                                                                   (1,  [(1, "Hi"), (5, "World")]]
+     *
+     *   Parameters:                                     Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World")]         [(0,  [(2, "Hello")])
+     *    (k, v) -> k % 2                                  (1,  [(1, "Hi"), (5, "World")])]
+     *
      * @param sourceMap
      *    {@link Map} to filter
      * @param discriminator
@@ -229,7 +247,7 @@ public class MapUtil {
     public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator) {
         if (CollectionUtils.isEmpty(sourceMap) ||
-                Objects.isNull(discriminator)) {
+                isNull(discriminator)) {
             return new HashMap<>();
         }
         Map<R, Map<T, E>> result = new HashMap<>();
@@ -241,6 +259,143 @@ public class MapUtil {
                             .put(k, v);
                 }
         );
+        return result;
+    }
+
+
+    /**
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
+     *
+     * It is equivalent to:
+     *
+     *    Map<R, Map<T, E>> groupedMap = groupBy(sourceMap, discriminatorKey)
+     *    Map<R, List<V>> finalMap = mapValues(groupedMap, valueMapper)
+     *
+     * Example:
+     *
+     *   Parameters:                                             Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]       [(0,  [1])
+     *    (k, v) -> k % 3                                          (1,  [2])
+     *    (k, v) -> v.length()                                     (2,  [5, 5])]
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform.
+     * @param discriminatorKey
+     *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    public static <T, E, R, V> Map<R, List<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
+                                                        final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                        final BiFunction<? super T, ? super E, ? extends V> valueMapper) {
+        return (Map)groupMap(sourceMap, discriminatorKey, valueMapper, ArrayList::new);
+    }
+
+
+    /**
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
+     *
+     * It is equivalent to:
+     *
+     *    Map<R, Map<T, E>> groupedMap = groupBy(sourceMap, discriminatorKey)
+     *    Map<R, List<V>> finalMap = mapValues(groupedMap, valueMapper)
+     *
+     * Example:
+     *
+     *   Parameters:                                             Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]       [(0,  [1])
+     *    (k, v) -> k % 3                                          (1,  [2])
+     *    (k, v) -> v.length()                                     (2,  [5, 5])]
+     *    ArrayList::new
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform.
+     * @param discriminatorKey
+     *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    public static <T, E, R, V> Map<R, Collection<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
+                                                              final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                              final BiFunction<? super T, ? super E, ? extends V> valueMapper,
+                                                              final Supplier<Collection<V>> collectionFactory) {
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        Assert.notNull(valueMapper, "valueMapper must be not null");
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return new HashMap<>();
+        }
+        Supplier<Collection<V>> finalCollectionFactory =
+                isNull(collectionFactory)
+                        ? ArrayList::new
+                        : collectionFactory;
+        Map<R, Collection<V>> result = new HashMap<>();
+        sourceMap.forEach(
+                (k, v) -> {
+                    R discriminatorKeyResult = discriminatorKey.apply(k, v);
+                    result.putIfAbsent(discriminatorKeyResult, finalCollectionFactory.get());
+                    result.get(discriminatorKeyResult)
+                            .add(valueMapper.apply(k, v));
+                }
+        );
+        return result;
+    }
+
+
+    /**
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * All the values that have the same discriminator are then transformed by {@code valueMapper} {@link BiFunction}
+     * and then reduced into a single value with {@code reduceValues}.
+     *
+     * Example:
+     *
+     *   Parameters:                                              Intermediate Map:          Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]        [(0,  [1])                 [(0, 1), (1, 2), (2, 10)]
+     *    (k, v) -> k % 3                                           (1,  [2])
+     *    (k, v) -> v.length()                                      (2,  [5, 5])]
+     *    v -> v++
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform.
+     * @param discriminatorKey
+     *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap}
+     * @param reduceValues
+     *    {@link BinaryOperator} used to reduces the values related with same key
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    public static <T, E, R, V> Map<R, V> groupMapReduce(final Map<? extends T, ? extends E> sourceMap,
+                                                        final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                        final BiFunction<? super T, ? super E, V> valueMapper,
+                                                        final BinaryOperator<V> reduceValues) {
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        Assert.notNull(valueMapper, "valueMapper must be not null");
+        Assert.notNull(reduceValues, "reduceValues must be not null");
+
+        Map<R, V> result = new HashMap<>();
+        groupMap(sourceMap, discriminatorKey, valueMapper)
+                .forEach(
+                        (k, v) ->
+                                result.put(
+                                        k,
+                                        v.stream().reduce(reduceValues).get()
+                                )
+                );
         return result;
     }
 
@@ -280,7 +435,10 @@ public class MapUtil {
      * Builds a new {@link Map} by applying a function to all values of {@code sourceMap}.
      *
      * Example:
-     *   [(1, "A"), (3, "C")],  (k, v) -> k + v.length()  =>  [(1, 2), (3, 4)]
+     *
+     *   Parameters:                    Result:
+     *    [(1, "A"), (3, "C")]           [(1, 2), (3, 4)]
+     *    (k, v) -> k + v.length()
      *
      * @param sourceMap
      *    {@link Map} to used as source of the new one
@@ -312,8 +470,11 @@ public class MapUtil {
      * {@code discriminator} and {@code false}, all elements that do not.
      *
      * Example:
-     *   [(1, "Hi"), (2, "Hello")],  (k, v) -> k % 2 == 0  =>  [(true,  [(2, "Hello")]
-     *                                                          (false, [(1, "Hi")]]
+     *
+     *   Parameters:                        Result:
+     *    [(1, "Hi"), (2, "Hello")]          [(true,  [(2, "Hello")])
+     *    (k, v) -> k % 2 == 0                (false, [(1, "Hi")])]
+     *
      * @param sourceMap
      *    {@link Map} to filter
      * @param discriminator
@@ -324,7 +485,7 @@ public class MapUtil {
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator) {
         if (CollectionUtils.isEmpty(sourceMap) ||
-                Objects.isNull(discriminator)) {
+                isNull(discriminator)) {
             return new HashMap<>();
         }
         Map<Boolean, Map<T, E>> result = new HashMap<>() {{
@@ -368,10 +529,26 @@ public class MapUtil {
      *    Using the provided {@code sourceMap}, return all elements beginning at index {@code from} and afterwards,
      * up to index {@code until} (excluding this one).
      *
-     * Examples:
-     *    [(1, "Hi"), (2, "Hello")],   1,  3  =>  [(2, "Hello")]
-     *    [(1, "Hi"), (2, "Hello")],   0,  1  =>  [(1, "Hi")]
-     *    [(1, "Hi"), (2, "Hello")],  -1,  2  =>  [(1, "Hi"), (2, "Hello")]
+     * Example 1:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(2, "Hello")]
+     *    1
+     *    3
+     *
+     * Example 2:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
+     *    0
+     *    1
+     *
+     * Example 3:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Hello")]
+     *    -1
+     *    2
      *
      * @param sourceMap
      *    {@link Map} to slice
@@ -413,9 +590,17 @@ public class MapUtil {
     /**
      * Loops through the provided {@link Map} one position every time, returning sublists with {@code size}
      *
-     * Examples:
-     *   [(1, "A"), (3, "C")]           with size = 5  =>  [[(1, "A"), (3, "C")]]
-     *   [(1, "A"), (3, "C"), (8, "Z")] with size = 2  =>  [[(1, "A"), (3, "C")], [(3, "C"), (8, "Z")]]
+     * Example 1:
+     *
+     *   Parameters:                          Result:
+     *    [(1, "A"), (3, "C")]                 [[(1, "A"), (3, "C")]]
+     *    5
+     *
+     * Example 2:
+     *
+     *   Parameters:                          Result:
+     *    [(1, "A"), (3, "C"), (8, "Z")]       [[(1, "A"), (3, "C")], [(3, "C"), (8, "Z")]]
+     *    2
      *
      * @param sourceMap
      *    {@link Map} to slide
@@ -462,9 +647,17 @@ public class MapUtil {
     /**
      * Splits the given {@link Map} in sublists with a size equal to the given {@code size}
      *
-     * Examples:
-     *   [(1, "A"), (3, "C"), (8, "Z")] with size = 2  =>  [[(1, "A"), (3, "C")], [(8, "Z")]]
-     *   [(1, "A"), (3, "C")]           with size = 3  =>  [[(1, "A"), (3, "C")]]
+     * Example 1:
+     *
+     *   Parameters:                          Result:
+     *    [(1, "A"), (3, "C"), (8, "Z")]       [[(1, "A"), (3, "C")], [(8, "Z")]]
+     *    2
+     *
+     * Example 2:
+     *
+     *   Parameters:                          Result:
+     *    [(1, "A"), (3, "C")]                 [[(1, "A"), (3, "C")]]
+     *    3
      *
      * @param sourceMap
      *    {@link Map} to split
