@@ -25,17 +25,17 @@ import java.util.Base64;
 @Service
 public class EncryptorService {
 
-    private final String SYMMETRIC_ENCRYPTION_ALGORITHM = "AES";
-    private final String ENCRYPTION_ALGORITHM = "AES/GCM/NoPadding";
-    private final String SECRET_KEY_ALGORITHM = "PBKDF2WithHmacSHA256";
+    private static final String SYMMETRIC_ENCRYPTION_ALGORITHM = "AES";
+    private static final String ENCRYPTION_ALGORITHM = "AES/GCM/NoPadding";
+    private static final String SECRET_KEY_ALGORITHM = "PBKDF2WithHmacSHA256";
 
-    private final int ITERATION_COUNT = 1024;
-    private final int KEY_LENGTH = 256;
+    private static final int ITERATION_COUNT = 1024;
+    private static final int KEY_LENGTH = 256;
 
-    private final int TAG_LENGTH_BIT = 128;
-    private final int IV_LENGTH_BYTE = 12;
-    private final int SALT_LENGTH_BYTE = 16;
-    private final Charset UTF_8 = StandardCharsets.UTF_8;
+    private static final int TAG_LENGTH_BIT = 128;
+    private static final int IV_LENGTH_BYTE = 12;
+    private static final int SALT_LENGTH_BYTE = 16;
+    private static final Charset UTF_8 = StandardCharsets.UTF_8;
 
 
     /**

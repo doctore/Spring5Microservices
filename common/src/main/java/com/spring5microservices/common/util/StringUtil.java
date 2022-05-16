@@ -20,8 +20,8 @@ import static java.util.stream.Collectors.toList;
 @UtilityClass
 public class StringUtil {
 
-    private final String DEFAULT_MIDDLE_STRING_ABBREVIATION = "...";
-    private final String DEFAULT_STRING_SEPARATOR = ",";
+    private static final String DEFAULT_MIDDLE_STRING_ABBREVIATION = "...";
+    private static final String DEFAULT_STRING_SEPARATOR = ",";
     private final Function<String, String> DEFAULT_STRING_EXTRACTOR = String::trim;
 
 
