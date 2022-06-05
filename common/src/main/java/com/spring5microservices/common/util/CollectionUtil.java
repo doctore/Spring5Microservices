@@ -53,11 +53,11 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param defaultFunction
-     *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}
      * @param orElseFunction
-     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      *
      * @return {@link List}
      *
@@ -86,15 +86,15 @@ public class CollectionUtil {
      *    ArrayList::new
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to filter and transform.
+     *    Source {@link Collection} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param defaultFunction
-     *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}
      * @param orElseFunction
-     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}.
+     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements
      *
      * @return {@link Collection}
      *
@@ -109,14 +109,14 @@ public class CollectionUtil {
         Assert.notNull(filterPredicate, "filterPredicate must be not null");
         Assert.notNull(defaultFunction, "defaultFunction must be not null");
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return new ArrayList<>();
-        }
         Supplier<Collection<E>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
 
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
         return sourceCollection.stream()
                 .map(elto ->
                         filterPredicate.test(elto)
@@ -157,11 +157,11 @@ public class CollectionUtil {
      *    i -> i.toString()
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to filter and transform.
+     *    Source {@link Collection} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param mapFunction
-     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}.
+     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}
      *
      * @return {@link List}
      *
@@ -189,13 +189,13 @@ public class CollectionUtil {
      *    ArrayList::new
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to filter and transform.
+     *    Source {@link Collection} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}.
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param mapFunction
-     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}.
+     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}
      * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements
      *
      * @return {@link Collection}
      *
@@ -207,14 +207,14 @@ public class CollectionUtil {
                                                final Supplier<Collection<E>> collectionFactory) {
         Assert.notNull(filterPredicate, "filterPredicate must be not null");
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return new ArrayList<>();
-        }
         Supplier<Collection<E>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
 
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
         return sourceCollection
                 .stream()
                 .filter(filterPredicate)
@@ -243,11 +243,11 @@ public class CollectionUtil {
      * Returns a {@link Collection} with the extracted property of the given {@code sourceCollection}
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the property to extract.
+     *    Source {@link Collection} with the property to extract
      * @param keyExtractor
-     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}.
+     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}
      * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements
      *
      * @return {@link Collection}
      */
@@ -275,7 +275,7 @@ public class CollectionUtil {
      * Returns the unique elements of the given {@link Collection}s.
      *
      * @param collections
-     *    {@link Collection}s to concat.
+     *    {@link Collection}s to concat
      *
      * @return {@link LinkedHashSet}
      */
