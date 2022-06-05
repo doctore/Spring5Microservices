@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MapUtilTest {
 
-    static Stream<Arguments> applyOrElseTestCases() {
+    static Stream<Arguments> applyOrElseNoMapFactoryTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -77,14 +77,14 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("applyOrElseTestCases")
-    @DisplayName("applyOrElse: test cases")
-    public <T, E, R> void applyOrElse_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                BiPredicate<? super T, ? super E> filterPredicate,
-                                                BiFunction<? super T, ? super E, ? extends R> defaultFunction,
-                                                BiFunction<? super T, ? super E, ? extends R> orElseFunction,
-                                                Class<? extends Exception> expectedException,
-                                                Map<T, R> expectedResult) {
+    @MethodSource("applyOrElseNoMapFactoryTestCases")
+    @DisplayName("applyOrElse: without map factory test cases")
+    public <T, E, R> void applyOrElseNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                            BiPredicate<? super T, ? super E> filterPredicate,
+                                                            BiFunction<? super T, ? super E, ? extends R> defaultFunction,
+                                                            BiFunction<? super T, ? super E, ? extends R> orElseFunction,
+                                                            Class<? extends Exception> expectedException,
+                                                            Map<T, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
                     () -> applyOrElse(
@@ -102,7 +102,65 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> collectTestCases() {
+    static Stream<Arguments> applyOrElseAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(3, "C");
+        }};
+        BiPredicate<Integer, String> isKeyOddAndValueVowel = (k, v) -> k % 2 == 1 && "AEIOUaeiou".contains(v);
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
+        BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
+
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 3L);
+            put(3, 4L);
+        }};
+        LinkedHashMap<Integer, Long> intsAndStringsLinkedMapResult = new LinkedHashMap<>(intsAndStringsResult);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,         defaultFunction,               orElseFunction,          mapFactory,          expectedException,                expectedResult
+                Arguments.of( null,             null,                    null,                          null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         null,                    null,                          null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             intsAndStringsResult ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   linkedMapSupplier,   null,                             intsAndStringsLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseAllParametersTestCases")
+    @DisplayName("applyOrElse: with all parameters test cases")
+    public <T, E, R> void applyOrElseAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                             BiPredicate<? super T, ? super E> filterPredicate,
+                                                             BiFunction<? super T, ? super E, ? extends R> defaultFunction,
+                                                             BiFunction<? super T, ? super E, ? extends R> orElseFunction,
+                                                             Supplier<Map<T, R>> mapFactory,
+                                                             Class<? extends Exception> expectedException,
+                                                             Map<T, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> applyOrElse(
+                            sourceMap, filterPredicate, defaultFunction, orElseFunction, mapFactory
+                    )
+            );
+        }
+        else {
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceMap, filterPredicate, defaultFunction, orElseFunction, mapFactory
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> collectNoMapFactoryTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -111,7 +169,7 @@ public class MapUtilTest {
         BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
 
-        Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
+        Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
             put(4, 9L);
         }};
         return Stream.of(
@@ -123,23 +181,69 @@ public class MapUtilTest {
                 Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                          IllegalArgumentException.class,   null ),
                 Arguments.of( null,             isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             Map.of() ),
                 Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             Map.of() ),
-                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             intsAndStringsResult )
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             intsAndLongsResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("collectTestCases")
-    @DisplayName("collect: test cases")
-    public <T, E, R> void collect_testCases(Map<? extends T, ? extends E> sourceMap,
-                                            BiPredicate<? super T, ? super E> filterPredicate,
-                                            BiFunction<? super T, ? super E, ? extends R> mapFunction,
-                                            Class<? extends Exception> expectedException,
-                                            Map<T, R> expectedResult) {
+    @MethodSource("collectNoMapFactoryTestCases")
+    @DisplayName("collect: without map factory test cases")
+    public <T, E, R> void collectNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                        BiPredicate<? super T, ? super E> filterPredicate,
+                                                        BiFunction<? super T, ? super E, ? extends R> mapFunction,
+                                                        Class<? extends Exception> expectedException,
+                                                        Map<T, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceMap, filterPredicate, mapFunction));
         }
         else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction));
+        }
+    }
+
+
+    static Stream<Arguments> collectAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
+
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
+            put(4, 9L);
+        }};
+        LinkedHashMap<Integer, Long> intsAndLongsLinkedMapResult = new LinkedHashMap<>(intsAndLongsResult);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,          mapFunction,                   mapFactory,          expectedException,                expectedResult
+                Arguments.of( null,             null,                     null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         null,                     null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         null,                     null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                null,                             intsAndLongsResult ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   linkedMapSupplier,   null,                             intsAndLongsLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectAllParametersTestCases")
+    @DisplayName("collect: with all parameters test cases")
+    public <T, E, R> void collectAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                         BiPredicate<? super T, ? super E> filterPredicate,
+                                                         BiFunction<? super T, ? super E, ? extends R> mapFunction,
+                                                         Supplier<Map<T, R>> mapFactory,
+                                                         Class<? extends Exception> expectedException,
+                                                         Map<T, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collect(sourceMap, filterPredicate, mapFunction, mapFactory));
+        }
+        else {
+            assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction, mapFactory));
         }
     }
 
@@ -483,60 +587,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> partitionTestCases() {
-        Map<Integer, String> intsAndStrings = new HashMap<>() {{
-            put(1, "A");
-            put(2, "B");
-            put(4, "o");
-        }};
-        Map<Integer, Long> intsAndLongs = new HashMap<>() {{
-            put(7, 3L);
-            put(11, 6L);
-            put(21, 9L);
-        }};
-        BiPredicate<Integer, String> isKeyEven = (k, v) -> k % 2 == 0;
-        BiPredicate<Integer, Long> isKeyPlusValueOdd = (k, v) -> (k + v) % 2 == 1;
-
-        Map<Boolean, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
-            put(Boolean.TRUE,
-                new HashMap<>() {{
-                    put(2, "B");
-                    put(4, "o");
-                }}
-            );
-            put(Boolean.FALSE,
-                new HashMap<>() {{
-                    put(1, "A");
-                }}
-            );
-        }};
-        Map<Boolean, Map<Integer, Long>> intsAndLongsResult = new HashMap<>() {{
-            put(Boolean.TRUE,
-                new HashMap<>() {{
-                    put(11, 6L);
-                }}
-            );
-            put(Boolean.FALSE,
-                new HashMap<>() {{
-                    put(7, 3L);
-                    put(21, 9L);
-                }}
-            );
-        }};
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,         discriminator,       expectedResult
-                Arguments.of( null,              null,                Map.of() ),
-                Arguments.of( null,              isKeyEven,           Map.of() ),
-                Arguments.of( Map.of(),          null,                Map.of() ),
-                Arguments.of( Map.of(),          isKeyEven,           Map.of() ),
-                Arguments.of( intsAndStrings,    isKeyEven,           intsAndStringsResult ),
-                Arguments.of( intsAndLongs,      isKeyPlusValueOdd,   intsAndLongsResult )
-        ); //@formatter:on
-    }
-
-
-    static Stream<Arguments> mapTestCases() {
+    static Stream<Arguments> mapNoMapFactoryTestCases() {
         Map<Integer, Integer> integersMap = new HashMap<>() {{
             put(1, 21);
             put(4, 43);
@@ -545,7 +596,7 @@ public class MapUtilTest {
         BiFunction<Integer, Integer, Tuple2<String, String>> add1ToValueAndConvertToString =
                 (k, v) -> Tuple.of(String.valueOf(k + 1), String.valueOf(v * 2));
 
-        Map<String, String> integersMapResult = new HashMap<>() {{
+        Map<String, String> stringsMapResult = new HashMap<>() {{
             put("2", "42");
             put("5", "86");
             put("10", "202");
@@ -557,17 +608,17 @@ public class MapUtilTest {
                 Arguments.of( Map.of(),          null,                            IllegalArgumentException.class,   null ),
                 Arguments.of( null,              add1ToValueAndConvertToString,   null,                             Map.of() ),
                 Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                             Map.of() ),
-                Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                             integersMapResult )
+                Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                             stringsMapResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("mapTestCases")
-    @DisplayName("map: test cases")
-    public <T, E, R, V> void map_testCases(Map<? extends T, ? extends E> sourceMap,
-                                           BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
-                                           Class<? extends Exception> expectedException,
-                                           Map<R, V> expectedResult) {
+    @MethodSource("mapNoMapFactoryTestCases")
+    @DisplayName("map: without map factory test cases")
+    public <T, E, R, V> void mapNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                       BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
+                                                       Class<? extends Exception> expectedException,
+                                                       Map<R, V> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> map(sourceMap, mapFunction));
         }
@@ -577,7 +628,52 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> mapValuesTestCases() {
+    static Stream<Arguments> mapAllParametersTestCases() {
+        Map<Integer, Integer> integersMap = new HashMap<>() {{
+            put(1, 21);
+            put(4, 43);
+            put(9, 101);
+        }};
+        BiFunction<Integer, Integer, Tuple2<String, String>> add1ToValueAndConvertToString =
+                (k, v) -> Tuple.of(String.valueOf(k + 1), String.valueOf(v * 2));
+
+        Supplier<Map<String, String>> linkedMapSupplier = LinkedHashMap::new;
+        Map<String, String> stringsMapResult = new HashMap<>() {{
+            put("2", "42");
+            put("5", "86");
+            put("10", "202");
+        }};
+        LinkedHashMap<String, String> stringsLinkedMapResult = new LinkedHashMap<>(stringsMapResult);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         mapFunction,                     mapFactory,          expectedException,                expectedResult
+                Arguments.of( null,              null,                            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),          null,                            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,              add1ToValueAndConvertToString,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                null,                             Map.of() ),
+                Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                null,                             stringsMapResult ),
+                Arguments.of( integersMap,       add1ToValueAndConvertToString,   linkedMapSupplier,   null,                             stringsLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapAllParametersTestCases")
+    @DisplayName("map: with all parameters test cases")
+    public <T, E, R, V> void mapAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                        BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
+                                                        Supplier<Map<R, V>> mapFactory,
+                                                        Class<? extends Exception> expectedException,
+                                                        Map<R, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> map(sourceMap, mapFunction, mapFactory));
+        }
+        else {
+            assertEquals(expectedResult, map(sourceMap, mapFunction, mapFactory));
+        }
+    }
+
+
+    static Stream<Arguments> mapValuesNoMapFactoryTestCases() {
         Map<Integer, Integer> integersMap = new HashMap<>() {{
             put(1, 21);
             put(4, 43);
@@ -601,12 +697,12 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("mapValuesTestCases")
-    @DisplayName("mapValues: test cases")
-    public <T, E, R> void mapValues_testCases(Map<? extends T, ? extends E> sourceMap,
-                                              BiFunction<? super T, ? super E, ? extends R> mapFunction,
-                                              Class<? extends Exception> expectedException,
-                                              Map<T, R> expectedResult) {
+    @MethodSource("mapValuesNoMapFactoryTestCases")
+    @DisplayName("mapValues: without map factory test cases")
+    public <T, E, R> void mapValuesNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                          BiFunction<? super T, ? super E, ? extends R> mapFunction,
+                                                          Class<? extends Exception> expectedException,
+                                                          Map<T, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> mapValues(sourceMap, mapFunction));
         }
@@ -615,6 +711,101 @@ public class MapUtilTest {
         }
     }
 
+
+    static Stream<Arguments> mapValuesAllParametersTestCases() {
+        Map<Integer, Integer> integersMap = new HashMap<>() {{
+            put(1, 21);
+            put(4, 43);
+            put(9, 101);
+        }};
+        BiFunction<Integer, Integer, String> add1ToValueAndConvertToString = (k, v) -> String.valueOf(v + 1);
+
+        Supplier<Map<Integer, String>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, String> integersMapResult = new HashMap<>() {{
+            put(1, "22");
+            put(4, "44");
+            put(9, "102");
+        }};
+        LinkedHashMap<Integer, String> integersLinkedMapResult = new LinkedHashMap<>(integersMapResult);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         mapFunction,                     mapFactory,          expectedException,                expectedResult
+                Arguments.of( null,              null,                            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),          null,                            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                null,                             Map.of() ),
+                Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                null,                             integersMapResult ),
+                Arguments.of( integersMap,       add1ToValueAndConvertToString,   linkedMapSupplier,   null,                             integersLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapValuesAllParametersTestCases")
+    @DisplayName("mapValues: with all parameters test cases")
+    public <T, E, R> void mapValuesAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                           BiFunction<? super T, ? super E, ? extends R> mapFunction,
+                                                           Supplier<Map<T, R>> mapFactory,
+                                                           Class<? extends Exception> expectedException,
+                                                           Map<T, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> mapValues(sourceMap, mapFunction, mapFactory));
+        }
+        else {
+            assertEquals(expectedResult, mapValues(sourceMap, mapFunction, mapFactory));
+        }
+    }
+
+
+    static Stream<Arguments> partitionTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        Map<Integer, Long> intsAndLongs = new HashMap<>() {{
+            put(7, 3L);
+            put(11, 6L);
+            put(21, 9L);
+        }};
+        BiPredicate<Integer, String> isKeyEven = (k, v) -> k % 2 == 0;
+        BiPredicate<Integer, Long> isKeyPlusValueOdd = (k, v) -> (k + v) % 2 == 1;
+
+        Map<Boolean, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
+            put(Boolean.TRUE,
+                    new HashMap<>() {{
+                        put(2, "B");
+                        put(4, "o");
+                    }}
+            );
+            put(Boolean.FALSE,
+                    new HashMap<>() {{
+                        put(1, "A");
+                    }}
+            );
+        }};
+        Map<Boolean, Map<Integer, Long>> intsAndLongsResult = new HashMap<>() {{
+            put(Boolean.TRUE,
+                    new HashMap<>() {{
+                        put(11, 6L);
+                    }}
+            );
+            put(Boolean.FALSE,
+                    new HashMap<>() {{
+                        put(7, 3L);
+                        put(21, 9L);
+                    }}
+            );
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         discriminator,       expectedResult
+                Arguments.of( null,              null,                Map.of() ),
+                Arguments.of( null,              isKeyEven,           Map.of() ),
+                Arguments.of( Map.of(),          null,                Map.of() ),
+                Arguments.of( Map.of(),          isKeyEven,           Map.of() ),
+                Arguments.of( intsAndStrings,    isKeyEven,           intsAndStringsResult ),
+                Arguments.of( intsAndLongs,      isKeyPlusValueOdd,   intsAndLongsResult )
+        ); //@formatter:on
+    }
 
     @ParameterizedTest
     @MethodSource("partitionTestCases")
