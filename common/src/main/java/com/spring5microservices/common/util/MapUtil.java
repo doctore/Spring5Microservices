@@ -63,11 +63,54 @@ public class MapUtil {
                                                   final BiPredicate<? super T, ? super E> filterPredicate,
                                                   final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
                                                   final BiFunction<? super T, ? super E, ? extends R> orElseFunction) {
+        return applyOrElse(sourceMap, filterPredicate, defaultFunction, orElseFunction, HashMap::new);
+    }
+
+
+    /**
+     *    In the given {@code sourceMap}, applies {@code defaultFunction} if the current element verifies
+     * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
+     *
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [("A", 1), ("B", 2)]     [("A", 2), ("B", 4)]
+     *    i -> i % 2 == 1
+     *    i -> i + 1
+     *    i -> i * 2
+     *    HashMap::new
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
+     * @param defaultFunction
+     *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}.
+     * @param orElseFunction
+     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}.
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
+     *                                  is {@code null}
+     */
+    public static <T, E, R> Map<T, R> applyOrElse(final Map<? extends T, ? extends E> sourceMap,
+                                                  final BiPredicate<? super T, ? super E> filterPredicate,
+                                                  final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
+                                                  final BiFunction<? super T, ? super E, ? extends R> orElseFunction,
+                                                  final Supplier<Map<T, R>> mapFactory) {
         Assert.notNull(filterPredicate, "filterPredicate must be not null");
         Assert.notNull(defaultFunction, "defaultFunction must be not null");
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
+        Supplier<Map<T, R>> finalMapFactory =
+                isNull(mapFactory)
+                        ? HashMap::new
+                        : mapFactory;
+
         if (CollectionUtils.isEmpty(sourceMap)) {
-            return new HashMap<>();
+            return finalMapFactory.get();
         }
         return sourceMap.entrySet()
                 .stream()
@@ -86,7 +129,8 @@ public class MapUtil {
                         toMap(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
-                                overwriteWithNew()
+                                overwriteWithNew(),
+                                finalMapFactory
                         )
                 );
     }
@@ -119,10 +163,50 @@ public class MapUtil {
     public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
                                               final BiPredicate<? super T, ? super E> filterPredicate,
                                               final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
+        return collect(sourceMap, filterPredicate, mapFunction, HashMap::new);
+    }
+
+
+    /**
+     * Returns a {@link Map} after:
+     *
+     *  - Filter its elements using {@code filterPredicate}
+     *  - Transform its filtered elements using {@code mapFunction}
+     *
+     * Example:
+     *
+     *   Parameters:                   Result:
+     *    [(1, "Hi"), (2, "Hello")]     [("A", 2), ("B", 4)]
+     *    (k, v) -> k % 2 == 0
+     *    (k, v) -> k + v.length()
+     *    HashMap::new
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform.
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
+     * @param mapFunction
+     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}.
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     */
+    public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
+                                              final BiPredicate<? super T, ? super E> filterPredicate,
+                                              final BiFunction<? super T, ? super E, ? extends R> mapFunction,
+                                              final Supplier<Map<T, R>> mapFactory) {
         Assert.notNull(filterPredicate, "filterPredicate must be not null");
         Assert.notNull(mapFunction, "mapFunction must be not null");
+        Supplier<Map<T, R>> finalMapFactory =
+                isNull(mapFactory)
+                        ? HashMap::new
+                        : mapFactory;
+
         if (CollectionUtils.isEmpty(sourceMap)) {
-            return new HashMap<>();
+            return finalMapFactory.get();
         }
         return sourceMap.entrySet()
                 .stream()
@@ -131,7 +215,8 @@ public class MapUtil {
                         toMap(
                                 Map.Entry::getKey,
                                 entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
-                                overwriteWithNew()
+                                overwriteWithNew(),
+                                finalMapFactory
                         )
                 );
     }
@@ -414,9 +499,35 @@ public class MapUtil {
      */
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
                                              final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction) {
+        return map(sourceMap, mapFunction, HashMap::new);
+    }
+
+
+    /**
+     * Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}.
+     *
+     * @param sourceMap
+     *    {@link Map} to used as source of the new one
+     * @param mapFunction
+     *    {@link BiFunction} used to transform given {@link Map} elements
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
+     */
+    public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
+                                             final Supplier<Map<R, V>> mapFactory) {
         Assert.notNull(mapFunction, "mapFunction must be not null");
+        Supplier<Map<R, V>> finalMapFactory =
+                isNull(mapFactory)
+                        ? HashMap::new
+                        : mapFactory;
+
         if (CollectionUtils.isEmpty(sourceMap)) {
-            return new HashMap<>();
+            return finalMapFactory.get();
         }
         return sourceMap.entrySet()
                 .stream()
@@ -425,7 +536,8 @@ public class MapUtil {
                         toMap(
                                 t -> t._1,
                                 t -> t._2,
-                                overwriteWithNew()
+                                overwriteWithNew(),
+                                finalMapFactory
                         )
                 );
     }
@@ -449,9 +561,40 @@ public class MapUtil {
      */
     public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
+        return mapValues(sourceMap, mapFunction, HashMap::new);
+    }
+
+
+    /**
+     * Builds a new {@link Map} by applying a function to all values of {@code sourceMap}.
+     *
+     * Example:
+     *
+     *   Parameters:                    Result:
+     *    [(1, "A"), (3, "C")]           [(1, 2), (3, 4)]
+     *    (k, v) -> k + v.length()
+     *    HashMap::new
+     *
+     * @param sourceMap
+     *    {@link Map} to used as source of the new one
+     * @param mapFunction
+     *    {@link BiFunction} used to transform given {@link Map} values
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *
+     * @return updated {@link Map}
+     */
+    public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
+                                                final BiFunction<? super T, ? super E, ? extends R> mapFunction,
+                                                final Supplier<Map<T, R>> mapFactory) {
         Assert.notNull(mapFunction, "mapFunction must be not null");
+        Supplier<Map<T, R>> finalMapFactory =
+                isNull(mapFactory)
+                        ? HashMap::new
+                        : mapFactory;
+
         if (CollectionUtils.isEmpty(sourceMap)) {
-            return new HashMap<>();
+            return finalMapFactory.get();
         }
         return sourceMap.entrySet()
                 .stream()
@@ -459,7 +602,8 @@ public class MapUtil {
                         toMap(
                                 Map.Entry::getKey,
                                 entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
-                                overwriteWithNew()
+                                overwriteWithNew(),
+                                finalMapFactory
                         )
                 );
     }

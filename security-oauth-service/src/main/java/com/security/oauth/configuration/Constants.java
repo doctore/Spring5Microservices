@@ -9,7 +9,7 @@ public class Constants {
     public static final class DATABASE_SCHEMA {
         public static final String EAT = "eat";
         public static final String SECURITY = "security";
-    };
+    }
 
     // External path
     public static final class EXTERNAL_PATH {
