@@ -9,6 +9,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -558,6 +559,8 @@ public class MapUtil {
      *    {@link BiFunction} used to transform given {@link Map} values
      *
      * @return updated {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
      */
     public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
@@ -583,6 +586,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the returned elements
      *
      * @return updated {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
      */
     public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction,
@@ -605,6 +610,129 @@ public class MapUtil {
                                 overwriteWithNew(),
                                 finalMapFactory
                         )
+                );
+    }
+
+
+    /**
+     * Finds the first element of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
+     *
+     * @param sourceMap
+     *    {@link Map} used to find largest element
+     * @param comparator
+     *    {@link Comparator} to be used for comparing elements
+     *
+     * @return {@link Optional} of {@link Tuple2} containing the largest element using {@code comparator},
+     *         {@link Optional#empty()} if {@code sourceMap} has no elements.
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     */
+    public static <T, E> Optional<Tuple2<T, E>> max(final Map<? extends T, ? extends E> sourceMap,
+                                                    final Comparator<Tuple2<? extends T, ? extends E>> comparator) {
+        Assert.notNull(comparator, "comparator must be not null");
+        return ofNullable(sourceMap)
+                .map(m -> {
+                    Tuple2<T, E> largestElement = null;
+                    for (var entry : m.entrySet()) {
+                        Tuple2<T, E> currentElement = Tuple.of(entry.getKey(), entry.getValue());
+                        if (Objects.isNull(largestElement)) {
+                            largestElement = currentElement;
+                        }
+                        else {
+                            largestElement =
+                                    0 > comparator.compare(largestElement, currentElement)
+                                            ? currentElement
+                                            : largestElement;
+                        }
+                    }
+                    return largestElement;
+                });
+    }
+
+
+    /**
+     * Finds the first value of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
+     *
+     * @param sourceMap
+     *    {@link Map} used to find largest value
+     * @param comparator
+     *    {@link Comparator} to be used for comparing values
+     *
+     * @return {@link Optional} with largest value using {@code comparator},
+     *         {@link Optional#empty()} if {@code sourceMap} has no elements.
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     */
+    public static <T, E> Optional<E> maxValue(final Map<? extends T, ? extends E> sourceMap,
+                                              final Comparator<? super E> comparator) {
+        Assert.notNull(comparator, "comparator must be not null");
+        return ofNullable(sourceMap)
+                .flatMap(m ->
+                        m.values()
+                                .stream()
+                                .max(comparator)
+                );
+    }
+
+
+    /**
+     * Finds the first element of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
+     *
+     * @param sourceMap
+     *    {@link Map} used to find smallest element
+     * @param comparator
+     *    {@link Comparator} to be used for comparing elements
+     *
+     * @return {@link Optional} of {@link Tuple2} containing the smallest value using {@code comparator},
+     *         {@link Optional#empty()} if {@code sourceMap} has no elements.
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     */
+    public static <T, E> Optional<Tuple2<T, E>> min(final Map<? extends T, ? extends E> sourceMap,
+                                                    final Comparator<Tuple2<? extends T, ? extends E>> comparator) {
+        Assert.notNull(comparator, "comparator must be not null");
+        return ofNullable(sourceMap)
+                .map(m -> {
+                    Tuple2<T, E> smallestElement = null;
+                    for (var entry : m.entrySet()) {
+                        Tuple2<T, E> currentElement = Tuple.of(entry.getKey(), entry.getValue());
+                        if (Objects.isNull(smallestElement)) {
+                            smallestElement = currentElement;
+                        }
+                        else {
+                            smallestElement =
+                                    0 < comparator.compare(smallestElement, currentElement)
+                                            ? currentElement
+                                            : smallestElement;
+                        }
+                    }
+                    return smallestElement;
+                });
+    }
+
+
+    /**
+     * Finds the first value of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
+     *
+     *
+     * @param sourceMap
+     *    {@link Map} used to find smallest value
+     * @param comparator
+     *    {@link Comparator} to be used for comparing values
+     *
+     * @return {@link Optional} with smallest value using {@code comparator},
+     *         {@link Optional#empty()} if {@code sourceMap} has no elements.
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     */
+    public static <T, E> Optional<E> minValue(final Map<? extends T, ? extends E> sourceMap,
+                                              final Comparator<? super E> comparator) {
+        Assert.notNull(comparator, "comparator must be not null");
+        return ofNullable(sourceMap)
+                .flatMap(m ->
+                        m.values()
+                                .stream()
+                                .min(comparator)
                 );
     }
 
