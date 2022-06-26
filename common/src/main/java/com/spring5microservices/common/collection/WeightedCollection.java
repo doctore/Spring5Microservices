@@ -1,5 +1,7 @@
 package com.spring5microservices.common.collection;
 
+import org.springframework.util.Assert;
+
 import java.security.SecureRandom;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -45,14 +47,12 @@ public class WeightedCollection<T> {
      *    Weight value related with {@code toInsert}
      * @param toInsert
      *    New element to insert
+     *
+     * @throws IllegalArgumentException if {@code weight} < 1 or {@code toInsert} is {@code null}
      */
     public void add(int weight, T toInsert) {
-        if (0 >= weight) {
-            throw new IllegalArgumentException("weight should be a positive value");
-        }
-        if (null == toInsert) {
-            throw new IllegalArgumentException("toInsert must not be null");
-        }
+        Assert.isTrue(0 < weight, "weight should be a positive value");
+        Assert.notNull(toInsert, "toInsert must not be null");
         totalWeight += weight;
         weightedMap.put(totalWeight, toInsert);
     }
@@ -84,12 +84,12 @@ public class WeightedCollection<T> {
      * @return {@code true} if both collections are equals, {@code false} otherwise.
      */
     public boolean equals(WeightedCollection<?> other) {
-        if (other == this)
+        if (other == this) {
             return true;
-
-        if (null == other || other.size() != size())
+        }
+        if (null == other || other.size() != size()) {
             return false;
-
+        }
         return weightedMap.equals(other.weightedMap);
     }
 

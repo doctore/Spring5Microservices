@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -33,6 +34,10 @@ import static com.spring5microservices.common.util.MapUtil.groupMap;
 import static com.spring5microservices.common.util.MapUtil.groupMapReduce;
 import static com.spring5microservices.common.util.MapUtil.map;
 import static com.spring5microservices.common.util.MapUtil.mapValues;
+import static com.spring5microservices.common.util.MapUtil.max;
+import static com.spring5microservices.common.util.MapUtil.maxValue;
+import static com.spring5microservices.common.util.MapUtil.min;
+import static com.spring5microservices.common.util.MapUtil.minValue;
 import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.slice;
@@ -751,6 +756,168 @@ public class MapUtilTest {
         }
         else {
             assertEquals(expectedResult, mapValues(sourceMap, mapFunction, mapFactory));
+        }
+    }
+
+
+    static Stream<Arguments> maxTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, "Z3");
+            put(3, "AB");
+            put(4, "UTf");
+        }};
+        Comparator<Tuple2<Integer, String>> comparatorOnlyKeys = Comparator.comparing(t -> t._1);
+        Comparator<Tuple2<Integer, String>> comparatorOnlyValues = Comparator.comparing(t -> t._2);
+        Comparator<Tuple2<Integer, String>> comparatorBoth = (t1, t2) -> {
+            int valueComparison = t1._2.compareTo(t2._2);
+            return 0 != valueComparison
+                   ? t1._1.compareTo(t2._1)
+                   : valueComparison;
+        };
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         comparator,             expectedException,                expectedResult
+                Arguments.of( null,              null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( null,              comparatorOnlyKeys,     null,                             empty() ),
+                Arguments.of( new HashMap<>(),   comparatorOnlyKeys,     null,                             empty() ),
+                Arguments.of( intsAndStrings,    comparatorOnlyKeys,     null,                             of(Tuple2.of(4, "UTf")) ),
+                Arguments.of( intsAndStrings,    comparatorOnlyValues,   null,                             of(Tuple2.of(2, "Z3")) ),
+                Arguments.of( intsAndStrings,    comparatorBoth,         null,                             of(Tuple2.of(4, "UTf")) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("maxTestCases")
+    @DisplayName("max: test cases")
+    public <T, E> void max_testCases(Map<? extends T, ? extends E> sourceMap,
+                                     Comparator<Tuple2<? extends T, ? extends E>> comparator,
+                                     Class<? extends Exception> expectedException,
+                                     Optional<Tuple2<T, E>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> max(sourceMap, comparator));
+        }
+        else {
+            assertEquals(expectedResult, max(sourceMap, comparator));
+        }
+    }
+
+
+    static Stream<Arguments> maxValueTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, "Z3");
+            put(3, "AB");
+            put(4, "UTf");
+        }};
+        Comparator<String> comparatorNatural = String::compareTo;
+        Comparator<String> comparatorReverse = Comparator.reverseOrder();
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         comparator,          expectedException,                expectedResult
+                Arguments.of( null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,              comparatorNatural,   null,                             empty() ),
+                Arguments.of( new HashMap<>(),   comparatorNatural,   null,                             empty() ),
+                Arguments.of( intsAndStrings,    comparatorNatural,   null,                             of("Z3") ),
+                Arguments.of( intsAndStrings,    comparatorReverse,   null,                             of("AB") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("maxValueTestCases")
+    @DisplayName("maxValue: test cases")
+    public <T, E> void maxValue_testCases(Map<? extends T, ? extends E> sourceMap,
+                                          Comparator<? super E> comparator,
+                                          Class<? extends Exception> expectedException,
+                                          Optional<Tuple2<T, E>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> maxValue(sourceMap, comparator));
+        }
+        else {
+            assertEquals(expectedResult, maxValue(sourceMap, comparator));
+        }
+    }
+
+
+    static Stream<Arguments> minTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "TT");
+            put(2, "BA");
+            put(3, "Urf");
+            put(4, "BA");
+        }};
+        Comparator<Tuple2<Integer, String>> comparatorOnlyKeys = Comparator.comparing(t -> t._1);
+        Comparator<Tuple2<Integer, String>> comparatorOnlyValues = Comparator.comparing(t -> t._2);
+        Comparator<Tuple2<Integer, String>> comparatorBoth = (t1, t2) -> {
+            int valueComparison = t1._2.compareTo(t2._2);
+            return 0 != valueComparison
+                    ? t1._1.compareTo(t2._1)
+                    : valueComparison;
+        };
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         comparator,             expectedException,                expectedResult
+                Arguments.of( null,              null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( null,              comparatorOnlyKeys,     null,                             empty() ),
+                Arguments.of( new HashMap<>(),   comparatorOnlyKeys,     null,                             empty() ),
+                Arguments.of( intsAndStrings,    comparatorOnlyKeys,     null,                             of(Tuple2.of(1, "TT")) ),
+                Arguments.of( intsAndStrings,    comparatorOnlyValues,   null,                             of(Tuple2.of(2, "BA")) ),
+                Arguments.of( intsAndStrings,    comparatorBoth,         null,                             of(Tuple2.of(1, "TT")) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("minTestCases")
+    @DisplayName("min: test cases")
+    public <T, E> void min_testCases(Map<? extends T, ? extends E> sourceMap,
+                                     Comparator<Tuple2<? extends T, ? extends E>> comparator,
+                                     Class<? extends Exception> expectedException,
+                                     Optional<Tuple2<T, E>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> min(sourceMap, comparator));
+        }
+        else {
+            assertEquals(expectedResult, min(sourceMap, comparator));
+        }
+    }
+
+
+    static Stream<Arguments> minValueTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, "Z3");
+            put(3, "AB");
+            put(4, "UTf");
+        }};
+        Comparator<String> comparatorNatural = String::compareTo;
+        Comparator<String> comparatorReverse = Comparator.reverseOrder();
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         comparator,          expectedException,                expectedResult
+                Arguments.of( null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,              comparatorNatural,   null,                             empty() ),
+                Arguments.of( new HashMap<>(),   comparatorNatural,   null,                             empty() ),
+                Arguments.of( intsAndStrings,    comparatorNatural,   null,                             of("AB") ),
+                Arguments.of( intsAndStrings,    comparatorReverse,   null,                             of("Z3") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("minValueTestCases")
+    @DisplayName("mainValue: test cases")
+    public <T, E> void minValue_testCases(Map<? extends T, ? extends E> sourceMap,
+                                          Comparator<? super E> comparator,
+                                          Class<? extends Exception> expectedException,
+                                          Optional<Tuple2<T, E>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> minValue(sourceMap, comparator));
+        }
+        else {
+            assertEquals(expectedResult, minValue(sourceMap, comparator));
         }
     }
 
