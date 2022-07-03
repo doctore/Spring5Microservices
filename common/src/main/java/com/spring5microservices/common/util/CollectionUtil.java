@@ -94,7 +94,8 @@ public class CollectionUtil {
      * @param orElseFunction
      *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
      *
      * @return {@link Collection}
      *
@@ -195,7 +196,8 @@ public class CollectionUtil {
      * @param mapFunction
      *    {@link Function} to transform filtered elements from the source {@code sourceCollection}
      * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
      *
      * @return {@link Collection}
      *
@@ -247,7 +249,8 @@ public class CollectionUtil {
      * @param keyExtractor
      *    {@link Function} used to get the key we want to use to include in returned {@link Collection}
      * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
      *
      * @return {@link Collection}
      */
@@ -512,6 +515,7 @@ public class CollectionUtil {
      *    {@link Function} to transform elements of {@code sourceCollection}
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
      *
      * @return {@link Map}
      *
@@ -530,6 +534,7 @@ public class CollectionUtil {
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
+
         Map<K, Collection<V>> result = new HashMap<>();
         sourceCollection.forEach(
                 e -> {
