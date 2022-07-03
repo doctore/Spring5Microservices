@@ -27,6 +27,7 @@ import java.util.stream.IntStream;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
@@ -47,13 +48,13 @@ public class MapUtil {
      *    i -> i * 2
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to filter and transform.
+     *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
      * @param defaultFunction
-     *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}.
+     *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}
      * @param orElseFunction
-     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}.
+     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
      *
      * @return {@link Map}
      *
@@ -82,15 +83,16 @@ public class MapUtil {
      *    HashMap::new
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to filter and transform.
+     *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
      * @param defaultFunction
-     *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}.
+     *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}
      * @param orElseFunction
-     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}.
+     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
      * @param mapFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    If {@code null} then {@link HashMap}
      *
      * @return {@link Map}
      *
@@ -183,13 +185,14 @@ public class MapUtil {
      *    HashMap::new
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to filter and transform.
+     *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
      * @param mapFunction
-     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}.
+     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}
      * @param mapFactory
-     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
      *
      * @return {@link Map}
      *
@@ -332,19 +335,60 @@ public class MapUtil {
      */
     public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator) {
-        if (CollectionUtils.isEmpty(sourceMap) ||
-                isNull(discriminator)) {
-            return new HashMap<>();
+        return groupBy(sourceMap, discriminator, HashMap::new, HashMap::new);
+    }
+
+
+    /**
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     *
+     * Example:
+     *
+     *   Parameters:                                     Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World")]         [(0,  [(2, "Hello")])
+     *    (k, v) -> k % 2                                  (1,  [(1, "Hi"), (5, "World")])]
+     *    HashMap::new
+     *    HashMap::new
+     *
+     * @param sourceMap
+     *    {@link Map} to filter
+     * @param discriminator
+     *    {@link BiFunction} used to split the elements of {@code sourceMap}
+     * @param mapResultFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    If {@code null} then {@link HashMap}
+     * @param mapValuesFactory
+     *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
+                                                      final BiFunction<? super T, ? super E, ? extends R> discriminator,
+                                                      final Supplier<Map<R, Map<T, E>>> mapResultFactory,
+                                                      final Supplier<Map<T, E>> mapValuesFactory) {
+        Supplier<Map<R, Map<T, E>>> finalMapResultFactory =
+                isNull(mapResultFactory)
+                        ? HashMap::new
+                        : mapResultFactory;
+
+        Supplier<Map<T, E>> finalMapValuesFactory =
+                isNull(mapValuesFactory)
+                        ? HashMap::new
+                        : mapValuesFactory;
+
+        Map<R, Map<T, E>> result = finalMapResultFactory.get();
+        if (!CollectionUtils.isEmpty(sourceMap) &&
+                nonNull(discriminator)) {
+            sourceMap.forEach(
+                    (k, v) -> {
+                        R discriminatorResult = discriminator.apply(k, v);
+                        result.putIfAbsent(discriminatorResult, finalMapValuesFactory.get());
+                        result.get(discriminatorResult)
+                                .put(k, v);
+                    }
+            );
         }
-        Map<R, Map<T, E>> result = new HashMap<>();
-        sourceMap.forEach(
-                (k, v) -> {
-                    R discriminatorResult = discriminator.apply(k, v);
-                    result.putIfAbsent(discriminatorResult, new HashMap<>());
-                    result.get(discriminatorResult)
-                            .put(k, v);
-                }
-        );
         return result;
     }
 
@@ -408,6 +452,7 @@ public class MapUtil {
      *    {@link BiFunction} to transform elements of {@code sourceMap}
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
      *
      * @return {@link Map}
      *
@@ -426,6 +471,7 @@ public class MapUtil {
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
+
         Map<R, Collection<V>> result = new HashMap<>();
         sourceMap.forEach(
                 (k, v) -> {
@@ -512,7 +558,8 @@ public class MapUtil {
      * @param mapFunction
      *    {@link BiFunction} used to transform given {@link Map} elements
      * @param mapFactory
-     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    If {@code null} then {@link HashMap}
      *
      * @return {@link Map}
      *
@@ -583,7 +630,8 @@ public class MapUtil {
      * @param mapFunction
      *    {@link BiFunction} used to transform given {@link Map} values
      * @param mapFactory
-     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    If {@code null} then {@link HashMap}
      *
      * @return updated {@link Map}
      *
@@ -756,19 +804,51 @@ public class MapUtil {
      */
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator) {
-        if (CollectionUtils.isEmpty(sourceMap) ||
-                isNull(discriminator)) {
-            return new HashMap<>();
-        }
+        return partition(sourceMap, discriminator, HashMap::new);
+    }
+
+
+    /**
+     *    Returns a {@link Map} of {@link Boolean} as key, on which {@code true} contains all elements that satisfy given
+     * {@code discriminator} and {@code false}, all elements that do not.
+     *
+     * Example:
+     *
+     *   Parameters:                        Result:
+     *    [(1, "Hi"), (2, "Hello")]          [(true,  [(2, "Hello")])
+     *    (k, v) -> k % 2 == 0                (false, [(1, "Hi")])]
+     *    HashMap::new
+     *
+     * @param sourceMap
+     *    {@link Map} to filter
+     * @param discriminator
+     *    {@link BiPredicate} used to split the elements of {@code sourceMap}
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
+                                                           final BiPredicate<? super T, ? super E> discriminator,
+                                                           final Supplier<Map<T, E>> mapFactory) {
+        Supplier<Map<T, E>> finalMapFactory =
+                isNull(mapFactory)
+                        ? HashMap::new
+                        : mapFactory;
+
         Map<Boolean, Map<T, E>> result = new HashMap<>() {{
-            put(Boolean.TRUE, new HashMap<>());
-            put(Boolean.FALSE, new HashMap<>());
+            put(Boolean.TRUE, finalMapFactory.get());
+            put(Boolean.FALSE, finalMapFactory.get());
         }};
-        sourceMap.forEach(
-                (k, v) ->
-                    result.get(discriminator.test(k, v))
-                            .put(k, v)
-        );
+        if (!CollectionUtils.isEmpty(sourceMap) &&
+                nonNull(discriminator)) {
+            sourceMap.forEach(
+                    (k, v) ->
+                            result.get(discriminator.test(k, v))
+                                    .put(k, v)
+            );
+        }
         return result;
     }
 

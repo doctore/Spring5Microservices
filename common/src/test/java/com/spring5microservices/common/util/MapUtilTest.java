@@ -385,7 +385,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> groupByTestCases() {
+    static Stream<Arguments> groupByNoMapFactoryTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -442,12 +442,77 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("groupByTestCases")
-    @DisplayName("groupBy: test cases")
-    public <T, E, R> void groupBy_testCases(Map<T, E> sourceMap,
-                                            BiFunction<? super T, ? super E, ? extends R> discriminator,
-                                            Map<R, Map<T, E>> expectedResult) {
+    @MethodSource("groupByNoMapFactoryTestCases")
+    @DisplayName("groupBy: without map factory test cases")
+    public <T, E, R> void groupByNoMapFactory_testCases(Map<T, E> sourceMap,
+                                                        BiFunction<? super T, ? super E, ? extends R> discriminator,
+                                                        Map<R, Map<T, E>> expectedResult) {
         assertEquals(expectedResult, groupBy(sourceMap, discriminator));
+    }
+
+
+    static Stream<Arguments> groupByAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(6, "Aa");
+            put(8, "Bb");
+            put(9, "Oo");
+        }};
+        BiFunction<Integer, String, Integer> keyMod2 = (k, v) -> k % 2;
+        Supplier<Map<String, String>> linkedMapSupplier = LinkedHashMap::new;
+
+        Map<Integer, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
+            put(0,
+                    new HashMap<>() {{
+                        put(6, "Aa");
+                        put(8, "Bb");
+                    }}
+            );
+            put(1,
+                    new HashMap<>() {{
+                        put(9, "Oo");
+                    }}
+            );
+        }};
+        Map<Integer, Map<Integer, String>> intsAndStringsLinkedMapResult = new LinkedHashMap<>() {{
+            put(0,
+                    new LinkedHashMap<>() {{
+                        put(6, "Aa");
+                        put(8, "Bb");
+                    }}
+            );
+            put(1,
+                    new LinkedHashMap<>() {{
+                        put(9, "Oo");
+                    }}
+            );
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         discriminator,    mapResultFactory,    mapValuesFactory,    expectedResult
+                Arguments.of( null,              null,             null,                null,                Map.of() ),
+                Arguments.of( null,              keyMod2,          null,                null,                Map.of() ),
+                Arguments.of( null,              keyMod2,          linkedMapSupplier,   null,                new LinkedHashMap<>() ),
+                Arguments.of( null,              keyMod2,          null,                linkedMapSupplier,   Map.of() ),
+                Arguments.of( null,              keyMod2,          linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),          null,             null,                null,                Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,          null,                null,                Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,          linkedMapSupplier,   null,                new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),          keyMod2,          null,                linkedMapSupplier,   Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,          linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
+                Arguments.of( intsAndStrings,    keyMod2,          null,                null,                intsAndStringsResult ),
+                Arguments.of( intsAndStrings,    keyMod2,          linkedMapSupplier,   linkedMapSupplier,   intsAndStringsLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByAllParametersTestCases")
+    @DisplayName("groupBy: with all parameters test cases")
+    public <T, E, R> void groupByAllParameters_testCases(Map<T, E> sourceMap,
+                                                         BiFunction<? super T, ? super E, ? extends R> discriminator,
+                                                         Supplier<Map<R, Map<T, E>>> mapResultFactory,
+                                                         Supplier<Map<T, E>> mapValuesFactory,
+                                                         Map<R, Map<T, E>> expectedResult) {
+        assertEquals(expectedResult, groupBy(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
     }
 
 
@@ -922,7 +987,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> partitionTestCases() {
+    static Stream<Arguments> partitionNoMapFactoryTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -962,25 +1027,99 @@ public class MapUtilTest {
                     }}
             );
         }};
+        Map<Boolean, Map<Integer, Long>> emptyMap = new HashMap<>() {{
+            put(Boolean.TRUE, new HashMap<>());
+            put(Boolean.FALSE, new HashMap<>());
+        }};
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         discriminator,       expectedResult
-                Arguments.of( null,              null,                Map.of() ),
-                Arguments.of( null,              isKeyEven,           Map.of() ),
-                Arguments.of( Map.of(),          null,                Map.of() ),
-                Arguments.of( Map.of(),          isKeyEven,           Map.of() ),
+                Arguments.of( null,              null,                emptyMap ),
+                Arguments.of( null,              isKeyEven,           emptyMap ),
+                Arguments.of( Map.of(),          null,                emptyMap ),
+                Arguments.of( Map.of(),          isKeyEven,           emptyMap ),
                 Arguments.of( intsAndStrings,    isKeyEven,           intsAndStringsResult ),
                 Arguments.of( intsAndLongs,      isKeyPlusValueOdd,   intsAndLongsResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("partitionTestCases")
-    @DisplayName("partition: test cases")
-    public <T, E> void partition_testCases(Map<? extends T, ? extends E> sourceMap,
-                                           BiPredicate<? super T, ? super E> discriminator,
-                                           Map<Boolean, Map<T, E>> expectedResult) {
+    @MethodSource("partitionNoMapFactoryTestCases")
+    @DisplayName("partition: without map factory test cases")
+    public <T, E> void partitionNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                       BiPredicate<? super T, ? super E> discriminator,
+                                                       Map<Boolean, Map<T, E>> expectedResult) {
         assertEquals(expectedResult, partition(sourceMap, discriminator));
+    }
+
+
+    static Stream<Arguments> partitionAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "FG");
+            put(3, "HY");
+            put(5, "ou");
+        }};
+        BiPredicate<Integer, String> isKeyMod3 = (k, v) -> k % 3 == 0;
+        Supplier<Map<String, String>> linkedMapSupplier = LinkedHashMap::new;
+
+        Map<Boolean, Map<Integer, String>> intsAndStringsResult = new HashMap<>() {{
+            put(Boolean.TRUE,
+                    new HashMap<>() {{
+                        put(3, "HY");
+                    }}
+            );
+            put(Boolean.FALSE,
+                    new HashMap<>() {{
+                        put(1, "FG");
+                        put(5, "ou");
+                    }}
+            );
+        }};
+        Map<Boolean, Map<Integer, String>> intsAndStringsLinkedMapResult = new LinkedHashMap<>() {{
+            put(Boolean.TRUE,
+                    new LinkedHashMap<>() {{
+                        put(3, "HY");
+                    }}
+            );
+            put(Boolean.FALSE,
+                    new LinkedHashMap<>() {{
+                        put(1, "FG");
+                        put(5, "ou");
+                    }}
+            );
+        }};
+        Map<Boolean, Map<Integer, Long>> emptyHashMap = new HashMap<>() {{
+            put(Boolean.TRUE, new HashMap<>());
+            put(Boolean.FALSE, new HashMap<>());
+        }};
+        Map<Boolean, Map<Integer, Long>> emptyLinkedHashMap = new LinkedHashMap<>() {{
+            put(Boolean.TRUE, new LinkedHashMap<>());
+            put(Boolean.FALSE, new LinkedHashMap<>());
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        discriminator,   mapFactory,          expectedResult
+                Arguments.of( null,             null,            null,                emptyHashMap ),
+                Arguments.of( null,             isKeyMod3,       null,                emptyHashMap ),
+                Arguments.of( Map.of(),         null,            null,                emptyHashMap ),
+                Arguments.of( Map.of(),         isKeyMod3,       null,                emptyHashMap ),
+                Arguments.of( null,             null,            linkedMapSupplier,   emptyLinkedHashMap ),
+                Arguments.of( null,             isKeyMod3,       linkedMapSupplier,   emptyLinkedHashMap ),
+                Arguments.of( Map.of(),         null,            linkedMapSupplier,   emptyLinkedHashMap ),
+                Arguments.of( Map.of(),         isKeyMod3,       linkedMapSupplier,   emptyLinkedHashMap ),
+                Arguments.of( intsAndStrings,   isKeyMod3,       null,                intsAndStringsResult ),
+                Arguments.of( intsAndStrings,   isKeyMod3,       linkedMapSupplier,   intsAndStringsLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("partitionAllParametersTestCases")
+    @DisplayName("partition: with all parameters test cases")
+    public <T, E> void partitionAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                        BiPredicate<? super T, ? super E> discriminator,
+                                                        Supplier<Map<T, E>> mapFactory,
+                                                        Map<Boolean, Map<T, E>> expectedResult) {
+        assertEquals(expectedResult, partition(sourceMap, discriminator, mapFactory));
     }
 
 
