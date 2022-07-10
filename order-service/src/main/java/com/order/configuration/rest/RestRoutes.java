@@ -5,8 +5,10 @@ package com.order.configuration.rest;
  */
 public final class RestRoutes {
 
+    public static final String ROOT = "/order";
+
     public static final class ORDER {
-        public static final String ROOT = "/order";
+        public static final String ROOT = RestRoutes.ROOT;
         public static final String WITH_ORDERLINES = "/withOrderlines";
     }
 

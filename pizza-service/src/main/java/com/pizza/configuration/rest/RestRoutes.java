@@ -5,13 +5,15 @@ package com.pizza.configuration.rest;
  */
 public final class RestRoutes {
 
+    public static final String ROOT = "/pizza";
+
     public static final class PIZZA {
-        public static final String ROOT = "/pizza";
+        public static final String ROOT = RestRoutes.ROOT;
         public static final String PAGE_WITH_INGREDIENTS = "/pageWithIngredients";
     }
 
     public static final class USER {
-        public static final String ROOT = PIZZA.ROOT + "/user";
+        public static final String ROOT = RestRoutes.ROOT + "/user";
         public static final String BLACKLIST = "/blacklist";
     }
 
