@@ -165,4 +165,19 @@ public final class Tuple0 implements Tuple {
                 .orElseGet(Tuple4::empty);
     }
 
+
+    /**
+     * Concat a {@link Tuple5}'s values to this {@link Tuple0}.
+     *
+     * @param tuple
+     *   The {@link Tuple5} to concat
+     *
+     * @return a new {@link Tuple5} with the tuple values appended
+     */
+    public <T1, T2, T3, T4, T5> Tuple5<T1, T2, T3, T4, T5> concat(final Tuple5<T1, T2, T3, T4, T5> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(t._1, t._2, t._3, t._4, t._5))
+                .orElseGet(Tuple5::empty);
+    }
+
 }
