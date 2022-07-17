@@ -7,13 +7,19 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * A {@link Tuple} of four elements.
  *
- * @param <T1> type of the 1st element
- * @param <T2> type of the 2nd element
- * @param <T3> type of the 3rd element
- * @param <T4> type of the 4th element
+ * @param <T1>
+ *    Type of the 1st element
+ * @param <T2>
+ *    Type of the 2nd element
+ * @param <T3>
+ *    Type of the 3rd element
+ * @param <T4>
+ *    Type of the 4th element
  */
 public final class Tuple4<T1, T2, T3, T4> implements Tuple {
 
@@ -31,7 +37,6 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple {
      * The 3rd element of this tuple.
      */
     public final T3 _3;
-
 
     /**
      * The 4th element of this tuple.
@@ -83,8 +88,11 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple {
 
 
     @SuppressWarnings("unchecked")
-    public static <U1 extends Comparable<? super U1>, U2 extends Comparable<? super U2>, U3 extends Comparable<? super U3>, U4 extends Comparable<? super U4>> int compareTo(final Tuple4<?, ?, ?, ?> o1,
-                                                                                                                                                                             final Tuple4<?, ?, ?, ?> o2) {
+    public static <U1 extends Comparable<? super U1>,
+                   U2 extends Comparable<? super U2>,
+                   U3 extends Comparable<? super U3>,
+                   U4 extends Comparable<? super U4>> int compareTo(final Tuple4<?, ?, ?, ?> o1,
+                                                                    final Tuple4<?, ?, ?, ?> o2) {
         final Tuple4<U1, U2, U3, U4> t1 = (Tuple4<U1, U2, U3, U4>) o1;
         final Tuple4<U1, U2, U3, U4> t2 = (Tuple4<U1, U2, U3, U4>) o2;
 
@@ -355,6 +363,47 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple {
     public <U> U apply(final QuadFunction<? super T1, ? super T2, ? super T3, ? super T4, ? extends U> f) {
         Assert.notNull(f, "f must be not null");
         return f.apply(_1, _2, _3, _4);
+    }
+
+
+    /**
+     * Prepend a value to this {@link Tuple4}.
+     *
+     * @param t
+     *    The value to prepend
+     *
+     * @return a new {@link Tuple5} with the value prepended
+     */
+    public <T> Tuple5<T, T1, T2, T3, T4> prepend(final T t) {
+        return Tuple.of(t, _1, _2, _3, _4);
+    }
+
+
+    /**
+     * Append a value to this {@link Tuple4}.
+     *
+     * @param t
+     *    The value to append
+     *
+     * @return a new {@link Tuple5} with the value appended
+     */
+    public <T> Tuple5<T1, T2, T3, T4, T> append(final T t) {
+        return Tuple.of(_1, _2, _3, _4, t);
+    }
+
+
+    /**
+     * Concat a {@link Tuple1}'s values to this {@link Tuple4}.
+     *
+     * @param tuple
+     *    The {@link Tuple1} to concat
+     *
+     * @return a new {@link Tuple5} with the tuple values appended
+     */
+    public <T5> Tuple5<T1, T2, T3, T4, T5> concat(final Tuple1<T5> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, _3, _4, t._1))
+                .orElseGet(() -> Tuple.of(_1, _2, _3, _4, null));
     }
 
 }

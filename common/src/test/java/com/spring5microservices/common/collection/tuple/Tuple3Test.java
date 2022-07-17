@@ -62,8 +62,8 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> comparatorTestCases() {
-        Tuple3<String, Integer, Long> tuple3_1 = Tuple3.of("A", 1, 3L);
-        Tuple3<String, Integer, Long> tuple3_2 = Tuple3.of("B", 2, 2L);
+        Tuple3<String, Integer, Long> t1 = Tuple3.of("A", 1, 3L);
+        Tuple3<String, Integer, Long> t2 = Tuple3.of("B", 2, 2L);
         Comparator<String> defaultStringComparator = Comparator.naturalOrder();
         Comparator<String> reverseStringComparator = Comparator.reverseOrder();
         Comparator<Integer> defaultIntegerComparator = Comparator.naturalOrder();
@@ -72,17 +72,17 @@ public class Tuple3Test {
         Comparator<Long> reverseLongComparator = Comparator.reverseOrder();
         return Stream.of(
                 //@formatter:off
-                //            t1,         t2,         comparatorT1,              comparatorT2,               comparatorT3,            expectedResult
-                Arguments.of( tuple3_1,   tuple3_1,   defaultStringComparator,   defaultIntegerComparator,   defaultLongComparator,   0 ),
-                Arguments.of( tuple3_1,   tuple3_1,   reverseStringComparator,   reverseIntegerComparator,   reverseLongComparator,   0 ),
-                Arguments.of( tuple3_1,   tuple3_2,   defaultStringComparator,   defaultIntegerComparator,   defaultLongComparator,  -1 ),
-                Arguments.of( tuple3_1,   tuple3_2,   reverseStringComparator,   reverseIntegerComparator,   reverseLongComparator,   1 ),
-                Arguments.of( tuple3_2,   tuple3_1,   defaultStringComparator,   defaultIntegerComparator,   defaultLongComparator,   1 ),
-                Arguments.of( tuple3_2,   tuple3_1,   reverseStringComparator,   reverseIntegerComparator,   reverseLongComparator,  -1 ),
-                Arguments.of( tuple3_1,   tuple3_2,   defaultStringComparator,   reverseIntegerComparator,   reverseLongComparator,  -1 ),
-                Arguments.of( tuple3_2,   tuple3_1,   defaultStringComparator,   reverseIntegerComparator,   reverseLongComparator,   1 ),
-                Arguments.of( tuple3_1,   tuple3_2,   defaultStringComparator,   defaultIntegerComparator,   reverseLongComparator,  -1 ),
-                Arguments.of( tuple3_2,   tuple3_1,   defaultStringComparator,   defaultIntegerComparator,   reverseLongComparator,   1 )
+                //            t1,   t2,   comparatorT1,              comparatorT2,               comparatorT3,            expectedResult
+                Arguments.of( t1,   t1,   defaultStringComparator,   defaultIntegerComparator,   defaultLongComparator,   0 ),
+                Arguments.of( t1,   t1,   reverseStringComparator,   reverseIntegerComparator,   reverseLongComparator,   0 ),
+                Arguments.of( t1,   t2,   defaultStringComparator,   defaultIntegerComparator,   defaultLongComparator,  -1 ),
+                Arguments.of( t1,   t2,   reverseStringComparator,   reverseIntegerComparator,   reverseLongComparator,   1 ),
+                Arguments.of( t2,   t1,   defaultStringComparator,   defaultIntegerComparator,   defaultLongComparator,   1 ),
+                Arguments.of( t2,   t1,   reverseStringComparator,   reverseIntegerComparator,   reverseLongComparator,  -1 ),
+                Arguments.of( t1,   t2,   defaultStringComparator,   reverseIntegerComparator,   reverseLongComparator,  -1 ),
+                Arguments.of( t2,   t1,   defaultStringComparator,   reverseIntegerComparator,   reverseLongComparator,   1 ),
+                Arguments.of( t1,   t2,   defaultStringComparator,   defaultIntegerComparator,   reverseLongComparator,  -1 ),
+                Arguments.of( t2,   t1,   defaultStringComparator,   defaultIntegerComparator,   reverseLongComparator,   1 )
         ); //@formatter:on
     }
 
@@ -100,14 +100,14 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> compareToTestCases() {
-        Tuple3<String, Integer, Long> stringIntegerLong1Tuple = Tuple3.of("A", 1, 3L);
-        Tuple3<String, Integer, Long> stringIntegerLong2Tuple = Tuple3.of("B", 2, 2L);
+        Tuple3<String, Integer, Long> t1 = Tuple3.of("A", 1, 3L);
+        Tuple3<String, Integer, Long> t2 = Tuple3.of("B", 2, 2L);
         return Stream.of(
                 //@formatter:off
-                //            t1,                        t2,                        expectedResult
-                Arguments.of( stringIntegerLong1Tuple,   stringIntegerLong1Tuple,   0 ),
-                Arguments.of( stringIntegerLong1Tuple,   stringIntegerLong2Tuple,  -1 ),
-                Arguments.of( stringIntegerLong2Tuple,   stringIntegerLong1Tuple,   1 )
+                //            t1,   t2,   expectedResult
+                Arguments.of( t1,   t1,   0 ),
+                Arguments.of( t1,   t2,  -1 ),
+                Arguments.of( t2,   t1,   1 )
         ); //@formatter:on
     }
 
@@ -130,16 +130,16 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> equalsTestCases() {
-        Tuple3<String, Long, Integer> stringLongIntegerTuple = Tuple3.of("TYHG", 21L, 16);
-        Tuple3<Long, String, Integer> longStringIntegerTuple = Tuple3.of(21L, "TYHG", 16);
+        Tuple3<String, Long, Integer> t1 = Tuple3.of("TYHG", 21L, 16);
+        Tuple3<Long, String, Integer> t2 = Tuple3.of(21L, "TYHG", 16);
         return Stream.of(
                 //@formatter:off
-                //            tuple,                    objectToCompare,             expectedResult
-                Arguments.of( stringLongIntegerTuple,   "1",                         false ),
-                Arguments.of( longStringIntegerTuple,   longStringIntegerTuple._1,   false ),
-                Arguments.of( stringLongIntegerTuple,   longStringIntegerTuple,      false ),
-                Arguments.of( stringLongIntegerTuple,   stringLongIntegerTuple,      true ),
-                Arguments.of( longStringIntegerTuple,   longStringIntegerTuple,      true )
+                //            tuple,   objectToCompare,   expectedResult
+                Arguments.of( t1,      "1",               false ),
+                Arguments.of( t2,      t2._1,             false ),
+                Arguments.of( t1,      t2,                false ),
+                Arguments.of( t1,      t1,                true ),
+                Arguments.of( t2,      t2,                true )
         ); //@formatter:on
     }
 
@@ -174,13 +174,13 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> update1TestCases() {
-        Tuple3<String, Integer, Long> tuple3 = Tuple3.of("A", 1, 33L);
-        Tuple3<String, Integer, Long> updatedTuple3 = Tuple3.of("B", 1, 33L);
+        Tuple3<String, Integer, Long> tuple = Tuple3.of("A", 1, 33L);
+        Tuple3<String, Integer, Long> updatedTuple = Tuple3.of("B", 1, 33L);
         return Stream.of(
                 //@formatter:off
-                //            tuple,    value,              expectedResult
-                Arguments.of( tuple3,   null,               Tuple3.of(null, tuple3._2, tuple3._3) ),
-                Arguments.of( tuple3,   updatedTuple3._1,   updatedTuple3 )
+                //            tuple,   value,             expectedResult
+                Arguments.of( tuple,   null,              Tuple3.of(null, tuple._2, tuple._3) ),
+                Arguments.of( tuple,   updatedTuple._1,   updatedTuple )
         ); //@formatter:on
     }
 
@@ -203,13 +203,13 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> update2TestCases() {
-        Tuple3<String, Integer, Long> tuple3 = Tuple3.of("A", 1, 33L);
-        Tuple3<String, Integer, Long> updatedTuple3 = Tuple3.of("A", 3, 33L);
+        Tuple3<String, Integer, Long> tuple = Tuple3.of("A", 1, 33L);
+        Tuple3<String, Integer, Long> updatedTuple = Tuple3.of("A", 3, 33L);
         return Stream.of(
                 //@formatter:off
-                //            tuple,    value,              expectedResult
-                Arguments.of( tuple3,   null,               Tuple3.of(tuple3._1, null, tuple3._3) ),
-                Arguments.of( tuple3,   updatedTuple3._2,   updatedTuple3 )
+                //            tuple,   value,             expectedResult
+                Arguments.of( tuple,   null,              Tuple3.of(tuple._1, null, tuple._3) ),
+                Arguments.of( tuple,   updatedTuple._2,   updatedTuple )
         ); //@formatter:on
     }
 
@@ -232,13 +232,13 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> update3TestCases() {
-        Tuple3<String, Integer, Long> tuple3 = Tuple3.of("A", 1, 33L);
-        Tuple3<String, Integer, Long> updatedTuple3 = Tuple3.of("A", 1, 20L);
+        Tuple3<String, Integer, Long> tuple = Tuple3.of("A", 1, 33L);
+        Tuple3<String, Integer, Long> updatedTuple = Tuple3.of("A", 1, 20L);
         return Stream.of(
                 //@formatter:off
-                //            tuple,    value,              expectedResult
-                Arguments.of( tuple3,   null,               Tuple3.of(tuple3._1, tuple3._2, null) ),
-                Arguments.of( tuple3,   updatedTuple3._3,   updatedTuple3 )
+                //            tuple,   value,             expectedResult
+                Arguments.of( tuple,   null,              Tuple3.of(tuple._1, tuple._2, null) ),
+                Arguments.of( tuple,   updatedTuple._3,   updatedTuple )
         ); //@formatter:on
     }
 
@@ -261,19 +261,19 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> mapTriFunctionTestCases() {
-        Tuple3<String, Integer, Long> tuple3 = Tuple3.of("BC", 9, 12L);
+        Tuple3<String, Integer, Long> tuple = Tuple3.of("BC", 9, 12L);
 
         TriFunction<String, Integer, Long, Tuple3<String, Integer, Long>> identity = Tuple3::of;
         TriFunction<String, Integer, Long, Tuple3<Long, String, Integer>> fromStringIntegerLongToTuple =
                 (s, i, l) -> Tuple3.of((long) s.length(), String.valueOf(l + 1), i * 3);
 
-        Tuple3<Long, String, Integer> mappedTuple3 = Tuple3.of(2L, "13", 27);
+        Tuple3<Long, String, Integer> mappedTuple = Tuple3.of(2L, "13", 27);
         return Stream.of(
                 //@formatter:off
-                //            tuple,    mapper,                         expectedException,                expectedResult
-                Arguments.of( tuple3,   null,                           IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   identity,                       null,                             tuple3 ),
-                Arguments.of( tuple3,   fromStringIntegerLongToTuple,   null,                             mappedTuple3 )
+                //            tuple,   mapper,                         expectedException,                expectedResult
+                Arguments.of( tuple,   null,                           IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   identity,                       null,                             tuple ),
+                Arguments.of( tuple,   fromStringIntegerLongToTuple,   null,                             mappedTuple )
         ); //@formatter:on
     }
 
@@ -294,20 +294,20 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> mapFunctionTestCases() {
-        Tuple3<String, Integer, Long> tuple3 = Tuple3.of("CFD", 92, 45L);
+        Tuple3<String, Integer, Long> tuple = Tuple3.of("CFD", 92, 45L);
         Function<String, Long> fromStringToLong = s -> 3L + s.length();
         Function<Integer, String> fromIntegerToString = i -> String.valueOf(i - 2);
         Function<Long, String> fromLongToString = l -> String.valueOf(l + 10);
-        Tuple3<Long, String, String> mappedTuple3 = Tuple3.of(6L, "90", "55");
+        Tuple3<Long, String, String> mappedTuple = Tuple3.of(6L, "90", "55");
         return Stream.of(
                 //@formatter:off
-                //            tuple,    f1,                 f2,                    f3,                 expectedException,                expectedResult
-                Arguments.of( tuple3,   null,               null,                  null,               IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   fromStringToLong,   null,                  null,               IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   fromStringToLong,   fromIntegerToString,   null,               IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   fromStringToLong,   null,                  fromLongToString,   IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   null,               fromIntegerToString,   fromLongToString,   IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   fromStringToLong,   fromIntegerToString,   fromLongToString,   null,                             mappedTuple3 )
+                //            tuple,   f1,                 f2,                    f3,                 expectedException,                expectedResult
+                Arguments.of( tuple,   null,               null,                  null,               IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   fromStringToLong,   null,                  null,               IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   fromStringToLong,   fromIntegerToString,   null,               IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   fromStringToLong,   null,                  fromLongToString,   IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   null,               fromIntegerToString,   fromLongToString,   IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   fromStringToLong,   fromIntegerToString,   fromLongToString,   null,                             mappedTuple )
         ); //@formatter:on
     }
 
@@ -330,15 +330,15 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> map1TestCases() {
-        Tuple3<String, Integer, Long> tuple3 = Tuple3.of("ZW", 23, 76L);
+        Tuple3<String, Integer, Long> tuple = Tuple3.of("ZW", 23, 76L);
         Function<String, Long> fromStringToLong = s -> 3L + s.length();
-        Tuple3<Long, Integer, Long> mappedTuple3 = Tuple3.of(5L, 23, 76L);
+        Tuple3<Long, Integer, Long> mappedTuple = Tuple3.of(5L, 23, 76L);
         return Stream.of(
                 //@formatter:off
-                //            tuple,    mapper,                expectedException,                expectedResult
-                Arguments.of( tuple3,   null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   Function.identity(),   null,                             tuple3 ),
-                Arguments.of( tuple3,   fromStringToLong,      null,                             mappedTuple3 )
+                //            tuple,   mapper,                expectedException,                expectedResult
+                Arguments.of( tuple,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   Function.identity(),   null,                             tuple ),
+                Arguments.of( tuple,   fromStringToLong,      null,                             mappedTuple )
         ); //@formatter:on
     }
 
@@ -359,15 +359,15 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> map2TestCases() {
-        Tuple3<Integer, Integer, String> tuple3 = Tuple3.of(7, 9, "ERT");
+        Tuple3<Integer, Integer, String> tuple = Tuple3.of(7, 9, "ERT");
         Function<Integer, Long> fromIntegerToLong = i -> 2L * i;
-        Tuple3<Integer, Long, String> mappedTuple3 = Tuple3.of(7, 18L, "ERT");
+        Tuple3<Integer, Long, String> mappedTuple = Tuple3.of(7, 18L, "ERT");
         return Stream.of(
                 //@formatter:off
-                //            tuple,    mapper,                expectedException,                expectedResult
-                Arguments.of( tuple3,   null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   Function.identity(),   null,                             tuple3 ),
-                Arguments.of( tuple3,   fromIntegerToLong,     null,                             mappedTuple3 )
+                //            tuple,   mapper,                expectedException,                expectedResult
+                Arguments.of( tuple,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   Function.identity(),   null,                             tuple ),
+                Arguments.of( tuple,   fromIntegerToLong,     null,                             mappedTuple )
         ); //@formatter:on
     }
 
@@ -388,15 +388,15 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> map3TestCases() {
-        Tuple3<Long, Long, String> tuple3 = Tuple3.of(15L, 99L, "GH");
+        Tuple3<Long, Long, String> tuple = Tuple3.of(15L, 99L, "GH");
         Function<String, Long> fromStringToLong = s -> s.length() * 3L;
-        Tuple3<Long, Long, Long> mappedTuple3 = Tuple3.of(15L, 99L, 6L);
+        Tuple3<Long, Long, Long> mappedTuple = Tuple3.of(15L, 99L, 6L);
         return Stream.of(
                 //@formatter:off
-                //            tuple,    mapper,                expectedException,                expectedResult
-                Arguments.of( tuple3,   null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   Function.identity(),   null,                             tuple3 ),
-                Arguments.of( tuple3,   fromStringToLong,      null,                             mappedTuple3 )
+                //            tuple,   mapper,                expectedException,                expectedResult
+                Arguments.of( tuple,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   Function.identity(),   null,                             tuple ),
+                Arguments.of( tuple,   fromStringToLong,      null,                             mappedTuple )
         ); //@formatter:on
     }
 
@@ -417,17 +417,17 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> applyTestCases() {
-        Tuple3<Long, Integer, String> tuple3 = Tuple3.of(12L, 93, "THC");
+        Tuple3<Long, Integer, String> tuple = Tuple3.of(12L, 93, "THC");
         TriFunction<Long, Integer, String, Long> fromLongIntegerStringToLong = (l, i, s) -> l + i - s.length();
         TriFunction<Long, Integer, String, String> fromLongIntegerStringToString = (l, i, s) -> i + l + s;
         Long appliedLong = 102L;
         String appliedString = "105THC";
         return Stream.of(
                 //@formatter:off
-                //            tuple,    f,                               expectedException,                expectedResult
-                Arguments.of( tuple3,   null,                            IllegalArgumentException.class,   null ),
-                Arguments.of( tuple3,   fromLongIntegerStringToLong,     null,                             appliedLong ),
-                Arguments.of( tuple3,   fromLongIntegerStringToString,   null,                             appliedString )
+                //            tuple,   f,                               expectedException,                expectedResult
+                Arguments.of( tuple,   null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   fromLongIntegerStringToLong,     null,                             appliedLong ),
+                Arguments.of( tuple,   fromLongIntegerStringToString,   null,                             appliedString )
         ); //@formatter:on
     }
 
@@ -448,38 +448,38 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> prependTestCases() {
-        Tuple3<String, Integer, Boolean> tuple3 = Tuple3.of("ZZ", 77, TRUE);
+        Tuple3<String, Integer, Boolean> tuple = Tuple3.of("ZZ", 77, TRUE);
         Long longValue = 34L;
         Integer integerValue = 55;
         return Stream.of(
                 //@formatter:off
-                //            tuple,    value,          expectedResult
-                Arguments.of( tuple3,   null,           Tuple4.of(null, tuple3._1, tuple3._2, tuple3._3) ),
-                Arguments.of( tuple3,   longValue,      Tuple4.of(longValue, tuple3._1, tuple3._2, tuple3._3) ),
-                Arguments.of( tuple3,   integerValue,   Tuple4.of(integerValue, tuple3._1, tuple3._2, tuple3._3) )
+                //            tuple,   value,          expectedResult
+                Arguments.of( tuple,   null,           Tuple4.of(null, tuple._1, tuple._2, tuple._3) ),
+                Arguments.of( tuple,   longValue,      Tuple4.of(longValue, tuple._1, tuple._2, tuple._3) ),
+                Arguments.of( tuple,   integerValue,   Tuple4.of(integerValue, tuple._1, tuple._2, tuple._3) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("prependTestCases")
     @DisplayName("prepend: test cases")
-    public <T, T1, T2, T3, T4> void prepend_testCases(Tuple3<T1, T2, T3> tuple,
-                                                      T value,
-                                                      Tuple4<T, T1, T2, T4> expectedResult) {
+    public <T, T1, T2, T3> void prepend_testCases(Tuple3<T1, T2, T3> tuple,
+                                                  T value,
+                                                  Tuple4<T, T1, T2, T3> expectedResult) {
         assertEquals(expectedResult, tuple.prepend(value));
     }
 
 
     static Stream<Arguments> appendTestCases() {
-        Tuple3<String, Integer, Boolean> tuple3 = Tuple3.of("ABC", 41, FALSE);
+        Tuple3<String, Integer, Boolean> tuple = Tuple3.of("ABC", 41, FALSE);
         Long longValue = 11L;
         Integer integerValue = 66;
         return Stream.of(
                 //@formatter:off
                 //            tuple,    value,          expectedResult
-                Arguments.of( tuple3,   null,           Tuple4.of(tuple3._1, tuple3._2, tuple3._3, null) ),
-                Arguments.of( tuple3,   longValue,      Tuple4.of(tuple3._1, tuple3._2, tuple3._3, longValue) ),
-                Arguments.of( tuple3,   integerValue,   Tuple4.of(tuple3._1, tuple3._2, tuple3._3, integerValue) )
+                Arguments.of( tuple,   null,           Tuple4.of(tuple._1, tuple._2, tuple._3, null) ),
+                Arguments.of( tuple,   longValue,      Tuple4.of(tuple._1, tuple._2, tuple._3, longValue) ),
+                Arguments.of( tuple,   integerValue,   Tuple4.of(tuple._1, tuple._2, tuple._3, integerValue) )
         ); //@formatter:on
     }
 
@@ -494,15 +494,15 @@ public class Tuple3Test {
 
 
     static Stream<Arguments> concatTuple1TestCases() {
-        Tuple3<String, Integer, Boolean> tuple3 = Tuple3.of("YHG", 33, TRUE);
-        Tuple1<Long> longTuple1 = Tuple1.of(21L);
-        Tuple1<Integer> nullValueTuple1 = Tuple1.of(null);
+        Tuple3<String, Integer, Boolean> t1 = Tuple3.of("YHG", 33, TRUE);
+        Tuple1<Long> t2 = Tuple1.of(21L);
+        Tuple1<Integer> nullValueTuple = Tuple1.of(null);
         return Stream.of(
                 //@formatter:off
-                //            tuple,    tupleToConcat,     expectedResult
-                Arguments.of( tuple3,   null,              Tuple4.of(tuple3._1, tuple3._2, tuple3._3, null) ),
-                Arguments.of( tuple3,   nullValueTuple1,   Tuple4.of(tuple3._1, tuple3._2, tuple3._3, null) ),
-                Arguments.of( tuple3,   longTuple1,        Tuple4.of(tuple3._1, tuple3._2, tuple3._3, longTuple1._1) )
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple4.of(t1._1, t1._2, t1._3, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple4.of(t1._1, t1._2, t1._3, null) ),
+                Arguments.of( t1,      t2,               Tuple4.of(t1._1, t1._2, t1._3, t2._1) )
         ); //@formatter:on
     }
 
@@ -512,6 +512,29 @@ public class Tuple3Test {
     public <T1, T2, T3, T4> void concatTuple1_testCases(Tuple3<T1, T2, T3> tuple,
                                                         Tuple1<T4> tupleToConcat,
                                                         Tuple4<T1, T2, T3, T4> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
+    }
+
+
+    static Stream<Arguments> concatTuple2TestCases() {
+        Tuple3<String, Integer, Boolean> t1 = Tuple3.of("YHG", 33, TRUE);
+        Tuple2<Long, Integer> t2 = Tuple2.of(21L, 11);
+        Tuple2<Integer, Integer> nullValueTuple = Tuple2.of(null, null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple5.of(t1._1, t1._2, t1._3, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple5.of(t1._1, t1._2, t1._3, null, null) ),
+                Arguments.of( t1,      t2,               Tuple5.of(t1._1, t1._2, t1._3, t2._1, t2._2) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple2TestCases")
+    @DisplayName("concat: using Tuple2 test cases")
+    public <T1, T2, T3, T4, T5> void concatTuple2_testCases(Tuple3<T1, T2, T3> tuple,
+                                                            Tuple2<T4, T5> tupleToConcat,
+                                                            Tuple5<T1, T2, T3, T4, T5> expectedResult) {
         assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 

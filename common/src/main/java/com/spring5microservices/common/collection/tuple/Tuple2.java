@@ -14,8 +14,10 @@ import static java.util.Optional.ofNullable;
 /**
  * A {@link Tuple} of two elements.
  *
- * @param <T1> type of the 1st element
- * @param <T2> type of the 2nd element
+ * @param <T1>
+ *    Type of the 1st element
+ * @param <T2>
+ *    Type of the 2nd element
  */
 public final class Tuple2<T1, T2> implements Tuple {
 
@@ -312,6 +314,21 @@ public final class Tuple2<T1, T2> implements Tuple {
         return ofNullable(tuple)
                 .map(t -> Tuple.of(_1, _2, t._1, t._2))
                 .orElseGet(() -> Tuple.of(_1, _2, null, null));
+    }
+
+
+    /**
+     * Concat a {@link Tuple3}'s values to this {@link Tuple2}.
+     *
+     * @param tuple
+     *    The {@link Tuple3} to concat
+     *
+     * @return a new {@link Tuple5} with the tuple values appended
+     */
+    public <T3, T4, T5> Tuple5<T1, T2, T3, T4, T5> concat(final Tuple3<T3, T4, T5> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, t._1, t._2, t._3))
+                .orElseGet(() -> Tuple.of(_1, _2, null, null, null));
     }
 
 }

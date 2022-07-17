@@ -47,7 +47,7 @@ public final class Valid<E, T> extends Validation<E, T> implements Serializable 
      *
      * @return {@code Valid}
      *
-     * @throws NullPointerException if value is {@code null}
+     * @throws NullPointerException if {@code value} is {@code null}
      */
     public static <E, T> Valid<E, T> of(T value) {
         return new Valid<>(Objects.requireNonNull(value));
