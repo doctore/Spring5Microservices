@@ -12,9 +12,12 @@ import static java.util.Optional.ofNullable;
 /**
  * A {@link Tuple} of three elements.
  *
- * @param <T1> type of the 1st element
- * @param <T2> type of the 2nd element
- * @param <T3> type of the 3rd element
+ * @param <T1>
+ *    Type of the 1st element
+ * @param <T2>
+ *    Type of the 2nd element
+ * @param <T3>
+ *    Type of the 3rd element
  */
 public final class Tuple3<T1, T2, T3> implements Tuple {
 
@@ -324,10 +327,10 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
 
 
     /**
-     * Concat a {@link Tuple2}'s values to this {@link Tuple2}.
+     * Concat a {@link Tuple1}'s values to this {@link Tuple3}.
      *
      * @param tuple
-     *    The {@link Tuple2} to concat
+     *    The {@link Tuple1} to concat
      *
      * @return a new {@link Tuple4} with the tuple values appended
      */
@@ -335,6 +338,21 @@ public final class Tuple3<T1, T2, T3> implements Tuple {
         return ofNullable(tuple)
                 .map(t -> Tuple.of(_1, _2, _3, t._1))
                 .orElseGet(() -> Tuple.of(_1, _2, _3, null));
+    }
+
+
+    /**
+     * Concat a {@link Tuple2}'s values to this {@link Tuple3}.
+     *
+     * @param tuple
+     *    The {@link Tuple2} to concat
+     *
+     * @return a new {@link Tuple5} with the tuple values appended
+     */
+    public <T4, T5> Tuple5<T1, T2, T3, T4, T5> concat(final Tuple2<T4, T5> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, _3, t._1, t._2))
+                .orElseGet(() -> Tuple.of(_1, _2, _3, null, null));
     }
 
 }

@@ -50,18 +50,18 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> comparatorTestCases() {
-        Tuple1<String> string1Tuple = Tuple1.of("A");
-        Tuple1<String> string2Tuple = Tuple1.of("B");
+        Tuple1<String> t1 = Tuple1.of("A");
+        Tuple1<String> t2 = Tuple1.of("B");
         Comparator<String> defaultComparator = Comparator.naturalOrder();
         Comparator<String> reverseComparator = Comparator.reverseOrder();
         return Stream.of(
                 //@formatter:off
-                //            t1,             t2,             comparator,          expectedResult
-                Arguments.of( string1Tuple,   string1Tuple,   defaultComparator,   0 ),
-                Arguments.of( string1Tuple,   string2Tuple,   defaultComparator,  -1 ),
-                Arguments.of( string2Tuple,   string1Tuple,   defaultComparator,   1 ),
-                Arguments.of( string1Tuple,   string2Tuple,   reverseComparator,   1 ),
-                Arguments.of( string2Tuple,   string1Tuple,   reverseComparator,  -1 )
+                //            t1,   t2,   comparator,          expectedResult
+                Arguments.of( t1,   t1,   defaultComparator,   0 ),
+                Arguments.of( t1,   t2,   defaultComparator,  -1 ),
+                Arguments.of( t2,   t1,   defaultComparator,   1 ),
+                Arguments.of( t1,   t2,   reverseComparator,   1 ),
+                Arguments.of( t2,   t1,   reverseComparator,  -1 )
         ); //@formatter:on
     }
 
@@ -77,14 +77,14 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> compareToTestCases() {
-        Tuple1<String> string1Tuple = Tuple1.of("A");
-        Tuple1<String> string2Tuple = Tuple1.of("B");
+        Tuple1<String> t1 = Tuple1.of("A");
+        Tuple1<String> t2 = Tuple1.of("B");
         return Stream.of(
                 //@formatter:off
-                //            t1,             t2,             expectedResult
-                Arguments.of( string1Tuple,   string1Tuple,   0 ),
-                Arguments.of( string1Tuple,   string2Tuple,  -1 ),
-                Arguments.of( string2Tuple,   string1Tuple,   1 )
+                //            t1,   t2,   expectedResult
+                Arguments.of( t1,   t1,   0 ),
+                Arguments.of( t1,   t2,  -1 ),
+                Arguments.of( t2,   t1,   1 )
         ); //@formatter:on
     }
 
@@ -107,16 +107,16 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> equalsTestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("TYHG");
-        Tuple1<Long> longTuple = Tuple1.of(21L);
+        Tuple1<String> t1 = Tuple1.of("TYHG");
+        Tuple1<Long> t2 = Tuple1.of(21L);
         return Stream.of(
                 //@formatter:off
-                //            tuple,         objectToCompare,   expectedResult
-                Arguments.of( stringTuple,   "1",               false ),
-                Arguments.of( longTuple,     longTuple._1,      false ),
-                Arguments.of( stringTuple,   longTuple,         false ),
-                Arguments.of( stringTuple,   stringTuple,       true ),
-                Arguments.of( longTuple,     longTuple,         true )
+                //            tuple,   objectToCompare,   expectedResult
+                Arguments.of( t1,      "1",               false ),
+                Arguments.of( t2,      t2._1,             false ),
+                Arguments.of( t1,      t2,                false ),
+                Arguments.of( t1,      t1,                true ),
+                Arguments.of( t2,      t2,                true )
         ); //@formatter:on
     }
 
@@ -183,15 +183,15 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> mapTestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("A");
+        Tuple1<String> tuple = Tuple1.of("A");
         Function<String, Integer> fromStringToInteger = s -> s.length() + s.length();
-        Tuple1<Integer> mappedIntegerTuple = Tuple1.of(2);
+        Tuple1<Integer> mappedTuple = Tuple1.of(2);
         return Stream.of(
                 //@formatter:off
-                //            tuple,         mapper,                expectedException,                expectedResult
-                Arguments.of( stringTuple,   null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( stringTuple,   Function.identity(),   null,                             stringTuple ),
-                Arguments.of( stringTuple,   fromStringToInteger,   null,                             mappedIntegerTuple )
+                //            tuple,   mapper,                expectedException,                expectedResult
+                Arguments.of( tuple,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   Function.identity(),   null,                             tuple ),
+                Arguments.of( tuple,   fromStringToInteger,   null,                             mappedTuple )
         ); //@formatter:on
     }
 
@@ -212,15 +212,15 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> applyTestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("A");
+        Tuple1<String> tuple = Tuple1.of("A");
         Function<String, Integer> fromStringToInteger = s -> s.length() + 10;
         Integer appliedInteger = 11;
         return Stream.of(
                 //@formatter:off
-                //            tuple,         f,                     expectedException,                expectedResult
-                Arguments.of( stringTuple,   null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( stringTuple,   Function.identity(),   null,                             stringTuple._1 ),
-                Arguments.of( stringTuple,   fromStringToInteger,   null,                             appliedInteger )
+                //            tuple,   f,                     expectedException,                expectedResult
+                Arguments.of( tuple,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( tuple,   Function.identity(),   null,                             tuple._1 ),
+                Arguments.of( tuple,   fromStringToInteger,   null,                             appliedInteger )
         ); //@formatter:on
     }
 
@@ -241,15 +241,15 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> prependTestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("TYHG");
+        Tuple1<String> tuple = Tuple1.of("TYHG");
         String stringValue = "TFG";
         Integer integerValue = 43;
         return Stream.of(
                 //@formatter:off
-                //            tuple,         value,          expectedResult
-                Arguments.of( stringTuple,   null,           Tuple2.of(null, stringTuple._1) ),
-                Arguments.of( stringTuple,   stringValue,    Tuple2.of(stringValue, stringTuple._1) ),
-                Arguments.of( stringTuple,   integerValue,   Tuple2.of(integerValue, stringTuple._1) )
+                //            tuple,   value,          expectedResult
+                Arguments.of( tuple,   null,           Tuple2.of(null, tuple._1) ),
+                Arguments.of( tuple,   stringValue,    Tuple2.of(stringValue, tuple._1) ),
+                Arguments.of( tuple,   integerValue,   Tuple2.of(integerValue, tuple._1) )
         ); //@formatter:on
     }
 
@@ -264,15 +264,15 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> appendTestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("TIO");
+        Tuple1<String> tuple = Tuple1.of("TIO");
         String stringValue = "YYY";
         Integer integerValue = 99;
         return Stream.of(
                 //@formatter:off
-                //            tuple,         value,          expectedResult
-                Arguments.of( stringTuple,   null,           Tuple2.of(stringTuple._1, null) ),
-                Arguments.of( stringTuple,   stringValue,    Tuple2.of(stringTuple._1, stringValue) ),
-                Arguments.of( stringTuple,   integerValue,   Tuple2.of(stringTuple._1, integerValue) )
+                //            tuple,   value,          expectedResult
+                Arguments.of( tuple,   null,           Tuple2.of(tuple._1, null) ),
+                Arguments.of( tuple,   stringValue,    Tuple2.of(tuple._1, stringValue) ),
+                Arguments.of( tuple,   integerValue,   Tuple2.of(tuple._1, integerValue) )
         ); //@formatter:on
     }
 
@@ -287,17 +287,17 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> concatTuple1TestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("TYHG");
-        Tuple1<Long> longTuple = Tuple1.of(21L);
+        Tuple1<String> t1 = Tuple1.of("TYHG");
+        Tuple1<Long> t2 = Tuple1.of(21L);
         Tuple1<Integer> nullValueTuple = Tuple1.of(null);
         return Stream.of(
                 //@formatter:off
                 //            tuple,            tupleToConcat,    expectedResult
-                Arguments.of( stringTuple,      null,             Tuple2.of(stringTuple._1, null) ),
-                Arguments.of( stringTuple,      nullValueTuple,   Tuple2.of(stringTuple._1, null) ),
-                Arguments.of( nullValueTuple,   longTuple,        Tuple2.of(null, longTuple._1) ),
-                Arguments.of( stringTuple,      longTuple,        Tuple2.of(stringTuple._1, longTuple._1) ),
-                Arguments.of( longTuple,        stringTuple,      Tuple2.of(longTuple._1, stringTuple._1) )
+                Arguments.of( t1,               null,             Tuple2.of(t1._1, null) ),
+                Arguments.of( t1,               nullValueTuple,   Tuple2.of(t1._1, null) ),
+                Arguments.of( nullValueTuple,   t2,               Tuple2.of(null, t2._1) ),
+                Arguments.of( t1,               t2,               Tuple2.of(t1._1, t2._1) ),
+                Arguments.of( t2,               t1,               Tuple2.of(t2._1, t1._1) )
         ); //@formatter:on
     }
 
@@ -312,15 +312,15 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> concatTuple2TestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("TYHG");
-        Tuple2<Long, Integer> longIntegerTuple = Tuple2.of(17L, 87);
+        Tuple1<String> t1 = Tuple1.of("TYHG");
+        Tuple2<Long, Integer> t2 = Tuple2.of(17L, 87);
         Tuple2<Integer, Integer> nullValueTuple = Tuple2.of(null, null);
         return Stream.of(
                 //@formatter:off
-                //            tuple,         tupleToConcat,      expectedResult
-                Arguments.of( stringTuple,   null,               Tuple3.of(stringTuple._1, null, null) ),
-                Arguments.of( stringTuple,   nullValueTuple,     Tuple3.of(stringTuple._1, null, null) ),
-                Arguments.of( stringTuple,   longIntegerTuple,   Tuple3.of(stringTuple._1, longIntegerTuple._1, longIntegerTuple._2) )
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple3.of(t1._1, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple3.of(t1._1, null, null) ),
+                Arguments.of( t1,      t2,               Tuple3.of(t1._1, t2._1, t2._2) )
         ); //@formatter:on
     }
 
@@ -335,15 +335,15 @@ public class Tuple1Test {
 
 
     static Stream<Arguments> concatTuple3TestCases() {
-        Tuple1<String> stringTuple = Tuple1.of("TYHG");
-        Tuple3<Long, Integer, Boolean> longIntegerBooleanTuple = Tuple3.of(17L, 87, TRUE);
+        Tuple1<String> t1 = Tuple1.of("TYHG");
+        Tuple3<Long, Integer, Boolean> t2 = Tuple3.of(17L, 87, TRUE);
         Tuple3<Integer, Integer, Long> nullValueTuple = Tuple3.of(null, null, null);
         return Stream.of(
                 //@formatter:off
-                //            tuple,         tupleToConcat,             expectedResult
-                Arguments.of( stringTuple,   null,                      Tuple4.of(stringTuple._1, null, null, null) ),
-                Arguments.of( stringTuple,   nullValueTuple,            Tuple4.of(stringTuple._1, null, null, null) ),
-                Arguments.of( stringTuple,   longIntegerBooleanTuple,   Tuple4.of(stringTuple._1, longIntegerBooleanTuple._1, longIntegerBooleanTuple._2, longIntegerBooleanTuple._3) )
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple4.of(t1._1, null, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple4.of(t1._1, null, null, null) ),
+                Arguments.of( t1,      t2,               Tuple4.of(t1._1, t2._1, t2._2, t2._3) )
         ); //@formatter:on
     }
 
@@ -353,6 +353,29 @@ public class Tuple1Test {
     public <T1, T2, T3, T4> void concatTuple3_testCases(Tuple1<T1> tuple,
                                                         Tuple3<T2, T3, T4> tupleToConcat,
                                                         Tuple4<T1, T2, T3, T4> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
+    }
+
+
+    static Stream<Arguments> concatTuple4TestCases() {
+        Tuple1<String> t1 = Tuple1.of("TYHG");
+        Tuple4<Long, Integer, Boolean, String> t2 = Tuple4.of(17L, 87, TRUE, "AbC");
+        Tuple4<Integer, Integer, Integer, Long> nullValueTuple = Tuple4.of(null, null, null, null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple5.of(t1._1, null, null, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple5.of(t1._1, null, null, null, null) ),
+                Arguments.of( t1,      t2,               Tuple5.of(t1._1, t2._1, t2._2, t2._3, t2._4) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple4TestCases")
+    @DisplayName("concat: using Tuple4 test cases")
+    public <T1, T2, T3, T4, T5> void concatTuple4_testCases(Tuple1<T1> tuple,
+                                                            Tuple4<T2, T3, T4, T5> tupleToConcat,
+                                                            Tuple5<T1, T2, T3, T4, T5> expectedResult) {
         assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 

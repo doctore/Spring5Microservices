@@ -146,4 +146,39 @@ public class TupleTest {
         assertEquals(expectedResult, Tuple.of(t1, t2, t3, t4));
     }
 
+
+    static Stream<Arguments> ofTuple5TestCases() {
+        String stringValue = "ABC";
+        Integer integerValue = 25;
+        Long longValue = 33L;
+        Boolean booleanValue = Boolean.TRUE;
+        Double doubleValue = 23.2d;
+        return Stream.of(
+                //@formatter:off
+                //            t1,             t2,             t3,             t4,             t5,            expectedResult
+                Arguments.of( null,           null,           null,           null,           null,          Tuple5.of(null, null, null, null, null) ),
+                Arguments.of( stringValue,    null,           null,           null,           null,          Tuple5.of(stringValue, null, null, null, null) ),
+                Arguments.of( null,           stringValue,    null,           null,           null,          Tuple5.of(null, stringValue, null, null, null) ),
+                Arguments.of( null,           null,           stringValue,    null,           null,          Tuple5.of(null, null, stringValue, null, null) ),
+                Arguments.of( null,           null,           null,           stringValue,    null,          Tuple5.of(null, null, null, stringValue, null) ),
+                Arguments.of( null,           null,           null,           null,           stringValue,   Tuple5.of(null, null, null, null, stringValue) ),
+                Arguments.of( null,           stringValue,    integerValue,   null,           null,          Tuple5.of(null, stringValue, integerValue, null, null) ),
+                Arguments.of( stringValue,    integerValue,   null,           null,           null,          Tuple5.of(stringValue, integerValue, null, null, null) ),
+                Arguments.of( null,           null,           stringValue,    integerValue,   doubleValue,   Tuple5.of(null, null, stringValue, integerValue, doubleValue) ),
+                Arguments.of( stringValue,    integerValue,   longValue,      booleanValue,   doubleValue,   Tuple5.of(stringValue, integerValue, longValue, booleanValue, doubleValue) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofTuple5TestCases")
+    @DisplayName("of: returning Tuple5 test cases")
+    public <T1, T2, T3, T4, T5> void ofTuple5_testCases(T1 t1,
+                                                        T2 t2,
+                                                        T3 t3,
+                                                        T4 t4,
+                                                        T5 t5,
+                                                        Tuple5<T1, T2, T3, T4, T5> expectedResult) {
+        assertEquals(expectedResult, Tuple.of(t1, t2, t3, t4, t5));
+    }
+
 }

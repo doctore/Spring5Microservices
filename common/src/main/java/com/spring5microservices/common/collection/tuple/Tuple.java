@@ -102,13 +102,38 @@ public interface Tuple {
      * @param t4
      *    The 4th element
      *
-     * @return a {@link Tuple} of three elements.
+     * @return a {@link Tuple} of four elements.
      */
     static <T1, T2, T3, T4> Tuple4<T1, T2, T3, T4> of(final T1 t1,
                                                       final T2 t2,
                                                       final T3 t3,
                                                       final T4 t4) {
         return Tuple4.of(t1, t2, t3, t4);
+    }
+
+
+    /**
+     * Creates a {@link Tuple} of five elements.
+     *
+     * @param t1
+     *    The 1st element
+     * @param t2
+     *    The 2nd element
+     * @param t3
+     *    The 3rd element
+     * @param t4
+     *    The 4th element
+     * @param t5
+     *    The 5th element
+     *
+     * @return a {@link Tuple} of five elements.
+     */
+    static <T1, T2, T3, T4, T5> Tuple5<T1, T2, T3, T4, T5> of(final T1 t1,
+                                                              final T2 t2,
+                                                              final T3 t3,
+                                                              final T4 t4,
+                                                              final T5 t5) {
+        return Tuple5.of(t1, t2, t3, t4, t5);
     }
 
 }
