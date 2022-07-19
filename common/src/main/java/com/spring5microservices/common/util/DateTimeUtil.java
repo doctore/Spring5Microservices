@@ -68,7 +68,7 @@ public class DateTimeUtil {
      *
      * @return {@link Optional} of {@link Date}
      */
-    public static Optional<Date> fromLocalDateTimeToDate(LocalDateTime localDateTime) {
+    public static Optional<Date> fromLocalDateTimeToDate(final LocalDateTime localDateTime) {
         return fromLocalDateTimeToDate(localDateTime, ZoneId.systemDefault());
     }
 

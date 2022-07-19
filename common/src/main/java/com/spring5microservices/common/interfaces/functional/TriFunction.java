@@ -37,7 +37,9 @@ public interface TriFunction<T, U, V, R> {
      *
      * @return the function result
      */
-    R apply(final T t, final U u, final V v);
+    R apply(final T t,
+            final U u,
+            final V v);
 
 
     /**

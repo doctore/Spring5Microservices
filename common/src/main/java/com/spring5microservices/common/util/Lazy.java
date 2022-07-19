@@ -47,7 +47,7 @@ public final class Lazy<T> implements Supplier<T> {
      * @throws NullPointerException if {@code supplier} is {@code null}
      */
     @SuppressWarnings("unchecked")
-    public static <T> Lazy<T> of(Supplier<? extends T> supplier) {
+    public static <T> Lazy<T> of(final Supplier<? extends T> supplier) {
         Objects.requireNonNull(supplier);
         if (supplier instanceof Lazy) {
             return (Lazy<T>) supplier;
@@ -115,7 +115,7 @@ public final class Lazy<T> implements Supplier<T> {
      *
      * @throws NullPointerException if {@code predicate} is {@code null}
      */
-    public Optional<T> filter(Predicate<? super T> predicate) {
+    public Optional<T> filter(final Predicate<? super T> predicate) {
         Objects.requireNonNull(predicate);
         final T v = get();
         return predicate.test(v)
@@ -145,7 +145,7 @@ public final class Lazy<T> implements Supplier<T> {
      *
      * @throws NullPointerException if {@code mapper} is {@code null}
      */
-    public <U> Lazy<U> map(Function<? super T, ? extends U> mapper) {
+    public <U> Lazy<U> map(final Function<? super T, ? extends U> mapper) {
         Objects.requireNonNull(mapper);
         return Lazy.of(() -> mapper.apply(get()));
     }
@@ -161,7 +161,7 @@ public final class Lazy<T> implements Supplier<T> {
      *
      * @throws NullPointerException if {@code action} is {@code null}
      */
-    public Lazy<T> peek(Consumer<? super T> action) {
+    public Lazy<T> peek(final Consumer<? super T> action) {
         Objects.requireNonNull(action);
         action.accept(get());
         return this;

@@ -50,7 +50,7 @@ public class Invalid<E, T> extends Validation<E, T> implements Serializable {
      *
      * @throws NullPointerException if {@code errors} is {@code null}
      */
-    public static <E, T> Invalid<E, T> of(Collection<E> errors) {
+    public static <E, T> Invalid<E, T> of(final Collection<E> errors) {
         return new Invalid<>(Objects.requireNonNull(errors));
     }
 

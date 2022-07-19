@@ -45,7 +45,11 @@ public interface PentaFunction<T, U, V, W, X, R> {
      *
      * @return the function result
      */
-    R apply(final T t, final U u, final V v, final W w, final X x);
+    R apply(final T t,
+            final U u,
+            final V v,
+            final W w,
+            final X x);
 
 
     /**

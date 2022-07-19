@@ -1034,7 +1034,7 @@ public class CollectionUtil {
      *
      * @return {@link List} of {@link Tuple2}s
      */
-    public static <T> List<Tuple2<Integer, T>> zipWithIndex(Collection<? extends T> sourceCollection) {
+    public static <T> List<Tuple2<Integer, T>> zipWithIndex(final Collection<? extends T> sourceCollection) {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
