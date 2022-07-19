@@ -133,10 +133,10 @@ public class LazyTest {
         Predicate<String> verifyPredicate = s -> 3 == s.length();
         return Stream.of(
                 //@formatter:off
-                //            lazy,   predicate,                expectedException,            expectedResult
-                Arguments.of( lazy,   null,                     NullPointerException.class,   null ),
-                Arguments.of( lazy,   doesNotVerifyPredicate,   null,                         empty() ),
-                Arguments.of( lazy,   verifyPredicate,          null,                         Optional.of("ABC") )
+                //            lazy,   predicate,                expectedResult
+                Arguments.of( lazy,   null,                     Optional.of("ABC") ),
+                Arguments.of( lazy,   doesNotVerifyPredicate,   empty() ),
+                Arguments.of( lazy,   verifyPredicate,          Optional.of("ABC") )
         ); //@formatter:on
     }
 
@@ -145,14 +145,8 @@ public class LazyTest {
     @DisplayName("filter: test cases")
     public <T> void filter_testCases(Lazy<? extends T> lazy,
                                      Predicate<? super T> predicate,
-                                     Class<? extends Exception> expectedException,
                                      Optional<T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> lazy.filter(predicate));
-        }
-        else {
-            assertEquals(expectedResult, lazy.filter(predicate));
-        }
+        assertEquals(expectedResult, lazy.filter(predicate));
     }
 
 
