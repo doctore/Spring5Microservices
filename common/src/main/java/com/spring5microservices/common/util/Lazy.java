@@ -88,7 +88,7 @@ public final class Lazy<T> implements Supplier<T> {
         } else {
             final Lazy<?> that = (Lazy<?>) o;
 
-            // Equals does not invokes internal supplier
+            // Equals does not invoke internal supplier
             if (!isEvaluated() || !that.isEvaluated()) {
                 return false;
             }
@@ -112,15 +112,13 @@ public final class Lazy<T> implements Supplier<T> {
      *
      * @return {@link Optional} with internal value: cached or the result of provided {@link Supplier} if satisfies {@code predicate},
      *         {@link Optional#empty()} otherwise.
-     *
-     * @throws NullPointerException if {@code predicate} is {@code null}
      */
     public Optional<T> filter(final Predicate<? super T> predicate) {
-        Objects.requireNonNull(predicate);
         final T v = get();
-        return predicate.test(v)
-                ? Optional.of(v)
-                : empty();
+        if (Objects.isNull(predicate) || predicate.test(v)) {
+            return Optional.of(v);
+        }
+        return empty();
     }
 
 
