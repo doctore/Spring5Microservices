@@ -36,7 +36,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @return {@code Valid(value)}
      */
-    public static <E, T> Validation<E, T> valid(T value) {
+    public static <E, T> Validation<E, T> valid(final T value) {
         return Valid.of(value);
     }
 
@@ -48,7 +48,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * @return {@code Invalid(error)}
      */
-    public static <E, T> Validation<E, T> invalid(Collection<E> errors) {
+    public static <E, T> Validation<E, T> invalid(final Collection<E> errors) {
         return Invalid.of(errors);
     }
 

@@ -33,7 +33,7 @@ public class JsonUtil {
      *
      * @throws JsonException if there was a problem trying to generate the JSON-formatted string
      */
-    public static <T> Optional<String> toJson(T object) {
+    public static <T> Optional<String> toJson(final T object) {
         return ofNullable(object)
                 .map(o -> {
                     try {
@@ -57,7 +57,8 @@ public class JsonUtil {
      *
      * @throws JsonException if there was a problem trying to generate the result object
      */
-    public static <T> Optional<T> fromJson(String json, Class<T> clazz) {
+    public static <T> Optional<T> fromJson(final String json,
+                                           final Class<T> clazz) {
         return ofNullable(json)
                 .filter(j -> !j.trim().isEmpty())
                 .map(j -> {

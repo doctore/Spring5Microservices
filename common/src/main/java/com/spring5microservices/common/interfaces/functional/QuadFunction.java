@@ -41,7 +41,10 @@ public interface QuadFunction<T, U, V, W, R> {
      *
      * @return the function result
      */
-    R apply(final T t, final U u, final V v, final W w);
+    R apply(final T t,
+            final U u,
+            final V v,
+            final W w);
 
 
     /**

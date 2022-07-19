@@ -18,7 +18,7 @@ import static java.util.Optional.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class LazyUtil {
+public class LazyTest {
 
     static Stream<Arguments> ofTestCases() {
         Supplier<String> stringSupplier = () -> "ABC";
