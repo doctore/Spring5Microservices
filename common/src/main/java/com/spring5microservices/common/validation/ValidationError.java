@@ -41,7 +41,8 @@ public class ValidationError implements Comparable<ValidationError> {
      *
      * @throws NullPointerException if {@code errorMessage} is {@code null}
      */
-    public static ValidationError of(int priority, String errorMessage) {
+    public static ValidationError of(final int priority,
+                                     final String errorMessage) {
         return new ValidationError(priority, Objects.requireNonNull(errorMessage));
     }
 
