@@ -105,20 +105,19 @@ public final class Lazy<T> implements Supplier<T> {
 
     /**
      *    Using the provided {@link Predicate} return the lazy internal value in an {@link Optional} if satisfies
-     * {@code predicate}, or {@link Optional#empty()} otherwise.
+     * {@code predicate} or given {@link Predicate} is {@code null}. {@link Optional#empty()} otherwise.
      *
      * @param predicate
      *    {@link Predicate} to filter the lazy internal value
      *
-     * @return {@link Optional} with internal value: cached or the result of provided {@link Supplier} if satisfies {@code predicate},
-     *         {@link Optional#empty()} otherwise.
+     * @return {@link Optional} with internal value: cached or the result of provided {@link Supplier} if satisfies
+     *         {@code predicate} or given {@link Predicate} is {@code null}. {@link Optional#empty()} otherwise.
      */
     public Optional<T> filter(final Predicate<? super T> predicate) {
         final T v = get();
-        if (Objects.isNull(predicate) || predicate.test(v)) {
-            return Optional.of(v);
-        }
-        return empty();
+        return Objects.isNull(predicate) || predicate.test(v)
+                ? Optional.of(v)
+                : empty();
     }
 
 
@@ -156,12 +155,11 @@ public final class Lazy<T> implements Supplier<T> {
      *    {@link Consumer} invoked for the internal value of the current {@link Lazy} instance.
      *
      * @return {@code Lazy}
-     *
-     * @throws NullPointerException if {@code action} is {@code null}
      */
     public Lazy<T> peek(final Consumer<? super T> action) {
-        Objects.requireNonNull(action);
-        action.accept(get());
+        if (Objects.nonNull(action)) {
+            action.accept(get());
+        }
         return this;
     }
 

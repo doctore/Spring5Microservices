@@ -208,9 +208,9 @@ public class LazyTest {
         Consumer<String> action = System.out::println;
         return Stream.of(
                 //@formatter:off
-                //            lazy,   action,   expectedException,            expectedResult
-                Arguments.of( lazy,   null,     NullPointerException.class,   null ),
-                Arguments.of( lazy,   action,   null,                         lazy )
+                //            lazy,   action,   expectedResult
+                Arguments.of( lazy,   null,     lazy ),
+                Arguments.of( lazy,   action,   lazy )
         ); //@formatter:on
     }
 
@@ -219,14 +219,8 @@ public class LazyTest {
     @DisplayName("peek: test cases")
     public <T> void peek_testCases(Lazy<? extends T> lazy,
                                    Consumer<? super T> action,
-                                   Class<? extends Exception> expectedException,
                                    Lazy<T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> lazy.peek(action));
-        }
-        else {
-            assertEquals(expectedResult, lazy.peek(action));
-        }
+        assertEquals(expectedResult, lazy.peek(action));
     }
 
 
