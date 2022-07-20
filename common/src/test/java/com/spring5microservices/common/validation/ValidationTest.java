@@ -15,7 +15,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -51,10 +50,10 @@ public class ValidationTest {
     static Stream<Arguments> invalidTestCases() {
         return Stream.of(
                 //@formatter:off
-                //            value,               expectedException,            expectedResult
-                Arguments.of( null,                NullPointerException.class,   null ),
-                Arguments.of( asList(),            null,                         Invalid.of(asList()) ),
-                Arguments.of( asList("problem"),   null,                         Invalid.of(asList("problem")) )
+                //            value,                expectedException,            expectedResult
+                Arguments.of( null,                 NullPointerException.class,   null ),
+                Arguments.of( List.of(),            null,                         Invalid.of(List.of()) ),
+                Arguments.of( List.of("problem"),   null,                         Invalid.of(List.of("problem")) )
         ); //@formatter:on
     }
 
@@ -75,7 +74,7 @@ public class ValidationTest {
 
     static Stream<Arguments> mapTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Function<Integer, String> fromIntegerToString = Object::toString;
         return Stream.of(
                 //@formatter:off
@@ -105,13 +104,13 @@ public class ValidationTest {
 
     static Stream<Arguments> mapErrorTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Function<List<String>, List<String>> addALetter = i -> i.stream().map(elto -> elto + "2").collect(toList());
         return Stream.of(
                 //@formatter:off
                 //            validation,   mapper,       expectedException,            expectedResult
                 Arguments.of( invalid,      null,         NullPointerException.class,   null ),
-                Arguments.of( invalid,      addALetter,   null,                         Validation.invalid(asList("problem2")) ),
+                Arguments.of( invalid,      addALetter,   null,                         Validation.invalid(List.of("problem2")) ),
                 Arguments.of( valid,        null,         null,                         valid ),
                 Arguments.of( valid,        addALetter,   null,                         valid )
         ); //@formatter:on
@@ -135,7 +134,7 @@ public class ValidationTest {
 
     static Stream<Arguments> bimapTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Function<Integer, String> fromIntegerToString = Object::toString;
         Function<List<String>, List<String>> addALetter = i -> i.stream().map(elto -> elto + "2").collect(toList());
         return Stream.of(
@@ -145,8 +144,8 @@ public class ValidationTest {
                 Arguments.of( valid,        fromIntegerToString,   null,            null,                         Validation.valid("1") ),
                 Arguments.of( valid,        fromIntegerToString,   addALetter,      null,                         Validation.valid("1") ),
                 Arguments.of( invalid,      fromIntegerToString,   null,            NullPointerException.class,   null ),
-                Arguments.of( invalid,      null,                  addALetter,      null,                         Validation.invalid(asList("problem2")) ),
-                Arguments.of( invalid,      fromIntegerToString,   addALetter,      null,                         Validation.invalid(asList("problem2")) )
+                Arguments.of( invalid,      null,                  addALetter,      null,                         Validation.invalid(List.of("problem2")) ),
+                Arguments.of( invalid,      fromIntegerToString,   addALetter,      null,                         Validation.invalid(List.of("problem2")) )
         ); //@formatter:on
     }
 
@@ -169,7 +168,7 @@ public class ValidationTest {
 
     static Stream<Arguments> flatmapTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Function<Integer, Validation<String, String>> fromIntegerToValidWithString = i -> Validation.valid(i.toString());
         return Stream.of(
                 //@formatter:off
@@ -199,15 +198,15 @@ public class ValidationTest {
 
     static Stream<Arguments> peekTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Consumer<Integer> action = System.out::println;
         return Stream.of(
                 //@formatter:off
-                //            validation,   action,   expectedException,            expectedResult
-                Arguments.of( valid,        null,     NullPointerException.class,   null ),
-                Arguments.of( valid,        action,   null,                         valid ),
-                Arguments.of( invalid,      null,     null,                         invalid ),
-                Arguments.of( invalid,      action,   null,                         invalid )
+                //            validation,   action,   expectedResult
+                Arguments.of( valid,        null,     valid ),
+                Arguments.of( valid,        action,   valid ),
+                Arguments.of( invalid,      null,     invalid ),
+                Arguments.of( invalid,      action,   invalid )
         ); //@formatter:on
     }
 
@@ -216,28 +215,22 @@ public class ValidationTest {
     @DisplayName("peek: test cases")
     public <E, T> void peek_testCases(Validation<E, T> validation,
                                       Consumer<? super T> action,
-                                      Class<? extends Exception> expectedException,
                                       Validation<E, T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> validation.peek(action));
-        }
-        else {
-            assertEquals(expectedResult, validation.peek(action));
-        }
+        assertEquals(expectedResult, validation.peek(action));
     }
 
 
     static Stream<Arguments> peekErrorTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Consumer<List<String>> action = System.out::println;
         return Stream.of(
                 //@formatter:off
-                //            validation,   action,   expectedException,            expectedResult
-                Arguments.of( invalid,      null,     NullPointerException.class,   null ),
-                Arguments.of( invalid,      action,   null,                         invalid ),
-                Arguments.of( valid,        null,     null,                         valid ),
-                Arguments.of( valid,        action,   null,                         valid )
+                //            validation,   action,   expectedResult
+                Arguments.of( invalid,      null,     invalid ),
+                Arguments.of( invalid,      action,   invalid ),
+                Arguments.of( valid,        null,     valid ),
+                Arguments.of( valid,        action,   valid )
 
         ); //@formatter:on
     }
@@ -247,31 +240,25 @@ public class ValidationTest {
     @DisplayName("peekError: test cases")
     public <E, T> void peekError_testCases(Validation<E, T> validation,
                                            Consumer<Collection<? super E>> action,
-                                           Class<? extends Exception> expectedException,
                                            Validation<E, T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> validation.peekError(action));
-        }
-        else {
-            assertEquals(expectedResult, validation.peekError(action));
-        }
+        assertEquals(expectedResult, validation.peekError(action));
     }
 
 
     static Stream<Arguments> bipeekTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Consumer<Integer> actionValid = System.out::println;
         Consumer<List<String>> actionInvalid = System.out::println;
         return Stream.of(
                 //@formatter:off
-                //            validation,   actionValid,   actionInvalid,   expectedException,            expectedResult
-                Arguments.of( valid,        null,          actionInvalid,   NullPointerException.class,   null ),
-                Arguments.of( valid,        actionValid,   null,            null,                         valid ),
-                Arguments.of( valid,        actionValid,   actionInvalid,   null,                         valid ),
-                Arguments.of( invalid,      actionValid,   null,            NullPointerException.class,   null ),
-                Arguments.of( invalid,      null,          actionInvalid,   null,                         invalid ),
-                Arguments.of( invalid,      actionValid,   actionInvalid,   null,                         invalid )
+                //            validation,   actionValid,   actionInvalid,   expectedResult
+                Arguments.of( valid,        null,          actionInvalid,   valid ),
+                Arguments.of( valid,        actionValid,   null,            valid ),
+                Arguments.of( valid,        actionValid,   actionInvalid,   valid ),
+                Arguments.of( invalid,      actionValid,   null,            invalid ),
+                Arguments.of( invalid,      null,          actionInvalid,   invalid ),
+                Arguments.of( invalid,      actionValid,   actionInvalid,   invalid )
         ); //@formatter:on
     }
 
@@ -281,30 +268,24 @@ public class ValidationTest {
     public <E, T> void bimap_testCases(Validation<E, T> validation,
                                        Consumer<? super T> actionValid,
                                        Consumer<Collection<? super E>> actionInvalid,
-                                       Class<? extends Exception> expectedException,
                                        Validation<E, T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> validation.bipeek(actionValid, actionInvalid));
-        }
-        else {
-            assertEquals(expectedResult, validation.bipeek(actionValid, actionInvalid));
-        }
+        assertEquals(expectedResult, validation.bipeek(actionValid, actionInvalid));
     }
 
 
     static Stream<Arguments> filterTestCases() {
         Validation<String, Integer> validVerifyFilter = Validation.valid(1);
         Validation<String, Integer> validDoesNotVerifyFilter = Validation.valid(2);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         Predicate<Integer> isOdd = i -> i % 2 == 1;
         return Stream.of(
                 //@formatter:off
-                //            validation,                 predicate,   expectedException,            expectedResult
-                Arguments.of( validVerifyFilter,          null,        NullPointerException.class,   null ),
-                Arguments.of( validVerifyFilter,          isOdd,       null,                         of(validVerifyFilter) ),
-                Arguments.of( validDoesNotVerifyFilter,   isOdd,       null,                         empty() ),
-                Arguments.of( invalid,                    null,        null,                         of(invalid) ),
-                Arguments.of( invalid,                    isOdd,       null,                         of(invalid) )
+                //            validation,                 predicate,   expectedResult
+                Arguments.of( validVerifyFilter,          null,        of(validVerifyFilter) ),
+                Arguments.of( validVerifyFilter,          isOdd,       of(validVerifyFilter) ),
+                Arguments.of( validDoesNotVerifyFilter,   isOdd,       empty() ),
+                Arguments.of( invalid,                    null,        of(invalid) ),
+                Arguments.of( invalid,                    isOdd,       of(invalid) )
         ); //@formatter:on
     }
 
@@ -313,22 +294,16 @@ public class ValidationTest {
     @DisplayName("filter: test cases")
     public <E, T> void filter_testCases(Validation<E, T> validation,
                                         Predicate<? super T> predicate,
-                                        Class<? extends Exception> expectedException,
                                         Optional<Validation<E, T>> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> validation.filter(predicate));
-        }
-        else {
-            assertEquals(expectedResult, validation.filter(predicate));
-        }
+        assertEquals(expectedResult, validation.filter(predicate));
     }
 
 
     static Stream<Arguments> apTestCases() {
         Validation<String, Integer> validInt1 = Validation.valid(1);
         Validation<String, Integer> validInt4 = Validation.valid(4);
-        Validation<String, Integer> invalidProb1 = Validation.invalid(asList("problem1"));
-        Validation<String, Integer> invalidProb2 = Validation.invalid(asList("problem2"));
+        Validation<String, Integer> invalidProb1 = Validation.invalid(List.of("problem1"));
+        Validation<String, Integer> invalidProb2 = Validation.invalid(List.of("problem2"));
 
         List<String> allErrors = new ArrayList<>(invalidProb1.getErrors());
         allErrors.addAll(invalidProb2.getErrors());
@@ -358,7 +333,7 @@ public class ValidationTest {
     static Stream<Arguments> toOptionalTestCases() {
         Validation<String, Integer> validEmpty = Valid.empty();
         Validation<String, Integer> validNotEmpty = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         return Stream.of(
                 //@formatter:off
                 //            validation,      expectedResult
@@ -380,7 +355,7 @@ public class ValidationTest {
     static Stream<Arguments> orElseWithValidationTestCases() {
         Validation<String, Integer> validInt1 = Validation.valid(1);
         Validation<String, Integer> validInt4 = Validation.valid(4);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         return Stream.of(
                 //@formatter:off
                 //            validation,   other,       expectedResult
@@ -404,7 +379,7 @@ public class ValidationTest {
     static Stream<Arguments> orElseWithSupplierTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Supplier<Validation<String, Integer>> supplierValid = () -> Validation.valid(4);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         return Stream.of(
                 //@formatter:off
                 //            validation,   supplier,        expectedException,            expectedResult
@@ -435,7 +410,7 @@ public class ValidationTest {
         Validation<String, Integer> validEmpty = Valid.empty();
         Validation<String, Integer> validNotEmpty = Validation.valid(1);
         Supplier<Exception> exceptionSupplier = () -> new IllegalArgumentException("Something was wrong");
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         return Stream.of(
                 //@formatter:off
                 //            validation,      exceptionSupplier,   expectedException,                expectedResult
@@ -467,7 +442,7 @@ public class ValidationTest {
     static Stream<Arguments> isEmptyTestCases() {
         Validation<String, Integer> validEmpty = Valid.empty();
         Validation<String, Integer> validNotEmpty = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(asList("problem"));
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
         return Stream.of(
                 //@formatter:off
                 //            validation,      expectedResult
