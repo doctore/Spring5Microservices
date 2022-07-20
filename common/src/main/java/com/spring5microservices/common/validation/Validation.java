@@ -157,12 +157,9 @@ public abstract class Validation<E, T> implements Serializable {
      *    {@link Consumer} invoked for the stored value of the current {@link Valid} instance.
      *
      * @return {@code Validation}
-     *
-     * @throws NullPointerException if {@code action} is {@code null} and the current instance is a {@link Valid} one
      */
     public final Validation<E, T> peek(final Consumer<? super T> action) {
-        if (isValid()) {
-            Objects.requireNonNull(action, "action must be not null");
+        if (isValid() && Objects.nonNull(action)) {
             action.accept(get());
         }
         return this;
@@ -176,12 +173,9 @@ public abstract class Validation<E, T> implements Serializable {
      *    {@link Consumer} invoked for the stored value of the current {@link Invalid} instance.
      *
      * @return {@code Validation}
-     *
-     * @throws NullPointerException if {@code action} is {@code null} and the current instance is a {@link Invalid} one
      */
     public final Validation<E, T> peekError(final Consumer<Collection<? super E>> action) {
-        if (!isValid()) {
-            Objects.requireNonNull(action, "action must be not null");
+        if (!isValid() && Objects.nonNull(action)) {
             action.accept(getErrors());
         }
         return this;
@@ -199,17 +193,13 @@ public abstract class Validation<E, T> implements Serializable {
      *    The invalid {@link Consumer} operation
      *
      * @return {@code Validation}
-     *
-     * @throws NullPointerException if {@code actionValid} is {@code null} and the current instance is a {@link Valid} one
-     *                              or {@code actionInvalid} is {@code null} and the current instance is a {@link Invalid} one
      */
     public final Validation<E, T> bipeek(final Consumer<? super T> actionValid,
                                          final Consumer<Collection<? super E>> actionInvalid) {
-        if (isValid()) {
-            Objects.requireNonNull(actionValid, "actionValid must be not null");
+        if (isValid() && Objects.nonNull(actionValid)) {
             actionValid.accept(get());
-        } else {
-            Objects.requireNonNull(actionInvalid, "actionInvalid must be not null");
+        }
+        if (!isValid() && Objects.nonNull(actionInvalid)) {
             actionInvalid.accept(getErrors());
         }
         return this;
@@ -217,22 +207,19 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
-     *    Verifies the given {@code predicate} with the stored value if the current {@code Validation} is a {@link Valid} one.
-     * Otherwise return an empty {@link Optional}
+     *    Verifies the given {@code predicate} with the stored value if the current {@code Validation} is a {@link Valid} one
+     * or given {@link Predicate} is {@code null}. {@link Optional#empty()} otherwise.
      *
      * @param predicate
      *    {@link Predicate} to apply the stored value if the current instance is a {@link Valid} one
      *
      * @return {@link Optional} of {@link Validation}
-     *
-     * @throws NullPointerException if {@code predicate} is {@code null} and the current instance is a {@link Valid} one
      */
     public final Optional<Validation<E, T>> filter(final Predicate<? super T> predicate) {
         if (!isValid()) {
             return of(this);
         }
-        Objects.requireNonNull(predicate, "predicate must be not null");
-        return predicate.test(get())
+        return Objects.isNull(predicate) || predicate.test(get())
                 ? of(this)
                 : empty();
     }
