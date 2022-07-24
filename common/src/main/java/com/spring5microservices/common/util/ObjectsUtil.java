@@ -37,24 +37,6 @@ public class ObjectsUtil {
 
     /**
      *    Using the provided {@link Function} {@code mapper}, transform/extract from the given {@code sourceInstance}
-     * the related value. Otherwise returns {@code null} as {@link String}.
-     *
-     * @param sourceInstance
-     *    Object used to transform/extract required information.
-     * @param mapper
-     *    A mapping {@link Function} to use required information from {@code sourceInstance}
-     *
-     * @return {@code mapper} {@code apply} method if not {@code null} is returned,
-     *         {@code null} as {@link String} otherwise.
-     */
-    public static <T, E> String getOrElseString(final T sourceInstance,
-                                                final Function<? super T, ? extends E> mapper) {
-        return getOrElseString(sourceInstance, mapper, "null");
-    }
-
-
-    /**
-     *    Using the provided {@link Function} {@code mapper}, transform/extract from the given {@code sourceInstance}
      * the related value. Otherwise returns {@code defaultValue}.
      *
      * @param sourceInstance

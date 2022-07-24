@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 
 /**
  * Used to manage a lazy evaluated value, useful when getting it has an important performance cost.
@@ -161,6 +162,16 @@ public final class Lazy<T> implements Supplier<T> {
             action.accept(get());
         }
         return this;
+    }
+
+
+    /**
+     * Wrap the result of provided {@link Supplier} into an {@link Optional}.
+     *
+     * @return {@link Optional}
+     */
+    public Optional<T> toOptional() {
+        return ofNullable(get());
     }
 
 

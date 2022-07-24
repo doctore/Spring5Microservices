@@ -49,34 +49,7 @@ public class ObjectsUtilTest {
     }
 
 
-    static Stream<Arguments> getOrElseStringWithoutDefaultValueTestCases() {
-        PizzaDto pizzaWithAllProperties = new PizzaDto(MARGUERITA.getInternalPropertyValue(), 7D);
-        PizzaDto pizzaWithoutProperties = new PizzaDto(null, null);
-        Function<PizzaDto, String> getName = PizzaDto::getName;
-        Function<PizzaDto, Double> getCost = PizzaDto::getCost;
-        return Stream.of(
-                //@formatter:off
-                //            sourceInstance,           mapper,    expectedResult
-                Arguments.of( null,                     getName,   "null" ),
-                Arguments.of( null,                     getName,   "null" ),
-                Arguments.of( pizzaWithAllProperties,   getName,   pizzaWithAllProperties.getName() ),
-                Arguments.of( pizzaWithoutProperties,   getName,   "null" ),
-                Arguments.of( pizzaWithAllProperties,   getCost,   pizzaWithAllProperties.getCost().toString() ),
-                Arguments.of( pizzaWithoutProperties,   getCost,   "null" )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("getOrElseStringWithoutDefaultValueTestCases")
-    @DisplayName("getOrElseString: without default value test cases")
-    public <T, E> void getOrElseStringWithoutDefaultValue_testCases(T sourceInstance,
-                                                                    Function<? super T, ? extends E> mapper,
-                                                                    String expectedResult) {
-        assertEquals(expectedResult, getOrElseString(sourceInstance, mapper));
-    }
-
-
-    static Stream<Arguments> getOrElseStringAllParametersTestCases() {
+    static Stream<Arguments> getOrElseStringTestCases() {
         PizzaDto pizzaWithAllProperties = new PizzaDto(MARGUERITA.getInternalPropertyValue(), 7D);
         PizzaDto pizzaWithoutProperties = new PizzaDto(null, null);
         Function<PizzaDto, String> getName = PizzaDto::getName;
@@ -98,12 +71,12 @@ public class ObjectsUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getOrElseStringAllParametersTestCases")
-    @DisplayName("getOrElseString: with all parameters test cases")
-    public <T, E> void getOrElseStringAllParameters_testCases(T sourceInstance,
-                                                              Function<? super T, ? extends E> mapper,
-                                                              String defaultValue,
-                                                              String expectedResult) {
+    @MethodSource("getOrElseStringTestCases")
+    @DisplayName("getOrElseString: test cases")
+    public <T, E> void getOrElseString_testCases(T sourceInstance,
+                                                 Function<? super T, ? extends E> mapper,
+                                                 String defaultValue,
+                                                 String expectedResult) {
         assertEquals(expectedResult, getOrElseString(sourceInstance, mapper, defaultValue));
     }
 
