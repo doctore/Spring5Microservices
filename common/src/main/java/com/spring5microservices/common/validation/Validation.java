@@ -273,7 +273,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      *    If the current {@code Validation} is an instance of {@link Valid} wraps the stored value into an {@link Optional} object.
-     * Otherwise return {@code Optional.empty}
+     * Otherwise return {@link Optional#empty()}
      *
      * @return {@link Optional}
      */
