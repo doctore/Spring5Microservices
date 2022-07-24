@@ -224,6 +224,26 @@ public class LazyTest {
     }
 
 
+    static Stream<Arguments> toOptionalTestCases() {
+        Lazy<Integer> lazy1 = Lazy.of(() -> null);
+        Lazy<String> lazy2 = Lazy.of(() -> "ABC");
+        return Stream.of(
+                //@formatter:off
+                //            lazy,    expectedResult
+                Arguments.of( lazy1,   empty() ),
+                Arguments.of( lazy2,   Optional.of("ABC") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toOptionalTestCases")
+    @DisplayName("toOptional: test cases")
+    public <T> void toOptional_testCases(Lazy<? extends T> lazy,
+                                         Optional<T> expectedResult) {
+        assertEquals(expectedResult, lazy.toOptional());
+    }
+
+
     private <T> void invokeInternalSupplier(Lazy<T> lazyToInvoke) {
         lazyToInvoke.get();
     }
