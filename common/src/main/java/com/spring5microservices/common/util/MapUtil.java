@@ -423,7 +423,7 @@ public class MapUtil {
     public static <T, E, R, V> Map<R, List<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
                                                         final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
                                                         final BiFunction<? super T, ? super E, ? extends V> valueMapper) {
-        return (Map)groupMap(sourceMap, discriminatorKey, valueMapper, ArrayList::new);
+        return (Map) groupMap(sourceMap, discriminatorKey, valueMapper, ArrayList::new);
     }
 
 
