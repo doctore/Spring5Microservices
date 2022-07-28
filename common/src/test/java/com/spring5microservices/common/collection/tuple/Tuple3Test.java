@@ -476,7 +476,7 @@ public class Tuple3Test {
         Integer integerValue = 66;
         return Stream.of(
                 //@formatter:off
-                //            tuple,    value,          expectedResult
+                //            tuple,   value,          expectedResult
                 Arguments.of( tuple,   null,           Tuple4.of(tuple._1, tuple._2, tuple._3, null) ),
                 Arguments.of( tuple,   longValue,      Tuple4.of(tuple._1, tuple._2, tuple._3, longValue) ),
                 Arguments.of( tuple,   integerValue,   Tuple4.of(tuple._1, tuple._2, tuple._3, integerValue) )
