@@ -3,10 +3,19 @@ package com.spring5microservices.common.collection.tuple;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+
 /**
  * The base interface of all tuples.
  */
 public interface Tuple {
+
+    /**
+     * The maximum {@link this#arity()} developed. Currently {@code 5} related with {@link Tuple5}.
+     */
+    int MAX_ALLOWED_TUPLE_ARITY = 5;
+
 
     /**
      * Returns the number of elements of this tuple.
@@ -14,6 +23,36 @@ public interface Tuple {
      * @return the number of elements.
      */
     int arity();
+
+
+    /**
+     * Append a value to this {@link Tuple}.
+     *
+     * @param t
+     *    The value to append
+     *
+     * @return {@link Tuple}
+     *
+     * @throws UnsupportedOperationException if {@link this#arity()} is equals or greater than {@link this#MAX_ALLOWED_TUPLE_ARITY}
+     */
+    default <T> Tuple globalAppend(final T t) {
+        switch (this.arity()) {
+            case 0:
+                return ((Tuple0)this).append(t);
+            case 1:
+                return ((Tuple1)this).append(t);
+            case 2:
+                return ((Tuple2)this).append(t);
+            case 3:
+                return ((Tuple3)this).append(t);
+            case 4:
+                return ((Tuple4)this).append(t);
+            default:
+                throw new UnsupportedOperationException(
+                        format("Append is not allowed for Tuples with arity equals or greater than %s", MAX_ALLOWED_TUPLE_ARITY)
+                );
+        }
+    }
 
 
     /**
@@ -35,10 +74,13 @@ public interface Tuple {
      * @return {@link Optional} of {@link Tuple2} containing key and value of the given {@code entry}
      */
     static <T1, T2> Optional<Tuple2<T1, T2>> fromEntry(final Map.Entry<? extends T1, ? extends T2> entry) {
-        return Optional.ofNullable(entry)
-                        .map(e ->
-                                of(entry.getKey(), entry.getValue())
-                        );
+        return ofNullable(entry)
+                .map(e ->
+                        of(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                );
     }
 
 

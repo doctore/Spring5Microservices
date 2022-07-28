@@ -11,11 +11,48 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.collection.tuple.Tuple.fromEntry;
+import static java.lang.Boolean.FALSE;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TupleTest {
+
+    static Stream<Arguments> globalAppendTestCases() {
+        Tuple0 tuple0 = Tuple0.instance();
+        Tuple1<String> tuple1 = Tuple1.of("t1_value");
+        Tuple2<String, Long> tuple2 = tuple1.append(12L);
+        Tuple3<String, Long, Boolean> tuple3 = tuple2.append(FALSE);
+        Tuple4<String, Long, Boolean, Integer> tuple4 = tuple3.append(11);
+        Tuple5<String, Long, Boolean, Integer, String> tuple5 = tuple4.append("t5_last_value");
+        return Stream.of(
+                //@formatter:off
+                //            tuple,    value,             expectedException,                     expectedResult
+                Arguments.of( tuple0,   "t1_value",        null,                                  tuple1 ),
+                Arguments.of( tuple1,   12L,               null,                                  tuple2 ),
+                Arguments.of( tuple2,   FALSE,             null,                                  tuple3 ),
+                Arguments.of( tuple3,   11,                null,                                  tuple4 ),
+                Arguments.of( tuple4,   "t5_last_value",   null,                                  tuple5 ),
+                Arguments.of( tuple5,   "Does not care",   UnsupportedOperationException.class,   null )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("globalAppendTestCases")
+    @DisplayName("globalAppend: test cases")
+    public <T> void globalAppend_testCases(Tuple tuple,
+                                           T value,
+                                           Class<? extends Exception> expectedException,
+                                           Tuple expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> tuple.globalAppend(value));
+        }
+        else {
+            assertEquals(expectedResult, tuple.globalAppend(value));
+        }
+    }
+
 
     static Stream<Arguments> fromEntryTestCases() {
         Map.Entry<String, String> nullKeyValueEntry = new AbstractMap.SimpleEntry<>(null, null);

@@ -68,7 +68,7 @@ public class CollectionUtil {
                                              final Predicate<? super T> filterPredicate,
                                              final Function<? super T, ? extends E> defaultFunction,
                                              final Function<? super T, ? extends E> orElseFunction) {
-        return (List<E>)applyOrElse(sourceCollection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
+        return (List<E>) applyOrElse(sourceCollection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
     }
 
 
@@ -171,7 +171,7 @@ public class CollectionUtil {
     public static <T, E> List<E> collect(final Collection<? extends T> sourceCollection,
                                          final Predicate<? super T> filterPredicate,
                                          final Function<? super T, ? extends E> mapFunction) {
-        return (List<E>)collect(sourceCollection, filterPredicate, mapFunction, ArrayList::new);
+        return (List<E>) collect(sourceCollection, filterPredicate, mapFunction, ArrayList::new);
     }
 
 
@@ -226,28 +226,30 @@ public class CollectionUtil {
 
 
     /**
-     * Returns a {@link Collection} with the extracted property of the given {@code sourceCollection}
+     *    Returns a {@link List} with the extracted property of the given {@code sourceCollection} using provided
+     *  {@code propertyExtractor}.
      *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract.
-     * @param keyExtractor
-     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}.
+     * @param propertyExtractor
+     *    {@link Function} used to get the property value we want to use to include in returned {@link Collection}.
      *
      * @return {@link List}
      */
     public static <T, E> List<E> collectProperty(final Collection<? extends T> sourceCollection,
-                                                 final Function<? super T, ? extends E> keyExtractor) {
-        return (List<E>)collectProperty(sourceCollection, keyExtractor, ArrayList::new);
+                                                 final Function<? super T, ? extends E> propertyExtractor) {
+        return (List<E>) collectProperty(sourceCollection, propertyExtractor, ArrayList::new);
     }
 
 
     /**
-     * Returns a {@link Collection} with the extracted property of the given {@code sourceCollection}
+     *    Returns a {@link Collection} with the extracted property of the given {@code sourceCollection} using provided
+     * {@code propertyExtractor}.
      *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract
-     * @param keyExtractor
-     *    {@link Function} used to get the key we want to use to include in returned {@link Collection}
+     * @param propertyExtractor
+     *    {@link Function} used to get the property value we want to use to include in returned {@link Collection}
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
@@ -255,22 +257,92 @@ public class CollectionUtil {
      * @return {@link Collection}
      */
     public static <T, E> Collection<E> collectProperty(final Collection<? extends T> sourceCollection,
-                                                       final Function<? super T, ? extends E> keyExtractor,
+                                                       final Function<? super T, ? extends E> propertyExtractor,
                                                        final Supplier<Collection<E>> collectionFactory) {
         return ofNullable(sourceCollection)
                 .map(c -> {
-                    if (null == keyExtractor) {
+                    if (isNull(propertyExtractor)) {
                         return null;
                     }
-                    Stream<E> keyExtractedStream = sourceCollection.stream().map(keyExtractor);
+                    Stream<E> propertyExtractedStream = sourceCollection.stream().map(propertyExtractor);
                     return isNull(collectionFactory)
-                            ? keyExtractedStream.collect(toList())
-                            : keyExtractedStream.collect(toCollection(collectionFactory));
+                            ? propertyExtractedStream.collect(toList())
+                            : propertyExtractedStream.collect(toCollection(collectionFactory));
                 })
                 .orElseGet(() ->
                         isNull(collectionFactory)
                                 ? new ArrayList<>()
                                 : collectionFactory.get());
+    }
+
+
+    /**
+     *    Returns a {@link List} of {@link Tuple} with the extracted properties of the given {@code sourceCollection}
+     * using provided {@code propertyExtractors}.
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the properties to extract
+     * @param propertyExtractors
+     *    Array of {@link Function} used to get the properties values we want to use to include in returned {@link List}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and its length > 5
+     */
+    @SafeVarargs
+    public static <T> List<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
+                                                    final Function<? super T, ?> ...propertyExtractors) {
+        return (List<Tuple>) collectProperties(sourceCollection, ArrayList::new, propertyExtractors);
+    }
+
+
+    /**
+     *    Returns a {@link Collection} of {@link Tuple} with the extracted properties of the given {@code sourceCollection}
+     * using provided {@code propertyExtractors}.
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the properties to extract
+     * @param propertyExtractors
+     *    Array of {@link Function} used to get the properties values we want to use to include in returned {@link Collection}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Collection}
+     *
+     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and its length > 5
+     */
+    @SafeVarargs
+    public static <T> Collection<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
+                                                          final Supplier<Collection<Tuple>> collectionFactory,
+                                                          final Function<? super T, ?> ...propertyExtractors) {
+        Supplier<Collection<Tuple>> finalCollectionFactory =
+                isNull(collectionFactory)
+                        ? ArrayList::new
+                        : collectionFactory;
+
+        if (Objects.nonNull(propertyExtractors)) {
+            Assert.isTrue(
+                    Tuple.MAX_ALLOWED_TUPLE_ARITY >= propertyExtractors.length,
+                    format("If propertyExtractors is not null then its size should be <= %s", Tuple.MAX_ALLOWED_TUPLE_ARITY)
+            );
+        }
+        else {
+            return finalCollectionFactory.get();
+        }
+        return ofNullable(sourceCollection)
+                .map(c ->
+                        c.stream()
+                            .map(elto -> {
+                                Tuple result = Tuple.empty();
+                                for (Function<? super T, ?> propertyExtractor: propertyExtractors) {
+                                    result = result.globalAppend(propertyExtractor.apply(elto));
+                                }
+                                return result;
+                            })
+                            .collect(toCollection(finalCollectionFactory))
+                )
+                .orElseGet(finalCollectionFactory);
     }
 
 
@@ -486,7 +558,7 @@ public class CollectionUtil {
     public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
                                                      final Function<? super T, ? extends K> discriminatorKey,
                                                      final Function<? super T, ? extends V> valueMapper) {
-        return (Map)groupMap(sourceCollection, discriminatorKey, valueMapper, ArrayList::new);
+        return (Map) groupMap(sourceCollection, discriminatorKey, valueMapper, ArrayList::new);
     }
 
 
