@@ -74,16 +74,26 @@ public class CollectionUtilTest {
         Function<Integer, String> plus1String = i -> String.valueOf(i + 1);
         Function<Integer, String> multiply2String = i -> String.valueOf(i * 2);
 
+        List<String> expectedIntsNoFilterResult = asList("2", "3", "4", "7");
         List<String> expectedIntsResult = asList("2", "3", "6", "7");
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    expectedException,                expectedResult
-                Arguments.of( null,               null,              null,              null,              IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,              null,              null,                             List.of() ),
+                Arguments.of( null,               isEven,            null,              null,              null,                             List.of() ),
+                Arguments.of( null,               null,              plus1String,       null,              null,                             List.of() ),
+                Arguments.of( null,               isEven,            plus1String,       null,              null,                             List.of() ),
+                Arguments.of( null,               isEven,            plus1String,       multiply2String,   null,                             List.of() ),
+                Arguments.of( List.of(),          null,              null,              null,              null,                             List.of() ),
+                Arguments.of( List.of(),          isEven,            null,              null,              null,                             List.of() ),
+                Arguments.of( List.of(),          null,              plus1String,       null,              null,                             List.of() ),
+                Arguments.of( List.of(),          isEven,            plus1String,       null,              null,                             List.of() ),
+                Arguments.of( List.of(),          isEven,            plus1String,       multiply2String,   null,                             List.of() ),
+                Arguments.of( List.of(1),         null,              null,              null,              IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isEven,            null,              null,              IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isEven,            plus1String,       null,              IllegalArgumentException.class,   null ),
-                Arguments.of( null,               isEven,            plus1String,       multiply2String,   null,                             List.of() ),
-                Arguments.of( List.of(),          isEven,            plus1String,       multiply2String,   null,                             List.of() ),
+                Arguments.of( List.of(1),         isEven,            null,              multiply2String,   IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              plus1String,       multiply2String,   null,                             expectedIntsNoFilterResult ),
                 Arguments.of( ints,               isEven,            plus1String,       multiply2String,   null,                             expectedIntsResult )
         ); //@formatter:on
     }
@@ -122,17 +132,28 @@ public class CollectionUtilTest {
         Function<Integer, String> multiply2String = i -> String.valueOf(i * 2);
 
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        List<String> expectedIntsResultNoFilterList = asList("2", "3", "4", "7");
         List<String> expectedIntsResultList = asList("2", "4", "4", "12");
         Set<String> expectedIntsResultSet = new HashSet<>(expectedIntsResultList);
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    collectionFactory,  expectedException,                expectedResult
-                Arguments.of( null,               null,              null,              null,              null,               IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              null,              null,              null,               IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,              null,              null,               null,                             List.of() ),
+                Arguments.of( null,               isOdd,             null,              null,              null,               null,                             List.of() ),
+                Arguments.of( null,               null,              plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( null,               isOdd,             plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( null,               isOdd,             plus1String,       multiply2String,   null,               null,                             List.of() ),
+                Arguments.of( List.of(),          null,              null,              null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             null,              null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          null,              plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             plus1String,       multiply2String,   null,               null,                             List.of() ),
+                Arguments.of( List.of(1),         null,              null,              null,              null,               IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isOdd,             null,              null,              null,               IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isOdd,             plus1String,       null,              null,               IllegalArgumentException.class,   null ),
-                Arguments.of( null,               isOdd,             plus1String,       multiply2String,   null,               null,                             List.of() ),
-                Arguments.of( List.of(),          isOdd,             plus1String,       multiply2String,   null,               null,                             List.of() ),
+                Arguments.of( List.of(1),         isOdd,             null,              multiply2String,   null,               IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              plus1String,       multiply2String,   null,               null,                             expectedIntsResultNoFilterList ),
                 Arguments.of( ints,               isOdd,             plus1String,       multiply2String,   null,               null,                             expectedIntsResultList ),
                 Arguments.of( ints,               isOdd,             plus1String,       multiply2String,   setSupplier,        null,                             expectedIntsResultSet )
         ); //@formatter:on
@@ -188,15 +209,21 @@ public class CollectionUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   mapFunction,           expectedException,                expectedResult
-                Arguments.of( null,               null,              null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,                  null,                             List.of() ),
+                Arguments.of( null,               isEven,            null,                  null,                             List.of() ),
+                Arguments.of( null,               null,              fromIntegerToString,   null,                             List.of() ),
+                Arguments.of( null,               isEven,            fromIntegerToString,   null,                             List.of() ),
+                Arguments.of( List.of(),          null,              null,                  null,                             List.of() ),
+                Arguments.of( List.of(),          isEven,            null,                  null,                             List.of() ),
+                Arguments.of( List.of(),          null,              fromIntegerToString,   null,                             List.of() ),
+                Arguments.of( List.of(),          isEven,            fromIntegerToString,   null,                             List.of() ),
                 Arguments.of( List.of(1),         null,              null,                  IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isEven,            null,                  IllegalArgumentException.class,   null ),
-                Arguments.of( null,               isEven,            fromIntegerToString,   null,                             List.of() ),
-                Arguments.of( List.of(),          isEven,            fromIntegerToString,   null,                             List.of() ),
+                Arguments.of( ints,               null,              fromIntegerToString,   null,                             List.of("1", "2", "3", "6") ),
                 Arguments.of( ints,               isEven,            fromIntegerToString,   null,                             List.of("2", "6") )
         ); //@formatter:on
     }
+
 
     @ParameterizedTest
     @MethodSource("collectNoCollectionFactoryTestCases")
@@ -225,12 +252,17 @@ public class CollectionUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   mapFunction,           collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,               null,              null,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              null,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,                  null,                null,                             List.of() ),
+                Arguments.of( null,               isOdd,             null,                  null,                null,                             List.of() ),
+                Arguments.of( null,               null,              fromIntegerToString,   null,                null,                             List.of() ),
+                Arguments.of( null,               isOdd,             fromIntegerToString,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),          null,              null,                  null,                null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             null,                  null,                null,                             List.of() ),
+                Arguments.of( List.of(),          null,              fromIntegerToString,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             fromIntegerToString,   null,                null,                             List.of() ),
                 Arguments.of( List.of(1),         null,              null,                  null,                IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isOdd,             null,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,               isOdd,             fromIntegerToString,   null,                null,                             List.of() ),
-                Arguments.of( List.of(),          isOdd,             fromIntegerToString,   null,                null,                             List.of() ),
+                Arguments.of( ints,               null,              fromIntegerToString,   null,                null,                             List.of("1", "2", "3", "6") ),
                 Arguments.of( ints,               isOdd,             fromIntegerToString,   null,                null,                             List.of("1", "3") ),
                 Arguments.of( ints,               isOdd,             fromIntegerToString,   setSupplier,         null,                             collectedInts )
         ); //@formatter:on
@@ -711,9 +743,9 @@ public class CollectionUtilTest {
             put(3, List.of("BFF2", "5TR2"));
         }};
         Map<Integer, Set<String>> resultWithSetCollectionFactory = new HashMap<>() {{
-            put(1, new LinkedHashSet<>(asList("H2", "B2")));
-            put(2, new LinkedHashSet<>(asList("AA2")));
-            put(3, new LinkedHashSet<>(asList("BFF2", "5TR2")));
+            put(1, new LinkedHashSet<>(List.of("H2", "B2")));
+            put(2, new LinkedHashSet<>(List.of("AA2")));
+            put(3, new LinkedHashSet<>(List.of("BFF2", "5TR2")));
         }};
         return Stream.of(
                 //@formatter:off

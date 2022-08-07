@@ -25,10 +25,10 @@ public class LazyTest {
         Supplier<Integer> integerSupplier = () -> 11;
         return Stream.of(
                 //@formatter:off
-                //            supplier,          expectedException,              expectedResult
-                Arguments.of( null,              NullPointerException.class,     null ),
-                Arguments.of( stringSupplier,    null,                           Lazy.of(stringSupplier) ),
-                Arguments.of( integerSupplier,   null,                           Lazy.of(integerSupplier) )
+                //            supplier,          expectedException,                expectedResult
+                Arguments.of( null,              IllegalArgumentException.class,   null ),
+                Arguments.of( stringSupplier,    null,                             Lazy.of(stringSupplier) ),
+                Arguments.of( integerSupplier,   null,                             Lazy.of(integerSupplier) )
         ); //@formatter:on
     }
 
@@ -178,10 +178,10 @@ public class LazyTest {
         mappedLazy.get();
         return Stream.of(
                 //@formatter:off
-                //            lazy,   mapper,                expectedException,            expectedResult
-                Arguments.of( lazy,   null,                  NullPointerException.class,   null ),
-                Arguments.of( lazy,   Function.identity(),   null,                         lazy ),
-                Arguments.of( lazy,   fromStringToLong,      null,                         mappedLazy )
+                //            lazy,   mapper,                expectedException,                expectedResult
+                Arguments.of( lazy,   null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( lazy,   Function.identity(),   null,                             lazy ),
+                Arguments.of( lazy,   fromStringToLong,      null,                             mappedLazy )
         ); //@formatter:on
     }
 

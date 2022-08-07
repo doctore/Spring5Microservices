@@ -58,8 +58,8 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
-     *                                  is {@code null}
+     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     *                                  with a not empty {@code sourceMap}
      */
     public static <T, E, R> Map<T, R> applyOrElse(final Map<? extends T, ? extends E> sourceMap,
                                                   final BiPredicate<? super T, ? super E> filterPredicate,
@@ -96,17 +96,14 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
-     *                                  is {@code null}
+     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     *                                  with a not empty {@code sourceMap}
      */
     public static <T, E, R> Map<T, R> applyOrElse(final Map<? extends T, ? extends E> sourceMap,
                                                   final BiPredicate<? super T, ? super E> filterPredicate,
                                                   final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
                                                   final BiFunction<? super T, ? super E, ? extends R> orElseFunction,
                                                   final Supplier<Map<T, R>> mapFactory) {
-        Assert.notNull(filterPredicate, "filterPredicate must be not null");
-        Assert.notNull(defaultFunction, "defaultFunction must be not null");
-        Assert.notNull(orElseFunction, "orElseFunction must be not null");
         Supplier<Map<T, R>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
@@ -115,10 +112,17 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
+        Assert.notNull(defaultFunction, "defaultFunction must be not null");
+        Assert.notNull(orElseFunction, "orElseFunction must be not null");
+        BiPredicate<? super T, ? super E> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? (k, v) -> true
+                        : filterPredicate;
+
         return sourceMap.entrySet()
                 .stream()
                 .map(entry ->
-                        filterPredicate.test(entry.getKey(), entry.getValue())
+                        finalFilterPredicate.test(entry.getKey(), entry.getValue())
                                 ? Map.entry(
                                         entry.getKey(),
                                         defaultFunction.apply(entry.getKey(), entry.getValue())
@@ -161,7 +165,7 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceMap}
      */
     public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
                                               final BiPredicate<? super T, ? super E> filterPredicate,
@@ -196,14 +200,12 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceMap}
      */
     public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
                                               final BiPredicate<? super T, ? super E> filterPredicate,
                                               final BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                               final Supplier<Map<T, R>> mapFactory) {
-        Assert.notNull(filterPredicate, "filterPredicate must be not null");
-        Assert.notNull(mapFunction, "mapFunction must be not null");
         Supplier<Map<T, R>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
@@ -212,9 +214,15 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        BiPredicate<? super T, ? super E> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? (k, v) -> true
+                        : filterPredicate;
+
         return sourceMap.entrySet()
                 .stream()
-                .filter(entry -> filterPredicate.test(entry.getKey(), entry.getValue()))
+                .filter(entry -> finalFilterPredicate.test(entry.getKey(), entry.getValue()))
                 .collect(
                         toMap(
                                 Map.Entry::getKey,

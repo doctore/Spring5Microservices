@@ -47,6 +47,7 @@ public class Tuple0Test {
         return Stream.of(
                 //@formatter:off
                 //            tuple,        objectToCompare,   expectedResult
+                Arguments.of( instance(),   null,              false ),
                 Arguments.of( instance(),   "1",               false ),
                 Arguments.of( instance(),   instance(),        true )
         ); //@formatter:on

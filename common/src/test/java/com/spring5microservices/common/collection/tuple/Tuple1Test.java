@@ -109,14 +109,17 @@ public class Tuple1Test {
     static Stream<Arguments> equalsTestCases() {
         Tuple1<String> t1 = Tuple1.of("TYHG");
         Tuple1<Long> t2 = Tuple1.of(21L);
+        Tuple1<String> t3 = Tuple1.of("TYHG");
         return Stream.of(
                 //@formatter:off
                 //            tuple,   objectToCompare,   expectedResult
+                Arguments.of( t1,      null,              false ),
                 Arguments.of( t1,      "1",               false ),
                 Arguments.of( t2,      t2._1,             false ),
                 Arguments.of( t1,      t2,                false ),
                 Arguments.of( t1,      t1,                true ),
-                Arguments.of( t2,      t2,                true )
+                Arguments.of( t2,      t2,                true ),
+                Arguments.of( t1,      t3,                true )
         ); //@formatter:on
     }
 

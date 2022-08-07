@@ -1,5 +1,7 @@
 package com.spring5microservices.common.util;
 
+import org.springframework.util.Assert;
+
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -19,6 +21,30 @@ import static java.util.Optional.ofNullable;
  *   1. {@code get} use cached value.
  *
  *   2. {@code getNoCached} does not use it and invokes again the provided {@link Supplier}.
+ *
+ * There are several use cases for using {@link Lazy}, but probably the main one is when we need:
+ *
+ *   Replace using a {@link Supplier} as method parameter because we do not just want to prevent automatic
+ *   invocation, but even manage a cache to reuse the result in an easy way.
+ *
+ * Example:
+ *
+ *      <T> T exampleMethod(Supplier<? extends T> supplier)
+ *
+ *  Advantages:
+ *
+ *     1. We can manage when the {@link Supplier} is invoked internally, avoiding automatic invocation of a functionality
+ *       with a maybe not good performance.
+ *
+ *  Disadvantages:
+ *
+ *     1. If we need to result of {@link Supplier} if different parts of the code, it should be managed in a manual way
+ *        (for example, using a variable as cache)
+ *
+ *     2. If we used a variable because of point 1. how can we distinguish if {@link Supplier} was invoked or if it
+ *        was but the result was {@code null} (probably the initial value used in our internal cache variable).
+ *
+ * {@link Lazy} solves the above problems keeping the described advantages of using {@link Supplier}.
  */
 public final class Lazy<T> implements Supplier<T> {
 
@@ -45,11 +71,11 @@ public final class Lazy<T> implements Supplier<T> {
      *
      * @return {@code Lazy}
      *
-     * @throws NullPointerException if {@code supplier} is {@code null}
+     * @throws IllegalArgumentException if {@code supplier} is {@code null}
      */
     @SuppressWarnings("unchecked")
     public static <T> Lazy<T> of(final Supplier<? extends T> supplier) {
-        Objects.requireNonNull(supplier);
+        Assert.notNull(supplier, "supplier must be not null");
         if (supplier instanceof Lazy) {
             return (Lazy<T>) supplier;
         } else {
@@ -141,10 +167,10 @@ public final class Lazy<T> implements Supplier<T> {
      *
      * @return {@link Lazy}
      *
-     * @throws NullPointerException if {@code mapper} is {@code null}
+     * @throws IllegalArgumentException if {@code mapper} is {@code null}
      */
     public <U> Lazy<U> map(final Function<? super T, ? extends U> mapper) {
-        Objects.requireNonNull(mapper);
+        Assert.notNull(mapper, "mapper must be not null");
         return Lazy.of(() -> mapper.apply(get()));
     }
 

@@ -2,6 +2,7 @@ package com.spring5microservices.common.collection.tuple;
 
 import org.springframework.util.Assert;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.function.Supplier;
 
@@ -10,7 +11,9 @@ import static java.util.Optional.ofNullable;
 /**
  * A {@link Tuple} of no elements.
  */
-public final class Tuple0 implements Tuple {
+public final class Tuple0 implements Tuple, Serializable {
+
+    private static final long serialVersionUID = 5791060796518852381L;
 
     /**
      * The singleton instance of {@link Tuple0}.
@@ -21,7 +24,6 @@ public final class Tuple0 implements Tuple {
      * The singleton Tuple0 comparator.
      */
     private static final Comparator<Tuple0> COMPARATOR = (t1, t2) -> 0;
-
 
     /**
      * Returns the singleton instance of {@link Tuple0}.

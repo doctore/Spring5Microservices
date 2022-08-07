@@ -1,4 +1,4 @@
-package com.spring5microservices.common.validation;
+package com.spring5microservices.common.util.validation;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

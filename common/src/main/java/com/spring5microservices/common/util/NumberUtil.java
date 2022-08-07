@@ -6,9 +6,9 @@ import org.springframework.util.Assert;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Objects;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 @UtilityClass
@@ -58,13 +58,13 @@ public class NumberUtil {
                               final int numberOfDecimals,
                               final RoundingMode roundingMode) {
         Assert.isTrue(0 <= numberOfDecimals, "numberOfDecimals must be equals or greater than 0");
-        if (Objects.isNull(one)) {
+        if (isNull(one)) {
             return null == two ? 0 : -1;
         }
-        if (Objects.isNull(two)) {
+        if (isNull(two)) {
             return 1;
         }
-        RoundingMode finalRoundingMode = Objects.isNull(roundingMode)
+        RoundingMode finalRoundingMode = isNull(roundingMode)
                 ? RoundingMode.HALF_UP
                 : roundingMode;
         BigDecimal oneWithProvidedPrecision = one.setScale(numberOfDecimals, finalRoundingMode);
@@ -89,9 +89,7 @@ public class NumberUtil {
      */
     public static <T extends Number> Optional<T> fromString(final String potentialNumber,
                                                             final Class<T> clazzReturnedInstance) {
-        if (null == clazzReturnedInstance) {
-            throw new IllegalArgumentException("clazzReturnedInstance must be not null");
-        }
+        Assert.notNull(clazzReturnedInstance, "clazzReturnedInstance must be not null");
         return ofNullable(potentialNumber)
                 .map(s -> {
                     try {
