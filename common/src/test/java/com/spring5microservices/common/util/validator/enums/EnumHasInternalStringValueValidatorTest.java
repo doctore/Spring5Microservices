@@ -1,4 +1,4 @@
-package com.spring5microservices.common.validator.enums;
+package com.spring5microservices.common.util.validator.enums;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;

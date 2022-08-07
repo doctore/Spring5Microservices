@@ -1,4 +1,6 @@
-package com.spring5microservices.common.validation;
+package com.spring5microservices.common.util.validation;
+
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -9,16 +11,18 @@ import java.util.Objects;
  * An valid {@link Validation}.
  *
  * @param <T>
- *    Data type of the instance to validate.
+ *    Type of the {@link Valid} value of an {@link Validation}
  * @param <E>
- *    Value type of error
+ *    Type of the {@link Invalid} value of an {@link Validation}
  */
 public final class Valid<E, T> extends Validation<E, T> implements Serializable {
+
+    private static final long serialVersionUID = 8596367511219466842L;
 
     private final T value;
 
     /**
-     * Construct a {@code Valid}
+     * Construct a {@link Valid}
      *
      * @param value
      *    The value of this success.
@@ -30,9 +34,9 @@ public final class Valid<E, T> extends Validation<E, T> implements Serializable 
 
 
     /**
-     * Returns an empty {@code Valid} instance. No value is present for this {@code Valid}.
+     * Returns an empty {@link Valid} instance. No value is present for this {@link Valid}.
      *
-     * @return an empty {@code Valid}
+     * @return an empty {@link Valid}
      */
     public static <E, T> Valid<E, T> empty() {
         return new Valid<>(null);
@@ -40,17 +44,34 @@ public final class Valid<E, T> extends Validation<E, T> implements Serializable 
 
 
     /**
-     * Returns an {@code Valid} adding the given non-{@code null} value.
+     * Returns a {@link Valid} describing the given non-{@code null} value.
      *
      * @param value
      *    The value to store, which must be non-{@code null}
      *
-     * @return {@code Valid}
+     * @return {@link Valid}
      *
-     * @throws NullPointerException if {@code value} is {@code null}
+     * @throws IllegalArgumentException if {@code value} is {@code null}
      */
     public static <E, T> Valid<E, T> of(final T value) {
-        return new Valid<>(Objects.requireNonNull(value));
+        Assert.notNull(value, "value must be not null");
+        return new Valid<>(value);
+    }
+
+
+    /**
+     *    Returns a {@link Valid} describing the given {@code value}, if non-null, otherwise returns an empty
+     * {@link Valid}
+     *
+     * @param value
+     *    The value to store,
+     *
+     * @return {@link Valid}
+     */
+    public static <E, T> Valid<E, T> ofNullable(final T value) {
+        return Objects.isNull(value)
+                ? empty()
+                : of(value);
     }
 
 

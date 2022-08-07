@@ -154,14 +154,17 @@ public class Tuple5Test {
     static Stream<Arguments> equalsTestCases() {
         Tuple5<String, Long, Integer, Boolean, Double> t1 = Tuple5.of("TYHG", 21L, 16, TRUE, 11.1d);
         Tuple5<Long, String, Integer, Boolean, Double> t2 = Tuple5.of(21L, "TYHG", 16, FALSE, 33.0d);
+        Tuple5<String, Long, Integer, Boolean, Double> t3 = Tuple5.of("TYHG", 21L, 16, TRUE, 11.1d);
         return Stream.of(
                 //@formatter:off
                 //            tuple,   objectToCompare,   expectedResult
+                Arguments.of( t1,      null,              false ),
                 Arguments.of( t1,      "1",               false ),
                 Arguments.of( t2,      t2._1,             false ),
                 Arguments.of( t1,      t2,                false ),
                 Arguments.of( t1,      t1,                true ),
-                Arguments.of( t2,      t2,                true )
+                Arguments.of( t2,      t2,                true ),
+                Arguments.of( t1,      t3,                true )
         ); //@formatter:on
     }
 

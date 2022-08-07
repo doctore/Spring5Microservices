@@ -61,8 +61,8 @@ public class CollectionUtil {
      *
      * @return {@link List}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
-     *                                  is {@code null}
+     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
      */
     public static <T, E> List<E> applyOrElse(final Collection<? extends T> sourceCollection,
                                              final Predicate<? super T> filterPredicate,
@@ -99,17 +99,14 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate}, {@code defaultFunction} or {@code orElseFunction}
-     *                                  is {@code null}
+     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
      */
     public static <T, E> Collection<E> applyOrElse(final Collection<? extends T> sourceCollection,
                                                    final Predicate<? super T> filterPredicate,
                                                    final Function<? super T, ? extends E> defaultFunction,
                                                    final Function<? super T, ? extends E> orElseFunction,
                                                    final Supplier<Collection<E>> collectionFactory) {
-        Assert.notNull(filterPredicate, "filterPredicate must be not null");
-        Assert.notNull(defaultFunction, "defaultFunction must be not null");
-        Assert.notNull(orElseFunction, "orElseFunction must be not null");
         Supplier<Collection<E>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
@@ -118,9 +115,16 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
+        Assert.notNull(defaultFunction, "defaultFunction must be not null");
+        Assert.notNull(orElseFunction, "orElseFunction must be not null");
+        Predicate<? super T> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? t -> true
+                        : filterPredicate;
+
         return sourceCollection.stream()
                 .map(elto ->
-                        filterPredicate.test(elto)
+                        finalFilterPredicate.test(elto)
                                 ? defaultFunction.apply(elto)
                                 : orElseFunction.apply(elto)
                 )
@@ -166,7 +170,7 @@ public class CollectionUtil {
      *
      * @return {@link List}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceCollection}
      */
     public static <T, E> List<E> collect(final Collection<? extends T> sourceCollection,
                                          final Predicate<? super T> filterPredicate,
@@ -201,14 +205,12 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      *
-     * @throws IllegalArgumentException if {@code filterPredicate} or {@code mapFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceCollection}
      */
     public static <T, E> Collection<E> collect(final Collection<? extends T> sourceCollection,
                                                final Predicate<? super T> filterPredicate,
                                                final Function<? super T, ? extends E> mapFunction,
                                                final Supplier<Collection<E>> collectionFactory) {
-        Assert.notNull(filterPredicate, "filterPredicate must be not null");
-        Assert.notNull(mapFunction, "mapFunction must be not null");
         Supplier<Collection<E>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
@@ -217,9 +219,15 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        Predicate<? super T> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? t -> true
+                        : filterPredicate;
+
         return sourceCollection
                 .stream()
-                .filter(filterPredicate)
+                .filter(finalFilterPredicate)
                 .map(mapFunction)
                 .collect(toCollection(finalCollectionFactory));
     }
@@ -927,7 +935,6 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-
         int sizeOfLongestSubCollection = -1;
         List<Iterator<T>> iteratorList = new ArrayList<>(sourceCollection.size());
         for (Collection<T> c: sourceCollection) {
@@ -936,7 +943,6 @@ public class CollectionUtil {
             }
             iteratorList.add(c.iterator());
         }
-
         List<List<T>> result = new ArrayList<>(sizeOfLongestSubCollection);
         for (int i = 0; i < sizeOfLongestSubCollection; i++) {
             List<T> newRow = new ArrayList<>(sourceCollection.size());

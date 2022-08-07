@@ -1,4 +1,4 @@
-package com.spring5microservices.common.validator.enums;
+package com.spring5microservices.common.util.validator.enums;
 
 /**
  * Used to get the value of an internal property in an {@link Enum}.
