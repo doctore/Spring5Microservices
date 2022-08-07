@@ -1,4 +1,6 @@
-package com.spring5microservices.common.validation;
+package com.spring5microservices.common.util.validation;
+
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,16 +12,18 @@ import java.util.Objects;
  * An invalid {@link Validation}.
  *
  * @param <T>
- *    Data type of the instance to validate.
+ *    Type of the {@link Valid} value of an {@link Validation}
  * @param <E>
- *    Value type of error
+ *    Type of the {@link Invalid} value of an {@link Validation}
  */
 public class Invalid<E, T> extends Validation<E, T> implements Serializable {
+
+    private static final long serialVersionUID = 7753855546224405561L;
 
     private final Collection<E> errors;
 
     /**
-     * Construct an {@code Invalid}.
+     * Construct an {@link Invalid}.
      *
      * @param errors
      *    The value of this error.
@@ -31,9 +35,9 @@ public class Invalid<E, T> extends Validation<E, T> implements Serializable {
 
 
     /**
-     * Returns an empty {@code Invalid} instance. No {@code error} will be stored.
+     * Returns an empty {@link Invalid} instance. No {@code error} will be stored.
      *
-     * @return an empty {@code Invalid}
+     * @return an empty {@link Invalid}
      */
     public static <E, T> Invalid<E, T> empty() {
         return new Invalid<>(new ArrayList<>());
@@ -41,17 +45,34 @@ public class Invalid<E, T> extends Validation<E, T> implements Serializable {
 
 
     /**
-     * Returns an {@code Invalid} adding the given {@link Collection} of errors.
+     * Returns an {@link Invalid} describing the given {@link Collection} of errors.
      *
      * @param errors
-     *    {@link Collection} of errors to include in the returned {@code Invalid}
+     *    {@link Collection} of errors to include in the returned {@link Invalid}
      *
-     * @return {@code Invalid}
+     * @return {@link Invalid}
      *
-     * @throws NullPointerException if {@code errors} is {@code null}
+     * @throws IllegalArgumentException if {@code errors} is {@code null}
      */
     public static <E, T> Invalid<E, T> of(final Collection<E> errors) {
-        return new Invalid<>(Objects.requireNonNull(errors));
+        Assert.notNull(errors, "errors must be not null");
+        return new Invalid<>(errors);
+    }
+
+
+    /**
+     *    Returns an {@link Invalid} describing the given {@link Collection} of errors, if non-null, otherwise
+     * returns an empty {@link Invalid}
+     *
+     * @param errors
+     *    {@link Collection} of errors to include in the returned {@link Invalid}
+     *
+     * @return {@link Invalid}
+     */
+    public static <E, T> Invalid<E, T> ofNullable(final Collection<E> errors) {
+        return Objects.isNull(errors)
+                ? empty()
+                : of(errors);
     }
 
 

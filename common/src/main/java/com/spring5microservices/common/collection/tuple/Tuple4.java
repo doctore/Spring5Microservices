@@ -3,6 +3,7 @@ package com.spring5microservices.common.collection.tuple;
 import com.spring5microservices.common.interfaces.functional.QuadFunction;
 import org.springframework.util.Assert;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
@@ -21,7 +22,9 @@ import static java.util.Optional.ofNullable;
  * @param <T4>
  *    Type of the 4th element
  */
-public final class Tuple4<T1, T2, T3, T4> implements Tuple {
+public final class Tuple4<T1, T2, T3, T4> implements Tuple, Serializable {
+
+    private static final long serialVersionUID = 6896787091356264950L;
 
     /**
      * The 1st element of this tuple.
@@ -119,18 +122,14 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple {
 
 
     @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        } else if (!(o instanceof Tuple4)) {
-            return false;
-        } else {
-            final Tuple4<?, ?, ?, ?> that = (Tuple4<?, ?, ?, ?>) o;
-            return Objects.equals(this._1, that._1)
-                    && Objects.equals(this._2, that._2)
-                    && Objects.equals(this._3, that._3)
-                    && Objects.equals(this._4, that._4);
-        }
+    public boolean equals(Object obj) {
+        return obj == this ||
+                (obj instanceof Tuple4 &&
+                        Objects.equals(_1, ((Tuple4<?, ?, ?, ?>) obj)._1) &&
+                        Objects.equals(_2, ((Tuple4<?, ?, ?, ?>) obj)._2) &&
+                        Objects.equals(_3, ((Tuple4<?, ?, ?, ?>) obj)._3) &&
+                        Objects.equals(_4, ((Tuple4<?, ?, ?, ?>) obj)._4)
+                );
     }
 
 

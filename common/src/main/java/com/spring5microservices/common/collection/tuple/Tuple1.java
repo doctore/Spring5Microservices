@@ -2,6 +2,7 @@ package com.spring5microservices.common.collection.tuple;
 
 import org.springframework.util.Assert;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
@@ -14,7 +15,9 @@ import static java.util.Optional.ofNullable;
  * @param <T1>
  *    Type of the 1st element
  */
-public final class Tuple1<T1> implements Tuple {
+public final class Tuple1<T1> implements Tuple, Serializable {
+
+    private static final long serialVersionUID = -5349751245064382503L;
 
     /**
      * The 1st element of this tuple.
@@ -59,15 +62,11 @@ public final class Tuple1<T1> implements Tuple {
 
 
     @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        } else if (!(o instanceof Tuple1)) {
-            return false;
-        } else {
-            final Tuple1<?> that = (Tuple1<?>) o;
-            return Objects.equals(this._1, that._1);
-        }
+    public boolean equals(Object obj) {
+        return obj == this ||
+                (obj instanceof Tuple1 &&
+                        Objects.equals(_1, ((Tuple1<?>) obj)._1)
+                );
     }
 
 

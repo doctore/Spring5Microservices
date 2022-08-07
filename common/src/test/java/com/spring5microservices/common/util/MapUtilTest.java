@@ -62,6 +62,12 @@ public class MapUtilTest {
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
         BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
 
+        Map<Integer, Long> intsAndStringsNoFilterResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 5L);
+            put(3, 7L);
+            put(4, 9L);
+        }};
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
             put(1, 3L);
             put(2, 3L);
@@ -71,12 +77,21 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,        filterPredicate,         defaultFunction,               orElseFunction,          expectedException,                expectedResult
-                Arguments.of( null,             null,                    null,                          null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,                    null,                          null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( null,             null,                    null,                          null,                    null,                             Map.of() ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   null,                          null,                    null,                             Map.of() ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    null,                             Map.of() ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   null,                          sumKeyPlusValueLength,   null,                             Map.of() ),
                 Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                    null,                          null,                    null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          null,                    null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          sumKeyPlusValueLength,   null,                             Map.of() ),
                 Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                    null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   null,                          sumKeyPlusValueLength,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                    multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             intsAndStringsNoFilterResult ),
                 Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             intsAndStringsResult )
         ); //@formatter:on
     }
@@ -118,6 +133,12 @@ public class MapUtilTest {
         BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
 
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+
+        Map<Integer, Long> intsAndStringsNoFilterResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 5L);
+            put(3, 7L);
+        }};
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
             put(1, 3L);
             put(2, 3L);
@@ -127,12 +148,21 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,        filterPredicate,         defaultFunction,               orElseFunction,          mapFactory,          expectedException,                expectedResult
-                Arguments.of( null,             null,                    null,                          null,                    null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,                    null,                          null,                    null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          null,                    null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,             null,                    null,                          null,                    null,                null,                             Map.of() ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   null,                          null,                    null,                null,                             Map.of() ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    null,                null,                             Map.of() ),
+                Arguments.of( null,             isKeyOddAndValueVowel,   null,                          sumKeyPlusValueLength,   null,                null,                             Map.of() ),
                 Arguments.of( null,             isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                    null,                          null,                    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          null,                    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyOddAndValueVowel,   null,                          sumKeyPlusValueLength,   null,                null,                             Map.of() ),
                 Arguments.of( Map.of(),         isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                    null,                          null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   null,                          null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   null,                          sumKeyPlusValueLength,   null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                    multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             intsAndStringsNoFilterResult ),
                 Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             intsAndStringsResult ),
                 Arguments.of( intsAndStrings,   isKeyOddAndValueVowel,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   linkedMapSupplier,   null,                             intsAndStringsLinkedMapResult )
         ); //@formatter:on
@@ -174,18 +204,28 @@ public class MapUtilTest {
         BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
 
+        Map<Integer, Long> intsAndLongsNoFilterResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 5L);
+            put(4, 9L);
+        }};
         Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
             put(4, 9L);
         }};
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,        filterPredicate,          mapFunction,                   expectedException,                expectedResult
-                Arguments.of( null,             null,                     null,                          IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,                     null,                          IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,                     null,                          IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( null,             null,                     null,                          null,                             Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   null,                          null,                             Map.of() ),
+                Arguments.of( null,             null,                     multiply2KeyPlusValueLength,   null,                             Map.of() ),
                 Arguments.of( null,             isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                     null,                          null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                          null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                     multiply2KeyPlusValueLength,   null,                             Map.of() ),
                 Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                     multiply2KeyPlusValueLength,   null,                             intsAndLongsNoFilterResult ),
                 Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                             intsAndLongsResult )
         ); //@formatter:on
     }
@@ -217,6 +257,12 @@ public class MapUtilTest {
         BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
 
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+
+        Map<Integer, Long> intsAndLongsNoFilterResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 5L);
+            put(4, 9L);
+        }};
         Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
             put(4, 9L);
         }};
@@ -224,12 +270,17 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,        filterPredicate,          mapFunction,                   mapFactory,          expectedException,                expectedResult
-                Arguments.of( null,             null,                     null,                          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,                     null,                          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,                     null,                          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,             null,                     null,                          null,                null,                             Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   null,                          null,                null,                             Map.of() ),
+                Arguments.of( null,             null,                     multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
                 Arguments.of( null,             isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                     null,                          null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                          null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                     multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
                 Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                     multiply2KeyPlusValueLength,   null,                null,                             intsAndLongsNoFilterResult ),
                 Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   null,                null,                             intsAndLongsResult ),
                 Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   multiply2KeyPlusValueLength,   linkedMapSupplier,   null,                             intsAndLongsLinkedMapResult )
         ); //@formatter:on
