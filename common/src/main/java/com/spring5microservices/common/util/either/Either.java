@@ -289,7 +289,7 @@ public abstract class Either<L, R> implements Serializable {
                 return left(either.getLeft());
             }
         } else {
-            // Due to only this is Invalid, returns this
+            // Due to only this is Left, returns this
             if (either.isRight()) {
                 return left(getLeft());
 

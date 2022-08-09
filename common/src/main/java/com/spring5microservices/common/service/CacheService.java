@@ -70,6 +70,7 @@ public class CacheService {
      *
      * @return {@link Optional} with the {@code value} if it was found, {@link Optional#empty()} otherwise
      */
+    @SuppressWarnings("unchecked")
     public <K, V> Optional<V> get(String cacheName, K key) {
         return ofNullable(cacheName)
                 .map(cacheManager::getCache)

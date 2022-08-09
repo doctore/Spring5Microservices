@@ -35,6 +35,7 @@ public interface Tuple {
      *
      * @throws UnsupportedOperationException if {@link this#arity()} is equals or greater than {@link this#MAX_ALLOWED_TUPLE_ARITY}
      */
+    @SuppressWarnings("unchecked")
     default <T> Tuple globalAppend(final T t) {
         switch (this.arity()) {
             case 0:
