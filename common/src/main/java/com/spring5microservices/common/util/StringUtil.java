@@ -190,6 +190,7 @@ public class StringUtil {
      *
      * @return {@link List}
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> splitFromString(final String source,
                                               final Function<String, ? extends T> valueExtractor) {
         return (List<T>)splitFromString(source, valueExtractor, DEFAULT_STRING_SEPARATOR, ArrayList::new);
@@ -229,6 +230,7 @@ public class StringUtil {
      *
      * @return {@link List}
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> splitFromString(final String source,
                                               final Function<String, ? extends T> valueExtractor,
                                               final String separator) {

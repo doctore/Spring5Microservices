@@ -172,6 +172,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceCollection}
      */
+    @SuppressWarnings("unchecked")
     public static <T, E> List<E> collect(final Collection<? extends T> sourceCollection,
                                          final Predicate<? super T> filterPredicate,
                                          final Function<? super T, ? extends E> mapFunction) {
@@ -244,6 +245,7 @@ public class CollectionUtil {
      *
      * @return {@link List}
      */
+    @SuppressWarnings("unchecked")
     public static <T, E> List<E> collectProperty(final Collection<? extends T> sourceCollection,
                                                  final Function<? super T, ? extends E> propertyExtractor) {
         return (List<E>) collectProperty(sourceCollection, propertyExtractor, ArrayList::new);
@@ -563,6 +565,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
+    @SuppressWarnings("unchecked")
     public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
                                                      final Function<? super T, ? extends K> discriminatorKey,
                                                      final Function<? super T, ? extends V> valueMapper) {
@@ -782,6 +785,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code from} is upper than {@code until}
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> slice(final Collection<? extends T> sourceCollection,
                                     final int from,
                                     final int until) {

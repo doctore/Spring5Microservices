@@ -3,8 +3,6 @@ package com.spring5microservices.common.util.validation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.Objects;
-
 import static java.util.Optional.ofNullable;
 
 @Getter
@@ -38,12 +36,10 @@ public class ValidationError implements Comparable<ValidationError> {
      *    Error message
      *
      * @return {@code ValidationError}
-     *
-     * @throws NullPointerException if {@code errorMessage} is {@code null}
      */
     public static ValidationError of(final int priority,
                                      final String errorMessage) {
-        return new ValidationError(priority, Objects.requireNonNull(errorMessage));
+        return new ValidationError(priority, errorMessage);
     }
 
 
