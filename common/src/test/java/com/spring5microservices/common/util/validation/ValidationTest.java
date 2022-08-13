@@ -200,6 +200,45 @@ public class ValidationTest {
     }
 
 
+    static Stream<Arguments> filterOrElseTestCases() {
+        Validation<String, Integer> validVerifyFilter = Validation.valid(1);
+        Validation<String, Integer> validDoesNotVerifyFilter = Validation.valid(2);
+        Validation<String, Integer> invalid = Validation.invalid(List.of("warning"));
+        Validation<String, Integer> invalidResult = Validation.invalid(List.of("error"));
+
+        Predicate<Integer> isOdd = i -> i % 2 == 1;
+        Function<Integer, String> errorString = i -> "error";
+        return Stream.of(
+                //@formatter:off
+                //            validation,                 predicate,   zero,          expectedException,                expectedResult
+                Arguments.of( validVerifyFilter,          null,        null,          null,                             validVerifyFilter ),
+                Arguments.of( validDoesNotVerifyFilter,   null,        null,          null,                             validDoesNotVerifyFilter ),
+                Arguments.of( invalid,                    null,        null,          null,                             invalid ),
+                Arguments.of( validVerifyFilter,          isOdd,       null,          null,                             validVerifyFilter ),
+                Arguments.of( validVerifyFilter,          isOdd,       errorString,   null,                             validVerifyFilter ),
+                Arguments.of( validDoesNotVerifyFilter,   isOdd,       null,          IllegalArgumentException.class,   null ),
+                Arguments.of( validDoesNotVerifyFilter,   isOdd,       errorString,   null,                             invalidResult ),
+                Arguments.of( invalid,                    isOdd,       errorString,   null,                             invalid )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterOrElseTestCases")
+    @DisplayName("filterOrElse: test cases")
+    public <E, T> void filterOrElse_testCases(Validation<E, T> validation,
+                                              Predicate<? super T> predicate,
+                                              Function<? super T, ? extends E> zero,
+                                              Class<? extends Exception> expectedException,
+                                              Validation<E, T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> validation.filterOrElse(predicate, zero));
+        }
+        else {
+            assertEquals(expectedResult, validation.filterOrElse(predicate, zero));
+        }
+    }
+
+
     static Stream<Arguments> mapWithValidMapperTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
