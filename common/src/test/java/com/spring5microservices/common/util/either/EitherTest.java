@@ -111,6 +111,45 @@ public class EitherTest {
     }
 
 
+    static Stream<Arguments> filterOrElseTestCases() {
+        Either<String, Integer> rightVerifyFilter = Either.right(11);
+        Either<String, Integer> rightDoesNotVerifyFilter = Either.right(2);
+        Either<String, Integer> left = Either.left("warning");
+        Either<String, Integer> leftResult = Either.left("error");
+
+        Predicate<Integer> isOdd = i -> i % 2 == 1;
+        Function<Integer, String> errorString = i -> "error";
+        return Stream.of(
+                //@formatter:off
+                //            either,                     predicate,   zero,          expectedException,                expectedResult
+                Arguments.of( rightVerifyFilter,          null,        null,          null,                             rightVerifyFilter ),
+                Arguments.of( rightDoesNotVerifyFilter,   null,        null,          null,                             rightDoesNotVerifyFilter ),
+                Arguments.of( left,                       null,        null,          null,                             left ),
+                Arguments.of( rightVerifyFilter,          isOdd,       null,          null,                             rightVerifyFilter ),
+                Arguments.of( rightVerifyFilter,          isOdd,       errorString,   null,                             rightVerifyFilter ),
+                Arguments.of( rightDoesNotVerifyFilter,   isOdd,       null,          IllegalArgumentException.class,   null ),
+                Arguments.of( rightDoesNotVerifyFilter,   isOdd,       errorString,   null,                             leftResult ),
+                Arguments.of( left,                       isOdd,       errorString,   null,                             left )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterOrElseTestCases")
+    @DisplayName("filterOrElse: test cases")
+    public <L, R> void filterOrElse_testCases(Either<L, R> either,
+                                              Predicate<? super R> predicate,
+                                              Function<? super R, ? extends L> zero,
+                                              Class<? extends Exception> expectedException,
+                                              Either<L, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> either.filterOrElse(predicate, zero));
+        }
+        else {
+            assertEquals(expectedResult, either.filterOrElse(predicate, zero));
+        }
+    }
+
+
     static Stream<Arguments> mapWithRightMapperTestCases() {
         Either<String, Integer> right = Either.right(12);
         Either<String, Integer> left = Either.left("There was a problem");
