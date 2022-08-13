@@ -167,7 +167,7 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
-     * Returns {@code Optional.of(this)} if:
+     * Filters the current {@link Validation} returning {@code Optional.of(this)} if:
      *
      *   1. Current instance is {@link Invalid}
      *   2. Current instance is {@link Valid} and stored value verifies given {@link Predicate} (or {@code predicate} is {@code null})
@@ -190,6 +190,45 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
+     * Filters the current {@link Validation} returning:
+     *
+     *   1. {@link Valid} if this is a {@link Valid} and its value matches given {@link Predicate} (or {@code predicate} is {@code null})
+     *   2. {@link Invalid} applying {@code zero} if this is {@link Valid} but its value does not match given {@link Predicate}
+     *   3. {@link Invalid} with the existing value if this is a {@link Invalid}
+     *
+     * Examples:
+     *
+     *   Validation.valid(11).filterOrElse(i -> i > 10, "error");                    // Valid(11)
+     *   Validation.valid(7).filterOrElse(i -> i > 10, "error");                     // Invalid(List("error"))
+     *   Validation.invalid(asList("warning")).filterOrElse(i -> i > 10, "error");   // Invalid(List("warning"))
+     *
+     * @param predicate
+     *    {@link Predicate} to apply the stored value if the current instance is a {@link Valid} one
+     * @param zero
+     *    {@link Function} that turns a {@link Valid} value into a {@link Invalid} one if this is {@link Valid}
+     *    but its value does not match given {@link Predicate}
+     *
+     * @throws IllegalArgumentException if {@code zero} is {@code null}, this is a {@link Valid} but does not match given {@link Predicate}
+     *
+     * @return {@link Validation}
+     */
+    public final Validation<E, T> filterOrElse(final Predicate<? super T> predicate,
+                                               final Function<? super T, ? extends E> zero) {
+        if (!isValid() || Objects.isNull(predicate) || predicate.test(get())) {
+            return this;
+        }
+        Assert.notNull(zero, "zero must be not null");
+        return invalid(
+                asList(
+                        zero.apply(
+                                get()
+                        )
+                )
+        );
+    }
+
+
+    /**
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Validation} if this is a {@link Valid}.
      * Otherwise does nothing if this is a {@link Invalid}.
      *
@@ -203,13 +242,13 @@ public abstract class Validation<E, T> implements Serializable {
     public final <U> Validation<E, U> map(final Function<? super T, ? extends U> mapper) {
         if (isValid()) {
             Assert.notNull(mapper, "mapper must be not null");
-            return Validation.valid(
+            return valid(
                     mapper.apply(
                             get()
                     )
             );
         } else {
-            return Validation.invalid(getErrors());
+            return invalid(getErrors());
         }
     }
 
@@ -228,13 +267,13 @@ public abstract class Validation<E, T> implements Serializable {
     public final <U> Validation<U, T> mapError(final Function<Collection<? super E>, Collection<U>> mapper) {
         if (!isValid()) {
             Assert.notNull(mapper, "mapper must be not null");
-            return Validation.invalid(
+            return invalid(
                     mapper.apply(
                             getErrors()
                     )
             );
         } else {
-            return Validation.valid(get());
+            return valid(get());
         }
     }
 
@@ -246,6 +285,7 @@ public abstract class Validation<E, T> implements Serializable {
      * something like:
      *
      * Example:
+     *
      *   validation.map(...).mapError(...);
      *
      * @param mapperInvalid
@@ -262,14 +302,14 @@ public abstract class Validation<E, T> implements Serializable {
                                                  final Function<? super T, ? extends T2> mapperValid) {
         if (isValid()) {
             Assert.notNull(mapperValid, "mapperValid must be not null");
-            return Validation.valid(
+            return valid(
                     mapperValid.apply(
                             get()
                     )
             );
         } else {
             Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
-            return Validation.invalid(
+            return invalid(
                     mapperInvalid.apply(
                             getErrors()
                     )
@@ -351,7 +391,7 @@ public abstract class Validation<E, T> implements Serializable {
      *
      * Example:
      *
-     *   Validation<String, String> valid = ...;
+     *   Validation<String, String> valid = ...
      *   int i = valid.fold(String::length, List::length);
      *
      * @param mapperInvalid

@@ -117,7 +117,7 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Returns {@code Optional.of(this)} if:
+     * Filters the current {@link Either} returning {@code Optional.of(this)} if:
      *
      *   1. Current instance is {@link Left}
      *   2. Current instance is {@link Right} and stored value verifies given {@link Predicate} (or {@code predicate} is {@code null})
@@ -140,6 +140,43 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
+     * Filters the current {@link Either} returning:
+     *
+     *   1. {@link Right} if this is a {@link Right} and its value matches given {@link Predicate} (or {@code predicate} is {@code null})
+     *   2. {@link Left} applying {@code zero} if this is {@link Right} but its value does not match given {@link Predicate}
+     *   3. {@link Left} with the existing value if this is a {@link Left}
+     *
+     * Examples:
+     *
+     *   Either.right(11).filterOrElse(i -> i > 10, "error");         // Right(11)
+     *   Either.right(7).filterOrElse(i -> i > 10, "error");          // Left("error")
+     *   Either.left("warning").filterOrElse(i -> i > 10, "error");   // Left("warning")
+     *
+     * @param predicate
+     *    {@link Predicate} to apply the stored value if the current instance is a {@link Right} one
+     * @param zero
+     *    {@link Function} that turns a {@link Right} value into a {@link Left} one if this is {@link Right}
+     *    but its value does not match given {@link Predicate}
+     *
+     * @throws IllegalArgumentException if {@code zero} is {@code null}, this is a {@link Right} but does not match given {@link Predicate}
+     *
+     * @return {@link Either}
+     */
+    public final Either<L, R> filterOrElse(final Predicate<? super R> predicate,
+                                           final Function<? super R, ? extends L> zero) {
+        if (!isRight() || Objects.isNull(predicate) || predicate.test(get())) {
+            return this;
+        }
+        Assert.notNull(zero, "zero must be not null");
+        return left(
+                zero.apply(
+                        get()
+                )
+        );
+    }
+
+
+    /**
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Either} if this is a {@link Right}.
      * Otherwise does nothing if this is a {@link Left}.
      *
@@ -153,13 +190,13 @@ public abstract class Either<L, R> implements Serializable {
     public final <U> Either<L, U> map(final Function<? super R, ? extends U> mapper) {
         if (isRight()) {
             Assert.notNull(mapper, "mapper must be not null");
-            return Either.right(
+            return right(
                     mapper.apply(
                             get()
                     )
             );
         } else {
-            return Either.left(getLeft());
+            return left(getLeft());
         }
     }
 
@@ -178,13 +215,13 @@ public abstract class Either<L, R> implements Serializable {
     public final <U> Either<U, R> mapLeft(final Function<? super L, ? extends U> mapper) {
         if (!isRight()) {
             Assert.notNull(mapper, "mapper must be not null");
-            return Either.left(
+            return left(
                     mapper.apply(
                             getLeft()
                     )
             );
         } else {
-            return Either.right(get());
+            return right(get());
         }
     }
 
@@ -196,6 +233,7 @@ public abstract class Either<L, R> implements Serializable {
      * to do something like:
      *
      * Example:
+     *
      *   either.map(...).mapLeft(...);
      *
      * @param mapperLeft
@@ -212,14 +250,14 @@ public abstract class Either<L, R> implements Serializable {
                                              final Function<? super R, ? extends R2> mapperRight) {
         if (isRight()) {
             Assert.notNull(mapperRight, "mapperRight must be not null");
-            return Either.right(
+            return right(
                     mapperRight.apply(
                             get()
                     )
             );
         } else {
             Assert.notNull(mapperLeft, "mapperLeft must be not null");
-            return Either.left(
+            return left(
                     mapperLeft.apply(
                             getLeft()
                     )
@@ -313,7 +351,7 @@ public abstract class Either<L, R> implements Serializable {
      *
      * Example:
      *
-     *   Either<String, Integer> either = ...;
+     *   Either<String, Integer> either = ...
      *   int i = either.fold(String::length, Function.identity());
      *
      * @param mapperLeft
@@ -473,9 +511,9 @@ public abstract class Either<L, R> implements Serializable {
      */
     public final Either<R, L> swap() {
         if (isRight()) {
-            return Either.left(get());
+            return left(get());
         } else {
-            return Either.right(getLeft());
+            return right(getLeft());
         }
     }
 
