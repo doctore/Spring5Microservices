@@ -164,7 +164,10 @@ public abstract class Either<L, R> implements Serializable {
      */
     public final Either<L, R> filterOrElse(final Predicate<? super R> predicate,
                                            final Function<? super R, ? extends L> zero) {
-        if (!isRight() || Objects.isNull(predicate) || predicate.test(get())) {
+        if (!isRight()) {
+            return this;
+        }
+        if (Objects.isNull(predicate) || predicate.test(get())) {
             return this;
         }
         Assert.notNull(zero, "zero must be not null");

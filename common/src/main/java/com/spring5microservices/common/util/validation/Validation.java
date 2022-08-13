@@ -214,7 +214,10 @@ public abstract class Validation<E, T> implements Serializable {
      */
     public final Validation<E, T> filterOrElse(final Predicate<? super T> predicate,
                                                final Function<? super T, ? extends E> zero) {
-        if (!isValid() || Objects.isNull(predicate) || predicate.test(get())) {
+        if (!isValid()) {
+            return this;
+        }
+        if (Objects.isNull(predicate) || predicate.test(get())) {
             return this;
         }
         Assert.notNull(zero, "zero must be not null");
