@@ -96,26 +96,26 @@ public class ValidationTest {
 
 
     static Stream<Arguments> combineTestCases() {
-        Validation<String, Integer> validInt1 = Validation.valid(1);
-        Validation<String, Integer> validInt4 = Validation.valid(4);
-        Validation<String, Integer> invalidProb1 = Validation.invalid(List.of("problem1"));
-        Validation<String, Integer> invalidProb2 = Validation.invalid(List.of("problem2"));
-        Validation<String, Integer>[] allValidationsArray = new Validation[] { validInt1, invalidProb1, validInt4, invalidProb2 };
+        Validation<String, Integer> valid1 = Validation.valid(1);
+        Validation<String, Integer> valid2 = Validation.valid(4);
+        Validation<String, Integer> invalid1 = Validation.invalid(List.of("problem1"));
+        Validation<String, Integer> invalid2 = Validation.invalid(List.of("problem2"));
+        Validation<String, Integer>[] allValidationsArray = new Validation[] { valid1, invalid1, valid2, invalid2 };
 
-        List<String> allErrors = new ArrayList<>(invalidProb1.getErrors());
-        allErrors.addAll(invalidProb2.getErrors());
+        List<String> allErrors = new ArrayList<>(invalid1.getErrors());
+        allErrors.addAll(invalid2.getErrors());
         Validation<String, Integer> invalidAll = Validation.invalid(allErrors);
         return Stream.of(
                 //@formatter:off
-                //            validations,                                               expectedResult
-                Arguments.of( null,                                                      Valid.empty() ),
-                Arguments.of( new Validation[] {},                                       Valid.empty() ),
-                Arguments.of( new Validation[] { validInt1 },                            validInt1 ),
-                Arguments.of( new Validation[] { validInt1, validInt4 },                 validInt4 ),
-                Arguments.of( new Validation[] { invalidProb1, validInt1, validInt4 },   invalidProb1 ),
-                Arguments.of( new Validation[] { validInt1, validInt4, invalidProb1 },   invalidProb1 ),
-                Arguments.of( new Validation[] { invalidProb1, invalidProb2 },           invalidAll ),
-                Arguments.of( allValidationsArray,                                       invalidAll )
+                //            validations,                                     expectedResult
+                Arguments.of( null,                                            Valid.empty() ),
+                Arguments.of( new Validation[] {},                             Valid.empty() ),
+                Arguments.of( new Validation[] { valid1 },                     valid1 ),
+                Arguments.of( new Validation[] { valid1, valid2 },             valid2 ),
+                Arguments.of( new Validation[] { invalid1, valid1, valid2 },   invalid1 ),
+                Arguments.of( new Validation[] { valid1, valid2, invalid1 },   invalid1 ),
+                Arguments.of( new Validation[] { invalid1, invalid2 },         invalidAll ),
+                Arguments.of( allValidationsArray,                             invalidAll )
         ); //@formatter:on
     }
 
@@ -128,47 +128,47 @@ public class ValidationTest {
     }
 
 
-    static Stream<Arguments> getFirstInvalidTestCases() {
-        Validation<String, Integer> validInt1 = Validation.valid(1);
-        Validation<String, Integer> validInt4 = Validation.valid(4);
-        Validation<String, Integer> invalidProb1 = Validation.invalid(List.of("problem1"));
-        Validation<String, Integer> invalidProb2 = Validation.invalid(List.of("problem2"));
+    static Stream<Arguments> combineGetFirstInvalidTestCases() {
+        Validation<String, Integer> valid1 = Validation.valid(1);
+        Validation<String, Integer> valid2 = Validation.valid(4);
+        Validation<String, Integer> invalid1 = Validation.invalid(List.of("problem1"));
+        Validation<String, Integer> invalid2 = Validation.invalid(List.of("problem2"));
 
-        Supplier<Validation<String, Integer>> supValidInt1 = () -> validInt1;
-        Supplier<Validation<String, Integer>> supValidInt4 = () -> validInt4;
-        Supplier<Validation<String, Integer>> supInvalidProb1 = () -> invalidProb1;
-        Supplier<Validation<String, Integer>> supInvalidProb2 = () -> invalidProb2;
+        Supplier<Validation<String, Integer>> supValid1 = () -> valid1;
+        Supplier<Validation<String, Integer>> supValid2 = () -> valid2;
+        Supplier<Validation<String, Integer>> supInvalid1 = () -> invalid1;
+        Supplier<Validation<String, Integer>> supInvalid2 = () -> invalid2;
         return Stream.of(
                 //@formatter:off
-                //            supplier1,         supplier2,         supplier3,         expectedResult
-                Arguments.of( null,              null,              null,              Valid.empty() ),
-                Arguments.of( supValidInt1,      null,              null,              validInt1 ),
-                Arguments.of( supValidInt1,      supValidInt4,      null,              validInt4 ),
-                Arguments.of( supInvalidProb1,   supInvalidProb2,   null,              invalidProb1 ),
-                Arguments.of( supInvalidProb1,   supValidInt1,      supValidInt4,      invalidProb1 ),
-                Arguments.of( supValidInt1,      supValidInt4,      supInvalidProb1,   invalidProb1 )
+                //            supplier1,     supplier2,     supplier3,     expectedResult
+                Arguments.of( null,          null,          null,          Valid.empty() ),
+                Arguments.of( supValid1,     null,          null,          valid1 ),
+                Arguments.of( supValid1,     supValid2,     null,          valid2 ),
+                Arguments.of( supInvalid1,   supInvalid2,   null,          invalid1 ),
+                Arguments.of( supInvalid1,   supValid1,     supValid2,     invalid1 ),
+                Arguments.of( supValid1,     supValid2,     supInvalid1,   invalid1 )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("getFirstInvalidTestCases")
-    @DisplayName("getFirstInvalid: test cases")
-    public <E, T> void getFirstInvalid_testCases(Supplier<Validation<E, T>> supplier1,
-                                                 Supplier<Validation<E, T>> supplier2,
-                                                 Supplier<Validation<E, T>> supplier3,
-                                                 Validation<E, T> expectedResult) {
+    @MethodSource("combineGetFirstInvalidTestCases")
+    @DisplayName("combineGetFirstInvalid: test cases")
+    public <E, T> void combineGetFirstInvalid_testCases(Supplier<Validation<E, T>> supplier1,
+                                                        Supplier<Validation<E, T>> supplier2,
+                                                        Supplier<Validation<E, T>> supplier3,
+                                                        Validation<E, T> expectedResult) {
         Validation<E, T> result;
         if (Objects.isNull(supplier1) && Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
-            result = Validation.getFirstInvalid();
+            result = Validation.combineGetFirstInvalid();
         }
         else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
-            result = Validation.getFirstInvalid(supplier1);
+            result = Validation.combineGetFirstInvalid(supplier1);
         }
         else if (Objects.isNull(supplier3)) {
-            result = Validation.getFirstInvalid(supplier1, supplier2);
+            result = Validation.combineGetFirstInvalid(supplier1, supplier2);
         }
         else {
-            result = Validation.getFirstInvalid(supplier1, supplier2, supplier3);
+            result = Validation.combineGetFirstInvalid(supplier1, supplier2, supplier3);
         }
         assertEquals(expectedResult, result);
     }
