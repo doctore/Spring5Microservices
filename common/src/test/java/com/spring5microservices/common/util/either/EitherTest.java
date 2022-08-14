@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -17,6 +18,7 @@ import java.util.stream.Stream;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -55,6 +57,111 @@ public class EitherTest {
     public <L, R> void left_testCases(L value,
                                       Either<L, R> expectedResult) {
         assertEquals(expectedResult, Either.left(value));
+    }
+
+
+    static Stream<Arguments> combineTestCases() {
+        Either<String, Integer> right1 = Either.right(11);
+        Either<String, Integer> right2 = Either.right(20);
+        Either<String, Integer> left1 = Either.left("error");
+        Either<String, Integer> left2 = Either.left("warning");
+        Either<String, Integer>[] allEithersArray = new Either[] { right1, left1, right2, left2 };
+
+        BiFunction<Integer, Integer, Integer> addIntegers = (i1, i2) -> ofNullable(i1).orElse(0) + ofNullable(i2).orElse(0);
+        BiFunction<String, String, String> concatStrings = (s1, s2) -> ofNullable(s1).orElse("") + ofNullable(s2).orElse("");
+
+        Either<String, Integer> rightResult = Either.right(31);
+        Either<String, Integer> leftResult = Either.left("errorwarning");
+        return Stream.of(
+                //@formatter:off
+                //            mapperLeft,      mapperRight,   eithers,                                  expectedException,                expectedResult
+                Arguments.of( null,            null,          null,                                     IllegalArgumentException.class,   null ),
+                Arguments.of( concatStrings,   null,          null,                                     IllegalArgumentException.class,   null ),
+                Arguments.of( null,            addIntegers,   null,                                     IllegalArgumentException.class,   null ),
+                Arguments.of( concatStrings,   addIntegers,   null,                                     null,                             Right.empty() ),
+                Arguments.of( concatStrings,   addIntegers,   new Either[] {},                          null,                             Right.empty() ),
+                Arguments.of( concatStrings,   addIntegers,   new Either[] { right1 },                  null,                             right1 ),
+                Arguments.of( concatStrings,   addIntegers,   new Either[] { right1, right2 },          null,                             rightResult ),
+                Arguments.of( concatStrings,   addIntegers,   new Either[] { left1, right1, right2 },   null,                             left1 ),
+                Arguments.of( concatStrings,   addIntegers,   new Either[] { right1, right2, left1 },   null,                             left1 ),
+                Arguments.of( concatStrings,   addIntegers,   new Either[] { left1, left2 },            null,                             leftResult ),
+                Arguments.of( concatStrings,   addIntegers,   allEithersArray,                          null,                             leftResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("combineTestCases")
+    @DisplayName("combine: test cases")
+    public <L, R> void combine_testCases(BiFunction<? super L, ? super L, ? extends L> mapperLeft,
+                                         BiFunction<? super R, ? super R, ? extends R> mapperRight,
+                                         Either<L, R>[] eithers,
+                                         Class<? extends Exception> expectedException,
+                                         Either<L, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> Either.combine(mapperLeft, mapperRight, eithers));
+        }
+        else {
+            assertEquals(expectedResult, Either.combine(mapperLeft, mapperRight, eithers));
+        }
+    }
+
+
+    static Stream<Arguments> combineGetFirstLeftTestCases() {
+        Either<String, Integer> right1 = Either.right(11);
+        Either<String, Integer> right2 = Either.right(20);
+        Either<String, Integer> left1 = Either.left("error");
+        Either<String, Integer> left2 = Either.left("warning");
+
+        Supplier<Either<String, Integer>> supRight1 = () -> right1;
+        Supplier<Either<String, Integer>> supRight2 = () -> right2;
+        Supplier<Either<String, Integer>> supLeft1 = () -> left1;
+        Supplier<Either<String, Integer>> supLeft2 = () -> left2;
+
+        BiFunction<Integer, Integer, Integer> addIntegers = (i1, i2) -> ofNullable(i1).orElse(0) + ofNullable(i2).orElse(0);
+        Either<String, Integer> rightResult = Either.right(31);
+        return Stream.of(
+                //@formatter:off
+                //            mapperRight,   supplier1,   supplier2,   supplier3,   expectedException,                expectedResult
+                Arguments.of( null,          null,        null,        null,        IllegalArgumentException.class,   null ),
+                Arguments.of( null,          supRight1,   supRight2,   supLeft1,    IllegalArgumentException.class,   null ),
+                Arguments.of( addIntegers,   null,        null,        null,        null,                             Right.empty() ),
+                Arguments.of( addIntegers,   supRight1,   null,        null,        null,                             right1 ),
+                Arguments.of( addIntegers,   supRight1,   supRight2,   null,        null,                             rightResult ),
+                Arguments.of( addIntegers,   supLeft1,    supLeft2,    null,        null,                             left1 ),
+                Arguments.of( addIntegers,   supLeft1,    supRight1,   supRight2,   null,                             left1 ),
+                Arguments.of( addIntegers,   supRight1,   supRight2,   supLeft1,    null,                             left1 )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("combineGetFirstLeftTestCases")
+    @DisplayName("combineGetFirstLeft: test cases")
+    public <L, R> void combineGetFirstLeft_testCases(BiFunction<? super R, ? super R, ? extends R> mapperRight,
+                                                     Supplier<Either<L, R>> supplier1,
+                                                     Supplier<Either<L, R>> supplier2,
+                                                     Supplier<Either<L, R>> supplier3,
+                                                     Class<? extends Exception> expectedException,
+                                                     Either<L, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> Either.combineGetFirstLeft(mapperRight, supplier1));
+        }
+        else {
+            Either<L, R> result;
+            if (Objects.isNull(supplier1) && Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
+                result = Either.combineGetFirstLeft(mapperRight);
+            }
+            else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
+                result = Either.combineGetFirstLeft(mapperRight, supplier1);
+            }
+            else if (Objects.isNull(supplier3)) {
+                result = Either.combineGetFirstLeft(mapperRight, supplier1, supplier2);
+            }
+            else {
+                result = Either.combineGetFirstLeft(mapperRight, supplier1, supplier2, supplier3);
+            }
+            assertEquals(expectedResult, result);
+        }
     }
 
 

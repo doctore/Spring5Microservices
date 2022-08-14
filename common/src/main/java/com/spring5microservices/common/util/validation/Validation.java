@@ -121,9 +121,16 @@ public abstract class Validation<E, T> implements Serializable {
     /**
      * Merges the given {@link Validation} in a result one that will be:
      *
-     *   1. {@link Valid} instance with all given {@code validations} are {@link Valid} ones or such parameters is {@code null} or empty.
+     *   1. {@link Valid} instance if all given {@code validations} are {@link Valid} ones or such parameters is {@code null} or empty.
+     *
      *   2. {@link Invalid} instance if there is at least one {@link Invalid} in the given {@code validations}. In this case, errors of
      *      all provided {@link Invalid}s will be included in the result.
+     *
+     * Examples:
+     *
+     *   combine(Validation.valid(11), Validation.valid(7));                                                // Valid(7)
+     *   combine(Validation.valid(13), Validation.invalid(asList("A")));                                    // Invalid(List("A"))
+     *   combine(Validation.valid(10), Validation.invalid(asList("A")), Validation.invalid(asList("B")));   // Invalid(List("A", "B"))
      *
      * @param validations
      *    {@link Validation} instances to combine
@@ -146,13 +153,19 @@ public abstract class Validation<E, T> implements Serializable {
      *    Checks the given {@link Supplier} of {@link Validation}, returning a {@link Valid} instance if no {@link Invalid}
      * {@link Supplier} was given or the first {@link Invalid} one.
      *
+     * Examples:
+     *
+     *   combineGetFirstInvalid(() -> Validation.valid(1), () -> Validation.valid(7));                                                      // Valid(7)
+     *   combineGetFirstInvalid(() -> Validation.valid(3), () -> Validation.invalid(asList("A")));                                          // Invalid(List("A"))
+     *   combineGetFirstInvalid(() -> Validation.valid(2), () -> Validation.invalid(asList("A")), () -> Validation.invalid(asList("B")));   // Invalid(List("A"))
+     *
      * @param suppliers
      *    {@link Supplier} of {@link Validation} instances to verify
      *
      * @return {@link Validation}
      */
     @SafeVarargs
-    public static <E, T> Validation<E, T> getFirstInvalid(final Supplier<Validation<E, T>>... suppliers) {
+    public static <E, T> Validation<E, T> combineGetFirstInvalid(final Supplier<Validation<E, T>>... suppliers) {
         Validation<E, T> result = Valid.empty();
         if (!ObjectUtils.isEmpty(suppliers)) {
             for (Supplier<Validation<E, T>> supplier : suppliers) {
@@ -345,7 +358,7 @@ public abstract class Validation<E, T> implements Serializable {
     /**
      * Merge given {@code validation} with the current one, managing the following use cases:
      *
-     *   1. this = {@link Valid},   validation = {@link Valid}    =>  return a {@link Valid} instance
+     *   1. this = {@link Valid},   validation = {@link Valid}    =>  return a {@link Valid} instance with the value of {@code validation}
      *   2. this = {@link Valid},   validation = {@link Invalid}  =>  return an {@link Invalid} instance with the errors of {@code validation}
      *   3. this = {@link Invalid}, validation = {@link Valid}    =>  return an {@link Invalid} instance with the errors of {@code this}
      *   4. this = {@link Invalid}, validation = {@link Invalid}  =>  return an {@link Invalid} instance with the errors of {@code this} and {@code validation}
