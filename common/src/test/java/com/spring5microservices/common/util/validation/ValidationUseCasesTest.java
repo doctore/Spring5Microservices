@@ -127,7 +127,7 @@ public class ValidationUseCasesTest {
 
         @Override
         public Validation<ValidationError, PizzaDto> validate(PizzaDto p) {
-            return Validation.getFirstInvalid(() -> validateName(p), () -> validateCost(p));
+            return Validation.combineGetFirstInvalid(() -> validateName(p), () -> validateCost(p));
         }
 
         private Validation<ValidationError, PizzaDto> validateName(PizzaDto p) {

@@ -2,6 +2,7 @@ package com.spring5microservices.common.util.either;
 
 import com.spring5microservices.common.util.validation.Validation;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -89,6 +90,98 @@ public abstract class Either<L, R> implements Serializable {
      */
     public static <L, R> Either<L, R> left(final L value) {
         return Left.ofNullable(value);
+    }
+
+
+    /**
+     * Merges the given {@link Either} in a result one that will be:
+     *
+     *   1. {@link Right} instance if all given {@code eithers} are {@link Right} ones or such parameters is {@code null}
+     *      or empty. Using provided {@link BiFunction} {@code mapperRight} to get the final value added into the
+     *      returned {@link Right}.
+     *
+     *   2. {@link Left} instance if there is at least one {@link Left} in the given {@code eithers}. Using provided
+     *      {@link BiFunction} {@code mapperLeft} to get the final value added into the returned {@link Left}.
+     *
+     * Examples:
+     *
+     *   mapperLeft = (l1, l2) -> l2;
+     *   mapperRight = (r1, r2) -> r2;
+     *
+     *   combine(mapperLeft, mapperRight, Either.right(11), Either.right(7));                      // Right(7)
+     *   combine(mapperLeft, mapperRight, Either.right(13), Either.left("A"));                     // Left("A")
+     *   combine(mapperLeft, mapperRight, Either.right(10), Either.left("A"), Either.left("B"));   // Left("B")
+     *
+     * @param mapperLeft
+     *    {@link BiFunction} used to calculate the new {@link Left} based on two provided ones
+     * @param mapperRight
+     *    {@link BiFunction} used to calculate the new {@link Right} based on two provided ones
+     * @param eithers
+     *    {@link Either} instances to combine
+     *
+     * @return {@link Either}
+     *
+     * @throws IllegalArgumentException if {@code mapperLeft} or {@code mapperRight} is {@code null}
+     */
+    @SafeVarargs
+    public static <L, R> Either<L, R> combine(final BiFunction<? super L, ? super L, ? extends L> mapperLeft,
+                                              final BiFunction<? super R, ? super R, ? extends R> mapperRight,
+                                              final Either<L, R>... eithers) {
+        Assert.notNull(mapperLeft, "mapperLeft must be not null");
+        Assert.notNull(mapperRight, "mapperRight must be not null");
+        Either<L, R> result = Right.empty();
+        if (!ObjectUtils.isEmpty(eithers)) {
+            for (Either<L, R> either : eithers) {
+                result = result.ap(
+                        either,
+                        mapperLeft,
+                        mapperRight
+                );
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     *    Checks the given {@link Supplier} of {@link Either}, returning a {@link Right} instance if no {@link Left}
+     * {@link Supplier} was given or the first {@link Left} one.
+     *
+     * Examples:
+     *
+     *   mapperRight = (r1, r2) -> r2;
+     *
+     *   combineGetFirstLeft(mapperRight, () -> Either.right(1), () -> Either.right(7));                            // Right(7)
+     *   combineGetFirstLeft(mapperRight, () -> Either.right(3), () -> Either.left("A"));                           // Left("A")
+     *   combineGetFirstLeft(mapperRight, () -> Either.right(2), () -> Either.left("A"), () -> Either.left("B"));   // Left("B")
+     *
+     * @param mapperRight
+     *    {@link BiFunction} used to calculate the new {@link Right} based on two provided ones
+     * @param suppliers
+     *    {@link Supplier} of {@link Either} instances to verify
+     *
+     * @return {@link Either}
+     *
+     * @throws IllegalArgumentException if {@code mapperRight} is {@code null}
+     */
+    @SafeVarargs
+    public static  <L, R> Either<L, R> combineGetFirstLeft(final BiFunction<? super R, ? super R, ? extends R> mapperRight,
+                                                           final Supplier<Either<L, R>>... suppliers) {
+        Assert.notNull(mapperRight, "mapperRight must be not null");
+        Either<L, R> result = Right.empty();
+        if (!ObjectUtils.isEmpty(suppliers)) {
+            for (Supplier<Either<L, R>> supplier : suppliers) {
+                result = result.ap(
+                        supplier.get(),
+                        (l1, l2) -> l1,
+                        mapperRight
+                );
+                if (!result.isRight()) {
+                    return result;
+                }
+            }
+        }
+        return result;
     }
 
 
