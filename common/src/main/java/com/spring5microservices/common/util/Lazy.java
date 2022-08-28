@@ -78,7 +78,8 @@ public final class Lazy<T> implements Supplier<T> {
         Assert.notNull(supplier, "supplier must be not null");
         if (supplier instanceof Lazy) {
             return (Lazy<T>) supplier;
-        } else {
+        }
+        else {
             return new Lazy<>(supplier);
         }
     }
@@ -110,9 +111,11 @@ public final class Lazy<T> implements Supplier<T> {
     public boolean equals(Object o) {
         if (o == this) {
             return true;
-        } else if (!(o instanceof Lazy)) {
+        }
+        else if (!(o instanceof Lazy)) {
             return false;
-        } else {
+        }
+        else {
             final Lazy<?> that = (Lazy<?>) o;
 
             // Equals does not invoke internal supplier

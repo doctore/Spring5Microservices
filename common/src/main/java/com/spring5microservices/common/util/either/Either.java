@@ -28,8 +28,8 @@ import static java.util.Optional.of;
  * takes the place of {@link Optional#get()}. Convention dictates that {@link Left} is used for failure and {@link Right}
  * is used for success.
  *
- *    For example, you could use Either[String, Integer] to indicate whether a received input is a {@link String} or an
- * {@link Integer}.
+ *    For example, you could use {@link Either}<{@link String}, {@link Integer}> to indicate whether a received input
+ * is a {@link String} or an {@link Integer}.
  *
  * @param <L>
  *    Type of the {@link Left} value of an {@link Either}
@@ -58,7 +58,8 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Gets the value of this {@link Either} if is a {@link Left} or throws if this is an {@link Right}.
+     *    Gets the value of this {@link Either} if is a {@link Left} or throws {@link NoSuchElementException} if this
+     * is an {@link Right}.
      *
      * @return the {@link Left} value
      *
@@ -73,7 +74,7 @@ public abstract class Either<L, R> implements Serializable {
      * @param value
      *    The value to store in the returned {@link Right}
      *
-     * @return {@code Right(value)}
+     * @return {@link Right}
      */
     public static <L, R> Either<L, R> right(final R value) {
         return Right.ofNullable(value);
@@ -86,7 +87,7 @@ public abstract class Either<L, R> implements Serializable {
      * @param value
      *    The value to store in the returned {@link Left}
      *
-     * @return {@code Left(value)}
+     * @return {@link Left}
      */
     public static <L, R> Either<L, R> left(final L value) {
         return Left.ofNullable(value);
@@ -94,7 +95,7 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Merges the given {@link Either} in a result one that will be:
+     * Merges the given {@link Either}s in a one result that will be:
      *
      *   1. {@link Right} instance if all given {@code eithers} are {@link Right} ones or such parameters is {@code null}
      *      or empty. Using provided {@link BiFunction} {@code mapperRight} to get the final value added into the
@@ -129,22 +130,23 @@ public abstract class Either<L, R> implements Serializable {
                                               final Either<L, R>... eithers) {
         Assert.notNull(mapperLeft, "mapperLeft must be not null");
         Assert.notNull(mapperRight, "mapperRight must be not null");
-        Either<L, R> result = Right.empty();
-        if (!ObjectUtils.isEmpty(eithers)) {
-            for (Either<L, R> either : eithers) {
-                result = result.ap(
-                        either,
-                        mapperLeft,
-                        mapperRight
-                );
-            }
+        if (ObjectUtils.isEmpty(eithers)) {
+            return Right.empty();
+        }
+        Either<L, R> result = eithers[0];
+        for (int i = 1; i < eithers.length; i++) {
+            result = result.ap(
+                    eithers[i],
+                    mapperLeft,
+                    mapperRight
+            );
         }
         return result;
     }
 
 
     /**
-     *    Checks the given {@link Supplier} of {@link Either}, returning a {@link Right} instance if no {@link Left}
+     *    Checks the given {@link Supplier}s of {@link Either}, returning a {@link Right} instance if no {@link Left}
      * {@link Supplier} was given or the first {@link Left} one.
      *
      * Examples:
@@ -168,17 +170,18 @@ public abstract class Either<L, R> implements Serializable {
     public static  <L, R> Either<L, R> combineGetFirstLeft(final BiFunction<? super R, ? super R, ? extends R> mapperRight,
                                                            final Supplier<Either<L, R>>... suppliers) {
         Assert.notNull(mapperRight, "mapperRight must be not null");
-        Either<L, R> result = Right.empty();
-        if (!ObjectUtils.isEmpty(suppliers)) {
-            for (Supplier<Either<L, R>> supplier : suppliers) {
-                result = result.ap(
-                        supplier.get(),
-                        (l1, l2) -> l1,
-                        mapperRight
-                );
-                if (!result.isRight()) {
-                    return result;
-                }
+        if (ObjectUtils.isEmpty(suppliers)) {
+            return Right.empty();
+        }
+        Either<L, R> result = suppliers[0].get();
+        for (int i = 1; i < suppliers.length; i++) {
+            result = result.ap(
+                    suppliers[i].get(),
+                    (l1, l2) -> l1,
+                    mapperRight
+            );
+            if (!result.isRight()) {
+                return result;
             }
         }
         return result;
@@ -291,7 +294,8 @@ public abstract class Either<L, R> implements Serializable {
                             get()
                     )
             );
-        } else {
+        }
+        else {
             return left(getLeft());
         }
     }
@@ -316,26 +320,27 @@ public abstract class Either<L, R> implements Serializable {
                             getLeft()
                     )
             );
-        } else {
+        }
+        else {
             return right(get());
         }
     }
 
 
     /**
-     *    Whereas {@code mapperRight} only performs a mapping on a {@link Right} {@link Either}, and {@code mapperLeft}
-     * performs a mapping on an {@link Left} {@link Either}, {@code bimap} allows you to provide mapping actions for
-     * both, and will give you the result based on what type of {@link Either} this is. Without this, you would have
-     * to do something like:
+     *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Right} {@link Either},
+     * and {@code mapLeft} performs a mapping on an {@link Left} {@link Either}, {@code map} with two {@link Function}
+     * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
+     * type of {@link Either} this is. Without this, you would have to do something like:
      *
      * Example:
      *
      *   either.map(...).mapLeft(...);
      *
      * @param mapperLeft
-     *    {@link Function} with the invalid mapping operation
+     *    {@link Function} with the left mapping operation
      * @param mapperRight
-     *    {@link Function} with the valid mapping operation
+     *    {@link Function} with the right mapping operation
      *
      * @return {@link Either}
      *
@@ -351,7 +356,8 @@ public abstract class Either<L, R> implements Serializable {
                             get()
                     )
             );
-        } else {
+        }
+        else {
             Assert.notNull(mapperLeft, "mapperLeft must be not null");
             return left(
                     mapperLeft.apply(
@@ -379,22 +385,26 @@ public abstract class Either<L, R> implements Serializable {
             Assert.notNull(mapper, "mapper must be not null");
             return (Either<L, U>) mapper.apply(get());
         }
-        return (Either<L, U>) this;
+        return left(getLeft());
     }
 
 
     /**
      * Merge given {@code either} with the current one, managing the following use cases:
      *
-     *   1. this = {@link Right}, validation = {@link Right}  =>  return a {@link Right} instance applying {@code mapperRight}
-     *   2. this = {@link Right}, validation = {@link Left}   =>  return the {@link Left}
-     *   3. this = {@link Left},  validation = {@link Right}  =>  return the {@link Left}
-     *   4. this = {@link Left},  validation = {@link Left}   =>  return a {@link Left} instance applying {@code mapperLeft}
+     *   1. this = {@link Right}, either = {@link Right}  =>  return a {@link Right} instance applying {@code mapperRight}
+     *   2. this = {@link Right}, either = {@link Left}   =>  return the {@link Left}
+     *   3. this = {@link Left},  either = {@link Right}  =>  return the {@link Left}
+     *   4. this = {@link Left},  either = {@link Left}   =>  return a {@link Left} instance applying {@code mapperLeft}
      *
      * If provided {@code either} is {@code null}, the current instance will be returned.
      *
      * @param either
      *    New {@link Either} to merge with the current one
+     * @param mapperLeft
+     *    {@link BiFunction} used to map current {@link Either} and given {@code either}, both {@link Left}
+     * @param mapperRight
+     *    {@link BiFunction} used to map current {@link Either} and given {@code either}, both {@link Right}
      *
      * @return {@link Either}
      *
@@ -409,7 +419,7 @@ public abstract class Either<L, R> implements Serializable {
         }
         // This is a Right instance
         if (isRight()) {
-            // Current and given validation are Right, a new merged Right instance will be returned
+            // Current and given either are Right, a new merged Right instance will be returned
             if (either.isRight()) {
                 Assert.notNull(mapperRight, "mapperRight must be not null");
                 return right(
@@ -418,17 +428,19 @@ public abstract class Either<L, R> implements Serializable {
                                 either.get()
                         )
                 );
+            }
             // This is Right but either is Left
-            } else {
+            else {
                 return left(either.getLeft());
             }
-        } else {
+        }
+        else {
             // Due to only this is Left, returns this
             if (either.isRight()) {
                 return left(getLeft());
-
-            // Current and given validation are Left, a new merged Left instance will be returned
-            } else {
+            }
+            // Current and given either are Left, a new merged Left instance will be returned
+            else {
                 Assert.notNull(mapperLeft, "mapperLeft must be not null");
                 return left(
                         mapperLeft.apply(
@@ -506,8 +518,8 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     *    Performs the given {@code actionValid} to the stored value if the current {@link Either} is a {@link Right}
-     * one. If the current instance is a {@link Left}, performs {@code actionInvalid}.
+     *    Performs the given {@code actionRight} to the stored value if the current {@link Either} is a {@link Right}
+     * one. If the current instance is a {@link Left}, performs {@code actionLeft}.
      *
      * @param actionLeft
      *    The {@link Left} {@link Consumer} operation
@@ -608,7 +620,8 @@ public abstract class Either<L, R> implements Serializable {
     public final Either<R, L> swap() {
         if (isRight()) {
             return left(get());
-        } else {
+        }
+        else {
             return right(getLeft());
         }
     }

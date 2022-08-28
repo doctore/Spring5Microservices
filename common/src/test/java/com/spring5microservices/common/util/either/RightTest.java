@@ -112,7 +112,7 @@ public class RightTest {
         Right<String, Integer> r3 = Right.of(12);
         return Stream.of(
                 //@formatter:off
-                //            tuple,   objectToCompare,   expectedResult
+                //            right,   objectToCompare,   expectedResult
                 Arguments.of( r1,      null,              false ),
                 Arguments.of( r1,      emptyInstance,     false ),
                 Arguments.of( r1,      12,                false ),

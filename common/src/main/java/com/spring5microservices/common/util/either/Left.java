@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param <R>
  *    Type of the {@link Right} value of an {@link Either}
  */
-public class Left<L, R> extends Either<L, R> implements Serializable {
+public final class Left<L, R> extends Either<L, R> implements Serializable {
 
     private static final long serialVersionUID = -7188719336108620477L;
 

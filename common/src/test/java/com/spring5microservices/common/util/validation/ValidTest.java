@@ -112,7 +112,7 @@ public class ValidTest {
         Valid<String, Integer> v3 = Valid.of(12);
         return Stream.of(
                 //@formatter:off
-                //            tuple,   objectToCompare,   expectedResult
+                //            valid,   objectToCompare,   expectedResult
                 Arguments.of( v1,      null,              false ),
                 Arguments.of( v1,      emptyInstance,     false ),
                 Arguments.of( v1,      12,                false ),
