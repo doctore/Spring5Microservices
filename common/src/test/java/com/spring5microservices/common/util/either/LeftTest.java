@@ -113,15 +113,15 @@ public class LeftTest {
         Left<String, Integer> l3 = Left.of("There was an error");
         return Stream.of(
                 //@formatter:off
-                //            tuple,   objectToCompare,   expectedResult
-                Arguments.of( l1,      null,              false ),
-                Arguments.of( l1,      emptyInstance,     false ),
-                Arguments.of( l1,      12,                false ),
-                Arguments.of( l2,      l2.getLeft(),      false ),
-                Arguments.of( l1,      l2,                false ),
-                Arguments.of( l1,      l1,                true ),
-                Arguments.of( l2,      l2,                true ),
-                Arguments.of( l1,      l3,                true )
+                //            left,   objectToCompare,   expectedResult
+                Arguments.of( l1,     null,              false ),
+                Arguments.of( l1,     emptyInstance,     false ),
+                Arguments.of( l1,     12,                false ),
+                Arguments.of( l2,     l2.getLeft(),      false ),
+                Arguments.of( l1,     l2,                false ),
+                Arguments.of( l1,     l1,                true ),
+                Arguments.of( l2,     l2,                true ),
+                Arguments.of( l1,     l3,                true )
         ); //@formatter:on
     }
 
