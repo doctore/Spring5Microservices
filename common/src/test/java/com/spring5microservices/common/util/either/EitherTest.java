@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -67,8 +66,8 @@ public class EitherTest {
         Either<String, Integer> left2 = Either.left("warning");
         Either<String, Integer>[] allEithersArray = new Either[] { right1, left1, right2, left2 };
 
-        BiFunction<Integer, Integer, Integer> addIntegers = (i1, i2) -> ofNullable(i1).orElse(0) + ofNullable(i2).orElse(0);
-        BiFunction<String, String, String> concatStrings = (s1, s2) -> ofNullable(s1).orElse("") + ofNullable(s2).orElse("");
+        BiFunction<Integer, Integer, Integer> addIntegers = Integer::sum;
+        BiFunction<String, String, String> concatStrings = String::concat;
 
         Either<String, Integer> rightResult = Either.right(31);
         Either<String, Integer> leftResult = Either.left("errorwarning");
@@ -117,7 +116,7 @@ public class EitherTest {
         Supplier<Either<String, Integer>> supLeft1 = () -> left1;
         Supplier<Either<String, Integer>> supLeft2 = () -> left2;
 
-        BiFunction<Integer, Integer, Integer> addIntegers = (i1, i2) -> ofNullable(i1).orElse(0) + ofNullable(i2).orElse(0);
+        BiFunction<Integer, Integer, Integer> addIntegers = Integer::sum;
         Either<String, Integer> rightResult = Either.right(31);
         return Stream.of(
                 //@formatter:off
@@ -273,7 +272,7 @@ public class EitherTest {
 
     @ParameterizedTest
     @MethodSource("mapWithRightMapperTestCases")
-    @DisplayName("map: test cases")
+    @DisplayName("map: with right mapper test cases")
     public <L, R, U> void mapWithRightMapper_testCases(Either<L, R> either,
                                                        Function<? super R, ? extends U> mapper,
                                                        Class<? extends Exception> expectedException,
@@ -519,13 +518,13 @@ public class EitherTest {
         Consumer<String> actionLeft = System.out::println;
         return Stream.of(
                 //@formatter:off
-                //            either,   actionRight,   actionLeft,    expectedResult
-                Arguments.of( right,    actionLeft,    null,          right ),
-                Arguments.of( right,    null,          actionRight,   right ),
-                Arguments.of( right,    actionLeft,    actionRight,   right ),
-                Arguments.of( left,     null,          actionRight,   left ),
-                Arguments.of( left,     actionLeft,    null,          left ),
-                Arguments.of( left,     actionLeft,    actionRight,   left )
+                //            either,   actionLeft,   actionRight,    expectedResult
+                Arguments.of( right,    actionLeft,   null,          right ),
+                Arguments.of( right,    null,         actionRight,   right ),
+                Arguments.of( right,    actionLeft,   actionRight,   right ),
+                Arguments.of( left,     null,         actionRight,   left ),
+                Arguments.of( left,     actionLeft,   null,          left ),
+                Arguments.of( left,     actionLeft,   actionRight,   left )
         ); //@formatter:on
     }
 
@@ -684,11 +683,6 @@ public class EitherTest {
     }
 
 
-
-
-
-
-
     static Stream<Arguments> isEmptyTestCases() {
         Either<String, Integer> rightEmpty = Either.right(null);
         Either<String, Integer> rightNotEmpty = Either.right(1);
@@ -709,10 +703,6 @@ public class EitherTest {
                                          boolean expectedResult) {
         assertEquals(expectedResult, either.isEmpty());
     }
-
-
-
-
 
 
     static Stream<Arguments> toOptionalTestCases() {
@@ -738,19 +728,22 @@ public class EitherTest {
 
 
     static Stream<Arguments> toValidationTestCases() {
-        Either<String, Integer> rightEither = Either.right(11);
-        Either<String, Integer> emptyLeftEither = Either.left(null);
-        Either<String, Integer> leftEither = Either.left("There was a problem");
+        Either<String, Integer> rightEmpty = Either.right(null);
+        Either<String, Integer> rightNotEmpty = Either.right(11);
+        Either<String, Integer> leftEmpty = Either.left(null);
+        Either<String, Integer> left = Either.left("There was a problem");
 
+        Validation<String, Integer> validFromEmptyEither = Validation.valid(null);
         Validation<String, Integer> validFromEither = Validation.valid(11);
         Validation<String, Integer> invalidFromEmptyEither = Validation.invalid(List.of());
         Validation<String, Integer> invalidFromEither = Validation.invalid(List.of("There was a problem"));
         return Stream.of(
                 //@formatter:off
-                //            either,            expectedResult
-                Arguments.of( rightEither,       validFromEither ),
-                Arguments.of( emptyLeftEither,   invalidFromEmptyEither ),
-                Arguments.of( leftEither,        invalidFromEither )
+                //            either,          expectedResult
+                Arguments.of( rightEmpty,      validFromEmptyEither ),
+                Arguments.of( rightNotEmpty,   validFromEither ),
+                Arguments.of( leftEmpty,       invalidFromEmptyEither ),
+                Arguments.of( left,            invalidFromEither )
         ); //@formatter:on
     }
 

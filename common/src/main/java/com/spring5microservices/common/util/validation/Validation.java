@@ -1,5 +1,8 @@
 package com.spring5microservices.common.util.validation;
 
+import com.spring5microservices.common.util.Try.Failure;
+import com.spring5microservices.common.util.Try.Success;
+import com.spring5microservices.common.util.Try.Try;
 import com.spring5microservices.common.util.either.Either;
 import com.spring5microservices.common.util.either.Left;
 import com.spring5microservices.common.util.either.Right;
@@ -57,9 +60,10 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
-     * Gets the {@code error} of this {@link Validation} if it is an {@link Invalid} or throws if this is a {@link Valid}.
+     *    Gets the {@code error} of this {@link Validation} if it is an {@link Invalid} or throws {@link NoSuchElementException}
+     * if this is a {@link Valid}.
      *
-     * @return the {@link Invalid} {@link Collection}
+     * @return the {@link Invalid} {@link Collection} of errors
      *
      * @throws NoSuchElementException if this is a {@link Valid}
      */
@@ -72,7 +76,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @param value
      *    The value to store in the returned {@link Valid}
      *
-     * @return {@code Valid(value)}
+     * @return {@link Valid}
      */
     public static <E, T> Validation<E, T> valid(final T value) {
         return Valid.ofNullable(value);
@@ -85,7 +89,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @param errors
      *    {@link Collection} of errors to include in the returned {@link Invalid}
      *
-     * @return {@code Invalid(error)}
+     * @return {@link Invalid}
      */
     public static <E, T> Validation<E, T> invalid(final Collection<E> errors) {
         return Invalid.ofNullable(errors);
@@ -96,30 +100,50 @@ public abstract class Validation<E, T> implements Serializable {
      * Creates a {@link Validation} using the given {@link Either}, following the rules:
      *
      *  - If {@link Right} then new {@link Validation} instance will be {@link Valid}
-     *  - If {@link Left} then new {@link Validation} instance will be {@link Invalid}
+     *  - If {@link Left} or {@code null} then new {@link Validation} instance will be {@link Invalid}
      *
      * @param either
      *    {@link Either} used as source
      *
      * @return {@code Valid(either.get())} if {@link Either} is a {@link Right},
      *         otherwise {@code Invalid(either.getLeft())}
-     *
-     * @throws IllegalArgumentException if {@code either} is {@code null}
      */
     public static <E, T> Validation<E, T> fromEither(final Either<? extends E, ? extends T> either) {
-        Assert.notNull(either, "either must be not null");
-        return either.isRight()
-                ? valid(either.get())
-                : invalid(
-                        Objects.isNull(either.getLeft())
-                                ? new ArrayList<>()
-                                : asList(either.getLeft())
-                  );
+        if (Objects.nonNull(either) && either.isRight()) {
+            return valid(either.get());
+        }
+        List<E> errors = Objects.isNull(either) || Objects.isNull(either.getLeft())
+                ? new ArrayList<>()
+                : asList(either.getLeft());
+        return invalid(errors);
     }
 
 
     /**
-     * Merges the given {@link Validation} in a result one that will be:
+     * Creates a {@link Validation} using the given {@link Try}, following the rules:
+     *
+     *  - If {@link Success} then new {@link Validation} instance will be {@link Valid}
+     *  - If {@link Failure} or {@code null} then new {@link Validation} instance will be {@link Invalid}
+     *
+     * @param t
+     *    {@link Try} used as source
+     *
+     * @return {@code Valid(t.get())} if {@link Try} is a {@link Success},
+     *         otherwise {@code Invalid(t.getException())}
+     */
+    public static <T> Validation<Throwable, T> fromTry(final Try<? extends T> t) {
+        if (Objects.nonNull(t) && t.isSuccess()) {
+            return valid(t.get());
+        }
+        List<Throwable> errors = Objects.isNull(t) || Objects.isNull(t.getException())
+                ? new ArrayList<>()
+                : asList(t.getException());
+        return invalid(errors);
+    }
+
+
+    /**
+     * Merges the given {@code validations} in a one result that will be:
      *
      *   1. {@link Valid} instance if all given {@code validations} are {@link Valid} ones or such parameters is {@code null} or empty.
      *
@@ -150,8 +174,8 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
-     *    Checks the given {@link Supplier} of {@link Validation}, returning a {@link Valid} instance if no {@link Invalid}
-     * {@link Supplier} was given or the first {@link Invalid} one.
+     *    Checks the given {@code suppliers}, returning a {@link Valid} instance if no {@link Invalid} {@link Supplier}
+     * was given or the first {@link Invalid} one.
      *
      * Examples:
      *
@@ -263,7 +287,8 @@ public abstract class Validation<E, T> implements Serializable {
                             get()
                     )
             );
-        } else {
+        }
+        else {
             return invalid(getErrors());
         }
     }
@@ -288,17 +313,18 @@ public abstract class Validation<E, T> implements Serializable {
                             getErrors()
                     )
             );
-        } else {
+        }
+        else {
             return valid(get());
         }
     }
 
 
     /**
-     *    Whereas {@code mapperValid} only performs a mapping on a {@link Valid} {@link Validation}, and {@code mapperInvalid}
-     * performs a mapping on an {@link Invalid} {@link Validation}, {@code bimap} allows you to provide mapping actions for
-     * both, and will give you the result based on what type of {@link Validation} this is. Without this, you would have to do
-     * something like:
+     *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Valid} {@link Validation},
+     * and {@code mapError} performs a mapping on an {@link Invalid} {@link Validation}, {@code map} with two {@link Function}
+     * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
+     * type of {@link Validation} this is. Without this, you would have to do something like:
      *
      * Example:
      *
@@ -323,7 +349,8 @@ public abstract class Validation<E, T> implements Serializable {
                             get()
                     )
             );
-        } else {
+        }
+        else {
             Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
             return invalid(
                     mapperInvalid.apply(
@@ -351,7 +378,7 @@ public abstract class Validation<E, T> implements Serializable {
             Assert.notNull(mapper, "mapper must be not null");
             return (Validation<E, U>) mapper.apply(get());
         }
-        return (Validation<E, U>) this;
+        return invalid(getErrors());
     }
 
 
@@ -379,20 +406,21 @@ public abstract class Validation<E, T> implements Serializable {
             // Only if current and given validation are Valid, a Valid instance will be returned
             if (validation.isValid()) {
                 return valid(validation.get());
-
+            }
             // This is Valid but validation is Invalid
-            } else {
+            else {
                 final Collection<E> errors = validation.getErrors();
                 return invalid(errors);
             }
-        } else {
+        }
+        else {
             // Due to only this is Invalid, return only its errors
             if (validation.isValid()) {
                 final Collection<E> errors = this.getErrors();
                 return invalid(errors);
-
+            }
             // Add both errors of this and validation
-            } else {
+            else {
                 final Collection<E> errors = new ArrayList<>(this.getErrors());
                 errors.addAll(validation.getErrors());
                 return invalid(errors);
@@ -574,6 +602,19 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
+     *    If the current {@link Validation} is an instance of {@link Valid} wraps the stored value into an {@link Optional} object.
+     * Otherwise return {@link Optional#empty()}
+     *
+     * @return {@link Optional}
+     */
+    public final Optional<T> toOptional() {
+        return isEmpty()
+                ? empty()
+                : of(get());
+    }
+
+
+    /**
      * Converts current {@link Validation} to an {@link Either}.
      *
      * Example:
@@ -597,19 +638,6 @@ public abstract class Validation<E, T> implements Serializable {
         return isValid()
                 ? Either.right(get())
                 : Either.left(getErrors());
-    }
-
-
-    /**
-     *    If the current {@link Validation} is an instance of {@link Valid} wraps the stored value into an {@link Optional} object.
-     * Otherwise return {@link Optional#empty()}
-     *
-     * @return {@link Optional}
-     */
-    public final Optional<T> toOptional() {
-        return isEmpty()
-                ? empty()
-                : of(get());
     }
 
 }

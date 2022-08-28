@@ -16,7 +16,7 @@ import java.util.Objects;
  * @param <E>
  *    Type of the {@link Invalid} value of an {@link Validation}
  */
-public class Invalid<E, T> extends Validation<E, T> implements Serializable {
+public final class Invalid<E, T> extends Validation<E, T> implements Serializable {
 
     private static final long serialVersionUID = 7753855546224405561L;
 

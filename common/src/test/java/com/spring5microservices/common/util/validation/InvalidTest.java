@@ -119,15 +119,15 @@ public class InvalidTest {
         Invalid<String, Integer> v3 = Invalid.of(List.of("There was an error"));
         return Stream.of(
                 //@formatter:off
-                //            tuple,   objectToCompare,   expectedResult
-                Arguments.of( v1,      null,              false ),
-                Arguments.of( v1,      emptyInstance,     false ),
-                Arguments.of( v1,      12,                false ),
-                Arguments.of( v2,      v2.getErrors(),    false ),
-                Arguments.of( v1,      v2,                false ),
-                Arguments.of( v1,      v1,                true ),
-                Arguments.of( v2,      v2,                true ),
-                Arguments.of( v1,      v3,                true )
+                //            invalid,   objectToCompare,   expectedResult
+                Arguments.of( v1,        null,              false ),
+                Arguments.of( v1,        emptyInstance,     false ),
+                Arguments.of( v1,        12,                false ),
+                Arguments.of( v2,        v2.getErrors(),    false ),
+                Arguments.of( v1,        v2,                false ),
+                Arguments.of( v1,        v1,                true ),
+                Arguments.of( v2,        v2,                true ),
+                Arguments.of( v1,        v3,                true )
         ); //@formatter:on
     }
 

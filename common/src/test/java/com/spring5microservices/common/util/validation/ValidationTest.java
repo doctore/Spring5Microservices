@@ -1,11 +1,13 @@
 package com.spring5microservices.common.util.validation;
 
+import com.spring5microservices.common.util.Try.Try;
 import com.spring5microservices.common.util.either.Either;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,20 +65,23 @@ public class ValidationTest {
 
 
     static Stream<Arguments> fromEitherTestCases() {
+        Either<String, Integer> emptyRightEither = Either.right(null);
         Either<String, Integer> rightEither = Either.right(11);
         Either<String, Integer> emptyLeftEither = Either.left(null);
         Either<String, Integer> leftEither = Either.left("There was a problem");
 
+        Validation<String, Integer> validFromEmptyEither = Validation.valid(null);
         Validation<String, Integer> validFromEither = Validation.valid(11);
         Validation<String, Integer> invalidFromEmptyEither = Validation.invalid(List.of());
         Validation<String, Integer> invalidFromEither = Validation.invalid(List.of("There was a problem"));
         return Stream.of(
                 //@formatter:off
-                //            either,            expectedException,                expectedResult
-                Arguments.of( null,              IllegalArgumentException.class,   null ),
-                Arguments.of( rightEither,       null,                             validFromEither ),
-                Arguments.of( emptyLeftEither,   null,                             invalidFromEmptyEither ),
-                Arguments.of( leftEither,        null,                             invalidFromEither )
+                //            either,            expectedResult
+                Arguments.of( null,              invalidFromEmptyEither ),
+                Arguments.of( emptyRightEither,  validFromEmptyEither ),
+                Arguments.of( rightEither,       validFromEither ),
+                Arguments.of( emptyLeftEither,   invalidFromEmptyEither ),
+                Arguments.of( leftEither,        invalidFromEither )
         ); //@formatter:on
     }
 
@@ -84,14 +89,38 @@ public class ValidationTest {
     @MethodSource("fromEitherTestCases")
     @DisplayName("fromEither: test cases")
     public <E, T> void fromEither_testCases(Either<? extends E, ? extends T> either,
-                                            Class<? extends Exception> expectedException,
                                             Validation<E, T>  expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> Validation.fromEither(either));
-        }
-        else {
-            assertEquals(expectedResult, Validation.fromEither(either));
-        }
+        assertEquals(expectedResult, Validation.fromEither(either));
+    }
+
+
+    static Stream<Arguments> fromTryTestCases() {
+        Try<Integer> emptySuccessTry = Try.success(null);
+        Try<Integer> successTry = Try.success(12);
+
+        IOException exception = new IOException();
+        Try<Integer> failureTry = Try.failure(exception);
+
+        Validation<Throwable, Integer> validFromEmptyTry = Validation.valid(null);
+        Validation<Throwable, Integer> validFromTry = Validation.valid(12);
+        Validation<String, Integer> invalidFromEmptyTry = Validation.invalid(List.of());
+        Validation<Throwable, Integer> invalidFromTry = Validation.invalid(List.of(exception));
+        return Stream.of(
+                //@formatter:off
+                //            t,                 expectedResult
+                Arguments.of( null,              invalidFromEmptyTry ),
+                Arguments.of( emptySuccessTry,   validFromEmptyTry ),
+                Arguments.of( successTry,        validFromTry ),
+                Arguments.of( failureTry,        invalidFromTry )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromTryTestCases")
+    @DisplayName("fromTry: test cases")
+    public <T> void fromTry_testCases(Try<? extends T> t,
+                                      Validation<Throwable, T>  expectedResult) {
+        assertEquals(expectedResult, Validation.fromTry(t));
     }
 
 
@@ -319,11 +348,11 @@ public class ValidationTest {
     @ParameterizedTest
     @MethodSource("mapWithBothMappersTestCases")
     @DisplayName("map: with both mappers test cases")
-    public <E, T, E2, T2> void bimap_testCases(Validation<E, T> validation,
-                                             Function<Collection<? super E>, Collection<E2>> mapperInvalid,
-                                             Function<? super T, ? extends T2> mapperValid,
-                                             Class<? extends Exception> expectedException,
-                                             Validation<E2, T2> expectedResult) {
+    public <E, T, E2, T2> void mapWithBothMappers_testCases(Validation<E, T> validation,
+                                                            Function<Collection<? super E>, Collection<E2>> mapperInvalid,
+                                                            Function<? super T, ? extends T2> mapperValid,
+                                                            Class<? extends Exception> expectedException,
+                                                            Validation<E2, T2> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.map(mapperInvalid, mapperValid));
         }
@@ -654,6 +683,28 @@ public class ValidationTest {
     }
 
 
+    static Stream<Arguments> toOptionalTestCases() {
+        Validation<String, Integer> validEmpty = Validation.valid(null);
+        Validation<String, Integer> validNotEmpty = Validation.valid(1);
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
+        return Stream.of(
+                //@formatter:off
+                //            validation,      expectedResult
+                Arguments.of( validEmpty,      empty() ),
+                Arguments.of( validNotEmpty,   of(validNotEmpty.get()) ),
+                Arguments.of( invalid,         empty() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toOptionalTestCases")
+    @DisplayName("toOptional: test cases")
+    public <E, T> void toOptional_testCases(Validation<E, T> validation,
+                                            Optional<Validation<E, T>> expectedResult) {
+        assertEquals(expectedResult, validation.toOptional());
+    }
+
+
     static Stream<Arguments> toEitherTestCases() {
         Validation<String, Integer> validEmpty = Validation.valid(null);
         Validation<String, Integer> validNotEmpty = Validation.valid(1);
@@ -675,28 +726,6 @@ public class ValidationTest {
     public <E, T> void toEither_testCases(Validation<E, T> validation,
                                           Either<Collection<E>, T> expectedResult) {
         assertEquals(expectedResult, validation.toEither());
-    }
-
-
-    static Stream<Arguments> toOptionalTestCases() {
-        Validation<String, Integer> validEmpty = Validation.valid(null);
-        Validation<String, Integer> validNotEmpty = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
-        return Stream.of(
-                //@formatter:off
-                //            validation,      expectedResult
-                Arguments.of( validEmpty,      empty() ),
-                Arguments.of( validNotEmpty,   of(validNotEmpty.get()) ),
-                Arguments.of( invalid,         empty() )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("toOptionalTestCases")
-    @DisplayName("toOptional: test cases")
-    public <E, T> void toOptional_testCases(Validation<E, T> validation,
-                                            Optional<Validation<E, T>> expectedResult) {
-        assertEquals(expectedResult, validation.toOptional());
     }
 
 }
