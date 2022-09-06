@@ -336,8 +336,7 @@ public class CollectionUtil {
                     Tuple.MAX_ALLOWED_TUPLE_ARITY >= propertyExtractors.length,
                     format("If propertyExtractors is not null then its size should be <= %s", Tuple.MAX_ALLOWED_TUPLE_ARITY)
             );
-        }
-        else {
+        } else {
             return finalCollectionFactory.get();
         }
         return ofNullable(sourceCollection)
@@ -1147,8 +1146,7 @@ public class CollectionUtil {
                 result.add(cloneQueue.poll());
             }
             return result;
-        }
-        else {
+        } else {
             return sourceCollection;
         }
     }

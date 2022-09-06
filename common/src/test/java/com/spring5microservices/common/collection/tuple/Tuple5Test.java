@@ -369,8 +369,7 @@ public class Tuple5Test {
                                                                                     Tuple5<U1, U2, U3, U4, U5> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.map(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.map(mapper));
         }
     }
@@ -410,8 +409,7 @@ public class Tuple5Test {
                                                                                Tuple5<U1, U2, U3, U4, U5> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.map(f1, f2, f3, f4, f5));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.map(f1, f2, f3, f4, f5));
         }
     }
@@ -439,8 +437,7 @@ public class Tuple5Test {
                                                        Tuple5<U, T2, T3, T4, T5> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.map1(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.map1(mapper));
         }
     }
@@ -468,8 +465,7 @@ public class Tuple5Test {
                                                        Tuple5<T1, U, T3, T4, T5> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.map2(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.map2(mapper));
         }
     }
@@ -497,8 +493,7 @@ public class Tuple5Test {
                                                        Tuple5<T1, T2, U, T4, T5> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.map3(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.map3(mapper));
         }
     }

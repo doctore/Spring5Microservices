@@ -694,8 +694,7 @@ public class MapUtil {
                         Tuple2<T, E> currentElement = Tuple.of(entry.getKey(), entry.getValue());
                         if (Objects.isNull(largestElement)) {
                             largestElement = currentElement;
-                        }
-                        else {
+                        } else {
                             largestElement =
                                     0 > comparator.compare(largestElement, currentElement)
                                             ? currentElement
@@ -755,8 +754,7 @@ public class MapUtil {
                         Tuple2<T, E> currentElement = Tuple.of(entry.getKey(), entry.getValue());
                         if (Objects.isNull(smallestElement)) {
                             smallestElement = currentElement;
-                        }
-                        else {
+                        } else {
                             smallestElement =
                                     0 < comparator.compare(smallestElement, currentElement)
                                             ? currentElement

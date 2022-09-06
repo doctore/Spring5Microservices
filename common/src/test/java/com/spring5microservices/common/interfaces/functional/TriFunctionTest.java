@@ -68,8 +68,7 @@ public class TriFunctionTest {
                                                   Z expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> triFunction.andThen(afterFunction).apply(t, u, v));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, triFunction.andThen(afterFunction).apply(t, u, v));
         }
     }

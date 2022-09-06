@@ -52,8 +52,7 @@ public class NumberUtilTest {
                                                                CompareToResult expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> NumberUtil.compare(one, two, numberOfDecimals));
-        }
-        else {
+        } else {
             int result = NumberUtil.compare(one, two, numberOfDecimals);
             switch (expectedResult) {
                 case LESS_THAN_ZERO: assertTrue(0 > result); break;
@@ -104,8 +103,7 @@ public class NumberUtilTest {
                                                          CompareToResult expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> NumberUtil.compare(one, two, numberOfDecimals, roundingMode));
-        }
-        else {
+        } else {
             int result = NumberUtil.compare(one, two, numberOfDecimals, roundingMode);
             switch (expectedResult) {
                 case LESS_THAN_ZERO: assertTrue(0 > result); break;
@@ -138,8 +136,7 @@ public class NumberUtilTest {
                                                                  Optional<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> fromString(potentialNumber, clazzReturnedInstance));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, fromString(potentialNumber, clazzReturnedInstance));
         }
     }

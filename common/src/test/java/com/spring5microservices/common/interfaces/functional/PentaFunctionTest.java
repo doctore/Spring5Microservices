@@ -72,8 +72,7 @@ public class PentaFunctionTest {
                                                         Z expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> pentaFunction.andThen(afterFunction).apply(t, u, v, w, x));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, pentaFunction.andThen(afterFunction).apply(t, u, v, w, x));
         }
     }
