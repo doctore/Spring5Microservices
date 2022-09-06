@@ -51,8 +51,7 @@ public class StringUtilTest {
                                               Optional<String> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, abbreviateMiddle(sourceString, putInTheMiddle, sizeOfEveryChunk));
         }
     }

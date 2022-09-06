@@ -44,8 +44,7 @@ public class RightTest {
                                     Right<E, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Right.of(value));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, Right.of(value));
         }
     }

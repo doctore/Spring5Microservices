@@ -70,8 +70,7 @@ public class QuadFunctionTest {
                                                      Z expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> quadFunction.andThen(afterFunction).apply(t, u, v, w));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, quadFunction.andThen(afterFunction).apply(t, u, v, w));
         }
     }

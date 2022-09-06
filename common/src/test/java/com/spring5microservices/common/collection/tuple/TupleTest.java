@@ -47,8 +47,7 @@ public class TupleTest {
                                            Tuple expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.globalAppend(value));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.globalAppend(value));
         }
     }

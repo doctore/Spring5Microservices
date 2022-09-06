@@ -111,8 +111,7 @@ public class MapUtilTest {
                             sourceMap, filterPredicate, defaultFunction, orElseFunction
                     )
             );
-        }
-        else {
+        } else {
             assertEquals(expectedResult,
                     applyOrElse(
                             sourceMap, filterPredicate, defaultFunction, orElseFunction
@@ -184,8 +183,7 @@ public class MapUtilTest {
                             sourceMap, filterPredicate, defaultFunction, orElseFunction, mapFactory
                     )
             );
-        }
-        else {
+        } else {
             assertEquals(expectedResult,
                     applyOrElse(
                             sourceMap, filterPredicate, defaultFunction, orElseFunction, mapFactory
@@ -240,8 +238,7 @@ public class MapUtilTest {
                                                         Map<T, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceMap, filterPredicate, mapFunction));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction));
         }
     }
@@ -297,8 +294,7 @@ public class MapUtilTest {
                                                          Map<T, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceMap, filterPredicate, mapFunction, mapFactory));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction, mapFactory));
         }
     }
@@ -429,8 +425,7 @@ public class MapUtilTest {
                                              R expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> foldLeft(sourceMap, initialValue, accumulator));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, foldLeft(sourceMap, initialValue, accumulator));
         }
     }
@@ -604,8 +599,7 @@ public class MapUtilTest {
                                                                    Map<R, List<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceMap, discriminatorKey, valueMapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, groupMap(sourceMap, discriminatorKey, valueMapper));
         }
     }
@@ -655,8 +649,7 @@ public class MapUtilTest {
                                                              Map<R, Collection<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceMap, discriminatorKey, valueMapper, collectionFactory));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, groupMap(sourceMap, discriminatorKey, valueMapper, collectionFactory));
         }
     }
@@ -701,8 +694,7 @@ public class MapUtilTest {
                                                       Map<R, V> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMapReduce(sourceMap, discriminatorKey, valueMapper, reduceValues));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, groupMapReduce(sourceMap, discriminatorKey, valueMapper, reduceValues));
         }
     }
@@ -742,8 +734,7 @@ public class MapUtilTest {
                                                        Map<R, V> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> map(sourceMap, mapFunction));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, map(sourceMap, mapFunction));
         }
     }
@@ -787,8 +778,7 @@ public class MapUtilTest {
                                                         Map<R, V> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> map(sourceMap, mapFunction, mapFactory));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, map(sourceMap, mapFunction, mapFactory));
         }
     }
@@ -826,8 +816,7 @@ public class MapUtilTest {
                                                           Map<T, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> mapValues(sourceMap, mapFunction));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, mapValues(sourceMap, mapFunction));
         }
     }
@@ -869,8 +858,7 @@ public class MapUtilTest {
                                                            Map<T, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> mapValues(sourceMap, mapFunction, mapFactory));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, mapValues(sourceMap, mapFunction, mapFactory));
         }
     }
@@ -913,8 +901,7 @@ public class MapUtilTest {
                                      Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> max(sourceMap, comparator));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, max(sourceMap, comparator));
         }
     }
@@ -950,8 +937,7 @@ public class MapUtilTest {
                                           Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> maxValue(sourceMap, comparator));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, maxValue(sourceMap, comparator));
         }
     }
@@ -994,8 +980,7 @@ public class MapUtilTest {
                                      Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> min(sourceMap, comparator));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, min(sourceMap, comparator));
         }
     }
@@ -1031,8 +1016,7 @@ public class MapUtilTest {
                                           Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> minValue(sourceMap, comparator));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, minValue(sourceMap, comparator));
         }
     }
@@ -1236,8 +1220,7 @@ public class MapUtilTest {
                                        Map<T, E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> slice(sourceMap, from, until));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, slice(sourceMap, from, until));
         }
     }

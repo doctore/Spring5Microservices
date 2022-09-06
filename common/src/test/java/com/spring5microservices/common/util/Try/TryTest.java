@@ -92,8 +92,7 @@ public class TryTest {
                                       Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Try.failure(exception));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, Try.failure(exception));
         }
     }
@@ -128,9 +127,12 @@ public class TryTest {
         return Stream.of(
                 //@formatter:off
                 //            mapperFailure,                      mapperSuccess,                      tries,                                        expectedException,                expectedResult
-                Arguments.of( null,                               null,                               null,                                         IllegalArgumentException.class,   null ),
-                Arguments.of( alwaysReturnLastThrowable,          null,                               null,                                         IllegalArgumentException.class,   null ),
-                Arguments.of( null,                               sumAll,                             null,                                         IllegalArgumentException.class,   null ),
+                Arguments.of( null,                               null,                               null,                                         null,                             Success.empty() ),
+                Arguments.of( alwaysReturnLastThrowable,          null,                               null,                                         null,                             Success.empty() ),
+                Arguments.of( null,                               sumAll,                             null,                                         null,                             Success.empty() ),
+                Arguments.of( null,                               null,                               new Try[] { success1 },                       IllegalArgumentException.class,   null ),
+                Arguments.of( alwaysReturnLastThrowable,          null,                               new Try[] { success1 },                       IllegalArgumentException.class,   null ),
+                Arguments.of( null,                               sumAll,                             new Try[] { success1 },                       IllegalArgumentException.class,   null ),
                 Arguments.of( alwaysReturnLastThrowable,          sumAll,                             null,                                         null,                             Success.empty() ),
                 Arguments.of( alwaysReturnLastThrowable,          sumAll,                             new Try[] {},                                 null,                             Success.empty() ),
                 Arguments.of( alwaysReturnLastThrowable,          sumAll,                             new Try[] { success1 },                       null,                             success1 ),
@@ -154,8 +156,7 @@ public class TryTest {
                                       Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Try.combine(mapperFailure, mapperSuccess, tries));
-        }
-        else {
+        } else {
             Try<T> result = Try.combine(mapperFailure, mapperSuccess, tries);
             compareTry(expectedResult, result);
         }
@@ -185,7 +186,7 @@ public class TryTest {
         return Stream.of(
                 //@formatter:off
                 //            mapperSuccess,                      supplier1,     supplier2,     supplier3,     expectedException,                expectedResult
-                Arguments.of( null,                               null,          null,          null,          IllegalArgumentException.class,   null ),
+                Arguments.of( null,                               null,          null,          null,          null,                             Success.empty() ),
                 Arguments.of( null,                               supSuccess1,   supSuccess2,   supFailure1,   IllegalArgumentException.class,   null ),
                 Arguments.of( sumAll,                             null,          null,          null,          null,                             Success.empty() ),
                 Arguments.of( sumAll,                             supSuccess1,   null,          null,          null,                             success1 ),
@@ -209,19 +210,15 @@ public class TryTest {
                                                   Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Try.combineGetFirstFailure(mapperSuccess, supplier1));
-        }
-        else {
+        } else {
             Try<T> result;
             if (Objects.isNull(supplier1) && Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
                 result = Try.combineGetFirstFailure(mapperSuccess);
-            }
-            else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
+            } else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
                 result = Try.combineGetFirstFailure(mapperSuccess, supplier1);
-            }
-            else if (Objects.isNull(supplier3)) {
+            } else if (Objects.isNull(supplier3)) {
                 result = Try.combineGetFirstFailure(mapperSuccess, supplier1, supplier2);
-            }
-            else {
+            } else {
                 result = Try.combineGetFirstFailure(mapperSuccess, supplier1, supplier2, supplier3);
             }
             compareTry(expectedResult, result);
@@ -254,8 +251,7 @@ public class TryTest {
         if (t.isSuccess()) {
             compareFailureTry(expectedResult, result);
             assertEquals(UnsupportedOperationException.class, result.getException().getClass());
-        }
-        else {
+        } else {
             assertEquals(expectedResult, result);
         }
     }
@@ -333,8 +329,7 @@ public class TryTest {
                                                       Try<U> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.map(mapper));
-        }
-        else {
+        } else {
             Try<U> result = t.map(mapper);
             compareTry(expectedResult, result);
         }
@@ -378,8 +373,7 @@ public class TryTest {
                                          Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.mapFailure((mapper)));
-        }
-        else {
+        } else {
             Try<T> result = t.mapFailure(mapper);
             compareTry(expectedResult, result);
         }
@@ -438,8 +432,7 @@ public class TryTest {
                                                     Try<U> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.map(mapperFailure, mapperSuccess));
-        }
-        else {
+        } else {
             Try<U> result = t.map(mapperFailure, mapperSuccess);
             compareTry(expectedResult, result);
         }
@@ -481,8 +474,7 @@ public class TryTest {
                                          Try<U> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.flatMap(mapper));
-        }
-        else {
+        } else {
             Try<U> result = t.flatMap(mapper);
             compareTry(expectedResult, result);
         }
@@ -543,8 +535,7 @@ public class TryTest {
                                  Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.ap(tryParam, mapperFailure, mapperSuccess));
-        }
-        else {
+        } else {
             Try<T> result = t.ap(tryParam, mapperFailure, mapperSuccess);
             compareTry(expectedResult, result);
         }
@@ -589,8 +580,7 @@ public class TryTest {
                                       U expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.fold(mapperFailure, mapperSuccess));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, t.fold(mapperFailure, mapperSuccess));
         }
     }
@@ -728,8 +718,7 @@ public class TryTest {
         Try<T> result = t.orElse(other);
         if (null != expectedResult) {
             compareTry(expectedResult, result);
-        }
-        else {
+        } else {
             assertEquals(expectedResult, result);
         }
     }
@@ -771,8 +760,7 @@ public class TryTest {
                                                  Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.orElse(supplier));
-        }
-        else {
+        } else {
             Try<T> result = t.orElse(supplier);
             compareTry(expectedResult, result);
         }
@@ -815,8 +803,7 @@ public class TryTest {
                                       Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.recover(mapperFailure));
-        }
-        else {
+        } else {
             Try<T> result = t.recover(mapperFailure);
             compareTry(expectedResult, result);
         }
@@ -859,8 +846,7 @@ public class TryTest {
                                           Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> t.recoverWith(mapperFailure));
-        }
-        else {
+        } else {
             Try<T> result = t.recoverWith(mapperFailure);
             compareTry(expectedResult, result);
         }
@@ -967,8 +953,7 @@ public class TryTest {
                                 Try<T> result) {
         if (!expectedResult.isSuccess()) {
             compareFailureTry(result, expectedResult);
-        }
-        else {
+        } else {
             assertEquals(expectedResult, result);
         }
     }

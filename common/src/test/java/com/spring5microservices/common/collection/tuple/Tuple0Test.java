@@ -99,8 +99,7 @@ public class Tuple0Test {
                                     U expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> instance().apply(f));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, instance().apply(f));
         }
     }

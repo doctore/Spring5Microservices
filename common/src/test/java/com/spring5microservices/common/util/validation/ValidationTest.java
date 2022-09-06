@@ -189,14 +189,11 @@ public class ValidationTest {
         Validation<E, T> result;
         if (Objects.isNull(supplier1) && Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
             result = Validation.combineGetFirstInvalid();
-        }
-        else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
+        } else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
             result = Validation.combineGetFirstInvalid(supplier1);
-        }
-        else if (Objects.isNull(supplier3)) {
+        } else if (Objects.isNull(supplier3)) {
             result = Validation.combineGetFirstInvalid(supplier1, supplier2);
-        }
-        else {
+        } else {
             result = Validation.combineGetFirstInvalid(supplier1, supplier2, supplier3);
         }
         assertEquals(expectedResult, result);
@@ -261,8 +258,7 @@ public class ValidationTest {
                                               Validation<E, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.filterOrElse(predicate, zero));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.filterOrElse(predicate, zero));
         }
     }
@@ -291,8 +287,7 @@ public class ValidationTest {
                                                        Validation<U, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.map(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.map(mapper));
         }
     }
@@ -321,8 +316,7 @@ public class ValidationTest {
                                              Validation<U, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.mapError(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.mapError(mapper));
         }
     }
@@ -355,8 +349,7 @@ public class ValidationTest {
                                                             Validation<E2, T2> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.map(mapperInvalid, mapperValid));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.map(mapperInvalid, mapperValid));
         }
     }
@@ -385,8 +378,7 @@ public class ValidationTest {
                                             Validation<E, U> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.flatMap(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.flatMap(mapper));
         }
     }
@@ -458,8 +450,7 @@ public class ValidationTest {
                                          U expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.fold(mapperInvalid, mapperValid));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.fold(mapperInvalid, mapperValid));
         }
     }
@@ -594,8 +585,7 @@ public class ValidationTest {
                                                                      T expectedResult) throws Throwable {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.getOrElseThrow(exceptionSupplier));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.getOrElseThrow(exceptionSupplier));
         }
     }
@@ -654,8 +644,7 @@ public class ValidationTest {
                                                     Validation<E, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.orElse(supplier));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, validation.orElse(supplier));
         }
     }

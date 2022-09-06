@@ -74,9 +74,12 @@ public class EitherTest {
         return Stream.of(
                 //@formatter:off
                 //            mapperLeft,      mapperRight,   eithers,                                  expectedException,                expectedResult
-                Arguments.of( null,            null,          null,                                     IllegalArgumentException.class,   null ),
-                Arguments.of( concatStrings,   null,          null,                                     IllegalArgumentException.class,   null ),
-                Arguments.of( null,            addIntegers,   null,                                     IllegalArgumentException.class,   null ),
+                Arguments.of( null,            null,          null,                                     null,                             Right.empty() ),
+                Arguments.of( concatStrings,   null,          null,                                     null,                             Right.empty() ),
+                Arguments.of( null,            addIntegers,   null,                                     null,                             Right.empty() ),
+                Arguments.of( null,            null,          new Either[] { right1 },                  IllegalArgumentException.class,   null ),
+                Arguments.of( concatStrings,   null,          new Either[] { right1 },                  IllegalArgumentException.class,   null ),
+                Arguments.of( null,            addIntegers,   new Either[] { right1 },                  IllegalArgumentException.class,   null ),
                 Arguments.of( concatStrings,   addIntegers,   null,                                     null,                             Right.empty() ),
                 Arguments.of( concatStrings,   addIntegers,   new Either[] {},                          null,                             Right.empty() ),
                 Arguments.of( concatStrings,   addIntegers,   new Either[] { right1 },                  null,                             right1 ),
@@ -98,8 +101,7 @@ public class EitherTest {
                                          Either<L, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Either.combine(mapperLeft, mapperRight, eithers));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, Either.combine(mapperLeft, mapperRight, eithers));
         }
     }
@@ -121,7 +123,7 @@ public class EitherTest {
         return Stream.of(
                 //@formatter:off
                 //            mapperRight,   supplier1,   supplier2,   supplier3,   expectedException,                expectedResult
-                Arguments.of( null,          null,        null,        null,        IllegalArgumentException.class,   null ),
+                Arguments.of( null,          null,        null,        null,        null,                             Right.empty() ),
                 Arguments.of( null,          supRight1,   supRight2,   supLeft1,    IllegalArgumentException.class,   null ),
                 Arguments.of( addIntegers,   null,        null,        null,        null,                             Right.empty() ),
                 Arguments.of( addIntegers,   supRight1,   null,        null,        null,                             right1 ),
@@ -144,19 +146,15 @@ public class EitherTest {
                                                      Either<L, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Either.combineGetFirstLeft(mapperRight, supplier1));
-        }
-        else {
+        } else {
             Either<L, R> result;
             if (Objects.isNull(supplier1) && Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
                 result = Either.combineGetFirstLeft(mapperRight);
-            }
-            else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
+            } else if (Objects.isNull(supplier2) && Objects.isNull(supplier3)) {
                 result = Either.combineGetFirstLeft(mapperRight, supplier1);
-            }
-            else if (Objects.isNull(supplier3)) {
+            } else if (Objects.isNull(supplier3)) {
                 result = Either.combineGetFirstLeft(mapperRight, supplier1, supplier2);
-            }
-            else {
+            } else {
                 result = Either.combineGetFirstLeft(mapperRight, supplier1, supplier2, supplier3);
             }
             assertEquals(expectedResult, result);
@@ -249,8 +247,7 @@ public class EitherTest {
                                               Either<L, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.filterOrElse(predicate, zero));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.filterOrElse(predicate, zero));
         }
     }
@@ -279,8 +276,7 @@ public class EitherTest {
                                                        Either<L, U> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.map(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.map(mapper));
         }
     }
@@ -309,8 +305,7 @@ public class EitherTest {
                                             Either<U, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.mapLeft(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.mapLeft(mapper));
         }
     }
@@ -343,8 +338,7 @@ public class EitherTest {
                                                             Either<L2, R2>  expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.map(mapperLeft, mapperRight));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.map(mapperLeft, mapperRight));
         }
     }
@@ -373,8 +367,7 @@ public class EitherTest {
                                             Either<L, U> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.flatMap(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.flatMap(mapper));
         }
     }
@@ -420,8 +413,7 @@ public class EitherTest {
                                     Either<L, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.ap(eitherParam, mapperLeft, mapperRight));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.ap(eitherParam, mapperLeft, mapperRight));
         }
     }
@@ -456,8 +448,7 @@ public class EitherTest {
                                          U expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.fold(mapperLeft, mapperRight));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.fold(mapperLeft, mapperRight));
         }
     }
@@ -592,8 +583,7 @@ public class EitherTest {
                                                                      R expectedResult) throws Throwable {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.getOrElseThrow(exceptionSupplier));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.getOrElseThrow(exceptionSupplier));
         }
     }
@@ -652,8 +642,7 @@ public class EitherTest {
                                                     Either<L, R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.orElse(supplier));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, either.orElse(supplier));
         }
     }

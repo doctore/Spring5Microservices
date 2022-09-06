@@ -207,8 +207,7 @@ public class Tuple1Test {
                                        Tuple1<U1> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.map(mapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.map(mapper));
         }
     }
@@ -236,8 +235,7 @@ public class Tuple1Test {
                                         U expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> tuple.apply(f));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, tuple.apply(f));
         }
     }
