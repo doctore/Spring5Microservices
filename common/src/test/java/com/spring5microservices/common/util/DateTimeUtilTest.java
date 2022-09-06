@@ -59,8 +59,7 @@ public class DateTimeUtilTest {
                                                Class<? extends Exception> expectedException, CompareToResult expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> DateTimeUtil.compare(one, two, epsilon, timeUnit));
-        }
-        else {
+        } else {
             int result = DateTimeUtil.compare(one, two, epsilon, timeUnit);
             switch (expectedResult) {
                 case LESS_THAN_ZERO: assertTrue(0 > result); break;

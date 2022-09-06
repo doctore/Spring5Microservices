@@ -44,8 +44,7 @@ public class ValidTest {
                                     Valid<E, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Valid.of(value));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, Valid.of(value));
         }
     }

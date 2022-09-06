@@ -49,8 +49,7 @@ public class InvalidTest {
                                     Invalid<E, T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Invalid.of(value));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, Invalid.of(value));
         }
     }

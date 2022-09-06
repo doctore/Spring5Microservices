@@ -122,17 +122,18 @@ public abstract class Either<L, R> implements Serializable {
      *
      * @return {@link Either}
      *
-     * @throws IllegalArgumentException if {@code mapperLeft} or {@code mapperRight} is {@code null}
+     * @throws IllegalArgumentException if {@code mapperLeft} or {@code mapperRight} is {@code null} and {@code eithers}
+     *                                  has elements.
      */
     @SafeVarargs
     public static <L, R> Either<L, R> combine(final BiFunction<? super L, ? super L, ? extends L> mapperLeft,
                                               final BiFunction<? super R, ? super R, ? extends R> mapperRight,
                                               final Either<L, R>... eithers) {
-        Assert.notNull(mapperLeft, "mapperLeft must be not null");
-        Assert.notNull(mapperRight, "mapperRight must be not null");
         if (ObjectUtils.isEmpty(eithers)) {
             return Right.empty();
         }
+        Assert.notNull(mapperLeft, "mapperLeft must be not null");
+        Assert.notNull(mapperRight, "mapperRight must be not null");
         Either<L, R> result = eithers[0];
         for (int i = 1; i < eithers.length; i++) {
             result = result.ap(
@@ -164,15 +165,15 @@ public abstract class Either<L, R> implements Serializable {
      *
      * @return {@link Either}
      *
-     * @throws IllegalArgumentException if {@code mapperRight} is {@code null}
+     * @throws IllegalArgumentException if {@code mapperRight} is {@code null} and {@code suppliers} has elements.
      */
     @SafeVarargs
     public static  <L, R> Either<L, R> combineGetFirstLeft(final BiFunction<? super R, ? super R, ? extends R> mapperRight,
                                                            final Supplier<Either<L, R>>... suppliers) {
-        Assert.notNull(mapperRight, "mapperRight must be not null");
         if (ObjectUtils.isEmpty(suppliers)) {
             return Right.empty();
         }
+        Assert.notNull(mapperRight, "mapperRight must be not null");
         Either<L, R> result = suppliers[0].get();
         for (int i = 1; i < suppliers.length; i++) {
             result = result.ap(
@@ -294,8 +295,7 @@ public abstract class Either<L, R> implements Serializable {
                             get()
                     )
             );
-        }
-        else {
+        } else {
             return left(getLeft());
         }
     }
@@ -320,8 +320,7 @@ public abstract class Either<L, R> implements Serializable {
                             getLeft()
                     )
             );
-        }
-        else {
+        } else {
             return right(get());
         }
     }
@@ -356,8 +355,7 @@ public abstract class Either<L, R> implements Serializable {
                             get()
                     )
             );
-        }
-        else {
+        } else {
             Assert.notNull(mapperLeft, "mapperLeft must be not null");
             return left(
                     mapperLeft.apply(
@@ -433,8 +431,7 @@ public abstract class Either<L, R> implements Serializable {
             else {
                 return left(either.getLeft());
             }
-        }
-        else {
+        } else {
             // Due to only this is Left, returns this
             if (either.isRight()) {
                 return left(getLeft());
@@ -477,8 +474,7 @@ public abstract class Either<L, R> implements Serializable {
         if (isRight()) {
             Assert.notNull(mapperRight, "mapperRight must be not null");
             return mapperRight.apply(get());
-        }
-        else {
+        } else {
             Assert.notNull(mapperLeft, "mapperLeft must be not null");
             return mapperLeft.apply(getLeft());
         }
@@ -620,8 +616,7 @@ public abstract class Either<L, R> implements Serializable {
     public final Either<R, L> swap() {
         if (isRight()) {
             return left(get());
-        }
-        else {
+        } else {
             return right(getLeft());
         }
     }

@@ -40,8 +40,7 @@ public class EncryptorServiceTest {
     public void encrypt_testCases(String toEncrypt, String password, Class<? extends Exception> expectedException) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> service.encrypt(toEncrypt, password));
-        }
-        else {
+        } else {
             assertNotNull(service.encrypt(toEncrypt, password));
         }
     }
@@ -68,8 +67,7 @@ public class EncryptorServiceTest {
                                   String expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> service.decrypt(toDecrypt, password));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, service.decrypt(toDecrypt, password));
         }
     }

@@ -287,8 +287,7 @@ public abstract class Validation<E, T> implements Serializable {
                             get()
                     )
             );
-        }
-        else {
+        } else {
             return invalid(getErrors());
         }
     }
@@ -313,8 +312,7 @@ public abstract class Validation<E, T> implements Serializable {
                             getErrors()
                     )
             );
-        }
-        else {
+        } else {
             return valid(get());
         }
     }
@@ -349,8 +347,7 @@ public abstract class Validation<E, T> implements Serializable {
                             get()
                     )
             );
-        }
-        else {
+        } else {
             Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
             return invalid(
                     mapperInvalid.apply(
@@ -412,8 +409,7 @@ public abstract class Validation<E, T> implements Serializable {
                 final Collection<E> errors = validation.getErrors();
                 return invalid(errors);
             }
-        }
-        else {
+        } else {
             // Due to only this is Invalid, return only its errors
             if (validation.isValid()) {
                 final Collection<E> errors = this.getErrors();
@@ -453,8 +449,7 @@ public abstract class Validation<E, T> implements Serializable {
         if (isValid()) {
             Assert.notNull(mapperValid, "mapperValid must be not null");
             return mapperValid.apply(get());
-        }
-        else {
+        } else {
             Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
             return mapperInvalid.apply(getErrors());
         }

@@ -113,8 +113,7 @@ public class CollectionUtilTest {
                             sourceCollection, filterPredicate, defaultFunction, orElseFunction
                     )
             );
-        }
-        else {
+        } else {
             assertEquals(expectedResult,
                     applyOrElse(
                             sourceCollection, filterPredicate, defaultFunction, orElseFunction
@@ -175,8 +174,7 @@ public class CollectionUtilTest {
                             sourceCollection, filterPredicate, defaultFunction, orElseFunction, collectionFactory
                     )
             );
-        }
-        else {
+        } else {
             assertEquals(expectedResult,
                     applyOrElse(
                             sourceCollection, filterPredicate, defaultFunction, orElseFunction, collectionFactory
@@ -235,8 +233,7 @@ public class CollectionUtilTest {
                                                             List<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceCollection, filterPredicate, mapFunction));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, collect(sourceCollection, filterPredicate, mapFunction));
         }
     }
@@ -279,8 +276,7 @@ public class CollectionUtilTest {
                                                       Collection<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceCollection, filterPredicate, mapFunction, collectionFactory));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, collect(sourceCollection, filterPredicate, mapFunction, collectionFactory));
         }
     }
@@ -403,8 +399,7 @@ public class CollectionUtilTest {
 
         if (null != expectedException) {
             assertThrows(expectedException, () -> collectProperties(sourceCollection, finalPropertyExtractors));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, collectProperties(sourceCollection, finalPropertyExtractors));
         }
     }
@@ -477,8 +472,7 @@ public class CollectionUtilTest {
 
         if (null != expectedException) {
             assertThrows(expectedException, () -> collectProperties(sourceCollection, collectionFactory, finalPropertyExtractors));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, collectProperties(sourceCollection, collectionFactory, finalPropertyExtractors));
         }
     }
@@ -644,8 +638,7 @@ public class CollectionUtilTest {
                                           E expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> foldLeft(sourceCollection, initialValue, accumulator));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, foldLeft(sourceCollection, initialValue, accumulator));
         }
     }
@@ -685,8 +678,7 @@ public class CollectionUtilTest {
                                            E expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> foldRight(sourceCollection, initialValue, accumulator));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, foldRight(sourceCollection, initialValue, accumulator));
         }
     }
@@ -724,8 +716,7 @@ public class CollectionUtilTest {
                                                                 Map<K, List<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey, valueMapper));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, groupMap(sourceCollection, discriminatorKey, valueMapper));
         }
     }
@@ -772,8 +763,7 @@ public class CollectionUtilTest {
                                                           Map<K, Collection<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey, valueMapper, collectionFactory));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, groupMap(sourceCollection, discriminatorKey, valueMapper, collectionFactory));
         }
     }
@@ -814,8 +804,7 @@ public class CollectionUtilTest {
                                                    Map<K, V> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMapReduce(sourceCollection, discriminatorKey, valueMapper, reduceValues));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, groupMapReduce(sourceCollection, discriminatorKey, valueMapper, reduceValues));
         }
     }
@@ -846,8 +835,7 @@ public class CollectionUtilTest {
                                       T expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> iterate(initialValue, applyFunction, untilPredicate));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, iterate(initialValue, applyFunction, untilPredicate));
         }
     }
@@ -925,8 +913,7 @@ public class CollectionUtilTest {
                                     List<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> slice(sourceCollection, from, until));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, slice(sourceCollection, from, until));
         }
     }
@@ -966,8 +953,7 @@ public class CollectionUtilTest {
                                       List<List<T>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> sliding(sourceCollection, size));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, sliding(sourceCollection, size));
         }
     }
@@ -1006,8 +992,7 @@ public class CollectionUtilTest {
                                     List<List<T>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> split(sourceCollection, size));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, split(sourceCollection, size));
         }
     }

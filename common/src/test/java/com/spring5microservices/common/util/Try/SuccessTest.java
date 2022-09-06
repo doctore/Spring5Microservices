@@ -44,8 +44,7 @@ public class SuccessTest {
                                  Success<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Success.of(value));
-        }
-        else {
+        } else {
             assertEquals(expectedResult, Success.of(value));
         }
     }

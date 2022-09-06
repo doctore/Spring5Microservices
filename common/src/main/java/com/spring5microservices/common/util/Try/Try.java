@@ -137,17 +137,18 @@ public abstract class Try<T> implements Serializable {
      *
      * @return {@link Try}
      *
-     * @throws IllegalArgumentException if {@code mapperFailure} or {@code mapperSuccess} is {@code null}
+     * @throws IllegalArgumentException if {@code mapperFailure} or {@code mapperSuccess} is {@code null} and {@code tries}
+     *                                  has elements.
      */
     @SafeVarargs
     public static <T> Try<T> combine(final BiFunction<? super Throwable, ? super Throwable, ? extends Throwable> mapperFailure,
                                      final BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
                                      final Try<T>... tries) {
-        Assert.notNull(mapperFailure, "mapperFailure must be not null");
-        Assert.notNull(mapperSuccess, "mapperSuccess must be not null");
         if (ObjectUtils.isEmpty(tries)) {
             return Success.empty();
         }
+        Assert.notNull(mapperFailure, "mapperFailure must be not null");
+        Assert.notNull(mapperSuccess, "mapperSuccess must be not null");
         Try<T> result = tries[0];
         for (int i = 1; i < tries.length; i++) {
             result = result.ap(
@@ -179,15 +180,15 @@ public abstract class Try<T> implements Serializable {
      *
      * @return {@link Try}
      *
-     * @throws IllegalArgumentException if {@code mapperSuccess} is {@code null}
+     * @throws IllegalArgumentException if {@code mapperSuccess} is {@code null} and {@code suppliers} has elements.
      */
     @SafeVarargs
     public static  <T> Try<T> combineGetFirstFailure(final BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
                                                      final Supplier<Try<T>>... suppliers) {
-        Assert.notNull(mapperSuccess, "mapperSuccess must be not null");
         if (ObjectUtils.isEmpty(suppliers)) {
             return Success.empty();
         }
+        Assert.notNull(mapperSuccess, "mapperSuccess must be not null");
         Try<T> result = suppliers[0].get();
         for (int i = 1; i < suppliers.length; i++) {
             result = result.ap(
@@ -233,8 +234,7 @@ public abstract class Try<T> implements Serializable {
     public final Try<T> filter(final Predicate<? super T> predicate) {
         if (!isSuccess()) {
             return this;
-        }
-        else {
+        } else {
             return filterTry(
                     predicate,
                     () -> new NoSuchElementException("Predicate does not hold for " + get())
@@ -260,8 +260,7 @@ public abstract class Try<T> implements Serializable {
         if (isSuccess()) {
             Assert.notNull(mapper, "mapper must be not null");
             return mapTry(mapper);
-        }
-        else {
+        } else {
             return failure(getException());
         }
     }
@@ -284,8 +283,7 @@ public abstract class Try<T> implements Serializable {
         if (!isSuccess()) {
             Assert.notNull(mapper, "mapper must be not null");
             return mapFailureTry(mapper);
-        }
-        else {
+        } else {
             return success(get());
         }
     }
@@ -320,8 +318,7 @@ public abstract class Try<T> implements Serializable {
         if (isSuccess()) {
             Assert.notNull(mapperSuccess, "mapperSuccess must be not null");
             return mapTry(mapperSuccess);
-        }
-        else {
+        } else {
             Assert.notNull(mapperFailure, "mapperFailure must be not null");
             return (Try<U>) mapFailureTry(mapperFailure);
         }
@@ -392,8 +389,7 @@ public abstract class Try<T> implements Serializable {
             else {
                 return failure(t.getException());
             }
-        }
-        else {
+        } else {
             // Due to only this is Failure, returns this
             if (t.isSuccess()) {
                 return failure(getException());
@@ -439,8 +435,7 @@ public abstract class Try<T> implements Serializable {
             } catch (Throwable t) {
                 return mapperFailure.apply(t);
             }
-        }
-        else {
+        } else {
             Assert.notNull(mapperFailure, "mapperFailure must be not null");
             return mapperFailure.apply(getException());
         }
@@ -673,8 +668,7 @@ public abstract class Try<T> implements Serializable {
         try {
             if (Objects.isNull(predicate) || predicate.test(get())) {
                 return this;
-            }
-            else {
+            } else {
                 return failure(throwableSupplier.get());
             }
         } catch (Throwable t) {

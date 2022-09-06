@@ -34,11 +34,11 @@ import static java.util.Optional.ofNullable;
  *  Advantages:
  *
  *     1. We can manage when the {@link Supplier} is invoked internally, avoiding automatic invocation of a functionality
- *       with a maybe not good performance.
+ *        with a maybe not good performance.
  *
  *  Disadvantages:
  *
- *     1. If we need to result of {@link Supplier} if different parts of the code, it should be managed in a manual way
+ *     1. If we need the result of {@link Supplier} in different parts of the code, it should be managed in a manual way
  *        (for example, using a variable as cache)
  *
  *     2. If we used a variable because of point 1. how can we distinguish if {@link Supplier} was invoked or if it
@@ -78,8 +78,7 @@ public final class Lazy<T> implements Supplier<T> {
         Assert.notNull(supplier, "supplier must be not null");
         if (supplier instanceof Lazy) {
             return (Lazy<T>) supplier;
-        }
-        else {
+        } else {
             return new Lazy<>(supplier);
         }
     }
@@ -111,11 +110,9 @@ public final class Lazy<T> implements Supplier<T> {
     public boolean equals(Object o) {
         if (o == this) {
             return true;
-        }
-        else if (!(o instanceof Lazy)) {
+        } else if (!(o instanceof Lazy)) {
             return false;
-        }
-        else {
+        } else {
             final Lazy<?> that = (Lazy<?>) o;
 
             // Equals does not invoke internal supplier
@@ -218,8 +215,7 @@ public final class Lazy<T> implements Supplier<T> {
             cachedValue = Objects.isNull(cachedValue)
                     ? supplier.get()
                     : cachedValue;
-        }
-        else {
+        } else {
             cachedValue = supplier.get();
         }
         return cachedValue;
