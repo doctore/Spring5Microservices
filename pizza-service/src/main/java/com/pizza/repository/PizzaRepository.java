@@ -58,7 +58,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      *
      * @return {@link Page} of {@link Pizza}
      */
-    default Page<Pizza> findPageWithIngredientsWithoutInMemoryPagination(@Nullable Pageable pageable) {
+    default Page<Pizza> findPageWithIngredientsWithoutInMemoryPagination(@Nullable final Pageable pageable) {
         if (null == pageable) {
             return findPageWithIngredients(pageable);
         }
@@ -123,7 +123,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      * @return {@link Optional} with the {@link Pizza} which name matches with the given one.
      *         {@link Optional#empty()} otherwise.
      */
-    default Optional<Pizza> findByName(@Nullable PizzaEnum name) {
+    default Optional<Pizza> findByName(@Nullable final PizzaEnum name) {
         return ofNullable(name)
                 .flatMap(n -> findOne(QPizza.pizza.name.eq(n)));
     }

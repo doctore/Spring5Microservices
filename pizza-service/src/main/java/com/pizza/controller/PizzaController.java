@@ -112,7 +112,7 @@ public class PizzaController {
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
-    public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid PizzaDto pizzaDto) {
+    public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid final PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                                      .map(p -> new ResponseEntity<>(p, CREATED))
                                      .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY)));
@@ -174,7 +174,7 @@ public class PizzaController {
     )
     @GetMapping("/{name}")
     @RoleAdminOrUser
-    public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) String name) {
+    public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) final String name) {
         return Mono.just(pizzaService.findByName(name)
                                      .map(p -> new ResponseEntity<>(p, OK))
                                      .orElseGet(() -> new ResponseEntity<>(NOT_FOUND)));
@@ -233,8 +233,8 @@ public class PizzaController {
     )
     @GetMapping(RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
     @RoleAdminOrUser
-    public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") @PositiveOrZero int page,
-                                                        @RequestParam(value = "size") @Positive int size) {
+    public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") @PositiveOrZero final int page,
+                                                        @RequestParam(value = "size") @Positive final int size) {
         return Mono.just(pizzaService.findPageWithIngredients(page, size, null));
     }
 
@@ -295,7 +295,7 @@ public class PizzaController {
     @PutMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
-    public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid PizzaDto pizzaDto) {
+    public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid final PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
                    .map(p -> new ResponseEntity<>(p, OK))
                    .orElseGet(() -> new ResponseEntity<>(NOT_FOUND)));

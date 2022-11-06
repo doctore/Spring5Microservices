@@ -18,7 +18,8 @@ public class ExtendedJpaRepositoryImpl<T, ID extends Serializable> extends Simpl
 
     protected EntityManager entityManager;
 
-    public ExtendedJpaRepositoryImpl(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
+    public ExtendedJpaRepositoryImpl(JpaEntityInformation<T, ?> entityInformation,
+                                     EntityManager entityManager) {
         super(entityInformation, entityManager);
         this.entityManager = entityManager;
     }

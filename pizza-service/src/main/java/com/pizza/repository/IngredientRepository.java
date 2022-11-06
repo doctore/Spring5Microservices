@@ -48,7 +48,7 @@ public interface IngredientRepository extends ExtendedQueryDslJpaRepository<Ingr
      *
      * @return {@link List} of {@link IngredientPizzaSummaryDto}
      */
-    default List<IngredientPizzaSummaryDto> getIngredientWithItsMoreExpensivePizza(Collection<String> ingredientNames) {
+    default List<IngredientPizzaSummaryDto> getIngredientWithItsMoreExpensivePizza(final Collection<String> ingredientNames) {
         QIngredient ingredient = QIngredient.ingredient;
         QPizza pizza = QPizza.pizza;
 

@@ -28,7 +28,7 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      * {@inheritDoc}
      */
     @Override
-    public Short getId(Pizza pizza) {
+    public Short getId(final Pizza pizza) {
         return ofNullable(pizza)
                 .map(Pizza::getId)
                 .orElse(null);
@@ -58,7 +58,7 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      * @return {@link Optional} with the {@link Pizza} which identifier matches with the given one.
      *         {@link Optional#empty()} otherwise.
      */
-    public Optional<Pizza> findOptionalById(Short id) {
+    public Optional<Pizza> findOptionalById(final Short id) {
         return fetchOptional(PizzaTable.PIZZA_TABLE.ID, id);
     }
 
@@ -86,7 +86,7 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      * @return {@link Optional} with the {@link Pizza} which name matches with the given one.
      *         {@link Optional#empty()} otherwise.
      */
-    public Optional<Pizza> findByName(String name) {
+    public Optional<Pizza> findByName(final String name) {
         return fetchOptional(PizzaTable.PIZZA_TABLE.NAME, name);
     }
 

@@ -38,7 +38,7 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      * {@inheritDoc}
      */
     @Override
-    public Integer getId(OrderLine orderLine) {
+    public Integer getId(final OrderLine orderLine) {
         return ofNullable(orderLine)
                 .map(OrderLine::getId)
                 .orElse(null);
@@ -68,7 +68,7 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      * @return {@link Optional} with the {@link OrderLine} which identifier matches with the given one.
      *         {@link Optional#empty()} otherwise.
      */
-    public Optional<OrderLine> findOptionalById(Integer id) {
+    public Optional<OrderLine> findOptionalById(final Integer id) {
         return fetchOptional(OrderLineTable.ORDER_LINE_TABLE.ID, id);
     }
 
@@ -109,7 +109,7 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      *
      * @throws DataAccessException if there is an error executing the query
      */
-    public List<OrderLineDto> fetchToOrderLineDtoByOrderIdWithPizzaDto(Integer orderId) {
+    public List<OrderLineDto> fetchToOrderLineDtoByOrderIdWithPizzaDto(final Integer orderId) {
         OrderLineTable ORDER_LINE = OrderLineTable.ORDER_LINE_TABLE;
         PizzaTable PIZZA = PizzaTable.PIZZA_TABLE;
 

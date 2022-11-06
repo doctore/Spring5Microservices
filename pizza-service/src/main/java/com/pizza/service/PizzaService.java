@@ -42,7 +42,7 @@ public class PizzaService {
      *
      * @return {@link Optional} of {@link PizzaDto}
      */
-    public Optional<PizzaDto> findByName(String name) {
+    public Optional<PizzaDto> findByName(final String name) {
         return ofNullable(name)
                 .flatMap(PizzaEnum::getFromDatabaseValue)
                 .flatMap(pizzaRepository::findWithIngredientsByName)
@@ -62,7 +62,9 @@ public class PizzaService {
      *
      * @return {@link Page} of {@link Pizza}
      */
-    public Page<PizzaDto> findPageWithIngredients(int page, int size, Sort sort) {
+    public Page<PizzaDto> findPageWithIngredients(final int page,
+                                                  final int size,
+                                                  final Sort sort) {
         Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
                                                    PageUtil.buildPageRequest(page,size,sort));
         return ofNullable(pizzaPage)
@@ -87,7 +89,7 @@ public class PizzaService {
      *
      * @return {@link Optional} of {@link Pizza} with its "final information" after this action
      */
-    public Optional<PizzaDto> save(PizzaDto pizzaDto) {
+    public Optional<PizzaDto> save(final PizzaDto pizzaDto) {
         return ofNullable(pizzaDto)
                 .flatMap(pizzaConverter::fromDtoToOptionalModel)
                 .map(p -> {

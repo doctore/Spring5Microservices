@@ -40,7 +40,7 @@ public interface ExtendedQueryDslJpaRepository<T, ID extends Serializable> exten
      *
      * @return @return {@link JPAQuery}
      */
-    JPAQuery<T> selectFrom(EntityPath<T> entityPath);
+    JPAQuery<T> selectFrom(final EntityPath<T> entityPath);
 
     /**
      * Generates a {@link JPASQLQuery} object with a {@code select} and {@code from} using the provided {@code entityPath}.
@@ -50,6 +50,6 @@ public interface ExtendedQueryDslJpaRepository<T, ID extends Serializable> exten
      *
      * @return @return {@link JPASQLQuery}
      */
-    JPASQLQuery<T> nativeSelectFrom(EntityPath<T> entityPath);
+    JPASQLQuery<T> nativeSelectFrom(final EntityPath<T> entityPath);
 
 }

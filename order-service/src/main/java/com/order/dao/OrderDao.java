@@ -45,7 +45,7 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * {@inheritDoc}
      */
     @Override
-    public Integer getId(Order order) {
+    public Integer getId(final Order order) {
         return ofNullable(order)
                 .map(Order::getId)
                 .orElse(null);
@@ -75,7 +75,7 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * @return {@link Optional} with the {@link Order} which identifier matches with the given one.
      *         {@link Optional#empty()} otherwise
      */
-    public Optional<Order> findOptionalById(Integer id) {
+    public Optional<Order> findOptionalById(final Integer id) {
         return fetchOptional(OrderTable.ORDER_TABLE.ID, id);
     }
 
@@ -92,7 +92,7 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      *
      * @throws DataAccessException if there is an error executing the query
      */
-    public Optional<OrderDto> fetchToOrderDtoByIdWithOrderLineDto(Integer id) {
+    public Optional<OrderDto> fetchToOrderDtoByIdWithOrderLineDto(final Integer id) {
         try (ResultSet rs =
                      getOrderWithLinesQuery()
                              .where(OrderTable.ORDER_TABLE.ID.eq(id))
@@ -128,7 +128,7 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * @return {@link Optional} with the {@link Order} which code matches with the given one.
      *         {@link Optional#empty()} otherwise.
      */
-    public Optional<Order> findByCode(String code) {
+    public Optional<Order> findByCode(final String code) {
         return fetchOptional(OrderTable.ORDER_TABLE.CODE, code);
     }
 
@@ -146,7 +146,8 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      *
      * @throws DataAccessException if there is an error executing the query
      */
-    public Set<OrderDto> fetchPageToOrderDtoByIdWithOrderLineDto(int page, int size) {
+    public Set<OrderDto> fetchPageToOrderDtoByIdWithOrderLineDto(final int page,
+                                                                 final int size) {
         if (0 > page || 0 >= size) {
             return new LinkedHashSet<>();
         }

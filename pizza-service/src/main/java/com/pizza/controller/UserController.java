@@ -99,7 +99,7 @@ public class UserController {
     )
     @PostMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @RoleAdmin
-    public Mono<ResponseEntity<String>> addToBlacklist(@PathVariable @Size(min = 1) String username) {
+    public Mono<ResponseEntity<String>> addToBlacklist(@PathVariable @Size(min = 1) final String username) {
         return userBlackListCacheService.put(username)
                 ? Mono.just(new ResponseEntity<>(username, OK))
                 : Mono.just(new ResponseEntity<>(UNPROCESSABLE_ENTITY));
@@ -161,7 +161,7 @@ public class UserController {
     )
     @DeleteMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @RoleAdmin
-    public Mono<ResponseEntity<String>> removeFromBlacklist(@PathVariable @Size(min = 1) String username) {
+    public Mono<ResponseEntity<String>> removeFromBlacklist(@PathVariable @Size(min = 1) final String username) {
         return userBlackListCacheService.remove(username)
                 ? Mono.just(new ResponseEntity<>(username, OK))
                 : Mono.just(new ResponseEntity<>(NOT_FOUND));

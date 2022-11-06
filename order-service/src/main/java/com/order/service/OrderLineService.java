@@ -43,7 +43,8 @@ public class OrderLineService {
      *
      * @throws IllegalArgumentException if given orderLineDtos is not null but orderId is null
      */
-    public List<OrderLineDto> saveAll(Collection<OrderLineDto> orderLineDtos, Integer orderId) {
+    public List<OrderLineDto> saveAll(final Collection<OrderLineDto> orderLineDtos,
+                                      final Integer orderId) {
         return ofNullable(orderLineDtos)
                 .map(dtos -> {
                     Assert.notNull(orderId, "OrderId cannot be null");
@@ -68,8 +69,8 @@ public class OrderLineService {
      * @param dtosWithoutPizzaInformation
      *    {@link Collection} of {@link OrderLineDto} with "{@link PizzaDto} that contains only {@link PizzaDto#getId()}
      */
-    private void mergePizzaInformation(Collection<OrderLineDto> dtosWithPizzaInformation,
-                                       Collection<OrderLineDto> dtosWithoutPizzaInformation) {
+    private void mergePizzaInformation(final Collection<OrderLineDto> dtosWithPizzaInformation,
+                                       final Collection<OrderLineDto> dtosWithoutPizzaInformation) {
 
         Map<Short, PizzaDto> pizzaDtoMap = dtosWithPizzaInformation.stream()
                 .map(OrderLineDto::getPizza)

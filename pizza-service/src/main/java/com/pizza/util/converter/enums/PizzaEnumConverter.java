@@ -13,13 +13,13 @@ import static java.util.Optional.ofNullable;
 public class PizzaEnumConverter implements BaseEnumConverter<PizzaEnum, String> {
 
     @Override
-    public PizzaEnum fromValueToEnum(String value) {
+    public PizzaEnum fromValueToEnum(final String value) {
         return PizzaEnum.getFromDatabaseValue(value)
                         .orElse(null);
     }
 
     @Override
-    public String fromEnumToValue(PizzaEnum enumValue) {
+    public String fromEnumToValue(final PizzaEnum enumValue) {
         return ofNullable(enumValue)
                 .map(PizzaEnum::getInternalPropertyValue)
                 .orElse(null);

@@ -105,7 +105,7 @@ public class OrderController {
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
-    public ResponseEntity<OrderDto> create(@RequestBody @Valid OrderDto orderDto) {
+    public ResponseEntity<OrderDto> create(@RequestBody @Valid final OrderDto orderDto) {
         return orderService.save(orderDto)
                    .map(p -> new ResponseEntity<>(p, CREATED))
                    .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY));
@@ -167,7 +167,7 @@ public class OrderController {
     )
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
     @RoleAdminOrUser
-    public ResponseEntity<OrderDto> findByIdWithOrderLines(@PathVariable @Positive Integer id) {
+    public ResponseEntity<OrderDto> findByIdWithOrderLines(@PathVariable @Positive final Integer id) {
         return orderService.findByIdWithOrderLines(id)
                    .map(p -> new ResponseEntity<>(p, OK))
                    .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
@@ -230,7 +230,7 @@ public class OrderController {
     @PutMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
-    public ResponseEntity<OrderDto> update(@RequestBody @Valid OrderDto orderDto) {
+    public ResponseEntity<OrderDto> update(@RequestBody @Valid final OrderDto orderDto) {
         return orderService.save(orderDto)
                    .map(p -> new ResponseEntity<>(p, OK))
                    .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));

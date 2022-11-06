@@ -41,7 +41,7 @@ public class OrderService {
      *
      * @throws DataAccessException if there is an error executing the query
      */
-    public Optional<OrderDto> findByIdWithOrderLines(Integer id) {
+    public Optional<OrderDto> findByIdWithOrderLines(final Integer id) {
         return orderDao.fetchToOrderDtoByIdWithOrderLineDto(id);
     }
 
@@ -59,7 +59,8 @@ public class OrderService {
      *
      * @throws DataAccessException if there is an error executing the query
      */
-    public Set<OrderDto> findPageOrderedByCreatedWithOrderLines(int page, int size) {
+    public Set<OrderDto> findPageOrderedByCreatedWithOrderLines(final int page,
+                                                                final int size) {
         return orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(page, size);
     }
 
@@ -72,7 +73,7 @@ public class OrderService {
      *
      * @return {@link Optional} of {@link OrderDto} with its "final information" after this action
      */
-    public Optional<OrderDto> save(OrderDto orderDto) {
+    public Optional<OrderDto> save(final OrderDto orderDto) {
         return ofNullable(orderDto)
                 .flatMap(orderConverter::fromDtoToOptionalModel)
                 .flatMap(order -> {

@@ -29,7 +29,7 @@ public class UserBlacklistCacheService {
      *
      * @return {@code true} if the {@code username} exists, {@code false} otherwise
      */
-    public boolean contains(String username) {
+    public boolean contains(final String username) {
         return ofNullable(username)
                 .map(id ->
                         cacheService.contains(
@@ -49,7 +49,7 @@ public class UserBlacklistCacheService {
      *
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
-    public boolean put(String username) {
+    public boolean put(final String username) {
         return cacheService.put(
                 cacheConfiguration.getUserBlacklistCacheName(),
                 username,
@@ -66,7 +66,7 @@ public class UserBlacklistCacheService {
      *
      * @return {@code true} if the data was removed, {@code false} otherwise
      */
-    public boolean remove(String username) {
+    public boolean remove(final String username) {
         return cacheService.remove(
                 cacheConfiguration.getUserBlacklistCacheName(),
                 username

@@ -34,7 +34,7 @@ public class WebSecurityConfiguration {
     private final SecurityFilter securityFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
         return http.csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()

@@ -32,21 +32,31 @@ public class ExtendedQueryDslJpaRepositoryImpl<T, ID extends Serializable> exten
 
     @Override
     public JPASQLQuery<T> getJPASQLQuery() {
-        return new JPASQLQuery<>(entityManager, getSQLTemplates());
+        return new JPASQLQuery<>(
+                entityManager,
+                getSQLTemplates()
+        );
     }
 
     @Override
-    public JPAQuery<T> selectFrom(EntityPath<T> entityPath) {
-        return getJPAQuery().select(entityPath).from(entityPath);
+    public JPAQuery<T> selectFrom(final EntityPath<T> entityPath) {
+        return getJPAQuery()
+                .select(entityPath)
+                .from(entityPath);
     }
 
     @Override
-    public JPASQLQuery<T> nativeSelectFrom(EntityPath<T> entityPath) {
-        return getJPASQLQuery().select(entityPath).from(entityPath);
+    public JPASQLQuery<T> nativeSelectFrom(final EntityPath<T> entityPath) {
+        return getJPASQLQuery()
+                .select(entityPath)
+                .from(entityPath);
     }
 
     private SQLTemplates getSQLTemplates() {
-        return PostgreSQLTemplates.builder().printSchema().build();
+        return PostgreSQLTemplates
+                .builder()
+                .printSchema()
+                .build();
     }
 
 }
