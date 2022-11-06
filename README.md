@@ -15,7 +15,7 @@
 - [Security services](#security-services)
 - [How to use it?](#how-to-use-it)
 - [Rest API documentation](#rest-api-documentation)
-- [Previous versions of the project](#previous-project-versions)
+- [Previous versions of the project](#previous-versions-of-the-project)
 
 ## Why was this project created?
 
