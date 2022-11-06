@@ -66,8 +66,8 @@ the labour of decrypt it. That is the reason to include in their *pom.xml* file,
 
 ### gateway-server
 
-Using Zuul, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a filter to registry every web service invoked,
-helping to debug every request.
+Using Spring Gateway, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a filter to registry every web service
+invoked, helping to debug every request.
 <br><br>
 
 ### security-oauth-service
