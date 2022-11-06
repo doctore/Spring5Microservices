@@ -59,9 +59,9 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      * @return {@link Page} of {@link Pizza}
      */
     default Page<Pizza> findPageWithIngredientsWithoutInMemoryPagination(@Nullable Pageable pageable) {
-        if (null == pageable)
+        if (null == pageable) {
             return findPageWithIngredients(pageable);
-
+        }
         int rankInitial = (pageable.getPageNumber() * pageable.getPageSize()) + 1;
         int rankFinal = rankInitial + pageable.getPageSize() - 1;
 
@@ -69,7 +69,8 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
                 ? "id desc "
                 : String.join(",",
                               pageable.getSort().stream()
-                                      .map(s -> s.getProperty() + " " + s.getDirection().name()).collect(Collectors.toList()));
+                                      .map(s -> s.getProperty() + " " + s.getDirection().name())
+                                      .collect(Collectors.toList()));
 
         List<Object[]> rawResults = getEntityManager().createNativeQuery("select p_i_r.id, p_i_r.name, p_i_r.cost, p_i_r.ingredients_id, p_i_r.ingredients_name "
                                                                        + "from (select *, dense_rank() over (order by " + orderByClause + ") rank "
@@ -87,8 +88,10 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
                                                       .getResultList();
         // Group by every Pizza and its ingredients
         Map<Pizza, Set<Ingredient>> mapPizzaIngredient = new LinkedHashMap<>();
-        rawResults.forEach(object -> mapPizzaIngredient.computeIfAbsent((Pizza)object[0], v -> new LinkedHashSet<>()).add((Ingredient)object[1]));
-
+        rawResults.forEach(object -> mapPizzaIngredient.computeIfAbsent(
+                (Pizza)object[0], v ->
+                        new LinkedHashSet<>()).add((Ingredient)object[1])
+        );
         List<Pizza> pizzas = new ArrayList<>();
         mapPizzaIngredient.forEach((pizza, ingredients) -> {
             pizza.setIngredients(ingredients);
@@ -102,7 +105,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      * Gets the {@link Pizza} (including its {@link Ingredient}s) which name matches with the given one.
      *
      * @param name
-     *    Name to search a coincidence in {@link Pizza#name}
+     *    Name to search a coincidence in {@link Pizza#getName()}
      *
      * @return {@link Optional} with the {@link Pizza} which name matches with the given one.
      *         {@link Optional#empty()} otherwise.
@@ -115,7 +118,7 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
      * Gets the {@link Pizza} which name matches with the given one.
      *
      * @param name
-     *    Name to search a coincidence in {@link Pizza#name}
+     *    Name to search a coincidence in {@link Pizza#getName()}
      *
      * @return {@link Optional} with the {@link Pizza} which name matches with the given one.
      *         {@link Optional#empty()} otherwise.

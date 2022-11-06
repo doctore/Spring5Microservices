@@ -14,36 +14,38 @@ import static java.util.Optional.ofNullable;
 
 /**
  * Used to manage a lazy evaluated value, useful when getting it has an important performance cost.
- *
+ * <p>
  *    Internally, use a cached value so when the provided {@link Supplier} is invoked its result will
  * be cached. There are 2 different methods to consider if we want to reuse or not the cached value:
- *
+ * <p>
  *   1. {@code get} use cached value.
- *
+ * <p>
  *   2. {@code getNoCached} does not use it and invokes again the provided {@link Supplier}.
- *
+ * <p>
  * There are several use cases for using {@link Lazy}, but probably the main one is when we need:
- *
+ * <p>
  *   Replace using a {@link Supplier} as method parameter because we do not just want to prevent automatic
  *   invocation, but even manage a cache to reuse the result in an easy way.
  *
+ * <pre>
  * Example:
  *
  *      <T> T exampleMethod(Supplier<? extends T> supplier)
+ * </pre>
  *
  *  Advantages:
- *
+ * <p>
  *     1. We can manage when the {@link Supplier} is invoked internally, avoiding automatic invocation of a functionality
  *        with a maybe not good performance.
- *
+ * <p>
  *  Disadvantages:
- *
+ * <p>
  *     1. If we need the result of {@link Supplier} in different parts of the code, it should be managed in a manual way
  *        (for example, using a variable as cache)
- *
+ * <p>
  *     2. If we used a variable because of point 1. how can we distinguish if {@link Supplier} was invoked or if it
  *        was but the result was {@code null} (probably the initial value used in our internal cache variable).
- *
+ * <p>
  * {@link Lazy} solves the above problems keeping the described advantages of using {@link Supplier}.
  */
 public final class Lazy<T> implements Supplier<T> {
@@ -202,7 +204,7 @@ public final class Lazy<T> implements Supplier<T> {
 
 
     /**
-     *    Return the cached value if not {@code null} and {@code useCachedValue} is {@code true}. Otherwise invokes
+     *    Return the cached value if not {@code null} and {@code useCachedValue} is {@code true}. Otherwise, invokes
      * provided {@link Supplier}.
      *
      * @param useCachedValue

@@ -1,6 +1,8 @@
-# IMPORTANT: Stop config-server when you want to execute the tests
 spring:
-  ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
+  cloud:
+    # Disable configuration server for testing
+    config:
+      enabled: false
   datasource:
     url: jdbc:postgresql://localhost:5432/microservice_test
     username: microservice_test
@@ -8,7 +10,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
         format_sql: false
         jdbc:
           lob:
@@ -18,6 +20,11 @@ spring:
         # To include custom functions we want to use in HQL queries
         metadata_builder_contributor: com.pizza.configuration.persistence.SqlFunctionsMetadataBuilderContributor
         show_sql: false
+
+# Disable eureka server connection request for testing
+eureka:
+  client:
+    enabled: false
 
 security:
   restApi:
@@ -29,9 +36,11 @@ rest:
   connect:
     timeoutInMilliseconds: 5000
   read:
-    timeoutInMilliseconds: 30000
+    timeoutInMilliseconds: 5000
+  response:
+    timeoutInMilliseconds: 5000
   write:
-    timeoutInMilliseconds: 30000
+    timeoutInMilliseconds: 5000
 
 cache:
   userBlacklist:
@@ -40,12 +49,20 @@ cache:
     name: OnlyToAvoidAFailureLoadingConfigurationClass
 
 springdoc:
+  api-docs:
+    path: onlyForTests
   documentation:
     apiVersion: 1.0
     title: Test Rest Api
     description: Test description
-  api-docs:
-    path: onlyForTests
+  security:
+    authorization: Bearer Auth
+    schema: bearer
+    format: JWT
+  swagger-ui:
+    path: testPath
+  webjars:
+    prefix: testPrefix
 
 #show sql statement
 #logging:

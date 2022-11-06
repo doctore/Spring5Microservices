@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import static java.util.Optional.empty;
 
 /**
- * Collection used to work with a weighted list of elements, every one related with an specific weight value.
+ * Collection used to work with a weighted list of elements, every one related with a specific weight value.
  *
  * @param <T>
  *     Elements stored in the collection
@@ -125,7 +125,7 @@ public class WeightedCollection<T> {
 
     /**
      *    Return one of the stored elements taking into account their related "weight values". It is important to take into account that
-     * in every invocation, all stored elements will be used to return a new one (in a randomly way), so it is possible getting same
+     * in every invocation, all stored elements will be used to return a new one (in a random way), so it is possible getting same
      * elements more than once.
      *
      * @return {@link Optional} of {@code E}

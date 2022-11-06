@@ -12,7 +12,7 @@ import static java.util.Optional.ofNullable;
 @Service
 public class UserBlacklistCacheService {
 
-    private static final boolean DEFAULT_VALUE = true;
+    private static final boolean DEFAULT_BOOLEAN_VALUE = true;
 
     @Lazy
     private final CacheConfiguration cacheConfiguration;
@@ -31,7 +31,12 @@ public class UserBlacklistCacheService {
      */
     public boolean contains(String username) {
         return ofNullable(username)
-                .map(id -> cacheService.contains(cacheConfiguration.getUserBlacklistCacheName(), username))
+                .map(id ->
+                        cacheService.contains(
+                                cacheConfiguration.getUserBlacklistCacheName(),
+                                username
+                        )
+                )
                 .orElse(false);
     }
 
@@ -45,7 +50,11 @@ public class UserBlacklistCacheService {
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
     public boolean put(String username) {
-        return cacheService.put(cacheConfiguration.getUserBlacklistCacheName(), username, DEFAULT_VALUE);
+        return cacheService.put(
+                cacheConfiguration.getUserBlacklistCacheName(),
+                username,
+                DEFAULT_BOOLEAN_VALUE
+        );
     }
 
 
@@ -58,7 +67,10 @@ public class UserBlacklistCacheService {
      * @return {@code true} if the data was removed, {@code false} otherwise
      */
     public boolean remove(String username) {
-        return cacheService.remove(cacheConfiguration.getUserBlacklistCacheName(), username);
+        return cacheService.remove(
+                cacheConfiguration.getUserBlacklistCacheName(),
+                username
+        );
     }
 
 }

@@ -1,8 +1,6 @@
 package com.spring5microservices.common.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,21 +15,25 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(of = {"username"})
 @NoArgsConstructor
-@ApiModel(description="Authorization information about an specific user")
+@Schema(description = "Authorization information about an specific user")
 public class UsernameAuthoritiesDto {
 
-    @ApiModelProperty(required = true)
+    @Schema(required = true, description = "Identifier of the logged user")
     private String username;
 
-    @ApiModelProperty(position = 1, required = true, value = "roles of the logged user")
+    @Schema(required = true, description = "Roles and/or permissions of the logged user")
     private Set<String> authorities;
 
-    @ApiModelProperty(position = 2, value = "data extra returned by security service")
+    @Schema(description = "Extra data returned by security service")
     private Map<String, Object> additionalInfo;
 
-    public UsernameAuthoritiesDto(String username, Collection<String> authorities, Map<String, Object> additionalInfo) {
+    public UsernameAuthoritiesDto(String username,
+                                  Collection<String> authorities,
+                                  Map<String, Object> additionalInfo) {
         this.username = username;
-        this.authorities = null == authorities ? new HashSet<>() : new HashSet<>(authorities);
+        this.authorities = null == authorities
+                ? new HashSet<>()
+                : new HashSet<>(authorities);
         this.additionalInfo = additionalInfo;
     }
 

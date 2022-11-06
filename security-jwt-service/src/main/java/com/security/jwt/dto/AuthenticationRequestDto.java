@@ -11,19 +11,19 @@ import javax.validation.constraints.Size;
 
 @AllArgsConstructor
 @Data
-@EqualsAndHashCode(of = {"username"})
+@EqualsAndHashCode(of = { "username" })
 @NoArgsConstructor
-@Schema(description="Required data to authenticate a user")
+@Schema(description = "Required data to authenticate a user")
 public class AuthenticationRequestDto {
 
     @Schema(required = true)
     @NotNull
-    @Size(min=1, max=64)
+    @Size(min = 1, max = 64)
     private String username;
 
     @Schema(required = true)
     @NotNull
-    @Size(min=1, max=128)
+    @Size(min = 1, max = 128)
     private String password;
 
 }

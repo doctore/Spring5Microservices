@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"name"})
+@EqualsAndHashCode(of = { "name" })
 @Data
 @NoArgsConstructor
 public class IngredientDto {
@@ -20,7 +20,7 @@ public class IngredientDto {
 
     @Schema(description = "Name", required = true)
     @NotNull
-    @Size(min=1, max=64)
+    @Size(min = 1, max = 64)
     private String name;
 
 }

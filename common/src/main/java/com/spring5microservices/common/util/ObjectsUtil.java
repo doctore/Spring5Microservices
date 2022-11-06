@@ -10,7 +10,7 @@ import static java.util.Optional.ofNullable;
 public class ObjectsUtil {
 
     /**
-     * Return the given {@code sourceInstance} if is not {@code null}. Otherwise returns {@code defaultValue}.
+     * Return the given {@code sourceInstance} if is not {@code null}. Otherwise, returns {@code defaultValue}.
      *
      * @param sourceInstance
      *    Object returned only if is not {@code null}
@@ -28,7 +28,7 @@ public class ObjectsUtil {
 
     /**
      *    Using the provided {@link Function} {@code mapper}, transform/extract from the given {@code sourceInstance}
-     * the related value. Otherwise returns {@code defaultValue}.
+     * the related value. Otherwise, returns {@code defaultValue}.
      *
      * @param sourceInstance
      *    Object used to transform/extract required information.
@@ -54,7 +54,7 @@ public class ObjectsUtil {
 
     /**
      *    Return the {@link String} representation of the given {@code sourceInstance} if is not {@code null}.
-     * Otherwise returns {@code defaultValue}.
+     * Otherwise, returns {@code defaultValue}.
      *
      * @param sourceInstance
      *    Object returned only if is not {@code null}
@@ -74,7 +74,7 @@ public class ObjectsUtil {
 
     /**
      *    Using the provided {@link Function} {@code mapper}, transform/extract from the given {@code sourceInstance}
-     * the related value, returning its {@link String} representation. Otherwise returns {@code defaultValue}.
+     * the related value, returning its {@link String} representation. Otherwise, returns {@code defaultValue}.
      *
      * @param sourceInstance
      *    Object used to transform/extract required information.

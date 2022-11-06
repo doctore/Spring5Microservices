@@ -10,7 +10,7 @@ public enum RestApiErrorCode {
     SECURITY("Security Error"),
     VALIDATION("Validation Error");
 
-    private String value;
+    private final String value;
 
     RestApiErrorCode(String value) {
         this.value = value;

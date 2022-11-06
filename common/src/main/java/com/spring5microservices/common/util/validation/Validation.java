@@ -27,7 +27,7 @@ import static java.util.Optional.of;
 
 /**
  * Class used to validate the given instance, defining 2 different status to manage the result:
- *
+ * <p>
  *    {@link Valid} the instance has verified all provided validations
  *    {@link Invalid} with the {@link List} of validations the given instance does not verify
  *
@@ -98,7 +98,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Creates a {@link Validation} using the given {@link Either}, following the rules:
-     *
+     * <p>
      *  - If {@link Right} then new {@link Validation} instance will be {@link Valid}
      *  - If {@link Left} or {@code null} then new {@link Validation} instance will be {@link Invalid}
      *
@@ -121,7 +121,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Creates a {@link Validation} using the given {@link Try}, following the rules:
-     *
+     * <p>
      *  - If {@link Success} then new {@link Validation} instance will be {@link Valid}
      *  - If {@link Failure} or {@code null} then new {@link Validation} instance will be {@link Invalid}
      *
@@ -144,17 +144,19 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Merges the given {@code validations} in a one result that will be:
-     *
+     * <p>
      *   1. {@link Valid} instance if all given {@code validations} are {@link Valid} ones or such parameters is {@code null} or empty.
-     *
+     * <p>
      *   2. {@link Invalid} instance if there is at least one {@link Invalid} in the given {@code validations}. In this case, errors of
      *      all provided {@link Invalid}s will be included in the result.
      *
+     * <pre>
      * Examples:
      *
      *   combine(Validation.valid(11), Validation.valid(7));                                                // Valid(7)
      *   combine(Validation.valid(13), Validation.invalid(asList("A")));                                    // Invalid(List("A"))
      *   combine(Validation.valid(10), Validation.invalid(asList("A")), Validation.invalid(asList("B")));   // Invalid(List("A", "B"))
+     * </pre>
      *
      * @param validations
      *    {@link Validation} instances to combine
@@ -177,11 +179,13 @@ public abstract class Validation<E, T> implements Serializable {
      *    Checks the given {@code suppliers}, returning a {@link Valid} instance if no {@link Invalid} {@link Supplier}
      * was given or the first {@link Invalid} one.
      *
+     * <pre>
      * Examples:
      *
      *   combineGetFirstInvalid(() -> Validation.valid(1), () -> Validation.valid(7));                                                      // Valid(7)
      *   combineGetFirstInvalid(() -> Validation.valid(3), () -> Validation.invalid(asList("A")));                                          // Invalid(List("A"))
      *   combineGetFirstInvalid(() -> Validation.valid(2), () -> Validation.invalid(asList("A")), () -> Validation.invalid(asList("B")));   // Invalid(List("A"))
+     * </pre>
      *
      * @param suppliers
      *    {@link Supplier} of {@link Validation} instances to verify
@@ -205,11 +209,10 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Filters the current {@link Validation} returning {@code Optional.of(this)} if:
-     *
+     * <p>
      *   1. Current instance is {@link Invalid}
      *   2. Current instance is {@link Valid} and stored value verifies given {@link Predicate} (or {@code predicate} is {@code null})
-     *
-     * {@link Optional#empty()} otherwise.
+     *      {@link Optional#empty()} otherwise.
      *
      * @param predicate
      *    {@link Predicate} to apply the stored value if the current instance is a {@link Valid} one
@@ -228,16 +231,18 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Filters the current {@link Validation} returning:
-     *
+     * <p>
      *   1. {@link Valid} if this is a {@link Valid} and its value matches given {@link Predicate} (or {@code predicate} is {@code null})
      *   2. {@link Invalid} applying {@code zero} if this is {@link Valid} but its value does not match given {@link Predicate}
      *   3. {@link Invalid} with the existing value if this is a {@link Invalid}
      *
+     * <pre>
      * Examples:
      *
      *   Validation.valid(11).filterOrElse(i -> i > 10, "error");                    // Valid(11)
      *   Validation.valid(7).filterOrElse(i -> i > 10, "error");                     // Invalid(List("error"))
      *   Validation.invalid(asList("warning")).filterOrElse(i -> i > 10, "error");   // Invalid(List("warning"))
+     * </pre>
      *
      * @param predicate
      *    {@link Predicate} to apply the stored value if the current instance is a {@link Valid} one
@@ -270,7 +275,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Validation} if this is a {@link Valid}.
-     * Otherwise does nothing if this is a {@link Invalid}.
+     * Otherwise, does nothing if this is a {@link Invalid}.
      *
      * @param mapper
      *    The mapping function to apply to a value of a {@link Valid} instance.
@@ -295,7 +300,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      *    Applies a {@link Function} {@code mapper} to the errors of this {@link Validation} if this is an {@link Invalid}.
-     *  Otherwise does nothing if this is a {@link Valid}.
+     *  Otherwise, does nothing if this is a {@link Valid}.
      *
      * @param mapper
      *    A {@link Function} that maps the errors in this {@link Invalid}
@@ -324,9 +329,11 @@ public abstract class Validation<E, T> implements Serializable {
      * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
      * type of {@link Validation} this is. Without this, you would have to do something like:
      *
+     * <pre>
      * Example:
      *
      *   validation.map(...).mapError(...);
+     * </pre>
      *
      * @param mapperInvalid
      *    {@link Function} with the invalid mapping operation
@@ -360,7 +367,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      *    If the current {@link Validation} is a {@link Valid} instance, returns the result of applying the given
-     * {@link Validation}-bearing mapping function to the value. Otherwise does nothing if this is a {@link Invalid}.
+     * {@link Validation}-bearing mapping function to the value. Otherwise, does nothing if this is a {@link Invalid}.
      *
      * @param mapper
      *    The mapping {@link Function} to apply the value of a {@link Valid} instance
@@ -381,7 +388,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Merge given {@code validation} with the current one, managing the following use cases:
-     *
+     * <p>
      *   1. this = {@link Valid},   validation = {@link Valid}    =>  return a {@link Valid} instance with the value of {@code validation}
      *   2. this = {@link Valid},   validation = {@link Invalid}  =>  return an {@link Invalid} instance with the errors of {@code validation}
      *   3. this = {@link Invalid}, validation = {@link Valid}    =>  return an {@link Invalid} instance with the errors of {@code this}
@@ -429,10 +436,12 @@ public abstract class Validation<E, T> implements Serializable {
      *    Applies {@code mapperValid} if current {@link Validation} is a {@link Valid} instance, {@code mapperInvalid}
      * if it is an {@link Invalid}, transforming internal values into another one.
      *
+     * <pre>
      * Example:
      *
      *   Validation<String, String> valid = ...
      *   int i = valid.fold(String::length, List::length);
+     * </pre>
      *
      * @param mapperInvalid
      *    The mapping {@link Function} to apply the value of a {@link Invalid} instance
@@ -585,7 +594,7 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      * Verifies in the current instance has no value, that is:
-     *
+     * <p>
      *    1. Is a {@link Invalid} one.
      *    2. Is an empty {@link Valid} instance.
      *
@@ -612,6 +621,7 @@ public abstract class Validation<E, T> implements Serializable {
     /**
      * Converts current {@link Validation} to an {@link Either}.
      *
+     * <pre>
      * Example:
      *
      *   {@link Validation} does not supply the error when {@code getOrElseThrow()} is used.
@@ -625,6 +635,7 @@ public abstract class Validation<E, T> implements Serializable {
      *         .toEither()
      *         // here we can access the error part
      *         .getOrElseThrow(errors -> new RuntimeException(errors.toString()));
+     * </pre>
      *
      * @return {@code Either.right(get())} if current {@link Validation} is {@link Valid}
      *         {@code Either.left(getErrors())} if it is {@link Invalid}

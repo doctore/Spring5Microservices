@@ -40,19 +40,39 @@ public class CacheController {
      *         {@link HttpStatus#NOT_FOUND} otherwise.
      */
     @Operation(summary = "Clear the cache")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "The cache was cleared successfully"),
-            @ApiResponse(responseCode = "401", description = "As part of the Basic Auth, the username does not exists or the given password does not belongs to this one.",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "The cache could not be cleared."),
-            @ApiResponse(responseCode = "500", description = "Any other internal server error",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "The cache was cleared successfully"
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "As part of the Basic Auth, the username does not exists or the given password does not belongs to this one.",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The cache could not be cleared."
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Any other internal server error",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    )
+            }
+    )
     @PutMapping(value = RestRoutes.CACHE.CLEAR)
     public Mono<ResponseEntity> clear() {
         return jwtClientDetailsCacheService.clear()
-                ? Mono.just(new ResponseEntity(OK))
-                : Mono.just(new ResponseEntity(NOT_FOUND));
+                ? Mono.just(new ResponseEntity<>(OK))
+                : Mono.just(new ResponseEntity<>(NOT_FOUND));
     }
 
 }

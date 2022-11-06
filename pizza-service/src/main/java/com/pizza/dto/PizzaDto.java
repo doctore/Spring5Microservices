@@ -14,7 +14,7 @@ import javax.validation.constraints.Positive;
 import java.util.Set;
 
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"name"})
+@EqualsAndHashCode(of = { "name" })
 @Data
 @NoArgsConstructor
 public class PizzaDto {

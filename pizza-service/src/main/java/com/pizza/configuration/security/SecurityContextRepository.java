@@ -1,7 +1,8 @@
 package com.pizza.configuration.security;
 
 import com.pizza.configuration.Constants;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,27 +18,33 @@ import reactor.core.publisher.Mono;
  *    Gets the token included in {@code Authorization} Http header and
  * forwarded to {@link SecurityManager} to verify it.
  */
+@AllArgsConstructor
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
-    @Autowired
-    private SecurityManager securityManager;
+    @Lazy
+    private final SecurityManager securityManager;
 
 
     @Override
-    public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Mono<Void> save(final ServerWebExchange swe,
+                           final SecurityContext sc) {
+        throw new UnsupportedOperationException("Not supported operation");
     }
 
 
     @Override
-    public Mono<SecurityContext> load(ServerWebExchange swe) {
+    public Mono<SecurityContext> load(final ServerWebExchange swe) {
         ServerHttpRequest request = swe.getRequest();
-        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        String authHeader = request.getHeaders()
+                .getFirst(HttpHeaders.AUTHORIZATION);
+
         if (null != authHeader) {
             authHeader = authHeader.replace(Constants.TOKEN_PREFIX, "");
             Authentication auth = new UsernamePasswordAuthenticationToken(authHeader, authHeader);
-            return this.securityManager.authenticate(auth).map((authentication) -> new SecurityContextImpl(authentication));
+            return this.securityManager
+                    .authenticate(auth)
+                    .map(SecurityContextImpl::new);
         } else {
             return Mono.empty();
         }

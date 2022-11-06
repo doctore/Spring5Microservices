@@ -47,18 +47,24 @@ public class SecurityService {
      * @return {@link Optional} of {@link AuthenticationInformationDto}
      *
      * @throws AccountStatusException if the {@link UserDetails} related with the given {@code username} is disabled
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in database
      * @throws UnauthorizedException if the given {@code password} does not mismatch with exists one related with given {@code username}
-     * @throws UsernameNotFoundException if the given {@code username} does not exists in database
+     * @throws UsernameNotFoundException if the given {@code username} does not exist in database
      */
-    public Optional<AuthenticationInformationDto> login(String clientId, String username, String password) {
+    public Optional<AuthenticationInformationDto> login(final String clientId,
+                                                        final String username,
+                                                        final String password) {
         return of(AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getUserServiceClass()))
                 .flatMap(userService -> {
                     UserDetails userDetails = userService.loadUserByUsername(username);
-                    if (!userService.passwordsMatch(password, userDetails))
-                        throw new UnauthorizedException(format("The password given for the username: %s does not mismatch", username));
-
+                    if (!userService.passwordsMatch(password, userDetails)) {
+                        throw new UnauthorizedException(
+                                format("The password given for the username: %s does not mismatch",
+                                        username
+                                )
+                        );
+                    }
                     return authenticationService.getAuthenticationInformation(clientId, userDetails);
                 });
     }
@@ -76,12 +82,13 @@ public class SecurityService {
      * @return {@link Optional} of {@link AuthenticationInformationDto}
      *
      * @throws AccountStatusException if the {@link UserDetails} related with the given {@code username} included in the token is disabled
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in database
      * @throws UnauthorizedException if the given {@code refreshToken} is not a valid one
      * @throws UsernameNotFoundException if the {@code refreshToken} does not contain a {@code username} or the included one does not exists in database
      * @throws TokenExpiredException if the given {@code refreshToken} has expired
      */
-    public Optional<AuthenticationInformationDto> refresh(String refreshToken, String clientId) {
+    public Optional<AuthenticationInformationDto> refresh(final String refreshToken,
+                                                          final String clientId) {
         Map<String, Object> payload = authenticationService.getPayloadOfToken(refreshToken, clientId, false);
         String username = getUsernameFromPayload(payload, clientId);
 
@@ -107,12 +114,13 @@ public class SecurityService {
      *
      * @return {@link UsernameAuthoritiesDto}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in database
      * @throws UnauthorizedException if the given {@code accessToken} is not a valid one
      * @throws UsernameNotFoundException if the {@code accessToken} does not contain a {@code username}
      * @throws TokenExpiredException if the given {@code accessToken} has expired
      */
-    public UsernameAuthoritiesDto getAuthorizationInformation(String accessToken, String clientId) {
+    public UsernameAuthoritiesDto getAuthorizationInformation(final String accessToken,
+                                                              final String clientId) {
         Map<String, Object> payload = authenticationService.getPayloadOfToken(accessToken, clientId, true);
         String username = getUsernameFromPayload(payload, clientId);
 
@@ -136,11 +144,19 @@ public class SecurityService {
      *
      * @throws UsernameNotFoundException if the {@code payload} does not contain a {@code username}
      */
-    private String getUsernameFromPayload(Map<String, Object> payload, String clientId) {
+    private String getUsernameFromPayload(final Map<String, Object> payload,
+                                          final String clientId) {
         Optional<String> username = authenticationService.getUsername(payload, clientId);
-        if (!username.isPresent())
-            throw new UsernameNotFoundException(format("In the given payload with the keys: %s and related with the clientId: %s, there is no a username",
-                                                       null == payload ? "null" : StringUtils.collectionToCommaDelimitedString(payload.keySet()), clientId));
+        if (username.isEmpty()) {
+            throw new UsernameNotFoundException(
+                    format("In the given payload with the keys: %s and related with the clientId: %s, there is no a username",
+                            null == payload
+                                    ? "null"
+                                    : StringUtils.collectionToCommaDelimitedString(payload.keySet()),
+                            clientId
+                    )
+            );
+        }
         return username.get();
     }
 

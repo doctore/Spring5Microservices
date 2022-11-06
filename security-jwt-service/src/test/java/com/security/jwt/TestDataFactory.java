@@ -5,6 +5,7 @@ import com.security.jwt.dto.AuthenticationRequestDto;
 import com.security.jwt.dto.RawAuthenticationInformationDto;
 import com.security.jwt.application.spring5microservices.enums.RoleEnum;
 import com.security.jwt.enums.SignatureAlgorithmEnum;
+import com.security.jwt.enums.TokenType;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.application.spring5microservices.model.Role;
 import com.security.jwt.application.spring5microservices.model.User;
@@ -56,7 +57,7 @@ public class TestDataFactory {
                 .signatureSecret(Constants.CIPHER_SECRET_PREFIX + "secretKey_ForTestingPurpose@12345#")
                 .accessTokenValidity(250)
                 .refreshTokenValidity(500)
-                .tokenType("Bearer")
+                .tokenType(TokenType.Bearer)
                 .build();
     }
 

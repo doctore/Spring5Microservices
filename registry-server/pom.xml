@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.6.RELEASE</version>
+        <version>2.7.5</version>
         <relativePath/>
     </parent>
     <groupId>com.registryserver</groupId>
     <artifactId>registry-server</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <name>registry-server</name>
     <description>Registry server with Eureka for Spring 5 with microservices</description>
 
     <properties>
-        <java.version>1.10</java.version>
-        <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
+        <java.version>1.14</java.version>
+        <maven.compiler.target>14</maven.compiler.target>
+        <maven.compiler.release>14</maven.compiler.release>
+        <spring-cloud.version>2021.0.4</spring-cloud.version>
     </properties>
 
     <dependencies>
@@ -24,18 +27,6 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-        </dependency>
-        <!-- Required if we are using JDK >= 9 to avoid:
-                java.lang.TypeNotPresentException: Type javax.xml.bind.JAXBContext not present -->
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-        </dependency>
-        <!-- Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -56,6 +47,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${project.parent.version}</version>
             </plugin>
         </plugins>
     </build>

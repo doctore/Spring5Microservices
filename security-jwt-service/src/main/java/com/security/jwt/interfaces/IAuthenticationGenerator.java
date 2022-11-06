@@ -19,9 +19,9 @@ public interface IAuthenticationGenerator {
      *
      * @return {@link Optional} of {@link RawAuthenticationInformationDto} with information to include
      *
-     * @throws UsernameNotFoundException if the given {@code username} does not exists
+     * @throws UsernameNotFoundException if the given {@code username} does not exist
      */
-    Optional<RawAuthenticationInformationDto> getRawAuthenticationInformation(UserDetails userDetails);
+    Optional<RawAuthenticationInformationDto> getRawAuthenticationInformation(final UserDetails userDetails);
 
     /**
      * Return the key in the access token used to store the {@code username} information.

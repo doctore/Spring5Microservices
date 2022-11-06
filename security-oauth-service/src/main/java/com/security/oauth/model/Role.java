@@ -14,6 +14,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -30,7 +31,9 @@ public class Role implements Serializable {
     private static final long serialVersionUID = 4833183317359581882L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".role_id_seq")
+    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".role_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".role_generator")
+    @SequenceGenerator(name = Constants.DATABASE_SCHEMA.EAT + ".role_generator", sequenceName = Constants.DATABASE_SCHEMA.EAT + ".role_id_seq", allocationSize = 1)
     private Integer id;
 
     @NotNull

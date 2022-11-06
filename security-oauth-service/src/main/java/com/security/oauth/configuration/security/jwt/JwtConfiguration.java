@@ -70,7 +70,13 @@ public class JwtConfiguration {
 
 
     private SignerVerifier buildSigner() {
-        return new MacSigner(signatureAlgorithm, new SecretKeySpec(secretKey.getBytes(), signatureAlgorithm));
+        return new MacSigner(
+                signatureAlgorithm,
+                new SecretKeySpec(
+                        secretKey.getBytes(),
+                        signatureAlgorithm
+                )
+        );
     }
 
 }

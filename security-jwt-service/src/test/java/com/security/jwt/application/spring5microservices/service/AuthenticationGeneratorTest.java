@@ -53,7 +53,8 @@ public class AuthenticationGeneratorTest {
         checkTokenInformation(rawTokenInformation.get(), user);
     }
 
-    private void checkTokenInformation(RawAuthenticationInformationDto rawTokenInformation, User user) {
+    private void checkTokenInformation(RawAuthenticationInformationDto rawTokenInformation,
+                                       User user) {
         assertNotNull(rawTokenInformation);
         assertNotNull(rawTokenInformation.getAccessTokenInformation());
         assertNotNull(rawTokenInformation.getRefreshTokenInformation());

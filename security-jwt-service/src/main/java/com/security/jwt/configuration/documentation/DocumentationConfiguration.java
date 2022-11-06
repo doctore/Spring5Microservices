@@ -5,36 +5,53 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Getter
 public class DocumentationConfiguration {
 
-    public static final String DOCUMENTATION_API_URL = "/swagger-ui.html";
-    public static final String DOCUMENTATION_RESOURCE_URL = "/swagger-resources";
-    public static final String DOCUMENTATION_WEBJARS = "/webjars";
+    @Value("${springdoc.api-docs.path}")
+    private String apiDocsPath;
 
-    private final String BASIC_AUTHORIZATION = "Basic Auth";
-    private final String BASIC_SCHEMA = "basic";
+    @Value("${springdoc.swagger-ui.path}")
+    private String apiUiUrl;
 
     @Value("${springdoc.documentation.apiVersion}")
     private String apiVersion;
 
+    @Value("${springdoc.documentation.description}")
+    private String description;
+
     @Value("${springdoc.documentation.title}")
     private String title;
 
-    @Value("${springdoc.documentation.description}")
-    private String description;
+    @Value("${springdoc.security.authorization}")
+    private String securityAuthorization;
+
+    @Value("${springdoc.security.schema}")
+    private String securitySchema;
+
+    @Value("${springdoc.webjars.prefix}")
+    private String webjarsUrl;
 
 
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .addSecurityItem(new SecurityRequirement().addList(BASIC_AUTHORIZATION))
-                .components(new Components()
-                        .addSecuritySchemes(BASIC_AUTHORIZATION, securityScheme())
+                .addSecurityItem(
+                        new SecurityRequirement()
+                                .addList(securityAuthorization)
+                )
+                .components(
+                        new Components()
+                                .addSecuritySchemes(
+                                        securityAuthorization,
+                                        securityScheme()
+                                )
                 )
                 .info(apiInfo());
     }
@@ -45,14 +62,18 @@ public class DocumentationConfiguration {
      * @return {@link Info}
      */
     private Info apiInfo() {
-        return new Info().title(title).description(description).version(apiVersion);
+        return new Info()
+                .title(title)
+                .description(description)
+                .version(apiVersion);
     }
+
 
     private SecurityScheme securityScheme() {
         return new SecurityScheme()
-                .name(BASIC_AUTHORIZATION)
+                .name(securityAuthorization)
                 .type(SecurityScheme.Type.HTTP)
-                .scheme(BASIC_SCHEMA);
+                .scheme(securitySchema);
     }
 
 }

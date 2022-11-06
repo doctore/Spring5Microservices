@@ -1,7 +1,6 @@
 package com.order.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,18 +16,18 @@ import javax.validation.constraints.Size;
 @EqualsAndHashCode(of = {"code"})
 @Data
 @NoArgsConstructor
-@ApiModel(description="Information related with a pizza")
+@Schema(description = "Information related with a pizza")
 public class PizzaDto {
 
-    @ApiModelProperty(value = "Internal unique identifier", required = true)
+    @Schema(description = "Internal unique identifier", required = true)
     private Short id;
 
-    @ApiModelProperty(position = 1, value = "Name", required = true)
+    @Schema(description = "Name", required = true)
     @NotNull
     @Size(min=1, max=64)
     private String name;
 
-    @ApiModelProperty(position = 2, value = "Cost", required = true)
+    @Schema(description = "Cost", required = true)
     @NotNull
     @Positive
     private Double cost;

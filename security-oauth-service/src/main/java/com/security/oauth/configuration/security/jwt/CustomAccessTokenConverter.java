@@ -37,8 +37,10 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     @Override
     public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
         Map<String, Object> defaultInformation = (Map<String, Object>) super.convertAccessToken(token, authentication);
-        return this.isRefreshToken(token) ? getRefreshTokenInformation(defaultInformation)
-                                          : getAccessTokenInformation(defaultInformation);
+        return this.isRefreshToken(token)
+                ? getRefreshTokenInformation(defaultInformation)
+
+                : getAccessTokenInformation(defaultInformation);
     }
 
     /**
@@ -64,11 +66,16 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
      */
     private Map<String, Object> getAdditionalInformation(OAuth2Authentication authentication) {
         Map<String, Object> authenticationAdditionalInformation = Map.ofEntries(
-                entry(USERNAME, authentication.getUserAuthentication().getName()),
-                entry(AUTHORITIES,
+                entry(
+                        USERNAME,
+                        authentication.getUserAuthentication().getName()
+                ),
+                entry(
+                        AUTHORITIES,
                         authentication.getAuthorities().stream()
                                 .map(GrantedAuthority::getAuthority)
-                                .collect(toSet()))
+                                .collect(toSet())
+                )
         );
         return Map.of(ADDITIONAL_INFO, authenticationAdditionalInformation);
     }

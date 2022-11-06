@@ -65,27 +65,57 @@ public class PizzaController {
      * @return if pizzaDto is not {@code Null}: {@link HttpStatus#CREATED} and created {@link Pizza}
      *         if pizzaDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
-    @Operation(summary = "Create a pizza", description = "Create a pizza (only allowed to user with role admin)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "The given pizza was successfully created",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = PizzaDto.class))),
-            @ApiResponse(responseCode = "400", description = "There was a problem in the given request, the given parameters have not passed the required validations",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "The user has not authorization to execute this request",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "412", description = "The provided authorization information has expired",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "422", description = "The pizza could not be created"),
-            @ApiResponse(responseCode = "500", description = "There was an internal problem in the server",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
+    @Operation(
+            summary = "Create a pizza",
+            description = "Create a pizza (only allowed to user with role admin)"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "The given pizza was successfully created",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = PizzaDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "There was a problem in the given request, the given parameters have not passed the required validations",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "The user has not authorization to execute this request or provided authorization has expired",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "422",
+                            description = "The pizza could not be created"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "There was an internal problem in the server",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    )
+            }
+    )
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
-                                     .map(p -> new ResponseEntity(p, CREATED))
-                                     .orElseGet(() -> new ResponseEntity(UNPROCESSABLE_ENTITY)));
+                                     .map(p -> new ResponseEntity<>(p, CREATED))
+                                     .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY)));
     }
 
 
@@ -98,27 +128,56 @@ public class PizzaController {
      * @return if name was found: {@link HttpStatus#OK} and {@link PizzaDto} that matches
      *         if name was not found: {@link HttpStatus#NOT_FOUND}
      */
-    @Operation(summary = "Find pizza information matches given name", description = "Find pizza information matches given name (only allowed to user with role admin/user)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "There is a pizza with the given name",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = PizzaDto.class))),
-            @ApiResponse(responseCode = "400", description = "There was a problem in the given request, the given parameters have not passed the required validations",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "The user has not authorization to execute this request",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "There is no a pizza with the given name",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "412", description = "The provided authorization information has expired",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "500", description = "There was an internal problem in the server",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
+    @Operation(
+            summary = "Find pizza information matches given name",
+            description = "Find pizza information matches given name (only allowed to user with role admin/user)"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "There is a pizza with the given name",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = PizzaDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "There was a problem in the given request, the given parameters have not passed the required validations",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "The user has not authorization to execute this request or provided authorization has expired",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "There is no a pizza with the given name"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "There was an internal problem in the server",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    )
+            }
+    )
     @GetMapping("/{name}")
     @RoleAdminOrUser
     public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) String name) {
         return Mono.just(pizzaService.findByName(name)
-                                     .map(p -> new ResponseEntity(p, OK))
-                                     .orElseGet(() -> new ResponseEntity(NOT_FOUND)));
+                                     .map(p -> new ResponseEntity<>(p, OK))
+                                     .orElseGet(() -> new ResponseEntity<>(NOT_FOUND)));
     }
 
 
@@ -132,19 +191,46 @@ public class PizzaController {
      *
      * @return {@link Page} of {@link PizzaDto}
      */
-    @Operation(summary = "Get list of pizzas with their ingredients", description = "Get list of pizzas with their ingredients (only allowed to user with role admin/user)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "The list of existing pizzas",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(type = "List", implementation = PizzaDto.class))),
-            @ApiResponse(responseCode = "400", description = "There was a problem in the given request, the given parameters have not passed the required validations",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "The user has not authorization to execute this request",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "412", description = "The provided authorization information has expired",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "500", description = "There was an internal problem in the server",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
+    @Operation(
+            summary = "Get list of pizzas with their ingredients",
+            description = "Get list of pizzas with their ingredients (only allowed to user with role admin/user)"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "The list of existing pizzas",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(type = "List", implementation = PizzaDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "There was a problem in the given request, the given parameters have not passed the required validations",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "The user has not authorization to execute this request or provided authorization has expired",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "There was an internal problem in the server",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    )
+            }
+    )
     @GetMapping(RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
     @RoleAdminOrUser
     public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") @PositiveOrZero int page,
@@ -162,28 +248,57 @@ public class PizzaController {
      * @return if pizza is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link Pizza}
      *         if pizza is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
-    @Operation(summary = "Update a pizza", description = "Update a pizza (only allowed to user with role admin)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "The given pizza was successfully update",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = PizzaDto.class))),
-            @ApiResponse(responseCode = "400", description = "There was a problem in the given request, the given parameters have not passed the required validations",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "There is no a pizza matches with provided information",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "The user has not authorization to execute this request",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "412", description = "The provided authorization information has expired",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-            @ApiResponse(responseCode = "500", description = "There was an internal problem in the server",
-                    content = @Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorResponseDto.class))),
-    })
+    @Operation(
+            summary = "Update a pizza",
+            description = "Update a pizza (only allowed to user with role admin)"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "The given pizza was successfully update",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = PizzaDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "There was a problem in the given request, the given parameters have not passed the required validations",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "The user has not authorization to execute this request or provided authorization has expired",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "There is no a pizza matches with provided information"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "There was an internal problem in the server",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+            }
+    )
     @PutMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid PizzaDto pizzaDto) {
         return Mono.just(pizzaService.save(pizzaDto)
-                   .map(p -> new ResponseEntity(p, OK))
-                   .orElseGet(() -> new ResponseEntity(NOT_FOUND)));
+                   .map(p -> new ResponseEntity<>(p, OK))
+                   .orElseGet(() -> new ResponseEntity<>(NOT_FOUND)));
     }
 
 }

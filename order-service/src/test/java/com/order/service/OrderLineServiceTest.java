@@ -5,13 +5,14 @@ import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
 import com.order.model.OrderLine;
 import com.order.util.converter.OrderLineConverter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -19,21 +20,25 @@ import java.util.stream.Stream;
 import static com.order.TestDataFactory.buildOrderLine;
 import static com.order.TestDataFactory.buildOrderLineDto;
 import static com.order.TestDataFactory.buildPizzaDto;
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = OrderLineService.class)
+@ExtendWith(SpringExtension.class)
 public class OrderLineServiceTest {
 
-    @MockBean
+    @Mock
     private OrderLineDao mockOrderLineDao;
 
-    @MockBean
+    @Mock
     private OrderLineConverter mockOrderLineConverter;
 
-    @Autowired
     private OrderLineService service;
+
+
+    @BeforeEach
+    public void init() {
+        service = new OrderLineService(mockOrderLineDao, mockOrderLineConverter);
+    }
 
 
     static Stream<Arguments> saveAllTestCases() {
@@ -45,19 +50,23 @@ public class OrderLineServiceTest {
         OrderLine model2 = buildOrderLine(dto2.getId(), dto2.getOrderId(), pizzaDto2.getId(), dto2.getAmount(), dto2.getCost());
         return Stream.of(
                 //@formatter:off
-                //            dtosToSave,           orderId,   converterToModelResult,   repositoryResult,         converterToDtoResult,   expectedResult
-                Arguments.of( null,                 null,      asList(),                 asList(),                 asList(),               asList() ),
-                Arguments.of( asList(dto1, dto2),   1,         asList(),                 asList(),                 asList(),               asList() ),
-                Arguments.of( asList(dto1, dto2),   1,         asList(model1, model2),   asList(),                 asList(),               asList() ),
-                Arguments.of( asList(dto1, dto2),   1,         asList(model1, model2),   asList(model1, model2),   asList(dto1, dto2),     asList(dto1, dto2) )
+                //            dtosToSave,           orderId,   converterToModelResult,    repositoryResult,          converterToDtoResult,    expectedResult
+                Arguments.of( null,                 null,      List.of(),                 List.of(),                 List.of(),               List.of() ),
+                Arguments.of( List.of(dto1, dto2),   1,        List.of(),                 List.of(),                 List.of(),               List.of() ),
+                Arguments.of( List.of(dto1, dto2),   1,        List.of(model1, model2),   List.of(),                 List.of(),               List.of() ),
+                Arguments.of( List.of(dto1, dto2),   1,        List.of(model1, model2),   List.of(model1, model2),   List.of(dto1, dto2),     List.of(dto1, dto2) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("saveAllTestCases")
     @DisplayName("saveAll: test cases")
-    public void saveAll_testCases(List<OrderLineDto> dtosToSave, Integer orderId, List<OrderLine> converterToModelResult,
-                                  List<OrderLine> repositoryResult, List<OrderLineDto> converterToDtoResult, List<OrderLineDto> expectedResult) {
+    public void saveAll_testCases(List<OrderLineDto> dtosToSave,
+                                  Integer orderId,
+                                  List<OrderLine> converterToModelResult,
+                                  List<OrderLine> repositoryResult,
+                                  List<OrderLineDto> converterToDtoResult,
+                                  List<OrderLineDto> expectedResult) {
         when(mockOrderLineConverter.fromDtosToModels(dtosToSave, orderId)).thenReturn(converterToModelResult);
         when(mockOrderLineConverter.fromModelsToDtos(repositoryResult)).thenReturn(converterToDtoResult);
         when(mockOrderLineDao.saveAll(converterToModelResult)).thenReturn(repositoryResult);

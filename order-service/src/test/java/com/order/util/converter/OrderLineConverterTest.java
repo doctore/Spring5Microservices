@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 import static com.order.TestDataFactory.buildOrderLine;
 import static com.order.TestDataFactory.buildOrderLineDto;
 import static com.order.TestDataFactory.buildPizzaDto;
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -80,7 +79,8 @@ public class OrderLineConverterTest {
     @ParameterizedTest
     @MethodSource("fromDtoToModelWithIdTestCases")
     @DisplayName("fromDtoToModel: when the given dto and/or id are not null then the equivalent model is returned")
-    public void fromDtoToModel_whenGivenDtoAndOrIdAreNotNull_thenEquivalentModelIsReturned(OrderLineDto dtoToConvert, Integer orderId) {
+    public void fromDtoToModel_whenGivenDtoAndOrIdAreNotNull_thenEquivalentModelIsReturned(OrderLineDto dtoToConvert,
+                                                                                           Integer orderId) {
         OrderLine equivalentModel = converter.fromDtoToModel(dtoToConvert, orderId);
         checkProperties(equivalentModel, dtoToConvert, orderId);
     }
@@ -121,7 +121,7 @@ public class OrderLineConverterTest {
                 //@formatter:off
                 //            listOfDtosToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(dto) )
+                Arguments.of( List.of(dto) )
         ); //@formatter:on
     }
 
@@ -198,7 +198,7 @@ public class OrderLineConverterTest {
                 //@formatter:off
                 //            listOfModelsToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(model) )
+                Arguments.of( List.of(model) )
         ); //@formatter:on
     }
 

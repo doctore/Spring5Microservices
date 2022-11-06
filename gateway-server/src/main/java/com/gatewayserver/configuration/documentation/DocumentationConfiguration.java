@@ -1,52 +1,66 @@
 package com.gatewayserver.configuration.documentation;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
+import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.Optional.ofNullable;
 
 /**
  * Used to configure the different Swagger documentation of the existing microservices
  */
+@RequiredArgsConstructor
 @Configuration
-@EnableSwagger2
 @Primary
 public class DocumentationConfiguration implements SwaggerResourcesProvider {
 
-    private static final String DOCUMENTATION_API_VERSION = "1.0";
+    private final String ALLOW_ALL_ENDPOINTS = "/**";
+    private final String INTERNAL_PATH_KEY_OF_GATEWAY_FILTER = "_genkey_0";
 
-    @Value("${springfox.documentation.swagger.v2.path}")
+    @Value("${springfox.documentation.swagger.v3.path}")
     private String documentationPath;
 
-    @Value("#{'${restApi.documentedServices}'.split(',')}")
+    @Value("#{'${springfox.documentation.swagger.documentedServices}'.split(',')}")
     private List<String> documentedRestApis;
 
-    @Autowired
-    private RouteLocator routeLocator;
+    @Value("${springfox.documentation.swagger.apiVersion}")
+    private String apiVersion;
+
+    private final RouteDefinitionLocator routeDefinitionLocator;
 
 
     @Override
     public List<SwaggerResource> get() {
-        return ofNullable(routeLocator)
-                .map(rl -> routeLocator.getRoutes().stream()
-                                .filter(route -> documentedRestApis.contains(route.getId()))
-                                .map(r -> swaggerResource(r.getId(),
-                                        r.getFullPath().replace("/**", documentationPath),
-                                        DOCUMENTATION_API_VERSION))
-                                .collect(Collectors.toList())
-                )
-                .orElseGet(ArrayList::new);
+        List<SwaggerResource> resources = new ArrayList<>();
+        routeDefinitionLocator.getRouteDefinitions().subscribe(
+                routeDefinition -> {
+                    String resourceName = routeDefinition.getId();
+                    if (documentedRestApis.contains(resourceName)) {
+                        String location =
+                                routeDefinition
+                                        .getPredicates()
+                                        .get(0)
+                                        .getArgs()
+                                        .get(INTERNAL_PATH_KEY_OF_GATEWAY_FILTER)
+                                        .replace(ALLOW_ALL_ENDPOINTS, documentationPath);
+                        resources.add(
+                                swaggerResource(
+                                        resourceName,
+                                        location,
+                                        apiVersion
+                                )
+                        );
+                    }
+                }
+        );
+        return resources;
     }
+
 
     /**
      * Carry out the returned {@link SwaggerResource} with the given information.
@@ -60,7 +74,9 @@ public class DocumentationConfiguration implements SwaggerResourcesProvider {
      *
      * @return {@link SwaggerResource}
      */
-    private SwaggerResource swaggerResource(String name, String url, String version) {
+    private SwaggerResource swaggerResource(final String name,
+                                            final String url,
+                                            final String version) {
         SwaggerResource swaggerResource = new SwaggerResource();
         swaggerResource.setName(name);
         swaggerResource.setUrl(url);

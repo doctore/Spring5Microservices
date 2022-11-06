@@ -52,7 +52,9 @@ public class UserServiceTest {
     @ParameterizedTest
     @MethodSource("loadUserByUsernameTestCases")
     @DisplayName("loadUserByUsername: test cases")
-    public void loadUserByUsername_testCases(String username, Optional<User> repositoryResult, Class<? extends Exception> expectedException,
+    public void loadUserByUsername_testCases(String username,
+                                             Optional<User> repositoryResult,
+                                             Class<? extends Exception> expectedException,
                                              UserDetails expectedResult) {
         when(mockUserRepository.findByUsername(username)).thenReturn(repositoryResult);
         if (null != expectedException) {
@@ -79,7 +81,10 @@ public class UserServiceTest {
     @ParameterizedTest
     @MethodSource("passwordsMatchTestCases")
     @DisplayName("passwordsMatch: test cases")
-    public void passwordsMatch_testCases(String rawPassword, String encodedPassword, boolean passwordEncoderResult, boolean expectedResult) {
+    public void passwordsMatch_testCases(String rawPassword,
+                                         String encodedPassword,
+                                         boolean passwordEncoderResult,
+                                         boolean expectedResult) {
         User user = User.builder().username("username").active(true).password(encodedPassword).build();
         when(mockPasswordEncoder.matches(rawPassword, encodedPassword)).thenReturn(passwordEncoderResult);
         assertEquals(expectedResult, userService.passwordsMatch(rawPassword, user));

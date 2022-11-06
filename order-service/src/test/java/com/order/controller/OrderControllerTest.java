@@ -1,8 +1,10 @@
 package com.order.controller;
 
 import com.order.configuration.Constants;
+import com.order.configuration.documentation.DocumentationConfiguration;
 import com.order.configuration.rest.RestRoutes;
 import com.order.configuration.security.SecurityManager;
+import com.order.configuration.security.WebSecurityConfiguration;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
@@ -17,19 +19,20 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.order.TestUtil.fromJson;
 import static com.order.TestUtil.toJson;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
-import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +54,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 @WebMvcTest(value = OrderController.class)
+@Import(WebSecurityConfiguration.class)
 public class OrderControllerTest {
 
     @MockBean
@@ -58,6 +62,9 @@ public class OrderControllerTest {
 
     @MockBean
     private OrderService mockOrderService;
+
+    @MockBean
+    private DocumentationConfiguration documentationConfiguration;
 
     @Autowired
     private MockMvc mockMvc;
@@ -81,7 +88,7 @@ public class OrderControllerTest {
     @DisplayName("create: when no valid role is given then forbidden Http code is returned")
     public void create_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // Given
-        OrderDto dtoToCreate = new OrderDto(null, "Order 1", new Date(), asList());
+        OrderDto dtoToCreate = new OrderDto(null, "Order 1", new Date(), List.of());
 
         // When/Then
         mockMvc.perform(
@@ -93,12 +100,12 @@ public class OrderControllerTest {
 
 
     static Stream<Arguments> createWhenDtoDoesNotVerifyValidationsTestCases() {
-        OrderDto dto1 = new OrderDto(null, "Order 1", null, asList());
-        OrderDto dto2 = new OrderDto(null, null, new Date(), asList());
+        OrderDto dto1 = new OrderDto(null, "Order 1", null, List.of());
+        OrderDto dto2 = new OrderDto(null, null, new Date(), List.of());
         ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'orderDto' on field 'created' due to: must not be null"));
+                List.of("Field error in object 'orderDto' on field 'created' due to: must not be null"));
         ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'orderDto' on field 'code' due to: must not be null"));
+                List.of("Field error in object 'orderDto' on field 'code' due to: must not be null"));
         return Stream.of(
                 //@formatter:off
                 //            dtoToCreate,   expectedResponse
@@ -129,7 +136,7 @@ public class OrderControllerTest {
     static Stream<Arguments> create_validDtoTestCases() {
         PizzaDto pizzaDto = new PizzaDto((short)1, "Carbonara", 7.50);
         OrderLineDto orderLineDto = new OrderLineDto(10, null, pizzaDto, (short)2, 15D);
-        OrderDto dto = new OrderDto(null, "Order 1", new Date(), asList(orderLineDto));
+        OrderDto dto = new OrderDto(null, "Order 1", new Date(), List.of(orderLineDto));
         return Stream.of(
                 //@formatter:off
                 //            serviceResult,   expectedResultHttpCode,   expectedBodyResult
@@ -140,13 +147,14 @@ public class OrderControllerTest {
 
     @ParameterizedTest
     @SneakyThrows
-    @WithMockUser(authorities = {Constants.ROLE_ADMIN})
+    @WithMockUser(authorities = { Constants.ROLE_ADMIN })
     @MethodSource("create_validDtoTestCases")
     @DisplayName("create: when given dto verifies the validations then the suitable Http code is returned")
     public void create_whenGivenDtoVerifiesValidations_thenSuitableHttpCodeIsReturned(Optional<OrderDto> serviceResult,
-                          HttpStatus expectedResultHttpCode, OrderDto expectedBodyResult) {
+                                                                                      HttpStatus expectedResultHttpCode,
+                                                                                      OrderDto expectedBodyResult) {
         // Given
-        OrderDto dtoToCreate = new OrderDto(null, "Order 1", new Date(), asList());
+        OrderDto dtoToCreate = new OrderDto(null, "Order 1", new Date(), List.of());
 
         // When
         when(mockOrderService.save(dtoToCreate)).thenReturn(serviceResult);
@@ -168,7 +176,7 @@ public class OrderControllerTest {
     @DisplayName("findByIdWithOrderLines: when no logged user is given then unauthorized Http code is returned")
     public void findByIdWithOrderLines_whenNoLoggedUserIsGiven_thenUnauthorizedHttpCodeIsReturned() {
         // Given
-        Integer validOrderId = 1;
+        int validOrderId = 1;
 
         // When/Then
         mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES))
@@ -182,7 +190,7 @@ public class OrderControllerTest {
     @DisplayName("findByIdWithOrderLines: when no valid authority is given then forbidden Http code is returned")
     public void findByIdWithOrderLines_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // Given
-        Integer validOrderId = 1;
+        int validOrderId = 1;
 
         // When/Then
         mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES))
@@ -196,8 +204,11 @@ public class OrderControllerTest {
     @DisplayName("findByIdWithOrderLines: when id does not verify validations then bad request Http code is returned")
     public void findByIdWithOrderLines_whenTheIdDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
-        Integer notValidOrderId = 0;
-        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("Error in path 'findByIdWithOrderLines.id' due to: must be greater than 0"));
+        int notValidOrderId = 0;
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(
+                VALIDATION,
+                List.of("Error in path 'findByIdWithOrderLines.id' due to: must be greater than 0")
+        );
 
         // When/Then
         ResultActions result = mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.ORDER.WITH_ORDERLINES));
@@ -210,7 +221,7 @@ public class OrderControllerTest {
     static Stream<Arguments> findByIdWithOrderLines_validIdTestCases() {
         PizzaDto pizzaDto = new PizzaDto((short)1, "Carbonara", 7.50);
         OrderLineDto orderLineDto = new OrderLineDto(10, 1, pizzaDto, (short)2, 15D);
-        OrderDto dto = new OrderDto(1, "Order 1", new Date(), asList(orderLineDto));
+        OrderDto dto = new OrderDto(1, "Order 1", new Date(), List.of(orderLineDto));
         return Stream.of(
                 //@formatter:off
                 //            serviceResult,   expectedResultHttpCode,   expectedBodyResult
@@ -225,7 +236,8 @@ public class OrderControllerTest {
     @MethodSource("findByIdWithOrderLines_validIdTestCases")
     @DisplayName("findByIdWithOrderLines: when given Id verifies the validations then the suitable Http code is returned")
     public void findByIdWithOrderLines_whenGivenIdVerifiesValidations_thenSuitableHttpCodeIsReturned(Optional<OrderDto> serviceResult,
-                                          HttpStatus expectedResultHttpCode, OrderDto expectedBodyResult) {
+                                                                                                     HttpStatus expectedResultHttpCode,
+                                                                                                     OrderDto expectedBodyResult) {
         // Given
         Integer validOrderId = 1;
 
@@ -259,7 +271,7 @@ public class OrderControllerTest {
     @DisplayName("update: when no valid role is given then forbidden Http code is returned")
     public void update_whenNotValidAuthorityIsGiven_thenForbiddenHttpCodeIsReturned() {
         // Given
-        OrderDto dtoToUpdate = new OrderDto(null, "Order 1", new Date(), asList());
+        OrderDto dtoToUpdate = new OrderDto(null, "Order 1", new Date(), List.of());
 
         // When/Then
         mockMvc.perform(
@@ -271,12 +283,16 @@ public class OrderControllerTest {
 
 
     static Stream<Arguments> updateWhenDtoDoesNotVerifyValidationsTestCases() {
-        OrderDto dto1 = new OrderDto(null, "Order 1", null, asList());
-        OrderDto dto2 = new OrderDto(null, null, new Date(), asList());
-        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'orderDto' on field 'created' due to: must not be null"));
-        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'orderDto' on field 'code' due to: must not be null"));
+        OrderDto dto1 = new OrderDto(null, "Order 1", null, List.of());
+        OrderDto dto2 = new OrderDto(null, null, new Date(), List.of());
+        ErrorResponseDto response1 = new ErrorResponseDto(
+                VALIDATION,
+                List.of("Field error in object 'orderDto' on field 'created' due to: must not be null")
+        );
+        ErrorResponseDto response2 = new ErrorResponseDto(
+                VALIDATION,
+                List.of("Field error in object 'orderDto' on field 'code' due to: must not be null")
+        );
         return Stream.of(
                 //@formatter:off
                 //            dtoToCreate,   expectedResponse
@@ -307,7 +323,7 @@ public class OrderControllerTest {
     static Stream<Arguments> update_validDtoTestCases() {
         PizzaDto pizzaDto = new PizzaDto((short)1, "Carbonara", 7.50);
         OrderLineDto orderLineDto = new OrderLineDto(10, 1, pizzaDto, (short)2, 15D);
-        OrderDto dto = new OrderDto(1, "Order 1", new Date(), asList(orderLineDto));
+        OrderDto dto = new OrderDto(1, "Order 1", new Date(), List.of(orderLineDto));
         return Stream.of(
                 //@formatter:off
                 //            serviceResult,   expectedResultHttpCode,   expectedBodyResult
@@ -322,9 +338,10 @@ public class OrderControllerTest {
     @MethodSource("update_validDtoTestCases")
     @DisplayName("update: when given dto verifies the validations then the suitable Http code is returned")
     public void update_whenGivenDtoVerifiesValidations_thenSuitableHttpCodeIsReturned(Optional<OrderDto> serviceResult,
-                                                                                      HttpStatus expectedResultHttpCode, OrderDto expectedBodyResult) {
+                                                                                      HttpStatus expectedResultHttpCode,
+                                                                                      OrderDto expectedBodyResult) {
         // Given
-        OrderDto dtoToUpdate = new OrderDto(1, "Order 1", new Date(), asList());
+        OrderDto dtoToUpdate = new OrderDto(1, "Order 1", new Date(), List.of());
 
         // When
         when(mockOrderService.save(dtoToUpdate)).thenReturn(serviceResult);

@@ -15,8 +15,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -25,6 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -53,6 +56,11 @@ public class SecurityControllerTest {
 
     @MockBean
     private SecurityService mockSecurityService;
+
+    // To avoid Hazelcast instance creation
+    @MockBean
+    @Qualifier("cacheManager")
+    private CacheManager mockCacheManager;
 
     private WebTestClient webTestClient;
 
@@ -101,7 +109,7 @@ public class SecurityControllerTest {
     @WithMockUser
     public void login_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(AuthenticationRequestDto invalidAuthenticationRequestDto,
                                                                                                                      String expectedErrors) {
-        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList(expectedErrors));
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, List.of(expectedErrors));
 
         webTestClient.post()
                 .uri(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.LOGIN)
@@ -174,7 +182,7 @@ public class SecurityControllerTest {
     @DisplayName("refresh: when given parameters do not verify validations then bad request error is returned with validation errors")
     @WithMockUser
     public void refresh_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned() {
-        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("refreshToken: size must be between 1 and 2147483647"));
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, List.of("refreshToken: size must be between 1 and 2147483647"));
 
         webTestClient.post()
                 .uri(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.REFRESH)
@@ -246,7 +254,7 @@ public class SecurityControllerTest {
     @DisplayName("authorizationInformation: when given parameters do not verify validations then bad request error is returned with validation errors")
     @WithMockUser
     public void authorizationInformation_whenGivenParametersDoNotVerifyValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned() {
-        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("accessToken: size must be between 1 and 2147483647"));
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, List.of("accessToken: size must be between 1 and 2147483647"));
 
         webTestClient.post()
                 .uri(RestRoutes.SECURITY.ROOT + RestRoutes.SECURITY.AUTHORIZATION_INFO)

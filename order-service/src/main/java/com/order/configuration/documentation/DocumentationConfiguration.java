@@ -1,85 +1,83 @@
 package com.order.configuration.documentation;
 
-import com.order.configuration.Constants;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.ApiKey;
-import springfox.documentation.service.AuthorizationScope;
-import springfox.documentation.service.SecurityReference;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spi.service.contexts.SecurityContext;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import static java.util.Arrays.asList;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
-/**
- * Used to configure the Swagger documentation of the current microservice
- */
 @Configuration
-@EnableSwagger2
+@Getter
 public class DocumentationConfiguration {
 
-    private final String AUTHORIZATION_TOKEN_TEMPLATE = "%JwtToken";
+    @Value("${springdoc.api-docs.path}")
+    private String apiDocsPath;
 
-    @Value("${springfox.documentation.apiVersion}")
+    @Value("${springdoc.swagger-ui.path}")
+    private String apiUiUrl;
+
+    @Value("${springdoc.documentation.apiVersion}")
     private String apiVersion;
 
-    @Value("${springfox.documentation.title}")
+    @Value("${springdoc.documentation.description}")
+    private String description;
+
+    @Value("${springdoc.documentation.title}")
     private String title;
 
-    @Value("${springfox.documentation.description}")
-    private String description;
+    @Value("${springdoc.security.authorization}")
+    private String securityAuthorization;
+
+    @Value("${springdoc.security.schema}")
+    private String securitySchema;
+
+    @Value("${springdoc.security.format}")
+    private String securityFormat;
+
+    @Value("${springdoc.webjars.prefix}")
+    private String webjarsUrl;
 
 
     @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .useDefaultResponseMessages(false)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage(Constants.PATH.CONTROLLER))
-                .paths(PathSelectors.any())
-                .build()
-                .apiInfo(apiInfo())
-                .securitySchemes(asList(apiKey()))
-                .securityContexts(asList(securityContext()));
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .addSecurityItem(
+                        new SecurityRequirement()
+                                .addList(securityAuthorization)
+                )
+                .components(
+                        new Components()
+                                .addSecuritySchemes(
+                                        securityAuthorization,
+                                        securityScheme()
+                                )
+                )
+                .info(apiInfo());
     }
-
 
     /**
      * Include more information related with the Rest Api documentation
      *
-     * @return {@link ApiInfo}
+     * @return {@link Info}
      */
-    private ApiInfo apiInfo() {
-        return new ApiInfo(title, description, apiVersion,
-                null, null, null, null,
-                new ArrayList<>());
+    private Info apiInfo() {
+        return new Info()
+                .title(title)
+                .description(description)
+                .version(apiVersion);
     }
 
-    private ApiKey apiKey() {
-        return new ApiKey(AUTHORIZATION_TOKEN_TEMPLATE, AUTHORIZATION, "Header");
-    }
 
-    private SecurityReference securityReference() {
-        return SecurityReference.builder()
-                .reference(AUTHORIZATION_TOKEN_TEMPLATE)
-                .scopes(new AuthorizationScope[0])
-                .build();
-    }
-
-    private SecurityContext securityContext() {
-        return SecurityContext.builder()
-                .securityReferences(Arrays.asList(securityReference()))
-                .build();
+    private SecurityScheme securityScheme() {
+        return new SecurityScheme()
+                .name(securityAuthorization)
+                .type(SecurityScheme.Type.HTTP)
+                .scheme(securitySchema)
+                .bearerFormat(securityFormat);
     }
 
 }

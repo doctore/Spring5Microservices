@@ -18,23 +18,25 @@ import com.nimbusds.jwt.SignedJWT;
 import com.security.jwt.exception.TokenInvalidException;
 import com.spring5microservices.common.exception.TokenExpiredException;
 import lombok.extern.log4j.Log4j2;
-import net.minidev.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 
 @Component
 @Log4j2
 public class JwsUtil {
+
+    private final static List<JWSAlgorithm> ALLOWED_JWS_ALGORITHMS = List.of(JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512);
+
 
     /**
      *    Using the given {@code informationToInclude} generates a valid JWS token (signed JWT) signed with the selected
@@ -53,8 +55,10 @@ public class JwsUtil {
      *
      * @throws IllegalArgumentException if {@code signatureAlgorithm} or {@code jwtSignatureSecret} are {@code null}
      */
-    public String generateToken(Map<String, Object> informationToInclude, JWSAlgorithm signatureAlgorithm,
-                                String signatureSecret, long expirationTimeInSeconds) {
+    public String generateToken(final Map<String, Object> informationToInclude,
+                                final JWSAlgorithm signatureAlgorithm,
+                                final String signatureSecret,
+                                final long expirationTimeInSeconds) {
         Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
         Assert.hasText(signatureSecret, "signatureSecret cannot be null or empty");
         JWTClaimsSet claimsSet = addClaims(informationToInclude, expirationTimeInSeconds);
@@ -79,10 +83,12 @@ public class JwsUtil {
      * @throws TokenInvalidException if {@code token} is not a JWS one or was not signed using {@code signatureSecret}
      * @throws TokenExpiredException if {@code token} has expired
      */
-    public Map<String, Object> getPayloadKeys(String jwsToken, String signatureSecret, Set<String> keysToInclude) {
-        if (null == keysToInclude)
+    public Map<String, Object> getPayloadKeys(final String jwsToken,
+                                              final String signatureSecret,
+                                              final Set<String> keysToInclude) {
+        if (null == keysToInclude) {
             return new HashMap<>();
-
+        }
         return getAllClaimsFromToken(jwsToken, signatureSecret, true)
                 .entrySet().stream()
                 .filter(e -> keysToInclude.contains(e.getKey()))
@@ -106,10 +112,12 @@ public class JwsUtil {
      * @throws TokenInvalidException if {@code jwsToken} is not a JWS one or was not signed using {@code signatureSecret}
      * @throws TokenExpiredException if {@code jwsToken} has expired
      */
-    public Map<String, Object> getPayloadExceptGivenKeys(String jwsToken, String signatureSecret, Set<String> keysToExclude) {
-        if (null == keysToExclude)
+    public Map<String, Object> getPayloadExceptGivenKeys(final String jwsToken,
+                                                         final String signatureSecret,
+                                                         final Set<String> keysToExclude) {
+        if (null == keysToExclude) {
             return new HashMap<>();
-
+        }
         return getAllClaimsFromToken(jwsToken, signatureSecret, true)
                 .entrySet().stream()
                 .filter(e -> !keysToExclude.contains(e.getKey()))
@@ -127,7 +135,7 @@ public class JwsUtil {
      *
      * @throws IllegalArgumentException if {@code jwsToken} is {@code null} or empty
      */
-    public Map<String, Object> getRawPayload(String jwsToken) {
+    public Map<String, Object> getRawPayload(final String jwsToken) {
         return getAllClaimsFromToken(jwsToken, null, false);
     }
 
@@ -142,15 +150,19 @@ public class JwsUtil {
      *
      * @throws IllegalArgumentException if {@code token} is {@code null} or empty or there was a problem checking it
      */
-    public boolean isJwsToken(String token) {
+    public boolean isJwsToken(final String token) {
         Assert.hasText(token, "token cannot be null or empty");
         try {
             Base64URL[] parts = JOSEObject.split(token);
-            JSONObject jsonObject = JSONObjectUtils.parse(parts[0].decodeToString());
-            Algorithm alg = Header.parseAlgorithm(jsonObject);
+            Map<String, Object> jsonObjectProperties = JSONObjectUtils.parse(parts[0].decodeToString());
+            Algorithm alg = Header.parseAlgorithm(jsonObjectProperties);
             return (alg instanceof JWSAlgorithm);
+
         } catch (ParseException e) {
-            throw new IllegalArgumentException(format("The was a problem trying to figure out the type of token:", token), e);
+            throw new IllegalArgumentException(
+                    format("The was a problem trying to figure out the type of token: %s", token),
+                    e
+            );
         }
     }
 
@@ -165,11 +177,12 @@ public class JwsUtil {
      *
      * @return {@link JWTClaimsSet}
      */
-    private JWTClaimsSet addClaims(Map<String, Object> informationToInclude, long expirationTimeInSeconds) {
+    private JWTClaimsSet addClaims(final Map<String, Object> informationToInclude,
+                                   final long expirationTimeInSeconds) {
         JWTClaimsSet.Builder claimsSet = new JWTClaimsSet.Builder();
-        if (null != informationToInclude)
-            informationToInclude.forEach((k, v) -> claimsSet.claim(k, v));
-
+        if (null != informationToInclude) {
+            informationToInclude.forEach(claimsSet::claim);
+        }
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + (expirationTimeInSeconds * 1000));
         return claimsSet
@@ -192,11 +205,14 @@ public class JwsUtil {
      *
      * @throws IllegalArgumentException it there was a problem creating the JWS token
      */
-    private SignedJWT getSignedJWT(JWSAlgorithm signatureAlgorithm, String signatureSecret, JWTClaimsSet claimsSet) {
+    private SignedJWT getSignedJWT(final JWSAlgorithm signatureAlgorithm,
+                                   final String signatureSecret,
+                                   final JWTClaimsSet claimsSet) {
         try {
             SignedJWT signedJWT = new SignedJWT(new JWSHeader(signatureAlgorithm), claimsSet);
             signedJWT.sign(getSuitableSigner(signatureAlgorithm, signatureSecret));
             return signedJWT;
+
         } catch (JOSEException e) {
             throw new IllegalArgumentException("The was a problem trying to create a new JWS token", e);
         }
@@ -220,18 +236,21 @@ public class JwsUtil {
      *                               was not signed using {@code signatureSecret}
      * @throws TokenExpiredException when {@code verifyToken} is {@code true} => if {@code token} has expired
      */
-    private Map<String, Object> getAllClaimsFromToken(String jwsToken, String signatureSecret, boolean verifyToken) {
+    private Map<String, Object> getAllClaimsFromToken(final String jwsToken,
+                                                      final String signatureSecret,
+                                                      final boolean verifyToken) {
         Assert.hasText(jwsToken, "jwsToken cannot be null or empty");
-        if (!isJwsToken(jwsToken))
+        if (!isJwsToken(jwsToken)) {
             throw new TokenInvalidException(format("The token: %s is not a JWS one", jwsToken));
+        }
         try {
             SignedJWT signedJWT = SignedJWT.parse(jwsToken);
             if (verifyToken) {
                 Assert.hasText(signatureSecret, "signatureSecret cannot be null or empty");
                 JWSVerifier verifier = getSuitableVerifier(signedJWT, signatureSecret);
-                if (!signedJWT.verify(verifier))
+                if (!signedJWT.verify(verifier)) {
                     throw new TokenInvalidException(format("The JWS token: %s does not match the provided signatureSecret", jwsToken));
-
+                }
                 Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
                 if (null == expirationTime || expirationTime.before(new Date()))
                     throw new TokenExpiredException(format("The JWT token: %s has expired at %s", jwsToken, expirationTime));
@@ -239,7 +258,10 @@ public class JwsUtil {
             return signedJWT.getJWTClaimsSet().getClaims();
 
         } catch (JOSEException | ParseException e) {
-            throw new TokenInvalidException(format("The was an error getting information included in JWS token: %s", jwsToken), e);
+            throw new TokenInvalidException(
+                    format("The was an error getting information included in JWS token: %s", jwsToken),
+                    e
+            );
         }
     }
 
@@ -255,10 +277,14 @@ public class JwsUtil {
      *
      * @throws KeyLengthException if {@code signatureSecret} has not enough length for the given {@code signatureAlgorithm}
      */
-    private JWSSigner getSuitableSigner(JWSAlgorithm signatureAlgorithm, String signatureSecret) throws KeyLengthException {
-        if (asList(JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512).contains(signatureAlgorithm))
+    private JWSSigner getSuitableSigner(final JWSAlgorithm signatureAlgorithm,
+                                        final String signatureSecret) throws KeyLengthException {
+        if (ALLOWED_JWS_ALGORITHMS.contains(signatureAlgorithm)) {
             return new MACSigner(signatureSecret);
-        throw new IllegalArgumentException(format("It was not possible to find a suitable signer for the signature algorithm: %s ", signatureAlgorithm));
+        }
+        throw new IllegalArgumentException(
+                format("It was not possible to find a suitable signer for the signature algorithm: %s ", signatureAlgorithm)
+        );
     }
 
 
@@ -274,11 +300,15 @@ public class JwsUtil {
      *
      * @throws IllegalArgumentException if it was not possible to find a suitable {@link JWSVerifier}
      */
-    private JWSVerifier getSuitableVerifier(SignedJWT signedJWT, String signatureSecret) throws JOSEException {
+    private JWSVerifier getSuitableVerifier(final SignedJWT signedJWT,
+                                            final String signatureSecret) throws JOSEException {
         JWSAlgorithm signatureAlgorithm = signedJWT.getHeader().getAlgorithm();
-        if (asList(JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512).contains(signatureAlgorithm))
+        if (ALLOWED_JWS_ALGORITHMS.contains(signatureAlgorithm)) {
             return new MACVerifier(signatureSecret);
-        throw new IllegalArgumentException(format("It was not possible to find a suitable verifier for the signature algorithm: %s ", signatureAlgorithm));
+        }
+        throw new IllegalArgumentException(
+                format("It was not possible to find a suitable verifier for the signature algorithm: %s ", signatureAlgorithm)
+        );
     }
 
 }

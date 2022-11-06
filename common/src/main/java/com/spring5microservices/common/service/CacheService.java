@@ -31,7 +31,7 @@ public class CacheService {
      *
      * @return {@code true} if the {@code cacheName} exists and its elements were removed, {@code false} otherwise
      */
-    public boolean clear(String cacheName) {
+    public boolean clear(final String cacheName) {
         return ofNullable(cacheName)
                 .map(cacheManager::getCache)
                 .map(c -> {
@@ -52,7 +52,8 @@ public class CacheService {
      *
      * @return {@code true} if the {@code key} exists, {@code false} otherwise
      */
-    public <K> boolean contains(String cacheName, K key) {
+    public <K> boolean contains(final String cacheName,
+                                final K key) {
         return ofNullable(cacheName)
                 .map(cacheManager::getCache)
                 .map(c -> c.get(key))
@@ -71,7 +72,8 @@ public class CacheService {
      * @return {@link Optional} with the {@code value} if it was found, {@link Optional#empty()} otherwise
      */
     @SuppressWarnings("unchecked")
-    public <K, V> Optional<V> get(String cacheName, K key) {
+    public <K, V> Optional<V> get(final String cacheName,
+                                  final K key) {
         return ofNullable(cacheName)
                 .map(cacheManager::getCache)
                 .map(c -> c.get(key))
@@ -91,7 +93,9 @@ public class CacheService {
      *
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
-    public <K, V> boolean put(String cacheName, K key, V value) {
+    public <K, V> boolean put(final String cacheName,
+                              final K key,
+                              final V value) {
         return ofNullable(cacheName)
                 .map(cacheManager::getCache)
                 .map(c -> {
@@ -114,7 +118,9 @@ public class CacheService {
      *
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
-    public <K, V> boolean putIfAbsent(String cacheName, K key, V value) {
+    public <K, V> boolean putIfAbsent(final String cacheName,
+                                      final K key,
+                                      final V value) {
         return contains(cacheName, key)
                 ? false
                 : put(cacheName, key, value);
@@ -133,7 +139,9 @@ public class CacheService {
      *
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
-    public <K, V> boolean putIfPresent(String cacheName, K key, V value) {
+    public <K, V> boolean putIfPresent(final String cacheName,
+                                       final K key,
+                                       final V value) {
         return contains(cacheName, key)
                 ? put(cacheName, key, value)
                 : false;
@@ -150,7 +158,8 @@ public class CacheService {
      *
      * @return {@code true} if no problem was found during the operation, {@code false} otherwise
      */
-    public <K> boolean remove(String cacheName, K key) {
+    public <K> boolean remove(final String cacheName,
+                              final K key) {
         return ofNullable(cacheName)
                 .map(cacheManager::getCache)
                 .map(c -> {

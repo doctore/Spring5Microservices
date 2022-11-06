@@ -31,7 +31,6 @@ import static com.spring5microservices.common.enums.RestApiErrorCode.INTERNAL;
 import static com.spring5microservices.common.enums.RestApiErrorCode.SECURITY;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -40,7 +39,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 /**
- * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
+ * Global exception handler to manage unhandled errors in the Rest layer (Controllers)
  */
 @RestControllerAdvice
 @Log4j2
@@ -58,9 +57,15 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(AccountStatusException.class)
-    public Mono<Void> accountStatusException(ServerWebExchange exchange, AccountStatusException exception) {
+    public Mono<Void> accountStatusException(final ServerWebExchange exchange,
+                                             final AccountStatusException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList("The account of the user is disabled"), exchange, FORBIDDEN.value());
+        return buildErrorResponse(
+                SECURITY,
+                List.of("The account of the user is disabled"),
+                exchange,
+                FORBIDDEN.value()
+        );
     }
 
 
@@ -75,9 +80,15 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(ClientNotFoundException.class)
-    public Mono<Void> clientNotFoundException(ServerWebExchange exchange, ClientNotFoundException exception) {
+    public Mono<Void> clientNotFoundException(final ServerWebExchange exchange,
+                                              final ClientNotFoundException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList("Given invalid client details identifier"), exchange, UNAUTHORIZED.value());
+        return buildErrorResponse(
+                SECURITY,
+                List.of("Given invalid client details identifier"),
+                exchange,
+                UNAUTHORIZED.value()
+        );
     }
 
 
@@ -92,7 +103,8 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(WebExchangeBindException.class)
-    public Mono<Void> webExchangeBindException(ServerWebExchange exchange, WebExchangeBindException exception) {
+    public Mono<Void> webExchangeBindException(final ServerWebExchange exchange,
+                                               final WebExchangeBindException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = exception.getBindingResult().getFieldErrors()
                 .stream()
@@ -100,8 +112,14 @@ public class GlobalErrorWebExceptionHandler {
                         + "' on field '" + fe.getField()
                         + "' due to: " + fe.getDefaultMessage())
                 .collect(toList());
-        return buildErrorResponse(VALIDATION, errorMessages, exchange,
-                null != exception.getStatus() ? exception.getStatus().value() : UNPROCESSABLE_ENTITY.value());
+        return buildErrorResponse(
+                VALIDATION,
+                errorMessages,
+                exchange,
+                null != exception.getStatus()
+                        ? exception.getStatus().value()
+                        : UNPROCESSABLE_ENTITY.value()
+        );
     }
 
 
@@ -116,10 +134,16 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    public Mono<Void> constraintViolationException(ServerWebExchange exchange, ConstraintViolationException exception) {
+    public Mono<Void> constraintViolationException(final ServerWebExchange exchange,
+                                                   final ConstraintViolationException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception);
-        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
+        return buildErrorResponse(
+                VALIDATION,
+                errorMessages,
+                exchange,
+                BAD_REQUEST.value()
+        );
     }
 
 
@@ -134,10 +158,16 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(ServerWebInputException.class)
-    public Mono<Void> serverWebInputException(ServerWebExchange exchange, ServerWebInputException exception) {
+    public Mono<Void> serverWebInputException(final ServerWebExchange exchange,
+                                              final ServerWebInputException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
         List<String> errorMessages = getServerWebInputExceptionErrorMessages(exception);
-        return buildErrorResponse(VALIDATION, errorMessages, exchange, BAD_REQUEST.value());
+        return buildErrorResponse(
+                VALIDATION,
+                errorMessages,
+                exchange,
+                BAD_REQUEST.value()
+        );
     }
 
 
@@ -152,9 +182,15 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(TokenExpiredException.class)
-    public Mono<Void> tokenExpiredException(ServerWebExchange exchange, TokenExpiredException exception) {
+    public Mono<Void> tokenExpiredException(final ServerWebExchange exchange,
+                                            final TokenExpiredException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList("The given authorization token has expired"), exchange, TOKEN_EXPIRED.value());
+        return buildErrorResponse(
+                SECURITY,
+                List.of("The given authorization token has expired"),
+                exchange,
+                TOKEN_EXPIRED.value()
+        );
     }
 
 
@@ -169,9 +205,15 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(TokenInvalidException.class)
-    public Mono<Void> tokenInvalidException(ServerWebExchange exchange, TokenInvalidException exception) {
+    public Mono<Void> tokenInvalidException(final ServerWebExchange exchange,
+                                            final TokenInvalidException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList("The provided token is invalid"), exchange, FORBIDDEN.value());
+        return buildErrorResponse(
+                SECURITY,
+                List.of("The provided token is invalid"),
+                exchange,
+                UNAUTHORIZED.value()
+        );
     }
 
 
@@ -186,9 +228,15 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(UnauthorizedException.class)
-    public Mono<Void> unauthorizedException(ServerWebExchange exchange, UnauthorizedException exception) {
+    public Mono<Void> unauthorizedException(final ServerWebExchange exchange,
+                                            final UnauthorizedException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList(exception.getMessage()), exchange, UNAUTHORIZED.value());
+        return buildErrorResponse(
+                SECURITY,
+                List.of(exception.getMessage()),
+                exchange,
+                UNAUTHORIZED.value()
+        );
     }
 
 
@@ -203,9 +251,15 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(UsernameNotFoundException.class)
-    public Mono<Void> usernameNotFoundException(ServerWebExchange exchange, UsernameNotFoundException exception) {
+    public Mono<Void> usernameNotFoundException(final ServerWebExchange exchange,
+                                                final UsernameNotFoundException exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(SECURITY, asList("Given invalid credentials"), exchange, UNAUTHORIZED.value());
+        return buildErrorResponse(
+                SECURITY,
+                List.of("Given invalid credentials"),
+                exchange,
+                UNAUTHORIZED.value()
+        );
     }
 
 
@@ -220,9 +274,15 @@ public class GlobalErrorWebExceptionHandler {
      * @return {@link Mono} with the suitable response
      */
     @ExceptionHandler(Throwable.class)
-    public Mono<Void> throwable(ServerWebExchange exchange, Throwable exception) {
+    public Mono<Void> throwable(final ServerWebExchange exchange,
+                                final Throwable exception) {
         log.error(getErrorMessageUsingHttpRequest(exchange), exception);
-        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), exchange, INTERNAL_SERVER_ERROR.value());
+        return buildErrorResponse(
+                INTERNAL,
+                List.of("Internal error in the application"),
+                exchange,
+                INTERNAL_SERVER_ERROR.value()
+        );
     }
 
 
@@ -234,15 +294,18 @@ public class GlobalErrorWebExceptionHandler {
      *
      * @return error message with Http request information
      */
-    private String getErrorMessageUsingHttpRequest(ServerWebExchange exchange) {
+    private String getErrorMessageUsingHttpRequest(final ServerWebExchange exchange) {
         return format("There was an error trying to execute the request with:%s"
                         + "Http method = %s %s"
                         + "Uri = %s %s"
                         + "Header = %s",
                 System.lineSeparator(),
-                exchange.getRequest().getMethod(), System.lineSeparator(),
-                exchange.getRequest().getURI().toString(), System.lineSeparator(),
-                exchange.getRequest().getHeaders().entrySet());
+                exchange.getRequest().getMethod(),
+                System.lineSeparator(),
+                exchange.getRequest().getURI(),
+                System.lineSeparator(),
+                exchange.getRequest().getHeaders().entrySet()
+        );
     }
 
 
@@ -254,16 +317,22 @@ public class GlobalErrorWebExceptionHandler {
      *
      * @return {@link List} of {@link String} with the error messages
      */
-    private List<String> getServerWebInputExceptionErrorMessages(ServerWebInputException exception) {
+    private List<String> getServerWebInputExceptionErrorMessages(final ServerWebInputException exception) {
         if (exception.getCause() instanceof TypeMismatchException) {
             TypeMismatchException ex = (TypeMismatchException)exception.getCause();
-            return asList(format("There was an type mismatch error in %s. The provided value was %s and required type is %s",
-                    exception.getMethodParameter(),
-                    ex.getValue(),
-                    ex.getRequiredType()));
+            return List.of(
+                    format("There was an type mismatch error in %s. The provided value was %s and required type is %s",
+                            exception.getMethodParameter(),
+                            ex.getValue(),
+                            ex.getRequiredType())
+            );
         }
         else {
-            return asList(format("There was an error in %s due to %s", exception.getMethodParameter(), exception.getReason()));
+            return List.of(
+                    format("There was an error in %s due to %s",
+                            exception.getMethodParameter(),
+                            exception.getReason())
+            );
         }
     }
 
@@ -276,7 +345,7 @@ public class GlobalErrorWebExceptionHandler {
      *
      * @return {@link List} of {@link String} with the error messages
      */
-    private List<String> getConstraintViolationExceptionErrorMessages(ConstraintViolationException exception) {
+    private List<String> getConstraintViolationExceptionErrorMessages(final ConstraintViolationException exception) {
         return exception.getConstraintViolations()
                 .stream()
                 .map(c -> {
@@ -301,16 +370,29 @@ public class GlobalErrorWebExceptionHandler {
      *
      * @return {@link Mono} with the suitable Http response
      */
-    private Mono<Void> buildErrorResponse(RestApiErrorCode errorCode, List<String> errorMessages, ServerWebExchange exchange,
-                                          int httpStatus) {
-        exchange.getResponse().setRawStatusCode(httpStatus);
-        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+    private Mono<Void> buildErrorResponse(final RestApiErrorCode errorCode,
+                                          final List<String> errorMessages,
+                                          final ServerWebExchange exchange,
+                                          final int httpStatus) {
+        exchange.getResponse()
+                .setRawStatusCode(httpStatus);
+        exchange.getResponse()
+                .getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         ErrorResponseDto error = new ErrorResponseDto(errorCode, errorMessages);
+        byte[] responseMessageBytes = JsonUtil
+                .toJson(error)
+                .orElse("")
+                .getBytes(StandardCharsets.UTF_8);
 
-        byte[] responseMessageBytes = JsonUtil.toJson(error).orElse("").getBytes(StandardCharsets.UTF_8);
-        DataBuffer bufferResponseMessage = exchange.getResponse().bufferFactory().wrap(responseMessageBytes);
-        return exchange.getResponse().writeWith(Mono.just(bufferResponseMessage));
+        DataBuffer bufferResponseMessage = exchange.getResponse()
+                .bufferFactory()
+                .wrap(responseMessageBytes);
+
+        return exchange.getResponse()
+                .writeWith(
+                        Mono.just(bufferResponseMessage)
+                );
     }
 
 }

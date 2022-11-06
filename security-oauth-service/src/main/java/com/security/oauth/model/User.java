@@ -18,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -40,7 +41,9 @@ public class User implements UserDetails {
     private static final long serialVersionUID = -5881457091221203109L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".user_id_seq")
+    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".user_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".user_generator")
+    @SequenceGenerator(name = Constants.DATABASE_SCHEMA.EAT + ".user_generator", sequenceName = Constants.DATABASE_SCHEMA.EAT + ".user_id_seq", allocationSize = 1)
     private Long id;
 
     @NotNull

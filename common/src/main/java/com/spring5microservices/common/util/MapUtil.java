@@ -39,6 +39,7 @@ public class MapUtil {
      *    In the given {@code sourceMap}, applies {@code defaultFunction} if the current element verifies
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
@@ -46,6 +47,7 @@ public class MapUtil {
      *    i -> i % 2 == 1
      *    i -> i + 1
      *    i -> i * 2
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
@@ -73,6 +75,7 @@ public class MapUtil {
      *    In the given {@code sourceMap}, applies {@code defaultFunction} if the current element verifies
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
@@ -81,6 +84,7 @@ public class MapUtil {
      *    i -> i + 1
      *    i -> i * 2
      *    HashMap::new
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
@@ -145,16 +149,18 @@ public class MapUtil {
 
     /**
      * Returns a {@link Map} after:
-     *
+     * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                   Result:
      *    [(1, "Hi"), (2, "Hello")]     [("A", 2), ("B", 4)]
      *    (k, v) -> k % 2 == 0
      *    (k, v) -> k + v.length()
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform.
@@ -176,10 +182,11 @@ public class MapUtil {
 
     /**
      * Returns a {@link Map} after:
-     *
+     * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                   Result:
@@ -187,6 +194,7 @@ public class MapUtil {
      *    (k, v) -> k % 2 == 0
      *    (k, v) -> k + v.length()
      *    HashMap::new
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
@@ -289,12 +297,14 @@ public class MapUtil {
      *    Folds given {@link Map} values from the left, starting with {@code initialValue} and successively
      * calling {@code accumulator}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                        Result:
      *    [(1, "Hi"), (2, "Hello")]          10
      *    0
      *    (k, v) -> k + v.length()
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} with elements to combine.
@@ -328,11 +338,13 @@ public class MapUtil {
     /**
      * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                                     Result:
      *    [(1, "Hi"), (2, "Hello"), (5, "World")]         [(0,  [(2, "Hello")])
      *    (k, v) -> k % 2                                  (1,  [(1, "Hi"), (5, "World")])]
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to filter
@@ -350,6 +362,7 @@ public class MapUtil {
     /**
      * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                                     Result:
@@ -357,6 +370,7 @@ public class MapUtil {
      *    (k, v) -> k % 2                                  (1,  [(1, "Hi"), (5, "World")])]
      *    HashMap::new
      *    HashMap::new
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to filter
@@ -404,18 +418,22 @@ public class MapUtil {
     /**
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
-     *
+     * <p>
      * It is equivalent to:
      *
+     * <pre>
      *    Map<R, Map<T, E>> groupedMap = groupBy(sourceMap, discriminatorKey)
      *    Map<R, List<V>> finalMap = mapValues(groupedMap, valueMapper)
+     * </pre>
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                                             Result:
      *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]       [(0,  [1])
      *    (k, v) -> k % 3                                          (1,  [2])
      *    (k, v) -> v.length()                                     (2,  [5, 5])]
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to transform.
@@ -439,12 +457,15 @@ public class MapUtil {
     /**
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
-     *
+     * <p>
      * It is equivalent to:
      *
+     * <pre>
      *    Map<R, Map<T, E>> groupedMap = groupBy(sourceMap, discriminatorKey)
      *    Map<R, List<V>> finalMap = mapValues(groupedMap, valueMapper)
+     * </pre>
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                                             Result:
@@ -452,6 +473,7 @@ public class MapUtil {
      *    (k, v) -> k % 3                                          (1,  [2])
      *    (k, v) -> v.length()                                     (2,  [5, 5])]
      *    ArrayList::new
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to transform.
@@ -499,6 +521,7 @@ public class MapUtil {
      * All the values that have the same discriminator are then transformed by {@code valueMapper} {@link BiFunction}
      * and then reduced into a single value with {@code reduceValues}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                                              Intermediate Map:          Result:
@@ -506,6 +529,7 @@ public class MapUtil {
      *    (k, v) -> k % 3                                           (1,  [2])
      *    (k, v) -> v.length()                                      (2,  [5, 5])]
      *    v -> v++
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to transform.
@@ -603,11 +627,13 @@ public class MapUtil {
     /**
      * Builds a new {@link Map} by applying a function to all values of {@code sourceMap}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                    Result:
      *    [(1, "A"), (3, "C")]           [(1, 2), (3, 4)]
      *    (k, v) -> k + v.length()
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to used as source of the new one
@@ -627,12 +653,14 @@ public class MapUtil {
     /**
      * Builds a new {@link Map} by applying a function to all values of {@code sourceMap}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                    Result:
      *    [(1, "A"), (3, "C")]           [(1, 2), (3, 4)]
      *    (k, v) -> k + v.length()
      *    HashMap::new
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to used as source of the new one
@@ -769,9 +797,8 @@ public class MapUtil {
     /**
      * Finds the first value of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
      *
-     *
      * @param sourceMap
-     *    {@link Map} used to find smallest value
+     *    {@link Map} used to find the smallest value
      * @param comparator
      *    {@link Comparator} to be used for comparing values
      *
@@ -796,11 +823,13 @@ public class MapUtil {
      *    Returns a {@link Map} of {@link Boolean} as key, on which {@code true} contains all elements that satisfy given
      * {@code discriminator} and {@code false}, all elements that do not.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                        Result:
      *    [(1, "Hi"), (2, "Hello")]          [(true,  [(2, "Hello")])
      *    (k, v) -> k % 2 == 0                (false, [(1, "Hi")])]
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to filter
@@ -819,12 +848,14 @@ public class MapUtil {
      *    Returns a {@link Map} of {@link Boolean} as key, on which {@code true} contains all elements that satisfy given
      * {@code discriminator} and {@code false}, all elements that do not.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                        Result:
      *    [(1, "Hi"), (2, "Hello")]          [(true,  [(2, "Hello")])
      *    (k, v) -> k % 2 == 0                (false, [(1, "Hi")])]
      *    HashMap::new
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to filter
@@ -888,26 +919,32 @@ public class MapUtil {
      *    Using the provided {@code sourceMap}, return all elements beginning at index {@code from} and afterwards,
      * up to index {@code until} (excluding this one).
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:                      Result:
      *    [(1, "Hi"), (2, "Hello")]        [(2, "Hello")]
      *    1
      *    3
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:                      Result:
      *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
      *    0
      *    1
+     * </pre>
      *
+     * <pre>
      * Example 3:
      *
      *   Parameters:                      Result:
      *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Hello")]
      *    -1
      *    2
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to slice
@@ -949,17 +986,21 @@ public class MapUtil {
     /**
      * Loops through the provided {@link Map} one position every time, returning sublists with {@code size}
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:                          Result:
      *    [(1, "A"), (3, "C")]                 [[(1, "A"), (3, "C")]]
      *    5
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:                          Result:
      *    [(1, "A"), (3, "C"), (8, "Z")]       [[(1, "A"), (3, "C")], [(3, "C"), (8, "Z")]]
      *    2
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to slide
@@ -1006,17 +1047,21 @@ public class MapUtil {
     /**
      * Splits the given {@link Map} in sublists with a size equal to the given {@code size}
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:                          Result:
      *    [(1, "A"), (3, "C"), (8, "Z")]       [[(1, "A"), (3, "C")], [(8, "Z")]]
      *    2
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:                          Result:
      *    [(1, "A"), (3, "C")]                 [[(1, "A"), (3, "C")]]
      *    3
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to split

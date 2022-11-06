@@ -22,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 public class AuthenticationGenerator implements IAuthenticationGenerator {
 
     @Override
-    public Optional<RawAuthenticationInformationDto> getRawAuthenticationInformation(UserDetails userDetails) {
+    public Optional<RawAuthenticationInformationDto> getRawAuthenticationInformation(final UserDetails userDetails) {
         return ofNullable(userDetails)
                 .map(user -> buildAuthenticationInformation((User)user));
     }
@@ -40,7 +40,7 @@ public class AuthenticationGenerator implements IAuthenticationGenerator {
     }
 
 
-    private RawAuthenticationInformationDto buildAuthenticationInformation(User user) {
+    private RawAuthenticationInformationDto buildAuthenticationInformation(final User user) {
         return RawAuthenticationInformationDto.builder()
                 .accessTokenInformation(getAccessTokenInformation(user))
                 .refreshTokenInformation(getRefreshTokenInformation(user))
@@ -48,7 +48,7 @@ public class AuthenticationGenerator implements IAuthenticationGenerator {
                 .build();
     }
 
-    private Map<String, Object> getAccessTokenInformation(User user) {
+    private Map<String, Object> getAccessTokenInformation(final User user) {
         return new HashMap<>() {{
             put(USERNAME.getKey(), user.getUsername());
             put(NAME.getKey(), user.getName());
@@ -56,13 +56,13 @@ public class AuthenticationGenerator implements IAuthenticationGenerator {
         }};
     }
 
-    private Map<String, Object> getRefreshTokenInformation(User user) {
+    private Map<String, Object> getRefreshTokenInformation(final User user) {
         return new HashMap<>() {{
             put(USERNAME.getKey(), user.getUsername());
         }};
     }
 
-    private Map<String, Object> getAdditionalTokenInformation(User user) {
+    private Map<String, Object> getAdditionalTokenInformation(final User user) {
         return new HashMap<>() {{
             put(USERNAME.getKey(), user.getUsername());
             put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));

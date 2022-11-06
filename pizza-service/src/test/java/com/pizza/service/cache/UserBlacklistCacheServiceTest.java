@@ -4,9 +4,9 @@ import com.pizza.configuration.cache.CacheConfiguration;
 import com.spring5microservices.common.service.CacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
@@ -17,21 +17,22 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = UserBlacklistCacheService.class)
+@ExtendWith(SpringExtension.class)
 public class UserBlacklistCacheServiceTest {
 
-    @MockBean
+    @Mock
     private CacheConfiguration mockCacheConfiguration;
 
-    @MockBean
+    @Mock
     private CacheService mockCacheService;
 
-    @Autowired
-    private UserBlacklistCacheService userBlacklistCacheService;
+    private UserBlacklistCacheService service;
 
     @BeforeEach
     public void init() {
-        when(mockCacheConfiguration.getUserBlacklistCacheName()).thenReturn("TestCache");
+        service = new UserBlacklistCacheService(mockCacheConfiguration, mockCacheService);
+        when(mockCacheConfiguration.getUserBlacklistCacheName())
+                .thenReturn("TestCache");
     }
 
 
@@ -48,8 +49,8 @@ public class UserBlacklistCacheServiceTest {
     public void contains_testCases() {
         for (Object[] parameters: containsTestCases()) {
             when(mockCacheService.contains(anyString(), eq((String)parameters[0]))).thenReturn((boolean)parameters[1]);
-            boolean operationResult = userBlacklistCacheService.contains((String)parameters[0]);
-            assertEquals((boolean)parameters[2], operationResult);
+            boolean operationResult = service.contains((String)parameters[0]);
+            assertEquals(parameters[2], operationResult);
         }
     }
 
@@ -67,8 +68,8 @@ public class UserBlacklistCacheServiceTest {
     public void put_testCases() {
         for (Object[] parameters: putTestCases()) {
             when(mockCacheService.put(anyString(), eq((String)parameters[0]), anyBoolean())).thenReturn((boolean)parameters[1]);
-            boolean operationResult = userBlacklistCacheService.put((String)parameters[0]);
-            assertEquals((boolean)parameters[2], operationResult);
+            boolean operationResult = service.put((String)parameters[0]);
+            assertEquals(parameters[2], operationResult);
         }
     }
 
@@ -86,8 +87,8 @@ public class UserBlacklistCacheServiceTest {
     public void remove_testCases() {
         for (Object[] parameters: removeTestCases()) {
             when(mockCacheService.remove(anyString(), eq((String)parameters[0]))).thenReturn((boolean)parameters[1]);
-            boolean operationResult = userBlacklistCacheService.remove((String)parameters[0]);
-            assertEquals((boolean)parameters[2], operationResult);
+            boolean operationResult = service.remove((String)parameters[0]);
+            assertEquals(parameters[2], operationResult);
         }
     }
 

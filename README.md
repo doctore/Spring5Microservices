@@ -15,6 +15,7 @@
 - [Security services](#security-services)
 - [How to use it?](#how-to-use-it)
 - [Rest API documentation](#rest-api-documentation)
+- [Previous versions of the project](#previous-project-versions)
 
 ## Why was this project created?
 
@@ -124,12 +125,6 @@ On the other hand, there are other "important folders":
 * **util** to manage the JWS/JWE functionality.
 <br><br>
 
-The existing three git branches are related with this microservice:
-
-* **master** there is only one datasource due to all applications use the same database.
-* **multi-datasource-security** every application has its own datasource, so different persistent context are defined for every one.
-* **spring-jdbc-security** there is only one datasource but Hibernate + JPA have been replaced by Spring JDBC template to improve the performance.
-
 ### pizza-service
 
 One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservices. The main purpose of this microservice is the creation of an small one
@@ -187,7 +182,17 @@ On the other hand, there are other "important folders":
 
 ### common
 
-Maven project that includes common code used in several microservices.
+Maven project that includes common code used in several microservices, with several useful helper classes like:
+
+* [CollectionUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/CollectionUtil.java)
+* [MapUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/MapUtil.java)
+
+And functional programming structures and useful classes like:
+
+* [Tuple](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/collection/tuple)
+* [Either](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/either)
+* [Validation](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/validation)
+<br><br>
 
 ### sql
 
@@ -349,3 +354,18 @@ To facilitate access to this documentation, we can use the **gateway-server** UR
 between all existing microservices.
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
+
+## Previous versions of the project
+
+There are several archive git branches with previous versions of the current project:
+
+* [Archive master](https://github.com/doctore/Spring5Microservices/tree/archive/v0/master) equivalent to the current `master` but using previous
+versions of Spring and other libraries.
+<br><br>
+* [Archive multi datasource security](https://github.com/doctore/Spring5Microservices/tree/archive/v0/multi-datasource-security) specialization of
+[security-jwt-service](#security-jwt-service) on which every application has its own datasource, so different persistent context are defined for
+every one. Uses previous versions of Spring and other libraries.
+<br><br>
+* [Archive Spring Jdbc security](https://github.com/doctore/Spring5Microservices/tree/archive/v0/spring-jdbc-security) specialization of
+[security-jwt-service](#security-jwt-service) but in this case there is only one datasource but Hibernate + JPA have been replaced by Spring JDBC
+template to improve the performance. Uses previous versions of Spring and other libraries. 

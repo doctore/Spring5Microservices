@@ -77,9 +77,15 @@ public class SecurityServiceTest {
     @ParameterizedTest
     @MethodSource("loginTestCases")
     @DisplayName("login: test cases")
-    public void login_testCases(String clientId, String username, String password, UserService userService, UserDetails userDetails,
-                                boolean passwordsMatch, Class<? extends Exception> expectedException,
-                                Optional<AuthenticationInformationDto> authenticationInformation, Optional<AuthenticationInformationDto> expectedResult) {
+    public void login_testCases(String clientId,
+                                String username,
+                                String password,
+                                UserService userService,
+                                UserDetails userDetails,
+                                boolean passwordsMatch,
+                                Class<? extends Exception> expectedException,
+                                Optional<AuthenticationInformationDto> authenticationInformation,
+                                Optional<AuthenticationInformationDto> expectedResult) {
 
         when(mockApplicationContext.getBean(UserService.class)).thenReturn(userService);
         when(mockAuthenticationService.getAuthenticationInformation(clientId, userDetails)).thenReturn(authenticationInformation);
@@ -126,8 +132,12 @@ public class SecurityServiceTest {
     @ParameterizedTest
     @MethodSource("refreshTestCases")
     @DisplayName("refresh: test cases")
-    public void refresh_testCases(String refreshToken, String clientId, String usernameResult, UserService userService,
-                                  Class<? extends Exception> expectedException, Optional<AuthenticationInformationDto> authenticationInformation,
+    public void refresh_testCases(String refreshToken,
+                                  String clientId,
+                                  String usernameResult,
+                                  UserService userService,
+                                  Class<? extends Exception> expectedException,
+                                  Optional<AuthenticationInformationDto> authenticationInformation,
                                   Optional<AuthenticationInformationDto> expectedResult) {
         UserDetails userDetails = TestDataFactory.buildDefaultUser();
         Map<String, Object> payload = new HashMap<>();
@@ -177,8 +187,12 @@ public class SecurityServiceTest {
     @ParameterizedTest
     @MethodSource("getAuthorizationInformationTestCases")
     @DisplayName("getAuthorizationInformation: test cases")
-    public void getAuthorizationInformation_testCases(String accessToken, String clientId, String usernameResult, Set<String> rolesResult,
-                                                      Map<String, Object> additionalInfoResult, Class<? extends Exception> expectedException,
+    public void getAuthorizationInformation_testCases(String accessToken,
+                                                      String clientId,
+                                                      String usernameResult,
+                                                      Set<String> rolesResult,
+                                                      Map<String, Object> additionalInfoResult,
+                                                      Class<? extends Exception> expectedException,
                                                       UsernameAuthoritiesDto expectedResult) {
         Map<String, Object> payload = new HashMap<>();
 

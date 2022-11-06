@@ -1,9 +1,0 @@
-spring:
-  application:
-    name: config-server
-  cloud:
-    config:
-      server:
-        encrypt:
-          # We will send encrypted properties
-          enabled: false

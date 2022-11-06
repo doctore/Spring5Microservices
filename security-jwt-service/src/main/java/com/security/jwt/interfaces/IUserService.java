@@ -18,6 +18,7 @@ public interface IUserService extends UserDetailsService {
      *
      * @return {@code true} if {@code passwordToVerify} matches with {@link UserDetails#getPassword()}, {@code false} otherwise.
      */
-    boolean passwordsMatch(String passwordToVerify, UserDetails userDetails);
+    boolean passwordsMatch(final String passwordToVerify,
+                           final UserDetails userDetails);
 
 }

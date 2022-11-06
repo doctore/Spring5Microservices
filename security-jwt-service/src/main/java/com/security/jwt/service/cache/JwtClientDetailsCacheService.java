@@ -40,7 +40,7 @@ public class JwtClientDetailsCacheService {
      *
      * @return {@code true} if the {@code clientId} exists, {@code false} otherwise
      */
-    public boolean contains(String clientId) {
+    public boolean contains(final String clientId) {
         return ofNullable(clientId)
                 .map(id -> cacheService.contains(cacheConfiguration.getJwtConfigurationCacheName(), id))
                 .orElse(false);
@@ -55,7 +55,7 @@ public class JwtClientDetailsCacheService {
      *
      * @return @return {@link Optional} with the {@link JwtClientDetails} if it was found, {@link Optional#empty()} otherwise
      */
-    public Optional<JwtClientDetails> get(String clientId) {
+    public Optional<JwtClientDetails> get(final String clientId) {
         return cacheService.get(cacheConfiguration.getJwtConfigurationCacheName(), clientId);
     }
 
@@ -70,7 +70,8 @@ public class JwtClientDetailsCacheService {
      *
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
-    public boolean put(String clientId, JwtClientDetails jwtClientDetails) {
+    public boolean put(final String clientId,
+                       final JwtClientDetails jwtClientDetails) {
         return cacheService.put(cacheConfiguration.getJwtConfigurationCacheName(), clientId, jwtClientDetails);
     }
 

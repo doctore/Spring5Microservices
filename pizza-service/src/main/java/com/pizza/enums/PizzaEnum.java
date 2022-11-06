@@ -17,7 +17,7 @@ public enum PizzaEnum implements IEnumInternalPropertyValue<String> {
     PUGLIESE("Pugliese"),
     HAWAIIAN("Hawaiian");
 
-    private String databaseValue;
+    private final String databaseValue;
 
     PizzaEnum(String databaseValue) {
         this.databaseValue = databaseValue;

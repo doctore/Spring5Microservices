@@ -73,7 +73,8 @@ public class AuthenticationService {
      *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database or {@link AuthenticationConfigurationEnum}
      */
-    public Optional<AuthenticationInformationDto> getAuthenticationInformation(String clientId, UserDetails userDetails) {
+    public Optional<AuthenticationInformationDto> getAuthenticationInformation(final String clientId,
+                                                                               final UserDetails userDetails) {
         return ofNullable(userDetails)
                 .map(user -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
@@ -101,7 +102,9 @@ public class AuthenticationService {
      * @throws UnauthorizedException if the given {@code token} is not a valid one
      * @throws TokenExpiredException if the given {@code token} has expired
      */
-    public Map<String, Object> getPayloadOfToken(String token, String clientId, boolean isAccessToken) {
+    public Map<String, Object> getPayloadOfToken(final String token,
+                                                 final String clientId,
+                                                 final boolean isAccessToken) {
         JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
         Map<String, Object> payload = getVerifiedPayloadOfToken(token, clientDetails);
         if (isAccessToken != isAccessToken(payload))
@@ -121,9 +124,10 @@ public class AuthenticationService {
      *
      * @return {@link Optional} with {@code username} if exists, {@link Optional#empty()} otherwise
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in {@link AuthenticationConfigurationEnum}
      */
-    public Optional<String> getUsername(Map<String, Object> payload, String clientId) {
+    public Optional<String> getUsername(final Map<String, Object> payload,
+                                        final String clientId) {
         return ofNullable(payload)
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
@@ -143,11 +147,16 @@ public class AuthenticationService {
      *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
      */
-    public Set<String> getRoles(Map<String, Object> payload, String clientId) {
+    public Set<String> getRoles(final Map<String, Object> payload,
+                                final String clientId) {
         return ofNullable(payload)
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
-                .map(authGen -> null == payload.get(authGen.getRolesKey()) ? null : new HashSet<>((List<String>)payload.get(authGen.getRolesKey())))
+                .map(authGen ->
+                        null == payload.get(authGen.getRolesKey())
+                                ? null
+                                : new HashSet<>((List<String>)payload.get(authGen.getRolesKey()))
+                )
                 .orElseGet(HashSet::new);
     }
 
@@ -164,9 +173,10 @@ public class AuthenticationService {
      *
      * @return {@link Map}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in {@link AuthenticationConfigurationEnum}
      */
-    public Map<String, Object> getCustomInformationIncludedByClient(Map<String, Object> payload, String clientId) {
+    public Map<String, Object> getCustomInformationIncludedByClient(final Map<String, Object> payload,
+                                                                    final String clientId) {
         return ofNullable(payload)
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
@@ -201,17 +211,22 @@ public class AuthenticationService {
      *
      * @return {@link AuthenticationInformationDto}
      */
-    private AuthenticationInformationDto buildAuthenticationInformation(JwtClientDetails clientDetails, RawAuthenticationInformationDto jwtRawInformation,
-                                                                        String jti) {
+    private AuthenticationInformationDto buildAuthenticationInformation(final JwtClientDetails clientDetails,
+                                                                        final RawAuthenticationInformationDto jwtRawInformation,
+                                                                        final String jti) {
         return AuthenticationInformationDto.builder()
                 .accessToken(buildAccessToken(clientDetails, jwtRawInformation, jti))
                 .refreshToken(buildRefreshToken(clientDetails, jwtRawInformation, jti))
-                .tokenType(clientDetails.getTokenType())
+                .tokenType(clientDetails.getTokenType().name())
                 .jwtId(jti)
                 .expiresIn(clientDetails.getAccessTokenValidity())
-                .additionalInfo(null != jwtRawInformation ? jwtRawInformation.getAdditionalTokenInformation() : null)
+                .additionalInfo(null != jwtRawInformation
+                        ? jwtRawInformation.getAdditionalTokenInformation()
+                        : null
+                )
                 .build();
     }
+
 
     /**
      *    Return the access JWS/JWE token, merging the information should be included in this one with the given {@link JwtClientDetails}
@@ -226,13 +241,16 @@ public class AuthenticationService {
      *
      * @return JWS/JWE access token
      */
-    private String buildAccessToken(JwtClientDetails clientDetails, RawAuthenticationInformationDto jwtRawInformation,
-                                    String jti) {
+    private String buildAccessToken(final JwtClientDetails clientDetails,
+                                    final RawAuthenticationInformationDto jwtRawInformation,
+                                    final String jti) {
         Map<String, Object> tokenInformation = new HashMap<>(addToAccessToken(clientDetails.getClientId(), jti));
-        if (null != jwtRawInformation)
+        if (null != jwtRawInformation) {
             tokenInformation.putAll(jwtRawInformation.getAccessTokenInformation());
+        }
         return generateToken(tokenInformation, clientDetails, clientDetails.getAccessTokenValidity());
     }
+
 
     /**
      *    Return the refresh JWS/JWE token, merging the information should be included in this one with the given {@link JwtClientDetails}
@@ -247,34 +265,40 @@ public class AuthenticationService {
      *
      * @return JWS/JWE refresh token
      */
-    private String buildRefreshToken(JwtClientDetails clientDetails, RawAuthenticationInformationDto jwtRawInformation,
-                                     String jti) {
+    private String buildRefreshToken(final JwtClientDetails clientDetails,
+                                     final RawAuthenticationInformationDto jwtRawInformation,
+                                     final String jti) {
         Map<String, Object> tokenInformation = new HashMap<>(addToRefreshToken(clientDetails.getClientId(), jti));
-        if (null != jwtRawInformation)
+        if (null != jwtRawInformation) {
             tokenInformation.putAll(jwtRawInformation.getRefreshTokenInformation());
+        }
         return generateToken(tokenInformation, clientDetails, clientDetails.getRefreshTokenValidity());
     }
+
 
     /**
      * Return the standard information should be included in JWS/JWE access token.
      */
     private Map<String, Object> addToAccessToken(String clientId, String jti) {
-        return new HashMap<String, Object>() {{
+        return new HashMap<>() {{
             put(AUDIENCE.getKey(), clientId);
             put(JWT_ID.getKey(), jti);
         }};
     }
 
+
     /**
      * Return the standard information should be included in JWS/JWE refresh token.
      */
-    private Map<String, Object> addToRefreshToken(String clientId, String jti) {
-        return new HashMap<String, Object>() {{
+    private Map<String, Object> addToRefreshToken(final String clientId,
+                                                  final String jti) {
+        return new HashMap<>() {{
             put(AUDIENCE.getKey(), clientId);
             put(JWT_ID.getKey(), UUID.randomUUID().toString());
             put(REFRESH_JWT_ID.getKey(), jti);
         }};
     }
+
 
     /**
      * Check if the given {@code payload} contains information related with an JWS/JWE access token.
@@ -284,18 +308,20 @@ public class AuthenticationService {
      *
      * @return {@code true} if the {@code payload} comes from an access token, {@code false} otherwise
      */
-    private boolean isAccessToken(Map<String, Object> payload) {
+    private boolean isAccessToken(final Map<String, Object> payload) {
         return ofNullable(payload)
                 .map(p -> null == p.get(REFRESH_JWT_ID.getKey()))
                 .orElse(true);
     }
 
+
     /**
      * Decrypt the given {@code signatureSecret} related with a {@link JwtClientDetails}.
      */
-    private String decryptSignatureSecret(String signatureSecret) {
+    private String decryptSignatureSecret(final String signatureSecret) {
         return encryptor.decrypt(signatureSecret.replace(Constants.CIPHER_SECRET_PREFIX, ""));
     }
+
 
     /**
      * Generate JWS or JWE token taking into account the information included in {@link JwtClientDetails#isUseJwe()}
@@ -309,15 +335,27 @@ public class AuthenticationService {
      *
      * @return JWS/JWE token
      */
-    private String generateToken(Map<String, Object> informationToInclude, JwtClientDetails clientDetails, int tokenValidityInSeconds) {
-        if (clientDetails.isUseJwe())
-            return jweUtil.generateToken(informationToInclude, clientDetails.getSignatureAlgorithm().getAlgorithm(),
-                    decryptSignatureSecret(clientDetails.getSignatureSecret()), jweConfiguration.getEncryptionSecret(),
-                    tokenValidityInSeconds);
-        else
-            return jwsUtil.generateToken(informationToInclude, clientDetails.getSignatureAlgorithm().getAlgorithm(),
-                    decryptSignatureSecret(clientDetails.getSignatureSecret()), tokenValidityInSeconds);
+    private String generateToken(final Map<String, Object> informationToInclude,
+                                 final JwtClientDetails clientDetails,
+                                 final int tokenValidityInSeconds) {
+        if (clientDetails.isUseJwe()) {
+            return jweUtil.generateToken(
+                    informationToInclude,
+                    clientDetails.getSignatureAlgorithm().getAlgorithm(),
+                    decryptSignatureSecret(clientDetails.getSignatureSecret()),
+                    jweConfiguration.getEncryptionSecret(),
+                    tokenValidityInSeconds
+            );
+        } else {
+            return jwsUtil.generateToken(
+                    informationToInclude,
+                    clientDetails.getSignatureAlgorithm().getAlgorithm(),
+                    decryptSignatureSecret(clientDetails.getSignatureSecret()),
+                    tokenValidityInSeconds
+            );
+        }
     }
+
 
     /**
      * Get from the given JWS or JWE token its verified payload information.
@@ -329,12 +367,23 @@ public class AuthenticationService {
      *
      * @return {@link Map} with the {@code payload} of the given token
      */
-    private Map<String, Object> getVerifiedPayloadOfToken(String token, JwtClientDetails clientDetails) {
-        if (clientDetails.isUseJwe())
-            return jweUtil.getPayloadExceptGivenKeys(token, decryptSignatureSecret(clientDetails.getSignatureSecret()),
-                    jweConfiguration.getEncryptionSecret(),new HashSet<>());
-        else
-            return jwsUtil.getPayloadExceptGivenKeys(token, decryptSignatureSecret(clientDetails.getSignatureSecret()), new HashSet<>());
+    private Map<String, Object> getVerifiedPayloadOfToken(final String token,
+                                                          final JwtClientDetails clientDetails) {
+        if (clientDetails.isUseJwe()) {
+            return jweUtil.getPayloadExceptGivenKeys(
+                    token,
+                    decryptSignatureSecret(clientDetails.getSignatureSecret()),
+                    jweConfiguration.getEncryptionSecret(),
+                    new HashSet<>()
+            );
+        }
+        else {
+            return jwsUtil.getPayloadExceptGivenKeys(
+                    token,
+                    decryptSignatureSecret(clientDetails.getSignatureSecret()),
+                    new HashSet<>()
+            );
+        }
     }
 
 }

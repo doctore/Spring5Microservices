@@ -1,0 +1,8 @@
+server:
+  instance:
+    hostname: localhost
+  port: 5555
+
+spring:
+  config:
+    import: configserver:http://localhost:8888

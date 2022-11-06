@@ -42,11 +42,13 @@ public class EncryptorService {
      *    Encrypt {@code toEncrypt} using the provided {@code password}. The output consist of iv, password's salt,
      * encrypted content and auth tag in the following format:
      *
+     * <pre>
      *   output = byte[] {i i i s s s c c c c c c ...}
      *
      *    i = IV bytes
      *    s = Salt bytes
      *    c = content bytes (encrypted content)
+     * </pre>
      *
      * @param toEncrypt
      *    {@link String} to encrypt.
@@ -58,7 +60,8 @@ public class EncryptorService {
      * @throws IllegalArgumentException if {@code toEncrypt} or {@code password} are {@code null}
      * @throws GeneralSecurityException if there was a problem encrypting the given {@code toEncrypt}
      */
-    public String encrypt(String toEncrypt, String password) throws GeneralSecurityException {
+    public String encrypt(final String toEncrypt,
+                          final String password) throws GeneralSecurityException {
         Assert.notNull(toEncrypt, "toEncrypt must be not null");
         Assert.notNull(password, "password must be not null");
 
@@ -105,7 +108,8 @@ public class EncryptorService {
      * @throws IllegalArgumentException if {@code toDecrypt} or {@code password} are {@code null}
      * @throws GeneralSecurityException if there was a problem decrypting the given {@code toDecrypt}
      */
-    public String decrypt(String toDecrypt, String password) throws GeneralSecurityException {
+    public String decrypt(final String toDecrypt,
+                          final String password) throws GeneralSecurityException {
         Assert.notNull(toDecrypt, "toDecrypt must be not null");
         Assert.notNull(password, "password must be not null");
 
@@ -158,15 +162,19 @@ public class EncryptorService {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
-    private SecretKey getSecretKey(String symmetricAlgorithm, String secretKeyAlgorithm, char[] password, byte[] salt,
-                                   int iterationCount, int keyLength) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private SecretKey getSecretKey(final String symmetricAlgorithm,
+                                   final String secretKeyAlgorithm,
+                                   final char[] password,
+                                   final byte[] salt,
+                                   final int iterationCount,
+                                   final int keyLength) throws NoSuchAlgorithmException, InvalidKeySpecException {
         SecretKeyFactory factory = SecretKeyFactory.getInstance(secretKeyAlgorithm);
         KeySpec spec = new PBEKeySpec(password, salt, iterationCount, keyLength);
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), symmetricAlgorithm);
     }
 
 
-    private byte[] getRandomNonce(int numBytes) {
+    private byte[] getRandomNonce(final int numBytes) {
         byte[] nonce = new byte[numBytes];
         new SecureRandom().nextBytes(nonce);
         return nonce;

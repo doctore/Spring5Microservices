@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 public class PredicateUtil {
 
     /**
-     * Used when we want to get the unique elements of a given {@link Collection} by an specific property of its objects
+     * Used when we want to get the unique elements of a given {@link Collection} by a specific property of its objects
      *
      * @param keyExtractor
      *    {@link Function} used to get the key we want to use to distinct the elements

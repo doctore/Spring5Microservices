@@ -47,13 +47,22 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-        endpoints.pathMapping(RestRoutes.ACCESS_TOKEN_URI.getFirst(), RestRoutes.ACCESS_TOKEN_URI.getSecond())
-                 .pathMapping(RestRoutes.CHECK_TOKEN_URI.getFirst(), RestRoutes.CHECK_TOKEN_URI.getSecond())
-                 .pathMapping(RestRoutes.USER_AUTHORIZATION_URI.getFirst(), RestRoutes.USER_AUTHORIZATION_URI.getSecond())
-                 .tokenStore(tokenStore)
-                 .accessTokenConverter(jwtAccessTokenConverter)
-                 .userDetailsService(userService)
-                 .authenticationManager(authManager);
+        endpoints.pathMapping(
+                        RestRoutes.ACCESS_TOKEN_URI.getFirst(),
+                        RestRoutes.ACCESS_TOKEN_URI.getSecond()
+                )
+                .pathMapping(
+                        RestRoutes.CHECK_TOKEN_URI.getFirst(),
+                        RestRoutes.CHECK_TOKEN_URI.getSecond()
+                )
+                .pathMapping(
+                        RestRoutes.USER_AUTHORIZATION_URI.getFirst(),
+                        RestRoutes.USER_AUTHORIZATION_URI.getSecond()
+                )
+                .tokenStore(tokenStore)
+                .accessTokenConverter(jwtAccessTokenConverter)
+                .userDetailsService(userService)
+                .authenticationManager(authManager);
     }
 
     @Override

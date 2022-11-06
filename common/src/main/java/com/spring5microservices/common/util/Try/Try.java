@@ -20,13 +20,13 @@ import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 
 /**
- *     Represents a computation that may either result in an exception, or return a successfully computed value. It's
- *  similar to, but semantically different from the {@link Either} type.
- *
+ *    Represents a computation that may either result in an exception, or return a successfully computed value. It's
+ * similar to, but semantically different from the {@link Either} type.
+ * <p>
  *  Instances of {@link Try}, are either an instance of {@link Success} or {@link Failure}.
- *
- *     For example, {@link Try} can be used to perform division on a user-defined input, without the need to do explicit
- *  exception-handling in all of the places that an exception might occur.
+ * <p>
+ *    For example, {@link Try} can be used to perform division on a user-defined input, without the need to do explicit
+ * exception-handling in all the places that an exception might occur.
  *
  * @param <T>
  *    Value type in the case of {@link Success}
@@ -111,14 +111,15 @@ public abstract class Try<T> implements Serializable {
 
     /**
      * Merges the given {@code tries} in a one result that will be:
-     *
+     * <p>
      *   1. {@link Success} instance if all given {@code tries} are {@link Success} ones or such parameters is {@code null}
      *      or empty. Using provided {@link BiFunction} {@code mapperSuccess} to get the final value added into the
      *      returned {@link Success}.
-     *
+     * <p>
      *   2. {@link Failure} instance if there is at least one {@link Failure} in the given {@code tries}. Using provided
      *      {@link BiFunction} {@code mapperFailure} to get the final value added into the returned {@link Success}.
      *
+     * <pre>
      * Examples:
      *
      *   mapperFailure = (f1, f2) -> f2;
@@ -127,6 +128,7 @@ public abstract class Try<T> implements Serializable {
      *   combine(mapperFailure, mapperSuccess, Try.success(11), Try.success(7));                                                 // Success(7)
      *   combine(mapperFailure, mapperSuccess, Try.success(13), Try.failure(new Exception()));                                   // Failure(new Exception())
      *   combine(mapperFailure, mapperSuccess, Try.success(10), Try.failure(new Exception()), Try.failure(new IOException()));   // Failure(new IOException())
+     * </pre>
      *
      * @param mapperFailure
      *    {@link BiFunction} used to calculate the new {@link Failure} based on two provided ones
@@ -165,6 +167,7 @@ public abstract class Try<T> implements Serializable {
      *    Checks the given {@link Supplier} of {@link Try}, returning a {@link Success} instance if no {@link Failure}
      * {@link Supplier} was given or the first {@link Failure} one.
      *
+     * <pre>
      * Examples:
      *
      *   mapperRight = (r1, r2) -> r2;
@@ -172,6 +175,7 @@ public abstract class Try<T> implements Serializable {
      *   combineGetFirstFailure(mapperSuccess, Try.success(11), Try.success(7));                                                 // Success(7)
      *   combineGetFirstFailure(mapperSuccess, Try.success(13), Try.failure(new Exception()));                                   // Failure(new Exception())
      *   combineGetFirstFailure(mapperSuccess, Try.success(10), Try.failure(new Exception()), Try.failure(new IOException()));   // Failure(new IOException())
+     * </pre>
      *
      * @param mapperSuccess
      *    {@link BiFunction} used to calculate the new {@link Success} based on two provided ones
@@ -219,10 +223,10 @@ public abstract class Try<T> implements Serializable {
 
     /**
      * Returns {@code this} if:
-     *
+     * <p>
      *   1. Current instance is {@link Failure}
      *   2. Current instance is {@link Success} and stored value verifies given {@link Predicate} (or {@code predicate} is {@code null})
-     *
+     * <p>
      *    Otherwise, returns new {@link Failure} wrapping a {@link NoSuchElementException} instance. If given {@code mapper}
      * invocation returns an {@link Exception} is thrown then returned {@link Try} will a {@link Failure} one too.
      *
@@ -245,8 +249,8 @@ public abstract class Try<T> implements Serializable {
 
     /**
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Try} if this is a {@link Success}.
-     * Otherwise does nothing if this is a {@link Failure}.
-     *
+     * Otherwise, does nothing if this is a {@link Failure}.
+     * <p>
      * If given {@code mapper} invocation returns an {@link Exception} is thrown then returned {@link Try} will {@link Failure}.
      *
      * @param mapper
@@ -268,8 +272,8 @@ public abstract class Try<T> implements Serializable {
 
     /**
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Try} if this is a {@link Failure}.
-     * Otherwise does nothing if this is a {@link Success}.
-     *
+     * Otherwise, does nothing if this is a {@link Success}.
+     * <p>
      * If given {@code mapper} invocation returns an {@link Exception} is thrown then returned {@link Try} will {@link Failure}.
      *
      * @param mapper
@@ -295,9 +299,11 @@ public abstract class Try<T> implements Serializable {
      * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
      * type of {@link Try} this is. Without this, you would have to do something like:
      *
+     * <pre>
      * Example:
      *
      *   t.map(...).mapFailure(...);
+     * </pre>
      *
      *    If invoking given {@code mapperFailure} or {@code mapperSuccess} an {@link Exception} is thrown then returned
      * {@link Try} will {@link Failure}.
@@ -328,7 +334,7 @@ public abstract class Try<T> implements Serializable {
     /**
      *    If the current {@link Try} is a {@link Success} instance, returns the result of applying the given
      * {@link Try}-bearing mapping function to the value. Otherwise does nothing if this is a {@link Failure}.
-     *
+     * <p>
      * If given {@code mapper} invocation returns an {@link Exception} is thrown then returned {@link Try} will {@link Failure}.
      *
      * @param mapper
@@ -349,7 +355,7 @@ public abstract class Try<T> implements Serializable {
 
     /**
      * Merge given {@code t} with the current one, managing the following use cases:
-     *
+     * <p>
      *   1. this = {@link Success}, t = {@link Success}  =>  return a {@link Success} instance applying {@code mapperSuccess}
      *   2. this = {@link Success}, t = {@link Failure}  =>  return the {@link Failure}
      *   3. this = {@link Failure}, t = {@link Success}  =>  return the {@link Failure}
@@ -411,10 +417,12 @@ public abstract class Try<T> implements Serializable {
      * it is an {@link Failure}, transforming internal values into another one. If {@code mapperSuccess} is initially
      * applied and throws an {@link Exception}, then {@code mapperFailure} is applied with this {@link Exception}.
      *
+     * <pre>
      * Example:
      *
      *   Try<Integer> t = ...
      *   String s = t.fold(Throwable::getMessage, Object::toString);
+     * </pre>
      *
      * @param mapperFailure
      *    The mapping {@link Function} to apply the value of a {@link Failure} instance
@@ -553,9 +561,11 @@ public abstract class Try<T> implements Serializable {
      *    Returns this {@link Try} if it is {@link Success}, otherwise tries to recover the {@link Throwable} of the
      * {@link Failure} applying {@code mapperFailure}.
      *
+     * <pre>
      * Example:
      *
      *   Try.of(() -> 12 / 0).recover(t -> Integer.MAX_VALUE);
+     * </pre>
      *
      * @param mapperFailure
      *    Recovery {@link Function} taking a {@link Throwable}
@@ -577,9 +587,11 @@ public abstract class Try<T> implements Serializable {
      *    Returns this {@link Try} if it is {@link Success}, otherwise tries to recover the {@link Throwable} of the
      * {@link Failure} applying {@code mapperFailure}.
      *
+     * <pre>
      * Example:
      *
      *   Try.of(() -> 12 / 0).recoverWith(t -> Try.success(Integer.MAX_VALUE));
+     * </pre>
      *
      * @param mapperFailure
      *    Recovery {@link Function} taking a {@link Throwable}
@@ -599,7 +611,7 @@ public abstract class Try<T> implements Serializable {
 
     /**
      * Verifies in the current instance has no value, that is:
-     *
+     * <p>
      *    1. Is a {@link Failure} one.
      *    2. Is an empty {@link Success} instance.
      *

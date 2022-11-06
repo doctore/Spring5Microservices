@@ -1,9 +1,10 @@
 package com.pizza.configuration.cache;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionConfig;
 import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spring.cache.HazelcastCacheManager;
@@ -42,8 +43,9 @@ public class CacheConfiguration {
     @Bean
     public CacheManager cacheManager() {
         HazelcastInstance existingInstance = Hazelcast.getHazelcastInstanceByName(CACHE_INSTANCE_NAME);
-        HazelcastInstance hazelcastInstance = null != existingInstance ? existingInstance
-                                                                       : Hazelcast.newHazelcastInstance(hazelCastConfig());
+        HazelcastInstance hazelcastInstance = null != existingInstance
+                ? existingInstance
+                : Hazelcast.newHazelcastInstance(hazelCastConfig());
         return new HazelcastCacheManager(hazelcastInstance);
     }
 
@@ -55,11 +57,17 @@ public class CacheConfiguration {
     private Config hazelCastConfig(){
         Config config = new Config();
         config.setInstanceName(CACHE_INSTANCE_NAME)
-                .addMapConfig(new MapConfig()
-                        .setName(userBlacklistCacheName)
-                        .setMaxSizeConfig(new MaxSizeConfig(userBlacklistCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
-                        .setEvictionPolicy(EvictionPolicy.LRU)
-                        .setTimeToLiveSeconds(userBlacklistCacheExpireInSeconds));
+                .addMapConfig(
+                        new MapConfig()
+                                .setName(userBlacklistCacheName)
+                                .setEvictionConfig(
+                                        new EvictionConfig()
+                                                .setSize(userBlacklistCacheEntryCapacity)
+                                                .setMaxSizePolicy(MaxSizePolicy.FREE_HEAP_SIZE)
+                                                .setEvictionPolicy(EvictionPolicy.LRU)
+                                )
+                                .setTimeToLiveSeconds(userBlacklistCacheExpireInSeconds)
+                );
         return config;
     }
 

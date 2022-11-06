@@ -104,6 +104,7 @@ public abstract class Either<L, R> implements Serializable {
      *   2. {@link Left} instance if there is at least one {@link Left} in the given {@code eithers}. Using provided
      *      {@link BiFunction} {@code mapperLeft} to get the final value added into the returned {@link Left}.
      *
+     * <pre>
      * Examples:
      *
      *   mapperLeft = (l1, l2) -> l2;
@@ -112,6 +113,7 @@ public abstract class Either<L, R> implements Serializable {
      *   combine(mapperLeft, mapperRight, Either.right(11), Either.right(7));                      // Right(7)
      *   combine(mapperLeft, mapperRight, Either.right(13), Either.left("A"));                     // Left("A")
      *   combine(mapperLeft, mapperRight, Either.right(10), Either.left("A"), Either.left("B"));   // Left("B")
+     * </pre>
      *
      * @param mapperLeft
      *    {@link BiFunction} used to calculate the new {@link Left} based on two provided ones
@@ -150,6 +152,7 @@ public abstract class Either<L, R> implements Serializable {
      *    Checks the given {@link Supplier}s of {@link Either}, returning a {@link Right} instance if no {@link Left}
      * {@link Supplier} was given or the first {@link Left} one.
      *
+     * <pre>
      * Examples:
      *
      *   mapperRight = (r1, r2) -> r2;
@@ -157,6 +160,7 @@ public abstract class Either<L, R> implements Serializable {
      *   combineGetFirstLeft(mapperRight, () -> Either.right(1), () -> Either.right(7));                            // Right(7)
      *   combineGetFirstLeft(mapperRight, () -> Either.right(3), () -> Either.left("A"));                           // Left("A")
      *   combineGetFirstLeft(mapperRight, () -> Either.right(2), () -> Either.left("A"), () -> Either.left("B"));   // Left("B")
+     * </pre>
      *
      * @param mapperRight
      *    {@link BiFunction} used to calculate the new {@link Right} based on two provided ones
@@ -243,11 +247,13 @@ public abstract class Either<L, R> implements Serializable {
      *   2. {@link Left} applying {@code zero} if this is {@link Right} but its value does not match given {@link Predicate}
      *   3. {@link Left} with the existing value if this is a {@link Left}
      *
+     * <pre>
      * Examples:
      *
      *   Either.right(11).filterOrElse(i -> i > 10, "error");         // Right(11)
      *   Either.right(7).filterOrElse(i -> i > 10, "error");          // Left("error")
      *   Either.left("warning").filterOrElse(i -> i > 10, "error");   // Left("warning")
+     * </pre>
      *
      * @param predicate
      *    {@link Predicate} to apply the stored value if the current instance is a {@link Right} one
@@ -332,9 +338,11 @@ public abstract class Either<L, R> implements Serializable {
      * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
      * type of {@link Either} this is. Without this, you would have to do something like:
      *
+     * <pre>
      * Example:
      *
      *   either.map(...).mapLeft(...);
+     * </pre>
      *
      * @param mapperLeft
      *    {@link Function} with the left mapping operation
@@ -454,10 +462,12 @@ public abstract class Either<L, R> implements Serializable {
      *    Applies {@code mapperRight} if current {@link Either} is a {@link Right} instance, {@code mapperLeft}
      * if it is an {@link Left}, transforming internal values into another one.
      *
+     * <pre>
      * Example:
      *
      *   Either<String, Integer> either = ...
      *   int i = either.fold(String::length, Function.identity());
+     * </pre>
      *
      * @param mapperLeft
      *    The mapping {@link Function} to apply the value of a {@link Left} instance

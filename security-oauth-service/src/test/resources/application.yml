@@ -1,6 +1,9 @@
 # IMPORTANT: Stop config-server when you want to execute the tests
 spring:
-  ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
+  cloud:
+    # Disable configuration server for testing
+    config:
+      enabled: false
   datasource:
     url: jdbc:postgresql://localhost:5432/microservice_test
     username: microservice_test
@@ -8,7 +11,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
         jdbc:
           lob:
             # With Java >= 9, to avoid:
@@ -17,11 +20,10 @@ spring:
         format_sql: false
         show_sql: false
 
-springfox:
-  documentation:
-    swagger:
-      v2:
-        path: onlyForTests
+# Disable eureka server connection request for testing
+eureka:
+  client:
+    enabled: false
 
 #show sql statement
 #logging:

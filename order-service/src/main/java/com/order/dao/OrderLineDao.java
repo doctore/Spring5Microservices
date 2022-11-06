@@ -20,6 +20,7 @@ import org.simpleflatmapper.jdbc.JdbcMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 @Repository
@@ -37,7 +38,7 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      * {@inheritDoc}
      */
     @Override
-    protected Integer getId(OrderLine orderLine) {
+    public Integer getId(OrderLine orderLine) {
         return ofNullable(orderLine)
                 .map(OrderLine::getId)
                 .orElse(null);
@@ -49,7 +50,7 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      * given ones.
      *
      * @param ids
-     *    {@link List} of {@link OrderLine#id} to find
+     *    {@link List} of {@link OrderLine#getId()} to find
      *
      * @return {@link List} of {@link OrderLine}s
      */
@@ -62,7 +63,7 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      * Get the {@link OrderLine}s which identifier matches with the given one.
      *
      * @param id
-     *    {@link OrderLine#id} to find
+     *    {@link OrderLine#getId()} to find
      *
      * @return {@link Optional} with the {@link OrderLine} which identifier matches with the given one.
      *         {@link Optional#empty()} otherwise.
@@ -73,10 +74,10 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
 
 
     /**
-     * Get the {@link List} of {@link OrderLine}s belong to the given {@link Order#id}.
+     * Get the {@link List} of {@link OrderLine}s belong to the given {@link Order#getId()}.
      *
      * @param orderIds
-     *    Array of {@link Order#id}s to find
+     *    Array of {@link Order#getId()}s to find
      *
      * @return {@link List} of {@link OrderLine}s
      */
@@ -86,10 +87,10 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
 
 
     /**
-     * Get the {@link List} of {@link OrderLine}s belong to the given {@link Pizza#id}.
+     * Get the {@link List} of {@link OrderLine}s belong to the given {@link Pizza#getId()}.
      *
      * @param pizzaIds
-     *    Array of {@link Pizza#id}s to find
+     *    Array of {@link Pizza#getId()}s to find
      *
      * @return {@link List} of {@link OrderLine}s
      */
@@ -99,10 +100,10 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
 
 
     /**
-     * Return the {@link List} of {@link OrderLineDto}s and its {@link PizzaDto} information of the given {@link Order#id}
+     * Return the {@link List} of {@link OrderLineDto}s and its {@link PizzaDto} information of the given {@link Order#getId()}
      *
      * @param orderId
-     *    {@link Order#id} to find
+     *    {@link Order#getId()} to find
      *
      * @return {@link List} of {@link OrderLineDto}s.
      *
@@ -113,17 +114,34 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
         PizzaTable PIZZA = PizzaTable.PIZZA_TABLE;
 
         try (ResultSet rs =
-                     dsl.select(ORDER_LINE.ID, ORDER_LINE.ORDER_ID, ORDER_LINE.AMOUNT, ORDER_LINE.COST
-                               ,PIZZA.ID.as("pizza_id"), PIZZA.NAME.as("pizza_name"), PIZZA.COST.as("pizza_cost"))
+                     dsl.select(
+                             ORDER_LINE.ID,
+                             ORDER_LINE.ORDER_ID,
+                             ORDER_LINE.AMOUNT,
+                             ORDER_LINE.COST,
+                             PIZZA.ID.as("pizza_id"),
+                             PIZZA.NAME.as("pizza_name"),
+                             PIZZA.COST.as("pizza_cost")
+                        )
                         .from(ORDER_LINE)
-                        .join(PIZZA).on(PIZZA.ID.eq(ORDER_LINE.PIZZA_ID))
-                        .where(ORDER_LINE.ORDER_ID.eq(orderId))
+                        .join(PIZZA).on(
+                                PIZZA.ID.eq(ORDER_LINE.PIZZA_ID)
+                             )
+                        .where(
+                                ORDER_LINE.ORDER_ID.eq(orderId)
+                        )
                         .fetchResultSet()) {
 
             JdbcMapper<OrderLineDto> jdbcMapper = getJdbcMapper(OrderLineDto.class, "id", "pizza_id");
             return jdbcMapper.stream(rs).collect(Collectors.toList());
         } catch (Exception e) {
-            throw new DataAccessException(String.format("There was an error trying to find the order lines related with the order: %d", orderId), e);
+            throw new DataAccessException(
+                    format(
+                            "There was an error trying to find the order lines related with the order: %d",
+                            orderId
+                    ),
+                    e
+            );
         }
     }
 

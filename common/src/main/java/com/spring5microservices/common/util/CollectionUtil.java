@@ -42,6 +42,7 @@ public class CollectionUtil {
      *    In the given {@code sourceCollection}, applies {@code defaultFunction} if the current element verifies
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
@@ -49,6 +50,7 @@ public class CollectionUtil {
      *    i -> i % 2 == 1
      *    i -> i + 1
      *    i -> i * 2
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
@@ -76,6 +78,7 @@ public class CollectionUtil {
      *    In the given {@code sourceCollection}, applies {@code defaultFunction} if the current element verifies
      * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
@@ -84,6 +87,7 @@ public class CollectionUtil {
      *    i -> i + 1
      *    i -> i * 2
      *    ArrayList::new
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
@@ -150,16 +154,18 @@ public class CollectionUtil {
 
     /**
      * Returns a {@link Collection} after:
-     *
+     * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
      *    [1, 2, 3, 6]             ["1", "3"]
      *    i -> i % 2 == 1
      *    i -> i.toString()
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
@@ -182,10 +188,11 @@ public class CollectionUtil {
 
     /**
      * Returns a {@link Collection} after:
-     *
+     * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
@@ -193,6 +200,7 @@ public class CollectionUtil {
      *    i -> i % 2 == 1
      *    i -> i.toString()
      *    ArrayList::new
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
@@ -451,19 +459,23 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
      * elements of {@code sourceCollection}, going left to right.
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:              Result:
      *    [5, 7, 9]                315
      *    1
      *    (a, b) -> a * b
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:              Result:
      *    ["a", "h"]               "!ah"
      *    "!"
      *    (a, b) -> a + b
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} with elements to combine.
@@ -500,19 +512,23 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
      * elements of {@code sourceCollection}, going right to left.
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:              Result:
      *    [5, 7, 9]                315
      *    1
      *    (a, b) -> a * b
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:              Result:
      *    ["a", "h"]               "!ha"
      *    "!"
      *    (a, b) -> a + b
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} with elements to combine.
@@ -540,18 +556,20 @@ public class CollectionUtil {
     /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
-     *
+     * <p>
      * It is equivalent to:
-     *
+     * <p>
      *    Map<K, List<T>> groupedMap = sourceCollection.stream().collect(groupingBy(discriminatorKey))
      *    Map<K, List<V>> finalMap = mapValues(groupedMap, valueMapper)
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
      *    [1, 2, 3, 6]             [(0,  [4, 7])
      *    k -> i % 3                (1,  [2])
      *    i -> i + 1                (2,  [3])]
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to transform.
@@ -575,12 +593,13 @@ public class CollectionUtil {
     /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
-     *
+     * <p>
      * It is equivalent to:
-     *
+     * <p>
      *    Map<K, List<T>> groupedMap = sourceCollection.stream().collect(groupingBy(discriminatorKey))
      *    Map<K, List<V>> finalMap = mapValues(groupedMap, valueMapper)
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
@@ -588,6 +607,7 @@ public class CollectionUtil {
      *    k -> i % 3                (1,  [2])
      *    i -> i + 1                (2,  [3])]
      *    ArrayList::new
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to transform.
@@ -635,6 +655,7 @@ public class CollectionUtil {
      * All the values that have the same discriminator are then transformed by the {@code valueMapper} {@link Function} and
      * then reduced into a single value with {@code reduceValues}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Intermediate Map:          Result:
@@ -642,6 +663,7 @@ public class CollectionUtil {
      *    k -> i % 3                (1,  [2])
      *    i -> i + 1                (2,  [3])]
      *    v -> v++
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to transform and reduce.
@@ -682,19 +704,23 @@ public class CollectionUtil {
      *    Using {@code initialValue} as first element, apply {@code applyFunction} up to {@code untilPredicate} function
      * is {@code true}. The accumulated results are returned in a {@link List}.
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:             Result:
      *    42                      []
      *    a -> a / 10
      *    a -> 50 >= a
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:             Result:
      *    42                      [42, 4]
      *    a -> a / 10
      *    a -> 0 >= a
+     * </pre>
      *
      * @param initialValue
      *    The initial value to start with
@@ -752,26 +778,32 @@ public class CollectionUtil {
      *    Using the provided {@code sourceCollection}, return all elements beginning at index {@code from} and afterwards,
      * up to index {@code until} (excluding this one).
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:              Result:
      *    [5, 7, 9, 6]             [7, 9]
      *    1
      *    3
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:              Result:
      *    [a, b, c, d]             [d]
      *    3
      *    7
+     * </pre>
      *
+     * <pre>
      * Example 3:
      *
      *   Parameters:              Result:
      *    [a, b, c, d]             [a, b]
      *    -1
      *    2
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} to slice
@@ -817,17 +849,21 @@ public class CollectionUtil {
     /**
      * Loops through the provided {@link Collection} one position every time, returning sublists with {@code size}
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:              Result:
      *    [1, 2]                   [[1, 2]]
      *    5
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:              Result:
      *    [7, 8, 9]                [[7, 8], [8, 9]]
      *    2
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} to slide
@@ -860,23 +896,29 @@ public class CollectionUtil {
     /**
      * Splits the given {@link Collection} in sublists with a size equal to the given {@code size}
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:              Result:
      *    [1, 2, 3, 4]             [[1, 2], [3, 4]]
      *    2
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:              Result:
      *    [1, 2, 3, 4]             [[1, 2, 3], [4]]
      *    3
+     * </pre>
      *
+     * <pre>
      * Example 3:
      *
      *   Parameters:              Result:
      *    [1, 2, 3, 4]             [[1, 2, 3, 4]]
      *    5
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} to split
@@ -914,20 +956,26 @@ public class CollectionUtil {
     /**
      * Transposes the rows and columns of the given {@code sourceCollection}.
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:                                   Result:
      *    [[1, 2, 3], [4, 5, 6]]                        [[1, 4], [2, 5], [3, 6]]
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:                                   Result:
      *    [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]     [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
+     * </pre>
      *
+     * <pre>
      * Example 3:
      *
      *   Parameters:                                   Result:
      *    [[1, 2], [0], [7, 8, 9]]                      [[1, 0, 7], [2, 8], [9]]
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} of {@link Collection}s to transpose
@@ -964,10 +1012,12 @@ public class CollectionUtil {
      *    Converts given {@code sourceCollection} of {@link Tuple2} into two {@link List} of the first and
      * second half of each pair.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:                           Result:
      *    [("d", 6), ("h", 7), ("y", 11)]       [("d", "h", "y"), (6, 7, 11)]
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} of {@link Tuple2} to split its elements
@@ -992,17 +1042,21 @@ public class CollectionUtil {
      * by combining corresponding elements in {@link Tuple2}. If one of the two collections is longer than
      * the other, its remaining elements are ignored.
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:              Result:
      *    ["d", "h", "y"]          [("d", 6), ("h", 7), ("y", 11)]
      *    [6, 7, 11]
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:              Result:
      *    [4, 9, 14]               [(4, 23), (9, 8)]
      *    [23, 8]
+     * </pre>
      *
      * @param sourceLeftCollection
      *    {@link Collection} with elements to be included as left side of returned {@link Tuple2}
@@ -1036,6 +1090,7 @@ public class CollectionUtil {
      * by combining corresponding elements in {@link Tuple2}. If one of the two collections is shorter than
      * the other, placeholder elements are used to extend the shorter collection to the length of the longer.
      *
+     * <pre>
      * Example 1:
      *
      *   Parameters:              Result:
@@ -1043,7 +1098,9 @@ public class CollectionUtil {
      *    [6, 7, 11]
      *    "z"
      *    55
+     * </pre>
      *
+     * <pre>
      * Example 2:
      *
      *   Parameters:              Result:
@@ -1051,7 +1108,9 @@ public class CollectionUtil {
      *    [23, 8]
      *    17
      *    10
+     * </pre>
      *
+     * <pre>
      * Example 3:
      *
      *   Parameters:              Result:
@@ -1059,6 +1118,7 @@ public class CollectionUtil {
      *    ["f", "g", "m"]
      *    11
      *    "u"
+     * </pre>
      *
      * @param sourceLeftCollection
      *    {@link Collection} with elements to be included as left side of returned {@link Tuple2}
@@ -1105,10 +1165,12 @@ public class CollectionUtil {
      *    Returns a {@link List} containing pairs consisting of all elements of this iterable collection paired with
      * their index. Indices start at {@code 0}.
      *
+     * <pre>
      * Example:
      *
      *   Parameters:              Result:
      *    ["d", "h", "y"]          [(0, "d"), (1, "h"), (2, "y")]
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} to extract: index and element

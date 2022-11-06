@@ -2,9 +2,9 @@ package com.security.jwt.configuration.security;
 
 import com.security.jwt.configuration.documentation.DocumentationConfiguration;
 import com.security.jwt.service.JwtClientDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -20,18 +20,22 @@ import static org.springframework.http.HttpMethod.OPTIONS;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
+@AllArgsConstructor
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class WebSecurityConfiguration {
 
-    @Value("${springdoc.api-docs.path}")
-    private String documentationPath;
+    private final String SPRING_ACTUATOR_PATH = "/actuator";
+    private final String ALLOW_ALL_ENDPOINTS = "/**";
 
-    @Autowired
-    private JwtClientDetailsService jwtClientDetailsService;
+    @Lazy
+    private final DocumentationConfiguration documentationConfiguration;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Lazy
+    private final JwtClientDetailsService jwtClientDetailsService;
+
+    @Lazy
+    private final PasswordEncoder passwordEncoder;
 
 
     @Bean
@@ -44,7 +48,7 @@ public class WebSecurityConfiguration {
 
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(final ServerHttpSecurity http) {
         return http.csrf().disable()
                 .formLogin().disable()
                 // Authorization requests config using Basic Auth
@@ -54,11 +58,17 @@ public class WebSecurityConfiguration {
                 // Handle an authorized attempts
                 .exceptionHandling()
                 // There is no a logged user
-                .authenticationEntryPoint((swe, e) -> Mono.fromRunnable(
-                        () -> swe.getResponse().setStatusCode(UNAUTHORIZED))
-                        // Logged user has not the required authorities
-                ).accessDeniedHandler((swe, e) -> Mono.fromRunnable(
-                        () -> swe.getResponse().setStatusCode(FORBIDDEN))
+                .authenticationEntryPoint(
+                        (swe, e) ->
+                                Mono.fromRunnable(
+                                        () -> swe.getResponse().setStatusCode(UNAUTHORIZED)
+                                )
+                // Logged user has not the required authorities
+                ).accessDeniedHandler(
+                        (swe, e) ->
+                                Mono.fromRunnable(
+                                        () -> swe.getResponse().setStatusCode(FORBIDDEN)
+                                )
                 )
                 .and()
                 // Include our custom AuthenticationManager
@@ -66,15 +76,23 @@ public class WebSecurityConfiguration {
                 .authorizeExchange()
                 // List of services do not require authentication
                 .pathMatchers(OPTIONS).permitAll()
-                .pathMatchers(GET,
-                        documentationPath + "/**",
-                        DocumentationConfiguration.DOCUMENTATION_API_URL + "/**",
-                        DocumentationConfiguration.DOCUMENTATION_RESOURCE_URL + "/**",
-                        DocumentationConfiguration.DOCUMENTATION_WEBJARS + "/**"
+                .pathMatchers(
+                        GET,
+                        allowedGetEndpoints()
                 ).permitAll()
                 // Any other request must be authenticated
                 .anyExchange().authenticated()
                 .and().build();
+    }
+
+
+    private String[] allowedGetEndpoints() {
+        return new String[] {
+                SPRING_ACTUATOR_PATH + ALLOW_ALL_ENDPOINTS,
+                documentationConfiguration.getApiDocsPath() + ALLOW_ALL_ENDPOINTS,
+                documentationConfiguration.getApiUiUrl() + ALLOW_ALL_ENDPOINTS,
+                documentationConfiguration.getWebjarsUrl() + ALLOW_ALL_ENDPOINTS
+        };
     }
 
 }

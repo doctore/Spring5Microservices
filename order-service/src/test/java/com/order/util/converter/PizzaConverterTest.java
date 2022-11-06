@@ -17,8 +17,11 @@ import java.util.stream.Stream;
 
 import static com.order.TestDataFactory.buildPizza;
 import static com.order.TestDataFactory.buildPizzaDto;
-import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = PizzaConverterImpl.class)
 public class PizzaConverterTest {
@@ -86,7 +89,7 @@ public class PizzaConverterTest {
                 //@formatter:off
                 //            listOfDtosToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(dto) )
+                Arguments.of( List.of(dto) )
         ); //@formatter:on
     }
 
@@ -163,7 +166,7 @@ public class PizzaConverterTest {
                 //@formatter:off
                 //            listOfModelsToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(model) )
+                Arguments.of( List.of(model) )
         ); //@formatter:on
     }
 

@@ -2,7 +2,7 @@ package com.security.oauth.service.cache;
 
 import com.security.oauth.configuration.cache.CacheConfiguration;
 import com.spring5microservices.common.service.CacheService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.stereotype.Service;
@@ -11,17 +11,15 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
+@AllArgsConstructor
 @Service
 public class ClientDetailsCacheService {
 
-    private CacheConfiguration cacheConfiguration;
-    private CacheService cacheService;
+    @Lazy
+    private final CacheConfiguration cacheConfiguration;
 
-    @Autowired
-    public ClientDetailsCacheService(@Lazy CacheConfiguration cacheConfiguration, @Lazy CacheService cacheService) {
-        this.cacheConfiguration = cacheConfiguration;
-        this.cacheService = cacheService;
-    }
+    @Lazy
+    private final CacheService cacheService;
 
 
     /**
@@ -32,7 +30,7 @@ public class ClientDetailsCacheService {
      *
      * @return {@code true} if the {@code clientId} exists, {@code false} otherwise
      */
-    public boolean contains(String clientId) {
+    public boolean contains(final String clientId) {
         return ofNullable(clientId)
                 .map(id -> cacheService.contains(cacheConfiguration.getOauthClientCacheName(), id))
                 .orElse(false);
@@ -47,7 +45,7 @@ public class ClientDetailsCacheService {
      *
      * @return @return {@link Optional} with the {@link ClientDetails} if it was found, {@link Optional#empty()} otherwise
      */
-    public Optional<ClientDetails> get(String clientId) {
+    public Optional<ClientDetails> get(final String clientId) {
         return cacheService.get(cacheConfiguration.getOauthClientCacheName(), clientId);
     }
 
@@ -62,7 +60,8 @@ public class ClientDetailsCacheService {
      *
      * @return {@code true} if the data was stored, {@code false} otherwise
      */
-    public boolean put(String clientId, ClientDetails clientDetails) {
+    public boolean put(final String clientId,
+                       final ClientDetails clientDetails) {
         return cacheService.put(cacheConfiguration.getOauthClientCacheName(), clientId, clientDetails);
     }
 

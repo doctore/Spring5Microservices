@@ -38,7 +38,7 @@ public class PizzaService {
      * Returns the {@link PizzaDto} which name matches with the given one.
      *
      * @param name
-     *    Name to search in the current {@link Pizza#name}s
+     *    Name to search in the current {@link Pizza#getName()}s
      *
      * @return {@link Optional} of {@link PizzaDto}
      */
@@ -66,10 +66,16 @@ public class PizzaService {
         Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
                                                    PageUtil.buildPageRequest(page,size,sort));
         return ofNullable(pizzaPage)
-                .map(p -> new PageImpl(pizzaConverter.fromModelsToDtos(p.getContent())
-                        ,pizzaPage.getPageable()
-                        ,pizzaPage.getTotalElements()))
-                .orElseGet(() -> new PageImpl<PizzaDto>(new ArrayList()));
+                .map(p ->
+                        new PageImpl<>(
+                                pizzaConverter.fromModelsToDtos(p.getContent()),
+                                pizzaPage.getPageable(),
+                                pizzaPage.getTotalElements()
+                        )
+                )
+                .orElseGet(() ->
+                        new PageImpl<>(new ArrayList<>())
+                );
     }
 
 

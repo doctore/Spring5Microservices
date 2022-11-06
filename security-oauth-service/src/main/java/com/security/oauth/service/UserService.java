@@ -15,10 +15,10 @@ import static java.util.Optional.ofNullable;
 @Service(value = "userDetailsService")
 public class UserService implements UserDetailsService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserService(@Lazy UserRepository userRepository) {
+    public UserService(final @Lazy UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -35,9 +35,9 @@ public class UserService implements UserDetailsService {
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         return ofNullable(username)
-                .flatMap(un -> userRepository.findByUsername(un))
+                .flatMap(userRepository::findByUsername)
                 .map(u ->  {
                     new AccountStatusUserDetailsChecker().check(u);
                     return u;

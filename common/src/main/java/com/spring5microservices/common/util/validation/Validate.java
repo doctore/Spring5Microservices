@@ -22,6 +22,6 @@ public interface Validate<T> {
      * @return {@link Valid} if all rules were verifies,
      *         {@link Invalid} with a a {@link ValidationError} {@link Collection} otherwise.
      */
-    Validation<ValidationError, T> validate(T instanceToValidate);
+    Validation<ValidationError, T> validate(final T instanceToValidate);
 
 }

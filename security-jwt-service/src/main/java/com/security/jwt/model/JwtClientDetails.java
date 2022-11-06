@@ -3,6 +3,7 @@ package com.security.jwt.model;
 import com.security.jwt.configuration.Constants;
 import com.security.jwt.enums.AuthenticationConfigurationEnum;
 import com.security.jwt.enums.SignatureAlgorithmEnum;
+import com.security.jwt.enums.TokenType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,15 +35,15 @@ public class JwtClientDetails implements UserDetails {
     
     @Id
     @NotNull
-    @Size(min=1,max=64)
+    @Size(min = 1, max = 64)
     private String clientId;
 
     @NotNull
-    @Size(min=1,max=128)
+    @Size(min = 1, max = 128)
     private String clientSecret;
 
     @NotNull
-    @Size(min=1,max=256)
+    @Size(min = 1, max = 256)
     private String signatureSecret;
 
     @NotNull
@@ -54,8 +55,8 @@ public class JwtClientDetails implements UserDetails {
     private AuthenticationConfigurationEnum authenticationGenerator;
 
     @NotNull
-    @Size(min=1,max=32)
-    private String tokenType;
+    @Enumerated(EnumType.STRING)
+    private TokenType tokenType;
 
     @NotNull
     private boolean useJwe;

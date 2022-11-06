@@ -86,7 +86,7 @@ public class IngredientConverterTest {
                 //@formatter:off
                 //            listOfDtosToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(dto) )
+                Arguments.of( List.of(dto) )
         ); //@formatter:on
     }
 
@@ -163,7 +163,7 @@ public class IngredientConverterTest {
                 //@formatter:off
                 //            listOfModelsToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(model) )
+                Arguments.of( List.of(model) )
         ); //@formatter:on
     }
 

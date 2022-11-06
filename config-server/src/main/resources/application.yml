@@ -1,24 +1,13 @@
-server:
-  port: 8888
-
 spring:
+  application:
+    name: config-server
   cloud:
     config:
       server:
+        encrypt:
+          # We will send encrypted properties
+          enabled: false
         git:
-          uri: https://github.com/doctore/Spring5Microservices_ConfigServerData
+          uri: https://github.com/doctore/Spring5Microservices_ConfigServerData.git
           searchPaths: gateway-server,pizza-service,order-service,security-jwt-service,security-oauth-service
-
-eureka:
-  client:
-    # Pull down a local copy of the registry
-    fetchRegistry: true
-    healthcheck:
-      enabled: true
-    registerWithEureka: true
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    # Register the IP of the service rather than the server name (useful when there is no a
-    # server-based environment where a service is assigned a DNS-backed host name, usually in Docker for example)
-    preferIpAddress: true
+          defaultLabel: master

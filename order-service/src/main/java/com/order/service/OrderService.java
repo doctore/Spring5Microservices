@@ -31,10 +31,10 @@ public class OrderService {
 
 
     /**
-     * Return the {@link OrderDto} and its {@link OrderLineDto} information of the given {@link OrderDto#id}
+     * Return the {@link OrderDto} and its {@link OrderLineDto} information of the given {@link OrderDto#getId()}
      *
      * @param id
-     *    {@link Order#id} to find
+     *    {@link Order#getId()} to find
      *
      * @return {@link Optional} with the {@link OrderDto} which identifier matches with the given one.
      *         {@link Optional#empty()} otherwise
@@ -48,14 +48,14 @@ public class OrderService {
 
     /**
      *    Return a "page of {@link OrderDto}" and its {@link OrderLineDto} information, ordered by
-     * {@link Order#created} desc.
+     * {@link Order#getCreated()} desc.
      *
      * @param page
      *    Desired page to get (taking into account the value of the given size)
      * @param size
      *    Number of {@link OrderDto}s included in every page
      *
-     * @return {@link List} of {@link OrderDto} ordered by {@link Order#created} desc
+     * @return {@link List} of {@link OrderDto} ordered by {@link Order#getCreated()} desc
      *
      * @throws DataAccessException if there is an error executing the query
      */

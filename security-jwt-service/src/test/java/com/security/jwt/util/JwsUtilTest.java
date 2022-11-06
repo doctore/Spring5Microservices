@@ -4,12 +4,13 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.exception.TokenInvalidException;
 import com.spring5microservices.common.exception.TokenExpiredException;
 import net.minidev.json.JSONArray;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -23,11 +24,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(classes = JwsUtil.class)
+@ExtendWith(SpringExtension.class)
 public class JwsUtilTest {
 
-    @Autowired
     private JwsUtil jwsUtil;
+
+
+    @BeforeEach
+    public void init() {
+        jwsUtil = new JwsUtil();
+    }
 
     static Stream<Arguments> generateTokenTestCases() {
         JWSAlgorithm signatureAlgorithm = JWSAlgorithm.HS256;
@@ -48,8 +54,11 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("generateTokenTestCases")
     @DisplayName("generateToken: test cases")
-    public void generateToken_testCases(Map<String, Object> informationToInclude, JWSAlgorithm signatureAlgorithm,
-                                        String signatureSecret, long expirationTimeInSeconds, Class<? extends Exception> expectedException) {
+    public void generateToken_testCases(Map<String, Object> informationToInclude,
+                                        JWSAlgorithm signatureAlgorithm,
+                                        String signatureSecret,
+                                        long expirationTimeInSeconds,
+                                        Class<? extends Exception> expectedException) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> jwsUtil.generateToken(informationToInclude, signatureAlgorithm, signatureSecret, expirationTimeInSeconds));
         }
@@ -71,7 +80,7 @@ public class JwsUtilTest {
                            + "EU3ZPGofPNxa1E-HJvs7rsYbjCsgzw5sHaLuIZDIgpES_pVYntdUHK4RlY3jHCqsu8_asM7Gxsmo-RVGPuvg._FJDglnteTQWNFbunQ0aYg";
         String signatureSecret = "secretKey_ForTestingPurpose@12345#";
         Set<String> keysToInclude = new HashSet<>(asList("username", "roles", "age"));
-        Map<String, Object> expectedResultClaims = new HashMap<String, Object>() {{
+        Map<String, Object> expectedResultClaims = new HashMap<>() {{
             put("username", "username value");
             put("roles", new JSONArray().appendElement("admin").appendElement("user"));
             put("age", 23L);
@@ -99,8 +108,11 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("getPayloadKeysTestCases")
     @DisplayName("getPayloadKeys: test cases")
-    public void getPayloadKeys_testCases(String jwsToken, String signatureSecret, Class<? extends Exception> expectedException,
-                                         Set<String> keysToInclude, Map<String, Object> expectedResult) {
+    public void getPayloadKeys_testCases(String jwsToken,
+                                         String signatureSecret,
+                                         Class<? extends Exception> expectedException,
+                                         Set<String> keysToInclude,
+                                         Map<String, Object> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> jwsUtil.getPayloadKeys(jwsToken, signatureSecret, keysToInclude));
         }
@@ -122,7 +134,7 @@ public class JwsUtilTest {
                            + "EU3ZPGofPNxa1E-HJvs7rsYbjCsgzw5sHaLuIZDIgpES_pVYntdUHK4RlY3jHCqsu8_asM7Gxsmo-RVGPuvg._FJDglnteTQWNFbunQ0aYg";
         String signatureSecret = "secretKey_ForTestingPurpose@12345#";
         Set<String> keysToExclude = new HashSet<>(asList("username", "roles", "iat", "exp", "jti"));
-        Map<String, Object> expectedResultClaims = new HashMap<String, Object>() {{
+        Map<String, Object> expectedResultClaims = new HashMap<>() {{
             put("name", "name value");
             put("age", 23L);
         }};
@@ -149,8 +161,11 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("getPayloadExceptGivenKeysTestCases")
     @DisplayName("getPayloadExceptGivenKeys: test cases")
-    public void getPayloadExceptGivenKeys_testCases(String jwsToken, String signatureSecret, Class<? extends Exception> expectedException,
-                                                    Set<String> keysToExclude, Map<String, Object> expectedResult) {
+    public void getPayloadExceptGivenKeys_testCases(String jwsToken,
+                                                    String signatureSecret,
+                                                    Class<? extends Exception> expectedException,
+                                                    Set<String> keysToExclude,
+                                                    Map<String, Object> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> jwsUtil.getPayloadExceptGivenKeys(jwsToken, signatureSecret, keysToExclude));
         }
@@ -168,7 +183,7 @@ public class JwsUtilTest {
         String notJwsToken = "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiZGlyIn0..B5boNIFOF9N3QKNEX8CPDA.Xd3_abfHI-5CWvQy9AiGI"
                            + "B6-1tZ_EUp5ZhrldrZrj49mX9IU7S09FXbPXTCW6r_E_DrhE1fVXoKBTbjEG2F-s-UcpGvpPOBJmQoK0qtAfuo8YlonXGHNDs8f-TtQG0E4lO"
                            + "EU3ZPGofPNxa1E-HJvs7rsYbjCsgzw5sHaLuIZDIgpES_pVYntdUHK4RlY3jHCqsu8_asM7Gxsmo-RVGPuvg._FJDglnteTQWNFbunQ0aYg";
-        Map<String, Object> expectedExpiredTokenClaims = new HashMap<String, Object>() {{
+        Map<String, Object> expectedExpiredTokenClaims = new HashMap<>() {{
             put("username", "username value");
             put("name", "name value");
             put("roles", new JSONArray().appendElement("admin").appendElement("user"));
@@ -177,8 +192,8 @@ public class JwsUtilTest {
             put("exp", new Date((long)1000000000*1000));
         }};
         Map<String, Object> expectedNotExpiredTokenClaims = new HashMap<>(expectedExpiredTokenClaims);
-        expectedNotExpiredTokenClaims.put("iat", new Date((long)5000000000L*1000));
-        expectedNotExpiredTokenClaims.put("exp", new Date((long)5000000000L*1000));
+        expectedNotExpiredTokenClaims.put("iat", new Date(5000000000L*1000));
+        expectedNotExpiredTokenClaims.put("exp", new Date(5000000000L*1000));
         return Stream.of(
                 //@formatter:off
                 //            jwsToken,             expectedException,                expectedResult
@@ -194,7 +209,9 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("getRawPayloadTestCases")
     @DisplayName("getRawPayload: test cases")
-    public void getRawPayload_testCases(String jwsToken, Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
+    public void getRawPayload_testCases(String jwsToken,
+                                        Class<? extends Exception> expectedException,
+                                        Map<String, Object> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> jwsUtil.getRawPayload(jwsToken));
         }
@@ -227,7 +244,9 @@ public class JwsUtilTest {
     @ParameterizedTest
     @MethodSource("isJwsTokenTestCases")
     @DisplayName("isJwsToken: test cases")
-    public void isJwsToken_testCases(String jwsToken, Class<? extends Exception> expectedException, Boolean expectedResult) {
+    public void isJwsToken_testCases(String jwsToken,
+                                     Class<? extends Exception> expectedException,
+                                     Boolean expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> jwsUtil.isJwsToken(jwsToken));
         }

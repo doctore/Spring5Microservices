@@ -16,9 +16,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 
 @AllArgsConstructor
 @Service
@@ -37,7 +37,7 @@ public class OrderLineService {
      * @param orderLineDtos
      *    {@link Collection} of {@link OrderLineDto}s to save
      * @param orderId
-     *    {@link Order#id} of the given dtos
+     *    {@link Order#getId()} of the given dtos
      *
      * @return {@link Collection} of {@link OrderLineDto}s with its "final information" after this action
      *
@@ -60,25 +60,32 @@ public class OrderLineService {
 
 
     /**
-     *    When there is a conversion from {@link OrderLine} to {@link OrderLineDto}, only the {@link OrderLine#pizzaId}
+     *    When there is a conversion from {@link OrderLine} to {@link OrderLineDto}, only the {@link OrderLine#getPizzaId()}
      * can be included in the result Dto. For that reason, we use this method avoiding a new query to database.
      *
      * @param dtosWithPizzaInformation
      *    {@link Collection} of {@link OrderLineDto} with "complete {@link PizzaDto} objects"
      * @param dtosWithoutPizzaInformation
-     *    {@link Collection} of {@link OrderLineDto} with "{@link PizzaDto} that contains only {@link PizzaDto#id}
+     *    {@link Collection} of {@link OrderLineDto} with "{@link PizzaDto} that contains only {@link PizzaDto#getId()}
      */
     private void mergePizzaInformation(Collection<OrderLineDto> dtosWithPizzaInformation,
                                        Collection<OrderLineDto> dtosWithoutPizzaInformation) {
 
         Map<Short, PizzaDto> pizzaDtoMap = dtosWithPizzaInformation.stream()
-                                                                   .map(OrderLineDto::getPizza)
-                                                                   .collect(Collectors.toMap(PizzaDto::getId, Function.identity()
-                                                                                            ,(id1, id2) -> id1));
-        dtosWithoutPizzaInformation.forEach(dto -> {
-            if (null != dto.getPizza())
-                dto.setPizza(pizzaDtoMap.get(dto.getPizza().getId()));
-        });
+                .map(OrderLineDto::getPizza)
+                .collect(
+                        toMap(
+                                PizzaDto::getId,
+                                Function.identity(),
+                                (id1, id2) -> id1
+                        )
+                );
+        dtosWithoutPizzaInformation
+                .forEach(dto -> {
+                    if (null != dto.getPizza()) {
+                        dto.setPizza(pizzaDtoMap.get(dto.getPizza().getId()));
+                    }
+                });
     }
 
 }

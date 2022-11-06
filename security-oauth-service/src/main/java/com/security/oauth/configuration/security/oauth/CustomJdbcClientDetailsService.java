@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import javax.sql.DataSource;
 
 /**
- * Manages the Oauth client information, including how to insert, update, etc new ones.
+ * Manages the Oauth client information, including how to insert, update, etc. new ones.
  */
 public class CustomJdbcClientDetailsService extends JdbcClientDetailsService {
 
@@ -36,10 +36,11 @@ public class CustomJdbcClientDetailsService extends JdbcClientDetailsService {
 
     private static final String DEFAULT_DELETE_STATEMENT = "delete from " + OAUTH_CLIENT_TABLE + " where client_id = ?";
 
-    private ClientDetailsCacheService clientDetailsCacheService;
+    private final ClientDetailsCacheService clientDetailsCacheService;
 
 
-    public CustomJdbcClientDetailsService(DataSource dataSource, ClientDetailsCacheService clientDetailsCacheService) {
+    public CustomJdbcClientDetailsService(final DataSource dataSource,
+                                          final ClientDetailsCacheService clientDetailsCacheService) {
         super(dataSource);
         this.clientDetailsCacheService = clientDetailsCacheService;
         initSQL();
@@ -47,7 +48,7 @@ public class CustomJdbcClientDetailsService extends JdbcClientDetailsService {
 
 
     @Override
-    public ClientDetails loadClientByClientId(String clientId) throws InvalidClientException {
+    public ClientDetails loadClientByClientId(final String clientId) throws InvalidClientException {
         return clientDetailsCacheService.get(clientId)
                 .orElseGet(() -> {
                     ClientDetails clientDetails = super.loadClientByClientId(clientId);

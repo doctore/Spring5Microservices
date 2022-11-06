@@ -34,7 +34,7 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
     /**
      * {@inheritDoc}
      */
-    protected abstract T getId(P var1);
+    public abstract T getId(P var1);
 
 
     /**
@@ -92,17 +92,17 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
                                    models.stream().collect(partitioningBy(IModel::isNew));
 
                            List<P> toInsert = insertAndUpdate.get(true);
-                           if (null != toInsert)
+                           if (null != toInsert) {
                                insert(toInsert);
-                           else
+                           } else {
                                toInsert = new ArrayList<>();
-
+                           }
                            List<P> toUpdate = insertAndUpdate.get(false);
-                           if (null != toUpdate)
-                              update(toUpdate);
-                           else
+                           if (null != toUpdate) {
+                               update(toUpdate);
+                           } else {
                                toUpdate = new ArrayList<>();
-
+                           }
                            toInsert.addAll(toUpdate);
                            return toInsert;
                        })

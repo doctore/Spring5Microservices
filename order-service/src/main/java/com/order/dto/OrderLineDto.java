@@ -1,7 +1,6 @@
 package com.order.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,26 +15,26 @@ import java.util.Objects;
 @Builder
 @Data
 @NoArgsConstructor
-@ApiModel(description="Information related with the lines of an order")
+@Schema(description = "Information related with the lines of an order")
 public class OrderLineDto {
 
-    @ApiModelProperty(value = "Internal unique identifier", required = true)
+    @Schema(description = "Internal unique identifier", required = true)
     private Integer id;
 
-    @ApiModelProperty(position = 1, value = "Order related", required = true)
+    @Schema(description = "Order related", required = true)
     private Integer orderId;
 
-    @ApiModelProperty(position = 2, value = "Pizza included in this line", required = true)
+    @Schema(description = "Pizza included in this line", required = true)
     @NotNull
     @Valid
     private PizzaDto pizza;
 
-    @ApiModelProperty(position = 3, value = "Number of pizzas", required = true)
+    @Schema(description = "Number of pizzas", required = true)
     @NotNull
     @Positive
     private Short amount;
 
-    @ApiModelProperty(position = 4, value = "Cost", required = true)
+    @Schema(description = "Cost", required = true)
     @NotNull
     @Positive
     private Double cost;

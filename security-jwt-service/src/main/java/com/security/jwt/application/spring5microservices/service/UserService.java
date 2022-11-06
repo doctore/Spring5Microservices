@@ -38,9 +38,9 @@ public class UserService implements IUserService {
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override
-    public UserDetails loadUserByUsername(String username) {
+    public UserDetails loadUserByUsername(final String username) {
         return ofNullable(username)
-                .flatMap(un -> userRepository.findByUsername(un))
+                .flatMap(userRepository::findByUsername)
                 .map(u ->  {
                     new AccountStatusUserDetailsChecker().check(u);
                     return u;
@@ -50,9 +50,13 @@ public class UserService implements IUserService {
 
 
     @Override
-    public boolean passwordsMatch(String passwordToVerify, UserDetails userDetails) {
-        if (StringUtils.isEmpty(passwordToVerify) || (null == userDetails || StringUtils.isEmpty(userDetails.getPassword())))
+    public boolean passwordsMatch(final String passwordToVerify,
+                                  final UserDetails userDetails) {
+        if (!StringUtils.hasText(passwordToVerify) ||
+                (null == userDetails ||
+                        !StringUtils.hasText(userDetails.getPassword()))) {
             return false;
+        }
         return passwordEncoder.matches(passwordToVerify, userDetails.getPassword());
     }
 

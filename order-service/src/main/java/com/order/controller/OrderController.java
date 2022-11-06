@@ -7,9 +7,12 @@ import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.service.OrderService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import com.spring5microservices.common.dto.ErrorResponseDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -31,6 +34,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Rest services to work with {@link Order}
@@ -54,23 +58,57 @@ public class OrderController {
      * @return if orderDto is not {@code Null}: {@link HttpStatus#CREATED} and created {@link OrderDto}
      *         if orderDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
-    @ApiOperation(value = "Create an order",
-            notes = "Create an order (only allowed to user with role admin)",
-            response = OrderDto.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "The given order was successfully created", response = OrderDto.class),
-            @ApiResponse(code = 400, message = "There was a problem in the given request, the given parameters have not passed the required validations"),
-            @ApiResponse(code = 401, message = "The user has not authorization to execute this request"),
-            @ApiResponse(code = 412, message = "The provided authorization information has expired"),
-            @ApiResponse(code = 500, message = "There was an internal problem in the server")
-    })
+    @Operation(
+            summary = "Create an order",
+            description = "Create an order (only allowed to user with role admin)"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "The given order was successfully created",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = OrderDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "There was a problem in the given request, the given parameters have not passed the required validations",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "The user has not authorization to execute this request or provided authorization has expired",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "422",
+                            description = "The order could not be created"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "There was an internal problem in the server",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    )
+            }
+    )
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public ResponseEntity<OrderDto> create(@RequestBody @Valid OrderDto orderDto) {
         return orderService.save(orderDto)
-                   .map(p -> new ResponseEntity(p, CREATED))
-                   .orElseGet(() -> new ResponseEntity(UNPROCESSABLE_ENTITY));
+                   .map(p -> new ResponseEntity<>(p, CREATED))
+                   .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY));
     }
 
 
@@ -83,23 +121,56 @@ public class OrderController {
      * @return if id was found: {@link HttpStatus#OK} and {@link OrderDto} that matches
      *         if id was not found: {@link HttpStatus#NOT_FOUND}
      */
-    @ApiOperation(value = "Find order information matches given id",
-            notes = "Find order information matches given id (only allowed to user with role admin/user)",
-            response = OrderDto.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "There is an order with the given id", response = OrderDto.class),
-            @ApiResponse(code = 400, message = "There was a problem in the given request, the given parameters have not passed the required validations"),
-            @ApiResponse(code = 401, message = "The user has not authorization to execute this request"),
-            @ApiResponse(code = 404, message = "There is no an order with the given id"),
-            @ApiResponse(code = 412, message = "The provided authorization information has expired"),
-            @ApiResponse(code = 500, message = "There was an internal problem in the server")
-    })
+    @Operation(
+            summary = "Find order information matches given id",
+            description = "Find order information matches given id (only allowed to user with role admin/user)"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "There is an order with the given id",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = OrderDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "There was a problem in the given request, the given parameters have not passed the required validations",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "The user has not authorization to execute this request or provided authorization has expired",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "There is no an order with the given id"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "There was an internal problem in the server",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    )
+            }
+    )
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
     @RoleAdminOrUser
     public ResponseEntity<OrderDto> findByIdWithOrderLines(@PathVariable @Positive Integer id) {
         return orderService.findByIdWithOrderLines(id)
-                   .map(p -> new ResponseEntity(p, OK))
-                   .orElseGet(() -> new ResponseEntity(NOT_FOUND));
+                   .map(p -> new ResponseEntity<>(p, OK))
+                   .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
     }
 
 
@@ -112,24 +183,57 @@ public class OrderController {
      * @return if orderDto is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link OrderDto}
      *         if orderDto is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
-    @ApiOperation(value = "Update an order",
-            notes = "Update an order (only allowed to user with role admin)",
-            response = OrderDto.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "The given order was successfully update"),
-            @ApiResponse(code = 400, message = "There was a problem in the given request, the given parameters have not passed the required validations"),
-            @ApiResponse(code = 404, message = "There is no an order matches with provided information"),
-            @ApiResponse(code = 401, message = "The user has not authorization to execute this request"),
-            @ApiResponse(code = 412, message = "The provided authorization information has expired"),
-            @ApiResponse(code = 500, message = "There was an internal problem in the server"),
-    })
+    @Operation(
+            summary = "Update an order",
+            description = "Update an order (only allowed to user with role admin)"
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "The given order was successfully update",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = OrderDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "There was a problem in the given request, the given parameters have not passed the required validations",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "The user has not authorization to execute this request or provided authorization has expired",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "There is no a order matches with provided information"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "There was an internal problem in the server",
+                            content = @Content(
+                                    mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ErrorResponseDto.class)
+                            )
+                    ),
+            }
+    )
     @PutMapping
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public ResponseEntity<OrderDto> update(@RequestBody @Valid OrderDto orderDto) {
         return orderService.save(orderDto)
-                   .map(p -> new ResponseEntity(p, OK))
-                   .orElseGet(() -> new ResponseEntity(NOT_FOUND));
+                   .map(p -> new ResponseEntity<>(p, OK))
+                   .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
     }
 
 }

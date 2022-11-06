@@ -1,9 +1,11 @@
 package com.security.jwt.configuration.cache;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionConfig;
 import com.hazelcast.config.EvictionPolicy;
+import com.hazelcast.config.IntegrityCheckerConfig;
 import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spring.cache.HazelcastCacheManager;
@@ -19,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
 import static com.security.jwt.configuration.Constants.CACHE_INSTANCE_NAME;
 
 @Configuration
-@ComponentScan(basePackages = {Constants.PATH.EXTERNAL.COMMON})
+@ComponentScan(basePackages = { Constants.PATH.EXTERNAL.COMMON })
 @EnableCaching
 public class CacheConfiguration {
 
@@ -42,8 +44,9 @@ public class CacheConfiguration {
     @Bean
     public CacheManager cacheManager() {
         HazelcastInstance existingInstance = Hazelcast.getHazelcastInstanceByName(CACHE_INSTANCE_NAME);
-        HazelcastInstance hazelcastInstance = null != existingInstance ? existingInstance
-                                                                       : Hazelcast.newHazelcastInstance(hazelCastConfig());
+        HazelcastInstance hazelcastInstance = null != existingInstance
+                ? existingInstance
+                : Hazelcast.newHazelcastInstance(hazelCastConfig());
         return new HazelcastCacheManager(hazelcastInstance);
     }
 
@@ -55,11 +58,17 @@ public class CacheConfiguration {
     private Config hazelCastConfig(){
         Config config = new Config();
         config.setInstanceName(CACHE_INSTANCE_NAME)
-                .addMapConfig(new MapConfig()
-                        .setName(jwtConfigurationCacheName)
-                        .setMaxSizeConfig(new MaxSizeConfig(jwtConfigurationCacheEntryCapacity, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
-                        .setEvictionPolicy(EvictionPolicy.LRU)
-                        .setTimeToLiveSeconds(jwtConfigurationCacheExpireInSeconds));
+                .addMapConfig(
+                        new MapConfig()
+                                .setName(jwtConfigurationCacheName)
+                                .setEvictionConfig(
+                                        new EvictionConfig()
+                                                .setSize(jwtConfigurationCacheEntryCapacity)
+                                                .setMaxSizePolicy(MaxSizePolicy.FREE_HEAP_SIZE)
+                                                .setEvictionPolicy(EvictionPolicy.LRU)
+                                )
+                                .setTimeToLiveSeconds(jwtConfigurationCacheExpireInSeconds)
+                );
         return config;
     }
 

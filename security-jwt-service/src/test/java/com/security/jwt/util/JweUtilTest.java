@@ -2,13 +2,14 @@ package com.security.jwt.util;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.security.jwt.exception.TokenInvalidException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,14 +24,19 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = JweUtil.class)
+@ExtendWith(SpringExtension.class)
 public class JweUtilTest {
 
-    @MockBean
+    @Mock
     private JwsUtil mockJwsUtil;
 
-    @Autowired
     private JweUtil jweUtil;
+
+
+    @BeforeEach
+    public void init() {
+        jweUtil = new JweUtil(mockJwsUtil);
+    }
 
 
     static Stream<Arguments> generateTokenTestCases() {
@@ -51,7 +57,9 @@ public class JweUtilTest {
     @ParameterizedTest
     @MethodSource("generateTokenTestCases")
     @DisplayName("generateToken: test cases")
-    public void generateToken_testCases(String encryptionSecret, String jwsTokenGenerated, boolean isValidJwsToken,
+    public void generateToken_testCases(String encryptionSecret,
+                                        String jwsTokenGenerated,
+                                        boolean isValidJwsToken,
                                         Class<? extends Exception> expectedException) {
         Map<String, Object> informationToInclude = new HashMap<>();
         JWSAlgorithm signatureAlgorithm = JWSAlgorithm.HS256;
@@ -76,7 +84,7 @@ public class JweUtilTest {
                              + "GWau4f-h4J3FzHZ2Oo9HLS7YWShMgC1iGc0XsUwcgBXlB0KROBzHeD0CHjK7i7B47z9_KVED9lf94oSISQpz5dWfYU_aahKts"
                              + "IzpE5Z10vrLKZ0ngjqcJmo_1oSiKQxaovPJWecfBsvet_LEslwDVOj6xuMwRUwurJ7NELTVWXP746Uv_QfsF_0C4gyK9ZXjoQ"
                              + "exs61T4rR5eYzC4QZPQXimuS0RnxMPcG1qOCVFkKl0HUlJtlJx308Z5uOiSNd17GzlnkSon7yCA.plH9WSOZ2JOB8Xz8RJK4kQ";
-        Map<String, Object> payloadFromJws = new HashMap<String, Object>() {{
+        Map<String, Object> payloadFromJws = new HashMap<>() {{
             put("name", "name value");
             put("age", 23L);
         }};
@@ -117,7 +125,7 @@ public class JweUtilTest {
                              + "GWau4f-h4J3FzHZ2Oo9HLS7YWShMgC1iGc0XsUwcgBXlB0KROBzHeD0CHjK7i7B47z9_KVED9lf94oSISQpz5dWfYU_aahKts"
                              + "IzpE5Z10vrLKZ0ngjqcJmo_1oSiKQxaovPJWecfBsvet_LEslwDVOj6xuMwRUwurJ7NELTVWXP746Uv_QfsF_0C4gyK9ZXjoQ"
                              + "exs61T4rR5eYzC4QZPQXimuS0RnxMPcG1qOCVFkKl0HUlJtlJx308Z5uOiSNd17GzlnkSon7yCA.plH9WSOZ2JOB8Xz8RJK4kQ";
-        Map<String, Object> payloadFromJws = new HashMap<String, Object>() {{
+        Map<String, Object> payloadFromJws = new HashMap<>() {{
             put("name", "name value");
             put("age", 23L);
         }};
@@ -137,8 +145,11 @@ public class JweUtilTest {
     @ParameterizedTest
     @MethodSource("getPayloadExceptGivenKeysTestCases")
     @DisplayName("getPayloadExceptGivenKeys: test cases")
-    public void getPayloadExceptGivenKeys_testCases(String jweToken, String encryptionSecret, Class<? extends Exception> expectedException,
-                                                    Map<String, Object> payloadFromJws, Map<String, Object> expectedResult) {
+    public void getPayloadExceptGivenKeys_testCases(String jweToken,
+                                                    String encryptionSecret,
+                                                    Class<? extends Exception> expectedException,
+                                                    Map<String, Object> payloadFromJws,
+                                                    Map<String, Object> expectedResult) {
         String signatureSecret = "Spring5Microservices_signatureSecret";
         Set<String> keysToExclude = new HashSet<>();
 
@@ -158,7 +169,7 @@ public class JweUtilTest {
                              + "GWau4f-h4J3FzHZ2Oo9HLS7YWShMgC1iGc0XsUwcgBXlB0KROBzHeD0CHjK7i7B47z9_KVED9lf94oSISQpz5dWfYU_aahKts"
                              + "IzpE5Z10vrLKZ0ngjqcJmo_1oSiKQxaovPJWecfBsvet_LEslwDVOj6xuMwRUwurJ7NELTVWXP746Uv_QfsF_0C4gyK9ZXjoQ"
                              + "exs61T4rR5eYzC4QZPQXimuS0RnxMPcG1qOCVFkKl0HUlJtlJx308Z5uOiSNd17GzlnkSon7yCA.plH9WSOZ2JOB8Xz8RJK4kQ";
-        Map<String, Object> payloadFromJws = new HashMap<String, Object>() {{
+        Map<String, Object> payloadFromJws = new HashMap<>() {{
             put("name", "name value");
             put("age", 23L);
         }};
@@ -211,7 +222,9 @@ public class JweUtilTest {
     @ParameterizedTest
     @MethodSource("isJweTokenTestCases")
     @DisplayName("isJweToken: test cases")
-    public void isJweToken_testCases(String jweToken, Class<? extends Exception> expectedException, Boolean expectedResult) {
+    public void isJweToken_testCases(String jweToken,
+                                     Class<? extends Exception> expectedException,
+                                     Boolean expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> jweUtil.isJweToken(jweToken));
         }

@@ -1,36 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.6.RELEASE</version>
-        <relativePath/>
+        <version>2.7.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.gatewayserver</groupId>
     <artifactId>gateway-server</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <name>gateway-server</name>
-    <description>Gateway server with Zuul for Spring 5 with microservices</description>
+    <description>Gateway server for Spring 5 with microservices</description>
 
     <properties>
-        <cache2k.version>1.2.4.Final</cache2k.version>
-        <java.version>1.10</java.version>
-        <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
-        <springfox-swagger.version>2.9.2</springfox-swagger.version>
-        <spring5-microservices-common.version>2.2</spring5-microservices-common.version>
+        <java.version>1.14</java.version>
+        <maven.compiler.target>14</maven.compiler.target>
+        <maven.compiler.release>14</maven.compiler.release>
+        <spring-cloud.version>2021.0.4</spring-cloud.version>
+        <springfox-swagger.version>3.0.0</springfox-swagger.version>
+        <spring5-microservices-common.version>3.0</spring5-microservices-common.version>
     </properties>
 
     <dependencies>
         <!-- Spring dependencies -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-config-client</artifactId>
+            <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -38,7 +40,27 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-sleuth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Spring5 microservices common -->
+        <dependency>
+            <groupId>com.spring5microservices.common</groupId>
+            <artifactId>spring5-microservices-common</artifactId>
+            <version>${spring5-microservices-common.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springdoc</groupId>
+                    <artifactId>springdoc-openapi-ui</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Code generators -->
         <dependency>
@@ -46,16 +68,11 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        <!--Swagger -->
+        <!-- Documentation -->
         <dependency>
             <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <!-- Test -->
         <dependency>
@@ -82,6 +99,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${project.parent.version}</version>
             </plugin>
         </plugins>
     </build>

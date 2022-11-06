@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.TcpClient;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -22,19 +22,38 @@ public class RestConfiguration {
     @Value("${rest.read.timeoutInMilliseconds}")
     private int readTimeoutMillis;
 
+    @Value("${rest.response.timeoutInMilliseconds}")
+    private int responseTimeoutMillis;
+
     @Value("${rest.write.timeoutInMilliseconds}")
     private int writeTimeoutMillis;
 
     @Bean
     public WebClient webClient() {
-        TcpClient tcpClient = TcpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
-                .doOnConnected(connection -> {
-                    connection.addHandlerLast(new ReadTimeoutHandler(readTimeoutMillis, TimeUnit.MILLISECONDS));
-                    connection.addHandlerLast(new WriteTimeoutHandler(writeTimeoutMillis, TimeUnit.MILLISECONDS));
-                });
+        HttpClient httpClient = HttpClient.create()
+                .option(
+                        ChannelOption.CONNECT_TIMEOUT_MILLIS,
+                        connectTimeoutMillis
+                )
+                .responseTimeout(
+                        Duration.ofMillis(responseTimeoutMillis)
+                )
+                .doOnConnected(conn ->
+                        conn.addHandlerLast(
+                                new ReadTimeoutHandler(
+                                        readTimeoutMillis,
+                                        TimeUnit.MILLISECONDS)
+                                )
+                                .addHandlerLast(
+                                        new WriteTimeoutHandler(
+                                                writeTimeoutMillis,
+                                                TimeUnit.MILLISECONDS)
+                                )
+                );
         return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient)))
+                .clientConnector(
+                        new ReactorClientHttpConnector(httpClient)
+                )
                 .build();
     }
 

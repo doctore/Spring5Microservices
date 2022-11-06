@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import static com.order.TestDataFactory.buildOrder;
 import static com.order.TestDataFactory.buildOrderDto;
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -42,7 +41,7 @@ public class OrderConverterTest {
 
 
     static Stream<Arguments> fromDtoToModelTestCases() {
-        OrderDto dto = buildOrderDto(1, "Order1", new Date(), asList());
+        OrderDto dto = buildOrderDto(1, "Order1", new Date(), List.of());
         return Stream.of(
                 //@formatter:off
                 //            dtoToConvert
@@ -89,12 +88,12 @@ public class OrderConverterTest {
 
 
     static Stream<Arguments> fromDtosToModelsTestCases() {
-        OrderDto dto = buildOrderDto(1, "Order1", new Date(), asList());
+        OrderDto dto = buildOrderDto(1, "Order1", new Date(), List.of());
         return Stream.of(
                 //@formatter:off
                 //            listOfDtosToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(dto) )
+                Arguments.of( List.of(dto) )
         ); //@formatter:on
     }
 
@@ -171,7 +170,7 @@ public class OrderConverterTest {
                 //@formatter:off
                 //            listOfModelsToConvert
                 Arguments.of( new ArrayList<>() ),
-                Arguments.of( asList(model) )
+                Arguments.of( List.of(model) )
         ); //@formatter:on
     }
 

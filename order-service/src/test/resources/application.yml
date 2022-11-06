@@ -1,5 +1,8 @@
-# IMPORTANT: Stop config-server when you want to execute the tests
 spring:
+  cloud:
+    # Disable configuration server for testing
+    config:
+      enabled: false
   ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
   datasource:
     driverClassName: org.postgresql.Driver
@@ -7,7 +10,12 @@ spring:
     username: microservice_test
     password: microservice_test
   jooq:
-    sql-dialect: POSTGRES_9_5
+    sql-dialect: POSTGRES
+
+# Disable eureka server connection request for testing
+eureka:
+  client:
+    enabled: false
 
 security:
   restApi:
@@ -15,11 +23,24 @@ security:
     clientId: TestClient
     clientPassword: TestPassword
 
-springfox:
+rest:
+  connect:
+    timeoutInMilliseconds: 5000
+  read:
+    timeoutInMilliseconds: 5000
+
+springdoc:
+  api-docs:
+    path: onlyForTests
   documentation:
     apiVersion: 1.0
     title: Test Rest Api
     description: Test description
-    swagger:
-      v2:
-        path: onlyForTests
+  security:
+    authorization: Bearer Auth
+    schema: bearer
+    format: JWT
+  swagger-ui:
+    path: testPath
+  webjars:
+    prefix: testPrefix

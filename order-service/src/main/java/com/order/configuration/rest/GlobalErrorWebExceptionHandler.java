@@ -2,6 +2,7 @@ package com.order.configuration.rest;
 
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import com.spring5microservices.common.enums.RestApiErrorCode;
+import com.spring5microservices.common.exception.UnauthorizedException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -33,6 +34,7 @@ import org.springframework.web.context.request.WebRequest;
 import javax.servlet.http.HttpServletRequest;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
@@ -44,39 +46,75 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 public class GlobalErrorWebExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponseDto> accessDeniedException(AccessDeniedException exception, WebRequest request) {
+    public ResponseEntity<ErrorResponseDto> accessDeniedException(final AccessDeniedException exception,
+                                                                  final WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildErrorResponse(SECURITY, asList("Access denied"), FORBIDDEN);
+        return buildErrorResponse(
+                SECURITY,
+                List.of(exception.getMessage()),
+                FORBIDDEN
+        );
     }
 
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponseDto> constraintViolationException(ConstraintViolationException exception, WebRequest request) {
+    public ResponseEntity<ErrorResponseDto> constraintViolationException(final ConstraintViolationException exception,
+                                                                         final WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception); //HttpMessageNotReadableException
-        return buildErrorResponse(VALIDATION, errorMessages, BAD_REQUEST);
+        List<String> errorMessages = getConstraintViolationExceptionErrorMessages(exception);
+        return buildErrorResponse(
+                VALIDATION,
+                errorMessages,
+                BAD_REQUEST
+        );
     }
 
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponseDto> httpMessageNotReadableException(HttpMessageNotReadableException exception, WebRequest request) {
+    public ResponseEntity<ErrorResponseDto> httpMessageNotReadableException(final HttpMessageNotReadableException exception,
+                                                                            final WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildErrorResponse(VALIDATION, asList("The was a problem in the parameters of the current request"), BAD_REQUEST);
+        return buildErrorResponse(
+                VALIDATION,
+                List.of("The was a problem in the parameters of the current request"),
+                BAD_REQUEST
+        );
     }
 
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseDto> methodArgumentNotValidException(MethodArgumentNotValidException exception, WebRequest request) {
+    public ResponseEntity<ErrorResponseDto> methodArgumentNotValidException(final MethodArgumentNotValidException exception,
+                                                                            final WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
         List<String> errorMessages = getMethodArgumentNotValidExceptionErrorMessages(exception);
-        return buildErrorResponse(VALIDATION, errorMessages, BAD_REQUEST);
+        return buildErrorResponse(
+                VALIDATION,
+                errorMessages,
+                BAD_REQUEST
+        );
+    }
+
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponseDto> unauthorizedException(final UnauthorizedException exception,
+                                                                  final WebRequest request) {
+        log.error(getErrorMessageUsingHttpRequest(request), exception);
+        return buildErrorResponse(
+                SECURITY,
+                List.of(exception.getMessage()),
+                UNAUTHORIZED
+        );
     }
 
 
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ErrorResponseDto> throwable(Throwable exception, WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
-        return buildErrorResponse(INTERNAL, asList("Internal error in the application"), INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(
+                INTERNAL,
+                List.of("Internal error in the application"),
+                INTERNAL_SERVER_ERROR
+        );
     }
 
 
@@ -93,8 +131,11 @@ public class GlobalErrorWebExceptionHandler {
         return format("There was an error trying to execute the request with: %s"
                         + "Http method = %s %s "
                         + "Uri = %s",
-                System.lineSeparator(), httpRequest.getMethod(),
-                System.lineSeparator(), httpRequest.getRequestURI());
+                System.lineSeparator(),
+                httpRequest.getMethod(),
+                System.lineSeparator(),
+                httpRequest.getRequestURI()
+        );
     }
 
 

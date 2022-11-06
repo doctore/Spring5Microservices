@@ -107,8 +107,11 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getAuthenticationInformationTestCases")
     @DisplayName("getAuthenticationInformation: test cases")
-    public void getAuthenticationInformation_testCases(String clientId, UserDetails userDetails, AuthenticationGenerator authenticationGenerator,
-                                                       JwtClientDetails clientDetailsResult, Optional<RawAuthenticationInformationDto> rawAuthenticationInformation,
+    public void getAuthenticationInformation_testCases(String clientId,
+                                                       UserDetails userDetails,
+                                                       AuthenticationGenerator authenticationGenerator,
+                                                       JwtClientDetails clientDetailsResult,
+                                                       Optional<RawAuthenticationInformationDto> rawAuthenticationInformation,
                                                        boolean isResultEmpty) {
         String decryptedJwtSecret = "secretKey_ForTestingPurpose@12345#";
 
@@ -127,14 +130,17 @@ public class AuthenticationServiceTest {
         verifyGetAuthenticationInformationResult(clientDetailsResult, rawAuthenticationInformation, result, isResultEmpty);
     }
 
-    private void verifyGetAuthenticationInformationResult(JwtClientDetails clientDetailsResult, Optional<RawAuthenticationInformationDto> rawAuthenticationInformation,
-                                                          Optional<AuthenticationInformationDto> result, boolean isResultEmpty) {
-        if (isResultEmpty)
+    private void verifyGetAuthenticationInformationResult(JwtClientDetails clientDetailsResult,
+                                                          Optional<RawAuthenticationInformationDto> rawAuthenticationInformation,
+                                                          Optional<AuthenticationInformationDto> result,
+                                                          boolean isResultEmpty) {
+        if (isResultEmpty) {
             assertFalse(result.isPresent());
+        }
         else {
             assertTrue(result.isPresent());
             assertEquals(clientDetailsResult.getAccessTokenValidity(), result.get().getExpiresIn());
-            assertEquals(clientDetailsResult.getTokenType(), result.get().getTokenType());
+            assertEquals(clientDetailsResult.getTokenType().name(), result.get().getTokenType());
             assertNull(result.get().getScope());
             assertFalse(result.get().getJwtId().isEmpty());
             if (!rawAuthenticationInformation.isPresent()) {
@@ -152,12 +158,12 @@ public class AuthenticationServiceTest {
         clientDetailsJWE.setUseJwe(true);
         JwtClientDetails clientDetailsJWS = TestDataFactory.buildDefaultJwtClientDetails(clientId);
         clientDetailsJWS.setUseJwe(false);
-        Map<String, Object> payloadFromAccessToken = new HashMap<String, Object>() {{
+        Map<String, Object> payloadFromAccessToken = new HashMap<>() {{
             put(AUTHORITIES.getKey(), asList("admin"));
             put(JWT_ID.getKey(), "jti value");
             put(USERNAME.getKey(), "name value");
         }};
-        Map<String, Object> payloadFromRefreshToken = new HashMap<String, Object>() {{
+        Map<String, Object> payloadFromRefreshToken = new HashMap<>() {{
             put(AUTHORITIES.getKey(), asList("admin"));
             put(REFRESH_JWT_ID.getKey(), "ati value");
             put(USERNAME.getKey(), "name value");
@@ -189,8 +195,13 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getPayloadOfTokenTestCases")
     @DisplayName("getPayloadOfToken: test cases")
-    public void getPayloadOfToken_testCases(String token, String clientId, boolean isAccessToken, JwtClientDetails clientDetailsResult,
-                                            Map<String, Object> payload, Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
+    public void getPayloadOfToken_testCases(String token,
+                                            String clientId,
+                                            boolean isAccessToken,
+                                            JwtClientDetails clientDetailsResult,
+                                            Map<String, Object> payload,
+                                            Class<? extends Exception> expectedException,
+                                            Map<String, Object> expectedResult) {
         String decryptedJwsSecret = "secretKey_ForTestingPurpose@12345#";
 
         when(mockEncryptor.decrypt(anyString())).thenReturn(decryptedJwsSecret);
@@ -216,10 +227,10 @@ public class AuthenticationServiceTest {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
         String username = "username value";
-        Map<String, Object> payloadWithUsername = new HashMap<String, Object>() {{
+        Map<String, Object> payloadWithUsername = new HashMap<>() {{
             put(USERNAME.getKey(), username);
         }};
-        Map<String, Object> payloadWithoutUsername = new HashMap<String, Object>() {{
+        Map<String, Object> payloadWithoutUsername = new HashMap<>() {{
             put(NAME.getKey(), "name value");
         }};
         return Stream.of(
@@ -237,8 +248,10 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getUsernameTestCases")
     @DisplayName("getUsername: test cases")
-    public void getUsername_testCases(Map<String, Object> payload, String clientId, AuthenticationGenerator authenticationGenerator,
-                                      Class<? extends Exception> expectedException, Optional<String> expectedResult) {
+    public void getUsername_testCases(Map<String, Object> payload,
+                                      String clientId, AuthenticationGenerator authenticationGenerator,
+                                      Class<? extends Exception> expectedException,
+                                      Optional<String> expectedResult) {
 
         when(mockApplicationContext.getBean(AuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         if (null != authenticationGenerator) {
@@ -259,10 +272,10 @@ public class AuthenticationServiceTest {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
         List<String> roles = asList("admin", "user");
-        Map<String, Object> payloadWithRoles = new HashMap<String, Object>() {{
+        Map<String, Object> payloadWithRoles = new HashMap<>() {{
             put(AUTHORITIES.getKey(), roles);
         }};
-        Map<String, Object> payloadWithoutRoles = new HashMap<String, Object>() {{
+        Map<String, Object> payloadWithoutRoles = new HashMap<>() {{
             put(NAME.getKey(), "name value");
         }};
         return Stream.of(
@@ -280,8 +293,11 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getRolesTestCases")
     @DisplayName("getRoles: test cases")
-    public void getRoles_testCases(Map<String, Object> payload, String clientId, AuthenticationGenerator authenticationGenerator,
-                                   Class<? extends Exception> expectedException, Set<String> expectedResult) {
+    public void getRoles_testCases(Map<String, Object> payload,
+                                   String clientId,
+                                   AuthenticationGenerator authenticationGenerator,
+                                   Class<? extends Exception> expectedException,
+                                   Set<String> expectedResult) {
 
         when(mockApplicationContext.getBean(AuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         if (null != authenticationGenerator) {
@@ -301,7 +317,7 @@ public class AuthenticationServiceTest {
     static Stream<Arguments> getCustomInformationIncludedByClientTestCases() {
         String clientId = SPRING5_MICROSERVICES.getClientId();
         AuthenticationGenerator authenticationGenerator = mock(AuthenticationGenerator.class);
-        Map<String, Object> sourcePayload = new HashMap<String, Object>() {{
+        Map<String, Object> sourcePayload = new HashMap<>() {{
             put("age", 32);
             put(AUTHORITIES.getKey(), asList("admin", "user"));
             put(AUDIENCE.getKey(), clientId);
@@ -311,7 +327,7 @@ public class AuthenticationServiceTest {
             put(NAME.getKey(), "name value");
             put(USERNAME.getKey(), "username value");
         }};
-        Map<String, Object> finalPayload = new HashMap<String, Object>() {{
+        Map<String, Object> finalPayload = new HashMap<>() {{
             put("age", 32);
             put(NAME.getKey(), "name value");
         }};
@@ -329,9 +345,11 @@ public class AuthenticationServiceTest {
     @ParameterizedTest
     @MethodSource("getCustomInformationIncludedByClientTestCases")
     @DisplayName("getCustomInformationIncludedByClient: test cases")
-    public void getCustomInformationIncludedByClient_testCases(Map<String, Object> payload, String clientId,
+    public void getCustomInformationIncludedByClient_testCases(Map<String, Object> payload,
+                                                               String clientId,
                                                                AuthenticationGenerator authenticationGenerator,
-                                                               Class<? extends Exception> expectedException, Map<String, Object> expectedResult) {
+                                                               Class<? extends Exception> expectedException,
+                                                               Map<String, Object> expectedResult) {
         when(mockApplicationContext.getBean(AuthenticationGenerator.class)).thenReturn(authenticationGenerator);
         if (null != authenticationGenerator) {
             when(authenticationGenerator.getUsernameKey()).thenReturn(USERNAME.getKey());

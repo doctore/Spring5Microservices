@@ -15,8 +15,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,6 +30,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,7 +40,6 @@ import static com.pizza.TestDataFactory.buildIngredientDto;
 import static com.pizza.TestDataFactory.buildPizzaDto;
 import static com.pizza.enums.PizzaEnum.CARBONARA;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
-import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -57,6 +59,11 @@ public class PizzaControllerTest {
 
     @MockBean
     private WebClient mockWebClient;
+
+    // To avoid Hazelcast instance creation
+    @MockBean
+    @Qualifier("cacheManager")
+    private CacheManager mockCacheManager;
 
     private WebTestClient webTestClient;
 
@@ -100,10 +107,10 @@ public class PizzaControllerTest {
         PizzaDto dto1 = buildPizzaDto(1, "Not existing", 7D, Set.of());
         PizzaDto dto2 = buildPizzaDto(null, CARBONARA.getInternalPropertyValue(), null, Set.of());
         ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'pizzaDto' on field 'name' due to: must be one of the "
-                     + "values included in [" + validPizzaNames + "]"));
+                List.of("Field error in object 'pizzaDto' on field 'name' due to: must be one of the "
+                      + "values included in [" + validPizzaNames + "]"));
         ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'pizzaDto' on field 'cost' due to: must not be null"));
+                List.of("Field error in object 'pizzaDto' on field 'cost' due to: must not be null"));
         return Stream.of(
                 //@formatter:off
                 //            dtoToCreate,   expectedResponse
@@ -205,7 +212,7 @@ public class PizzaControllerTest {
     public void findByName_whenTheNameDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndAndValidationErrorsAreReturned() {
         // Given
         String notValidPizzaName = "pizzaName1pizzaName2pizzaName3pizzaName4pizzaName5pizzaName6pizzaName7";
-        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, asList("name: size must be between 1 and 64"));
+        ErrorResponseDto expectedResponse = new ErrorResponseDto(VALIDATION, List.of("name: size must be between 1 and 64"));
 
         // When/Then
         webTestClient.get()
@@ -289,8 +296,8 @@ public class PizzaControllerTest {
 
 
     static Stream<Arguments> findPageWithIngredientsWhenParametersNotVerifyValidationsTestCases() {
-        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION, asList("page: must be greater than or equal to 0"));
-        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION, asList("size: must be greater than 0"));
+        ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION, List.of("page: must be greater than or equal to 0"));
+        ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION, List.of("size: must be greater than 0"));
         return Stream.of(
                 //@formatter:off
                 //            page,   size,   expectedResponse
@@ -354,7 +361,7 @@ public class PizzaControllerTest {
         PizzaDto pizzaDto = buildPizzaDto(1, CARBONARA.getInternalPropertyValue(), 7D, Set.of(ingredientDto));
 
         // When
-        when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(asList(pizzaDto)));
+        when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(List.of(pizzaDto)));
 
         // Then
         webTestClient.get()
@@ -410,10 +417,10 @@ public class PizzaControllerTest {
         PizzaDto dto1 = buildPizzaDto(1, "Not existing", 7D, Set.of());
         PizzaDto dto2 = buildPizzaDto(null, CARBONARA.getInternalPropertyValue(), null, Set.of());
         ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'pizzaDto' on field 'name' due to: must be one of the "
-                        + "values included in [" + validPizzaNames + "]"));
+                List.of("Field error in object 'pizzaDto' on field 'name' due to: must be one of the "
+                      + "values included in [" + validPizzaNames + "]"));
         ErrorResponseDto response2 = new ErrorResponseDto(VALIDATION,
-                asList("Field error in object 'pizzaDto' on field 'cost' due to: must not be null"));
+                List.of("Field error in object 'pizzaDto' on field 'cost' due to: must not be null"));
         return Stream.of(
                 //@formatter:off
                 //            dtoToUpdate,   expectedResponse

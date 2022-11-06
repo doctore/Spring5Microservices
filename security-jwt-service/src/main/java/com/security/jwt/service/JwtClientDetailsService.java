@@ -38,7 +38,7 @@ public class JwtClientDetailsService implements ReactiveUserDetailsService {
      *
      * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
      */
-    public JwtClientDetails findByClientId(String clientId) {
+    public JwtClientDetails findByClientId(final String clientId) {
         return jwtClientDetailsCacheService.get(clientId)
                 .orElseGet(() ->
                     jwtClientDetailsRepository.findByClientId(clientId)
@@ -63,7 +63,7 @@ public class JwtClientDetailsService implements ReactiveUserDetailsService {
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override
-    public Mono<UserDetails> findByUsername(String clientId) {
+    public Mono<UserDetails> findByUsername(final String clientId) {
         UserDetails userDetails = findByClientId(clientId);
         new AccountStatusUserDetailsChecker().check(userDetails);
         return Mono.just(userDetails);
