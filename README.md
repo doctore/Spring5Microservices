@@ -347,8 +347,8 @@ The following microservices have a well documented Rest API:
  
 Swagger has been used in all cases, however two different libraries have been included depending of the main Spring module of every microservice:
 
-* **SpringFox** in microservices based on MVC.
-* **Springdoc-OpenApi** in microservices based on Webflux.
+* **SpringFox** in [Gateway Server](#gateway-server) to unify the webpage used to access to the rest of documented microservices.
+* **Springdoc-OpenApi** in every documented microservice.
 
 To facilitate access to this documentation, we can use the **gateway-server** URL. On that way, using the upper selector, we will be able to choose
 between all existing microservices.
