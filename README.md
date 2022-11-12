@@ -276,7 +276,7 @@ To do it:
 ## Security services
 
 As you read previously, there are two different microservices you can use to manage the authentication/authorization functionality: [security-oauth-service](#security-oauth-service)
-and [security-jwt-service](#security-jwt-service), in this proof of concept I have used the first one in *[order-service](#order-service) and the second one to securize
+and [security-jwt-service](#security-jwt-service), in this proof of concept I have used the first one in [order-service](#order-service) and the second one to securize
 [pizza-service](#pizza-service).
 
 Regarding every microservice, in this section I will explain the web services provided by every one and how to use them, starting by [security-oauth-service](#security-oauth-service).
@@ -362,7 +362,7 @@ The following microservices have a well documented Rest API:
  
 Swagger has been used in all cases, however two different libraries have been included depending of the main Spring module of every microservice:
 
-* **SpringFox** in [Gateway Server](#gateway-server) to unify the webpage used to access to the rest of documented microservices.
+* **SpringFox** in [gateway-server](#gateway-server) to unify the webpage used to access to the rest of documented microservices.
 * **Springdoc-OpenApi** in every documented microservice.
 
 To facilitate access to this documentation, we can use the [gateway-server](#gateway-server) URL. On that way, using the upper selector, we will be able
