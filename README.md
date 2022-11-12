@@ -339,7 +339,7 @@ services (following the displayed ordination):
 2. [config-server](#config-server)
 3. [gateway-server](#gateway-server)
 4. [security-oauth-service](#security-oauth-service) (if we want to use [order-service](#order-service))
-4. [security-jwt-service](#security-jwt-service) (if we want to use [pizza-service](#pizza-service))
+5. [security-jwt-service](#security-jwt-service) (if we want to use [pizza-service](#pizza-service))
 
 And finally any of the other ones (or both): [pizza-service](#pizza-service) and [order-service](#order-service).
 
