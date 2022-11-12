@@ -26,13 +26,16 @@ public class PageUtil {
      *
      * @return {@link PageRequest}
      */
-    public static PageRequest buildPageRequest(int page, int size, Sort sort) {
+    public static PageRequest buildPageRequest(final int page,
+                                               final int size,
+                                               final Sort sort) {
         return ofNullable(sort)
                 .map(s ->
                         PageRequest.of(
                                 page,
                                 size,
-                                sort)
+                                sort
+                        )
                 )
                 .orElseGet(() ->
                         PageRequest.of(

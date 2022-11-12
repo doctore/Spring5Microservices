@@ -322,7 +322,13 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
         Assert.notNull(f3, "f3 must be not null");
         Assert.notNull(f4, "f4 must be not null");
         Assert.notNull(f5, "f5 must be not null");
-        return of(f1.apply(_1), f2.apply(_2), f3.apply(_3), f4.apply(_4), f5.apply(_5));
+        return of(
+                f1.apply(_1),
+                f2.apply(_2),
+                f3.apply(_3),
+                f4.apply(_4),
+                f5.apply(_5)
+        );
     }
 
 
@@ -356,7 +362,7 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
     public <U> Tuple5<T1, U, T3, T4, T5> map2(final Function<? super T2, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_2);
-        return Tuple.of(_1, u, _3, _4, _5);
+        return of(_1, u, _3, _4, _5);
     }
 
 
@@ -373,7 +379,7 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
     public <U> Tuple5<T1, T2, U, T4, T5> map3(final Function<? super T3, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_3);
-        return Tuple.of(_1, _2, u, _4, _5);
+        return of(_1, _2, u, _4, _5);
     }
 
 
@@ -390,7 +396,7 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
     public <U> Tuple5<T1, T2, T3, U, T5> map4(final Function<? super T4, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_4);
-        return Tuple.of(_1, _2, _3, u, _5);
+        return of(_1, _2, _3, u, _5);
     }
 
 
@@ -407,7 +413,7 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
     public <U> Tuple5<T1, T2, T3, T4, U> map5(final Function<? super T5, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_5);
-        return Tuple.of(_1, _2, _3, _4, u);
+        return of(_1, _2, _3, _4, u);
     }
 
 

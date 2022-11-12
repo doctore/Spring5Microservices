@@ -18,9 +18,9 @@ import static java.util.Optional.ofNullable;
 public enum AuthenticationConfigurationEnum {
     SPRING5_MICROSERVICES ("Spring5Microservices", AuthenticationGenerator.class, UserService.class);
 
-    private String clientId;
-    private Class<? extends IAuthenticationGenerator> authenticationGeneratorClass;
-    private Class<? extends IUserService> userServiceClass;
+    private final String clientId;
+    private final Class<? extends IAuthenticationGenerator> authenticationGeneratorClass;
+    private final Class<? extends IUserService> userServiceClass;
 
     AuthenticationConfigurationEnum(String clientId, Class<? extends IAuthenticationGenerator> authenticationGeneratorClass,
                                     Class<? extends IUserService> userServiceClass) {
@@ -47,7 +47,7 @@ public enum AuthenticationConfigurationEnum {
      *
      * @return {@link AuthenticationConfigurationEnum}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in the {@code enum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in the {@code enum}
      */
     public static AuthenticationConfigurationEnum getByClientId(@Nullable String clientId) {
         return ofNullable(clientId)

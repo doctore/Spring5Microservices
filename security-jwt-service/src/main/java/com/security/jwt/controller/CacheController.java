@@ -71,8 +71,12 @@ public class CacheController {
     @PutMapping(value = RestRoutes.CACHE.CLEAR)
     public Mono<ResponseEntity> clear() {
         return jwtClientDetailsCacheService.clear()
-                ? Mono.just(new ResponseEntity<>(OK))
-                : Mono.just(new ResponseEntity<>(NOT_FOUND));
+                ? Mono.just(
+                        new ResponseEntity<>(OK)
+                )
+                : Mono.just(
+                        new ResponseEntity<>(NOT_FOUND)
+                );
     }
 
 }

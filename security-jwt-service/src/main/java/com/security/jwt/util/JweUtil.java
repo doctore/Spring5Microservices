@@ -45,7 +45,7 @@ public class JweUtil {
     /**
      *    Using the given {@code informationToInclude} generates a valid nested JWS and JWE token (signed + encrypted JWT),
      * signed with the selected {@link JWSAlgorithm} and {@code signatureSecret}.
-     *
+     * <p>
      *    For the encryption process, the algorithm is AES using a direct encryption with a shared symmetric key provided
      * in {@code encryptionSecret}.
      *
@@ -71,8 +71,16 @@ public class JweUtil {
                                 final String encryptionSecret,
                                 final long expirationTimeInSeconds) {
         Assert.hasText(encryptionSecret, "encryptionSecret cannot be null or empty");
-        String jwsToken = jwsUtil.generateToken(informationToInclude, signatureAlgorithm, signatureSecret, expirationTimeInSeconds);
-        return encryptJwsToken(jwsToken, encryptionSecret);
+        String jwsToken = jwsUtil.generateToken(
+                informationToInclude,
+                signatureAlgorithm,
+                signatureSecret,
+                expirationTimeInSeconds
+        );
+        return encryptJwsToken(
+                jwsToken,
+                encryptionSecret
+        );
     }
 
 
@@ -99,8 +107,15 @@ public class JweUtil {
                                               final String encryptionSecret,
                                               final Set<String> keysToInclude) {
         Assert.hasText(encryptionSecret, "encryptionSecret cannot be null or empty");
-        String jwsToken = decryptJweToken(jweToken, encryptionSecret);
-        return jwsUtil.getPayloadKeys(jwsToken, signatureSecret, keysToInclude);
+        String jwsToken = decryptJweToken(
+                jweToken,
+                encryptionSecret
+        );
+        return jwsUtil.getPayloadKeys(
+                jwsToken,
+                signatureSecret,
+                keysToInclude
+        );
     }
 
 
@@ -127,8 +142,15 @@ public class JweUtil {
                                                          final String encryptionSecret,
                                                          final Set<String> keysToExclude) {
         Assert.hasText(encryptionSecret, "encryptionSecret cannot be null or empty");
-        String jwsToken = decryptJweToken(jweToken, encryptionSecret);
-        return jwsUtil.getPayloadExceptGivenKeys(jwsToken, signatureSecret, keysToExclude);
+        String jwsToken = decryptJweToken(
+                jweToken,
+                encryptionSecret
+        );
+        return jwsUtil.getPayloadExceptGivenKeys(
+                jwsToken,
+                signatureSecret,
+                keysToExclude
+        );
     }
 
 
@@ -147,7 +169,10 @@ public class JweUtil {
     public Map<String, Object> getRawPayload(final String jweToken,
                                              final String encryptionSecret) {
         Assert.hasText(jweToken, "encryptionSecret cannot be null or empty");
-        String jwsToken = decryptJweToken(jweToken, encryptionSecret);
+        String jwsToken = decryptJweToken(
+                jweToken,
+                encryptionSecret
+        );
         return jwsUtil.getRawPayload(jwsToken);
     }
 
@@ -172,7 +197,8 @@ public class JweUtil {
 
         } catch (ParseException e) {
             throw new IllegalArgumentException(
-                    format("The was a problem trying to figure out the type of token: %s", token),
+                    format("The was a problem trying to figure out the type of token: %s",
+                            token),
                     e
             );
         }
@@ -194,7 +220,10 @@ public class JweUtil {
     private String encryptJwsToken(final String jwsToken,
                                    final String encryptionSecret) {
         if (!jwsUtil.isJwsToken(jwsToken)) {
-            throw new TokenInvalidException(format("The token: %s is not a JWS one", jwsToken));
+            throw new TokenInvalidException(
+                    format("The token: %s is not a JWS one",
+                            jwsToken)
+            );
         }
         try {
             JWEObject jweObject = new JWEObject(
@@ -227,12 +256,18 @@ public class JweUtil {
      */
     private String decryptJweToken(final String jweToken,
                                    final String encryptionSecret) {
-        if (!isJweToken(jweToken))
-            throw new TokenInvalidException(format("The token: %s is not a JWE one", jweToken));
+        if (!isJweToken(jweToken)) {
+            throw new TokenInvalidException(
+                    format("The token: %s is not a JWE one",
+                            jweToken)
+            );
+        }
         try {
             JWEObject jweObject = JWEObject.parse(jweToken);
             jweObject.decrypt(new DirectDecrypter(encryptionSecret.getBytes()));
-            return jweObject.getPayload().toSignedJWT().serialize();
+            return jweObject.getPayload()
+                    .toSignedJWT()
+                    .serialize();
 
         } catch (JOSEException | ParseException e) {
             if (e instanceof KeyException) {

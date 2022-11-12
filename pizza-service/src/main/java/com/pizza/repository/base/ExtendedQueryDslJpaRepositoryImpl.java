@@ -22,7 +22,10 @@ public class ExtendedQueryDslJpaRepositoryImpl<T, ID extends Serializable> exten
         implements ExtendedQueryDslJpaRepository<T, ID> {
 
     public ExtendedQueryDslJpaRepositoryImpl(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
-        super(entityInformation, entityManager);
+        super(
+                entityInformation,
+                entityManager
+        );
     }
 
     @Override

@@ -12,9 +12,9 @@ public interface IUserService extends UserDetailsService {
      * Verify if the given password matches with the one belongs to {@code userDetails}.
      *
      * @param passwordToVerify
-     *    Password to veryfy
+     *    Password to verify
      * @param userDetails
-     *    {@link UserDetails} which password will be compare
+     *    {@link UserDetails} which password will be compared
      *
      * @return {@code true} if {@code passwordToVerify} matches with {@link UserDetails#getPassword()}, {@code false} otherwise.
      */

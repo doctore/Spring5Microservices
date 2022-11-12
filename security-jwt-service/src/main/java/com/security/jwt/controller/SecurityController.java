@@ -104,9 +104,18 @@ public class SecurityController {
     public Mono<ResponseEntity<AuthenticationInformationDto>> login(@RequestBody @Valid final AuthenticationRequestDto authenticationRequestDto) {
         return getPrincipal()
                 .map(userDetails ->
-                        securityService.login(userDetails.getUsername(), authenticationRequestDto.getUsername(), authenticationRequestDto.getPassword())
-                                .map(ai -> new ResponseEntity<>(ai, OK))
-                                .orElseGet(() -> new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY)));
+                        securityService.login(
+                                userDetails.getUsername(),
+                                authenticationRequestDto.getUsername(),
+                                authenticationRequestDto.getPassword()
+                        )
+                        .map(ai ->
+                                new ResponseEntity<>(
+                                        ai,
+                                        OK
+                                )
+                        )
+                        .orElseGet(() -> new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY)));
     }
 
 
@@ -170,9 +179,17 @@ public class SecurityController {
     public Mono<ResponseEntity<AuthenticationInformationDto>> refresh(@RequestBody @Size(min = 1) final String refreshToken) {
         return getPrincipal()
                 .map(userDetails ->
-                        securityService.refresh(refreshToken, userDetails.getUsername())
-                                .map(ai -> new ResponseEntity<>(ai, OK))
-                                .orElseGet(() -> new ResponseEntity<>(HttpStatus.UNAUTHORIZED)));
+                        securityService.refresh(
+                                refreshToken,
+                                userDetails.getUsername()
+                        )
+                        .map(ai ->
+                                new ResponseEntity<>(
+                                        ai,
+                                        OK
+                                )
+                        )
+                        .orElseGet(() -> new ResponseEntity<>(HttpStatus.UNAUTHORIZED)));
     }
 
 
@@ -226,7 +243,14 @@ public class SecurityController {
     public Mono<ResponseEntity<UsernameAuthoritiesDto>> authorizationInformation(@RequestBody @Size(min = 1) final String accessToken) {
         return getPrincipal()
                 .map(userDetails ->
-                        new ResponseEntity<>(securityService.getAuthorizationInformation(accessToken, userDetails.getUsername()), OK));
+                        new ResponseEntity<>(
+                                securityService.getAuthorizationInformation(
+                                        accessToken,
+                                        userDetails.getUsername()
+                                ),
+                                OK
+                        )
+                );
     }
 
 

@@ -70,7 +70,13 @@ public class CollectionUtil {
                                              final Predicate<? super T> filterPredicate,
                                              final Function<? super T, ? extends E> defaultFunction,
                                              final Function<? super T, ? extends E> orElseFunction) {
-        return (List<E>) applyOrElse(sourceCollection, filterPredicate, defaultFunction, orElseFunction, ArrayList::new);
+        return (List<E>) applyOrElse(
+                sourceCollection,
+                filterPredicate,
+                defaultFunction,
+                orElseFunction,
+                ArrayList::new
+        );
     }
 
 
@@ -147,7 +153,11 @@ public class CollectionUtil {
     @SafeVarargs
     public static <T> Set<T> asSet(final T ...elements) {
         return ofNullable(elements)
-                .map(e -> new LinkedHashSet<>(asList(elements)))
+                .map(e ->
+                        new LinkedHashSet<>(
+                                asList(elements)
+                        )
+                )
                 .orElseGet(LinkedHashSet::new);
     }
 
@@ -182,7 +192,12 @@ public class CollectionUtil {
     public static <T, E> List<E> collect(final Collection<? extends T> sourceCollection,
                                          final Predicate<? super T> filterPredicate,
                                          final Function<? super T, ? extends E> mapFunction) {
-        return (List<E>) collect(sourceCollection, filterPredicate, mapFunction, ArrayList::new);
+        return (List<E>) collect(
+                sourceCollection,
+                filterPredicate,
+                mapFunction,
+                ArrayList::new
+        );
     }
 
 
@@ -256,7 +271,11 @@ public class CollectionUtil {
     @SuppressWarnings("unchecked")
     public static <T, E> List<E> collectProperty(final Collection<? extends T> sourceCollection,
                                                  final Function<? super T, ? extends E> propertyExtractor) {
-        return (List<E>) collectProperty(sourceCollection, propertyExtractor, ArrayList::new);
+        return (List<E>) collectProperty(
+                sourceCollection,
+                propertyExtractor,
+                ArrayList::new
+        );
     }
 
 
@@ -310,7 +329,11 @@ public class CollectionUtil {
     @SafeVarargs
     public static <T> List<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
                                                     final Function<? super T, ?> ...propertyExtractors) {
-        return (List<Tuple>) collectProperties(sourceCollection, ArrayList::new, propertyExtractors);
+        return (List<Tuple>) collectProperties(
+                sourceCollection,
+                ArrayList::new,
+                propertyExtractors
+        );
     }
 
 
@@ -342,7 +365,9 @@ public class CollectionUtil {
         if (Objects.nonNull(propertyExtractors)) {
             Assert.isTrue(
                     Tuple.MAX_ALLOWED_TUPLE_ARITY >= propertyExtractors.length,
-                    format("If propertyExtractors is not null then its size should be <= %s", Tuple.MAX_ALLOWED_TUPLE_ARITY)
+                    format("If propertyExtractors is not null then its size should be <= %s",
+                            Tuple.MAX_ALLOWED_TUPLE_ARITY
+                    )
             );
         } else {
             return finalCollectionFactory.get();
@@ -374,9 +399,13 @@ public class CollectionUtil {
     @SafeVarargs
     public static <T> Set<T> concatUniqueElements(final Collection<T> ...collections) {
         return ofNullable(collections)
-                .map(c -> Stream.of(c).filter(Objects::nonNull)
-                                      .flatMap(Collection::stream)
-                                      .collect(toCollection(LinkedHashSet::new)))
+                .map(c ->
+                        Stream.of(c).filter(Objects::nonNull)
+                                .flatMap(Collection::stream)
+                                .collect(
+                                        toCollection(LinkedHashSet::new)
+                                )
+                )
                 .orElseGet(LinkedHashSet::new);
     }
 
@@ -420,8 +449,7 @@ public class CollectionUtil {
      */
     public static <T> Optional<? extends T> find(final Collection<? extends T> sourceCollection,
                                                  final Predicate<? super T> filterPredicate) {
-        if (CollectionUtils.isEmpty(sourceCollection) ||
-                isNull(filterPredicate)) {
+        if (CollectionUtils.isEmpty(sourceCollection) || isNull(filterPredicate)) {
             return empty();
         }
         return getCollectionKeepingInternalOrdination(sourceCollection)
@@ -444,8 +472,7 @@ public class CollectionUtil {
      */
     public static <T> Optional<? extends T> findLast(final Collection<? extends T> sourceCollection,
                                                      final Predicate<? super T> filterPredicate) {
-        if (CollectionUtils.isEmpty(sourceCollection) ||
-                isNull(filterPredicate)) {
+        if (CollectionUtils.isEmpty(sourceCollection) || isNull(filterPredicate)) {
             return empty();
         }
         return reverseList(sourceCollection)
@@ -586,7 +613,12 @@ public class CollectionUtil {
     public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
                                                      final Function<? super T, ? extends K> discriminatorKey,
                                                      final Function<? super T, ? extends V> valueMapper) {
-        return (Map) groupMap(sourceCollection, discriminatorKey, valueMapper, ArrayList::new);
+        return (Map) groupMap(
+                sourceCollection,
+                discriminatorKey,
+                valueMapper,
+                ArrayList::new
+        );
     }
 
 
@@ -820,19 +852,31 @@ public class CollectionUtil {
     public static <T> List<T> slice(final Collection<? extends T> sourceCollection,
                                     final int from,
                                     final int until) {
-        Assert.isTrue(from < until, format("from: %d must be lower than to: %d", from, until));
-        if (CollectionUtils.isEmpty(sourceCollection) ||
-                from > sourceCollection.size() - 1) {
+        Assert.isTrue(
+                from < until,
+                format("from: %d must be lower than to: %d",
+                        from, until
+                )
+        );
+        if (CollectionUtils.isEmpty(sourceCollection) || from > sourceCollection.size() - 1) {
             return new ArrayList<>();
         }
         int finalFrom = Math.max(0, from);
         int finalUntil = Math.min(sourceCollection.size(), until);
         if (sourceCollection instanceof List) {
-            return ((List<T>) sourceCollection).subList(finalFrom, finalUntil);
+            return ((List<T>) sourceCollection).subList(
+                    finalFrom,
+                    finalUntil
+            );
         }
 
         int i = 0;
-        List<T> result = new ArrayList<>(Math.max(finalUntil - finalFrom, finalUntil - finalFrom - 1));
+        List<T> result = new ArrayList<>(
+                Math.max(
+                        finalUntil - finalFrom,
+                        finalUntil - finalFrom - 1
+                )
+        );
         for (T element: getCollectionKeepingInternalOrdination(sourceCollection)) {
             if (i >= finalUntil) {
                 break;
@@ -877,8 +921,7 @@ public class CollectionUtil {
     public static <T> List<List<T>> sliding(final Collection<? extends T> sourceCollection,
                                             final int size) {
         Assert.isTrue(0 <= size, "size must be a positive value");
-        if (CollectionUtils.isEmpty(sourceCollection) ||
-                0 == size) {
+        if (CollectionUtils.isEmpty(sourceCollection) || 0 == size) {
             return new ArrayList<>();
         }
         List<T> listToSlide = new ArrayList<>(
@@ -932,8 +975,7 @@ public class CollectionUtil {
     public static <T> List<List<T>> split(final Collection<? extends T> sourceCollection,
                                           final int size) {
         Assert.isTrue(0 <= size, "size must be a positive value");
-        if (CollectionUtils.isEmpty(sourceCollection) ||
-                0 == size) {
+        if (CollectionUtils.isEmpty(sourceCollection) || 0 == size) {
             return new ArrayList<>();
         }
         List<T> listToSplit = new ArrayList<>(
@@ -1078,7 +1120,10 @@ public class CollectionUtil {
         List<Tuple2<T, E>> result = new ArrayList<>();
         for (int i = 0; i < minCollectionsSize; i++) {
             result.add(
-                    Tuple.of(leftIterator.next(), rightIterator.next())
+                    Tuple.of(
+                            leftIterator.next(),
+                            rightIterator.next()
+                    )
             );
         }
         return result;
@@ -1136,11 +1181,19 @@ public class CollectionUtil {
                                                    final T defaultLeftElement,
                                                    final E defaultRightElement) {
         int maxCollectionSize = Math.max(
-                CollectionUtils.isEmpty(sourceLeftCollection) ? 0 : sourceLeftCollection.size(),
-                CollectionUtils.isEmpty(sourceRightCollection) ? 0 : sourceRightCollection.size()
+                CollectionUtils.isEmpty(sourceLeftCollection)
+                        ? 0
+                        : sourceLeftCollection.size(),
+                CollectionUtils.isEmpty(sourceRightCollection)
+                        ? 0
+                        : sourceRightCollection.size()
         );
-        Iterator<T> leftIterator = ofNullable(sourceLeftCollection).map(Collection::iterator).orElse(null);
-        Iterator<E> rightIterator = ofNullable(sourceRightCollection).map(Collection::iterator).orElse(null);
+        Iterator<T> leftIterator = ofNullable(sourceLeftCollection)
+                .map(Collection::iterator)
+                .orElse(null);
+        Iterator<E> rightIterator = ofNullable(sourceRightCollection)
+                .map(Collection::iterator)
+                .orElse(null);
         List<Tuple2<T, E>> result = new ArrayList<>();
 
         for (int i = 0; i < maxCollectionSize; i++) {
@@ -1184,7 +1237,12 @@ public class CollectionUtil {
         int i = 0;
         List<Tuple2<Integer, T>> result = new ArrayList<>(sourceCollection.size());
         for (T element: sourceCollection) {
-            result.add(Tuple.of(i, element));
+            result.add(
+                    Tuple.of(
+                            i,
+                            element
+                    )
+            );
             i++;
         }
         return result;

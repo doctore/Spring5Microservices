@@ -21,7 +21,11 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      */
     @Autowired
     public PizzaDao(DSLContext dslContext) {
-        super(PizzaTable.PIZZA_TABLE, Pizza.class, dslContext);
+        super(
+                PizzaTable.PIZZA_TABLE,
+                Pizza.class,
+                dslContext
+        );
     }
 
     /**
@@ -45,7 +49,10 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      * @return {@link List} of {@link Pizza}s
      */
     public List<Pizza> findByIds(Short... ids) {
-        return fetch(PizzaTable.PIZZA_TABLE.ID, ids);
+        return fetch(
+                PizzaTable.PIZZA_TABLE.ID,
+                ids
+        );
     }
 
 
@@ -59,7 +66,10 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      *         {@link Optional#empty()} otherwise.
      */
     public Optional<Pizza> findOptionalById(final Short id) {
-        return fetchOptional(PizzaTable.PIZZA_TABLE.ID, id);
+        return fetchOptional(
+                PizzaTable.PIZZA_TABLE.ID,
+                id
+        );
     }
 
 
@@ -73,7 +83,10 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      * @return {@link List} of {@link Pizza}s
      */
     public List<Pizza> findByNames(String... names) {
-        return fetch(PizzaTable.PIZZA_TABLE.NAME, names);
+        return fetch(
+                PizzaTable.PIZZA_TABLE.NAME,
+                names
+        );
     }
 
 
@@ -87,7 +100,10 @@ public class PizzaDao extends ParentDao<PizzaRecord, Pizza, Short> {
      *         {@link Optional#empty()} otherwise.
      */
     public Optional<Pizza> findByName(final String name) {
-        return fetchOptional(PizzaTable.PIZZA_TABLE.NAME, name);
+        return fetchOptional(
+                PizzaTable.PIZZA_TABLE.NAME,
+                name
+        );
     }
 
 }

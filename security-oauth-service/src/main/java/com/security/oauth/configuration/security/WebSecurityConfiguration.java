@@ -2,10 +2,10 @@ package com.security.oauth.configuration.security;
 
 import com.security.oauth.configuration.rest.RestRoutes;
 import com.security.oauth.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,12 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.http.HttpMethod.GET;
 
+@AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private UserService userService;
+    @Lazy
+    private final UserService userService;
 
 
     @Override
@@ -45,12 +46,18 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             // Handle an authorized attempts
-            .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+            .exceptionHandling().authenticationEntryPoint(
+                    (req, rsp, e) ->
+                            rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                )
             .and()
             // Authorization requests config
             .authorizeRequests()
             // List of services do not require authentication
-            .antMatchers(GET, RestRoutes.SECURITY_OAUTH.ROOT + "/**").permitAll()
+            .antMatchers(
+                    GET,
+                    RestRoutes.SECURITY_OAUTH.ROOT + "/**"
+            ).permitAll()
             // Any other request must be authenticated
             .anyRequest().authenticated();
     }

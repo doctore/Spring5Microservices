@@ -32,7 +32,7 @@ import static com.security.jwt.enums.TokenKeyEnum.EXPIRATION_TIME;
 import static com.security.jwt.enums.TokenKeyEnum.ISSUED_AT;
 import static com.security.jwt.enums.TokenKeyEnum.JWT_ID;
 import static com.security.jwt.enums.TokenKeyEnum.REFRESH_JWT_ID;
-import static java.util.Arrays.asList;
+import static com.spring5microservices.common.util.CollectionUtil.asSet;
 import static java.util.Optional.ofNullable;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
@@ -71,7 +71,7 @@ public class AuthenticationService {
      *
      * @return {@link Optional} of {@link AuthenticationInformationDto}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database or {@link AuthenticationConfigurationEnum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in database or {@link AuthenticationConfigurationEnum}
      */
     public Optional<AuthenticationInformationDto> getAuthenticationInformation(final String clientId,
                                                                                final UserDetails userDetails) {
@@ -81,7 +81,11 @@ public class AuthenticationService {
                 .flatMap(authGen -> authGen.getRawAuthenticationInformation(userDetails))
                 .map(authInfo -> {
                     JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-                    return buildAuthenticationInformation(clientDetails, authInfo, UUID.randomUUID().toString());
+                    return buildAuthenticationInformation(
+                            clientDetails,
+                            authInfo,
+                            UUID.randomUUID().toString()
+                    );
                 });
     }
 
@@ -98,7 +102,7 @@ public class AuthenticationService {
      *
      * @return {@link Map} with the {@code payload} of the given token
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in database
      * @throws UnauthorizedException if the given {@code token} is not a valid one
      * @throws TokenExpiredException if the given {@code token} has expired
      */
@@ -106,10 +110,17 @@ public class AuthenticationService {
                                                  final String clientId,
                                                  final boolean isAccessToken) {
         JwtClientDetails clientDetails = jwtClientDetailsService.findByClientId(clientId);
-        Map<String, Object> payload = getVerifiedPayloadOfToken(token, clientDetails);
-        if (isAccessToken != isAccessToken(payload))
-            throw new UnauthorizedException(format("The given token: %s related with clientId: %s is not an "
-                                                + (isAccessToken ? "access " : "refresh ") + "one", token, clientId));
+        Map<String, Object> payload = getVerifiedPayloadOfToken(
+                token,
+                clientDetails
+        );
+        if (isAccessToken != isAccessToken(payload)) {
+            throw new UnauthorizedException(
+                    format("The given token: %s related with clientId: %s is not an " + (isAccessToken ? "access " : "refresh ") + "one",
+                            token, clientId
+                    )
+            );
+        }
         return payload;
     }
 
@@ -145,7 +156,7 @@ public class AuthenticationService {
      *
      * @return {@link Set} with {@code roles}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in {@link AuthenticationConfigurationEnum}
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in {@link AuthenticationConfigurationEnum}
      */
     public Set<String> getRoles(final Map<String, Object> payload,
                                 final String clientId) {
@@ -181,18 +192,23 @@ public class AuthenticationService {
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
                 .map(authGen -> {
-                    Set<String> keysToFilter = new HashSet<>(asList(
+                    Set<String> keysToFilter = asSet(
                             authGen.getUsernameKey(),
                             authGen.getRolesKey(),
                             AUDIENCE.getKey(),
                             EXPIRATION_TIME.getKey(),
                             ISSUED_AT.getKey(),
                             JWT_ID.getKey(),
-                            REFRESH_JWT_ID.getKey()));
-
+                            REFRESH_JWT_ID.getKey()
+                    );
                     return payload.entrySet().stream()
                             .filter(e -> !keysToFilter.contains(e.getKey()))
-                            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+                            .collect(
+                                    toMap(
+                                            Map.Entry::getKey,
+                                            Map.Entry::getValue
+                                    )
+                            );
                 })
                 .orElseGet(HashMap::new);
     }
@@ -215,14 +231,27 @@ public class AuthenticationService {
                                                                         final RawAuthenticationInformationDto jwtRawInformation,
                                                                         final String jti) {
         return AuthenticationInformationDto.builder()
-                .accessToken(buildAccessToken(clientDetails, jwtRawInformation, jti))
-                .refreshToken(buildRefreshToken(clientDetails, jwtRawInformation, jti))
+                .accessToken(
+                        buildAccessToken(
+                                clientDetails,
+                                jwtRawInformation,
+                                jti
+                        )
+                )
+                .refreshToken(
+                        buildRefreshToken(
+                                clientDetails,
+                                jwtRawInformation,
+                                jti
+                        )
+                )
                 .tokenType(clientDetails.getTokenType().name())
                 .jwtId(jti)
                 .expiresIn(clientDetails.getAccessTokenValidity())
-                .additionalInfo(null != jwtRawInformation
-                        ? jwtRawInformation.getAdditionalTokenInformation()
-                        : null
+                .additionalInfo(
+                        null != jwtRawInformation
+                                ? jwtRawInformation.getAdditionalTokenInformation()
+                                : null
                 )
                 .build();
     }
@@ -230,7 +259,7 @@ public class AuthenticationService {
 
     /**
      *    Return the access JWS/JWE token, merging the information should be included in this one with the given {@link JwtClientDetails}
-     * wants to be include on it (stored in {@link RawAuthenticationInformationDto#getAccessTokenInformation()}).
+     * wants to be included on it (stored in {@link RawAuthenticationInformationDto#getAccessTokenInformation()}).
      *
      * @param clientDetails
      *    {@link JwtClientDetails} with the details about how to generate JWS/JWE tokens
@@ -244,17 +273,26 @@ public class AuthenticationService {
     private String buildAccessToken(final JwtClientDetails clientDetails,
                                     final RawAuthenticationInformationDto jwtRawInformation,
                                     final String jti) {
-        Map<String, Object> tokenInformation = new HashMap<>(addToAccessToken(clientDetails.getClientId(), jti));
+        Map<String, Object> tokenInformation = new HashMap<>(
+                addToAccessToken(
+                        clientDetails.getClientId(),
+                        jti
+                )
+        );
         if (null != jwtRawInformation) {
             tokenInformation.putAll(jwtRawInformation.getAccessTokenInformation());
         }
-        return generateToken(tokenInformation, clientDetails, clientDetails.getAccessTokenValidity());
+        return generateToken(
+                tokenInformation,
+                clientDetails,
+                clientDetails.getAccessTokenValidity()
+        );
     }
 
 
     /**
      *    Return the refresh JWS/JWE token, merging the information should be included in this one with the given {@link JwtClientDetails}
-     * wants to be include on it (stored in {@link RawAuthenticationInformationDto#getRefreshTokenInformation()}).
+     * wants to be included on it (stored in {@link RawAuthenticationInformationDto#getRefreshTokenInformation()}).
      *
      * @param clientDetails
      *    {@link JwtClientDetails} with the details about how to generate JWS/JWE tokens
@@ -268,11 +306,20 @@ public class AuthenticationService {
     private String buildRefreshToken(final JwtClientDetails clientDetails,
                                      final RawAuthenticationInformationDto jwtRawInformation,
                                      final String jti) {
-        Map<String, Object> tokenInformation = new HashMap<>(addToRefreshToken(clientDetails.getClientId(), jti));
+        Map<String, Object> tokenInformation = new HashMap<>(
+                addToRefreshToken(
+                        clientDetails.getClientId(),
+                        jti
+                )
+        );
         if (null != jwtRawInformation) {
             tokenInformation.putAll(jwtRawInformation.getRefreshTokenInformation());
         }
-        return generateToken(tokenInformation, clientDetails, clientDetails.getRefreshTokenValidity());
+        return generateToken(
+                tokenInformation,
+                clientDetails,
+                clientDetails.getRefreshTokenValidity()
+        );
     }
 
 
@@ -281,8 +328,14 @@ public class AuthenticationService {
      */
     private Map<String, Object> addToAccessToken(String clientId, String jti) {
         return new HashMap<>() {{
-            put(AUDIENCE.getKey(), clientId);
-            put(JWT_ID.getKey(), jti);
+            put(
+                    AUDIENCE.getKey(),
+                    clientId
+            );
+            put(
+                    JWT_ID.getKey(),
+                    jti
+            );
         }};
     }
 
@@ -293,9 +346,18 @@ public class AuthenticationService {
     private Map<String, Object> addToRefreshToken(final String clientId,
                                                   final String jti) {
         return new HashMap<>() {{
-            put(AUDIENCE.getKey(), clientId);
-            put(JWT_ID.getKey(), UUID.randomUUID().toString());
-            put(REFRESH_JWT_ID.getKey(), jti);
+            put(
+                    AUDIENCE.getKey(),
+                    clientId
+            );
+            put(
+                    JWT_ID.getKey(),
+                    UUID.randomUUID().toString()
+            );
+            put(
+                    REFRESH_JWT_ID.getKey(),
+                    jti
+            );
         }};
     }
 
@@ -319,7 +381,12 @@ public class AuthenticationService {
      * Decrypt the given {@code signatureSecret} related with a {@link JwtClientDetails}.
      */
     private String decryptSignatureSecret(final String signatureSecret) {
-        return encryptor.decrypt(signatureSecret.replace(Constants.CIPHER_SECRET_PREFIX, ""));
+        return encryptor.decrypt(
+                signatureSecret.replace(
+                        Constants.CIPHER_SECRET_PREFIX,
+                        ""
+                )
+        );
     }
 
 

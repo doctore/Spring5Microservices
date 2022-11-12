@@ -2,7 +2,6 @@ package com.security.oauth.configuration.cache;
 
 import com.security.oauth.configuration.Constants;
 import lombok.Getter;
-import org.cache2k.Cache2kBuilder;
 import org.cache2k.extra.spring.SpringCache2kCacheManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -35,13 +34,17 @@ public class CacheConfiguration {
      */
     @Bean
     public CacheManager cacheManager() {
-        return new SpringCache2kCacheManager().addCaches(
-                c -> Cache2kBuilder.of(String.class, String.class)
-                        .name(oauthClientCacheName)
-                        .entryCapacity(oauthClientCacheEntryCapacity)
-                        .expireAfterWrite(oauthClientCacheExpireInMinutes, TimeUnit.MINUTES)
-                        .disableStatistics(true)
-        );
+        return new SpringCache2kCacheManager()
+                .addCaches(
+                        c ->
+                                c.name(oauthClientCacheName)
+                                        .entryCapacity(oauthClientCacheEntryCapacity)
+                                        .expireAfterWrite(
+                                                oauthClientCacheExpireInMinutes,
+                                                TimeUnit.MINUTES
+                                        )
+                                        .disableStatistics(true)
+                );
     }
 
 }

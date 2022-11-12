@@ -18,7 +18,10 @@ public class JsonUtil {
     private static final ObjectMapper mapper;
     static {
         mapper = new ObjectMapper();
-        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        mapper.configure(
+                SerializationFeature.WRAP_ROOT_VALUE,
+                false
+        );
     }
 
 
@@ -63,7 +66,10 @@ public class JsonUtil {
                 .filter(j -> !j.trim().isEmpty())
                 .map(j -> {
                     try {
-                        return mapper.readValue(json, clazz);
+                        return mapper.readValue(
+                                json,
+                                clazz
+                        );
                     } catch (IOException e) {
                         throw new JsonException(e);
                     }

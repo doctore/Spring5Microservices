@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Constructor;
@@ -8,10 +9,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 @UtilityClass
+@Log4j2
 public class NumberUtil {
 
     /**
@@ -32,7 +35,12 @@ public class NumberUtil {
     public static int compare(final BigDecimal one,
                               final BigDecimal two,
                               final int numberOfDecimals) {
-        return compare(one, two, numberOfDecimals, RoundingMode.HALF_UP);
+        return compare(
+                one,
+                two,
+                numberOfDecimals,
+                RoundingMode.HALF_UP
+        );
     }
 
 
@@ -57,9 +65,14 @@ public class NumberUtil {
                               final BigDecimal two,
                               final int numberOfDecimals,
                               final RoundingMode roundingMode) {
-        Assert.isTrue(0 <= numberOfDecimals, "numberOfDecimals must be equals or greater than 0");
+        Assert.isTrue(
+                0 <= numberOfDecimals,
+                "numberOfDecimals must be equals or greater than 0"
+        );
         if (isNull(one)) {
-            return null == two ? 0 : -1;
+            return null == two
+                    ? 0
+                    : -1;
         }
         if (isNull(two)) {
             return 1;
@@ -67,8 +80,14 @@ public class NumberUtil {
         RoundingMode finalRoundingMode = isNull(roundingMode)
                 ? RoundingMode.HALF_UP
                 : roundingMode;
-        BigDecimal oneWithProvidedPrecision = one.setScale(numberOfDecimals, finalRoundingMode);
-        BigDecimal twoWithProvidedPrecision = two.setScale(numberOfDecimals, finalRoundingMode);
+        BigDecimal oneWithProvidedPrecision = one.setScale(
+                numberOfDecimals,
+                finalRoundingMode
+        );
+        BigDecimal twoWithProvidedPrecision = two.setScale(
+                numberOfDecimals,
+                finalRoundingMode
+        );
         return oneWithProvidedPrecision.compareTo(twoWithProvidedPrecision);
     }
 
@@ -97,6 +116,11 @@ public class NumberUtil {
                         return ctor.newInstance(s);
                     }
                     catch (Exception e) {
+                        log.warn(
+                                format("There was an error trying to convert the string: %s to a number",
+                                        potentialNumber),
+                                e
+                        );
                         return null;
                     }
                 });
@@ -119,6 +143,11 @@ public class NumberUtil {
                         return Integer.valueOf(potentialNumber);
                     }
                     catch (Exception e) {
+                        log.warn(
+                                format("There was an error trying to convert the string: %s to a number",
+                                        potentialNumber),
+                                e
+                        );
                         return null;
                     }
                 });

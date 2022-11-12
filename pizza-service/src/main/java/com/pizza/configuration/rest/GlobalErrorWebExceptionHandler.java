@@ -35,7 +35,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 /**
- * Global exception handler to manage unhandler errors in the Rest layer (Controllers)
+ * Global exception handler to manage unhandled errors in the Rest layer (Controllers)
  */
 @RestControllerAdvice
 @Log4j2

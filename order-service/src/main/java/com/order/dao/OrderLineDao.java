@@ -12,7 +12,6 @@ import com.order.model.jooq.tables.records.OrderLineRecord;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Repository;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 @Repository
 public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer> {
@@ -31,7 +31,11 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      */
     @Autowired
     public OrderLineDao(DSLContext dslContext) {
-        super(OrderLineTable.ORDER_LINE_TABLE, OrderLine.class, dslContext);
+        super(
+                OrderLineTable.ORDER_LINE_TABLE,
+                OrderLine.class,
+                dslContext
+        );
     }
 
     /**
@@ -69,7 +73,10 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      *         {@link Optional#empty()} otherwise.
      */
     public Optional<OrderLine> findOptionalById(final Integer id) {
-        return fetchOptional(OrderLineTable.ORDER_LINE_TABLE.ID, id);
+        return fetchOptional(
+                OrderLineTable.ORDER_LINE_TABLE.ID,
+                id
+        );
     }
 
 
@@ -82,7 +89,10 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      * @return {@link List} of {@link OrderLine}s
      */
     public List<OrderLine> findByOrderIds(Integer... orderIds) {
-        return fetch(OrderLineTable.ORDER_LINE_TABLE.ORDER_ID, orderIds);
+        return fetch(
+                OrderLineTable.ORDER_LINE_TABLE.ORDER_ID,
+                orderIds
+        );
     }
 
 
@@ -95,7 +105,10 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
      * @return {@link List} of {@link OrderLine}s
      */
     public List<OrderLine> findByPizzaIds(Short... pizzaIds) {
-        return fetch(OrderLineTable.ORDER_LINE_TABLE.PIZZA_ID, pizzaIds);
+        return fetch(
+                OrderLineTable.ORDER_LINE_TABLE.PIZZA_ID,
+                pizzaIds
+        );
     }
 
 
@@ -132,8 +145,13 @@ public class OrderLineDao extends ParentDao<OrderLineRecord, OrderLine, Integer>
                         )
                         .fetchResultSet()) {
 
-            JdbcMapper<OrderLineDto> jdbcMapper = getJdbcMapper(OrderLineDto.class, "id", "pizza_id");
-            return jdbcMapper.stream(rs).collect(Collectors.toList());
+            JdbcMapper<OrderLineDto> jdbcMapper = getJdbcMapper(
+                    OrderLineDto.class,
+                    "id",
+                    "pizza_id"
+            );
+            return jdbcMapper.stream(rs)
+                    .collect(toList());
         } catch (Exception e) {
             throw new DataAccessException(
                     format(

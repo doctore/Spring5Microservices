@@ -42,13 +42,15 @@ public class RestConfiguration {
                         conn.addHandlerLast(
                                 new ReadTimeoutHandler(
                                         readTimeoutMillis,
-                                        TimeUnit.MILLISECONDS)
+                                        TimeUnit.MILLISECONDS
                                 )
-                                .addHandlerLast(
-                                        new WriteTimeoutHandler(
-                                                writeTimeoutMillis,
-                                                TimeUnit.MILLISECONDS)
+                            )
+                            .addHandlerLast(
+                                new WriteTimeoutHandler(
+                                        writeTimeoutMillis,
+                                        TimeUnit.MILLISECONDS
                                 )
+                            )
                 );
         return WebClient.builder()
                 .clientConnector(

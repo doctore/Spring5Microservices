@@ -81,8 +81,10 @@ public interface IngredientRepository extends ExtendedQueryDslJpaRepository<Ingr
                 .partitionBy(ingredientPath)
                 .orderBy(costPath.desc())
                 .as("rnk");
-        NumberPath<Long> rnk = Expressions.numberPath(Long.class, "rnk");
-
+        NumberPath<Long> rnk = Expressions.numberPath(
+                Long.class,
+                "rnk"
+        );
         SubQueryExpression<Tuple> subQuery = getJPASQLQuery()
                 .select(
                         ingredient.name.as(ingredientPath),

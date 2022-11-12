@@ -61,7 +61,10 @@ public class OrderService {
      */
     public Set<OrderDto> findPageOrderedByCreatedWithOrderLines(final int page,
                                                                 final int size) {
-        return orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(page, size);
+        return orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(
+                page,
+                size
+        );
     }
 
 
@@ -78,7 +81,10 @@ public class OrderService {
                 .flatMap(orderConverter::fromDtoToOptionalModel)
                 .flatMap(order -> {
                     orderDao.save(order);
-                    List<OrderLineDto> orderLineDtos = orderLineService.saveAll(orderDto.getOrderLines(), order.getId());
+                    List<OrderLineDto> orderLineDtos = orderLineService.saveAll(
+                            orderDto.getOrderLines(),
+                            order.getId()
+                    );
                     Optional<OrderDto> orderDtoPersisted = orderConverter.fromModelToOptionalDto(order);
                     orderDtoPersisted.ifPresent(dto -> dto.setOrderLines(orderLineDtos));
                     return orderDtoPersisted;

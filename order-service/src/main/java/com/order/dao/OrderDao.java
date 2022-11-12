@@ -16,7 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.jooq.*;
 import org.jooq.Record;
@@ -27,6 +26,7 @@ import org.springframework.stereotype.Repository;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toCollection;
 import static org.jooq.impl.DSL.denseRank;
 import static org.jooq.impl.DSL.orderBy;
 
@@ -38,7 +38,11 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      */
     @Autowired
     public OrderDao(DSLContext dslContext) {
-        super(OrderTable.ORDER_TABLE, Order.class, dslContext);
+        super(
+                OrderTable.ORDER_TABLE,
+                Order.class,
+                dslContext
+        );
     }
 
     /**
@@ -62,7 +66,10 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * @return {@link List} of {@link Order}s
      */
     public List<Order> findByIds(Integer... ids) {
-        return fetch(OrderTable.ORDER_TABLE.ID, ids);
+        return fetch(
+                OrderTable.ORDER_TABLE.ID,
+                ids
+        );
     }
 
 
@@ -76,7 +83,10 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      *         {@link Optional#empty()} otherwise
      */
     public Optional<Order> findOptionalById(final Integer id) {
-        return fetchOptional(OrderTable.ORDER_TABLE.ID, id);
+        return fetchOptional(
+                OrderTable.ORDER_TABLE.ID,
+                id
+        );
     }
 
 
@@ -98,10 +108,21 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
                              .where(OrderTable.ORDER_TABLE.ID.eq(id))
                              .fetchResultSet()) {
 
-            JdbcMapper<OrderDto> jdbcMapper = getJdbcMapper(OrderDto.class, "id", "order_lines_id", "pizza_id");
-            return jdbcMapper.stream(rs).findFirst();
+            JdbcMapper<OrderDto> jdbcMapper = getJdbcMapper(
+                    OrderDto.class,
+                    "id",
+                    "order_lines_id",
+                    "pizza_id"
+            );
+            return jdbcMapper.stream(rs)
+                    .findFirst();
+
         } catch (Exception e) {
-            throw new DataAccessException(format("There was an error trying to find the order: %d", id), e);
+            throw new DataAccessException(
+                    format("There was an error trying to find the order: %d",
+                            id),
+                    e
+            );
         }
     }
 
@@ -115,7 +136,10 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      * @return {@link List} of {@link Order}s
      */
     public List<Order> findByCodes(String... codes) {
-        return fetch(OrderTable.ORDER_TABLE.CODE, codes);
+        return fetch(
+                OrderTable.ORDER_TABLE.CODE,
+                codes
+        );
     }
 
 
@@ -129,7 +153,10 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
      *         {@link Optional#empty()} otherwise.
      */
     public Optional<Order> findByCode(final String code) {
-        return fetchOptional(OrderTable.ORDER_TABLE.CODE, code);
+        return fetchOptional(
+                OrderTable.ORDER_TABLE.CODE,
+                code
+        );
     }
 
 
@@ -192,8 +219,10 @@ public class OrderDao extends ParentDao<OrderRecord, Order, Integer> {
                 .fetchResultSet()) {
 
             JdbcMapper<OrderDto> jdbcMapper = getJdbcMapper(OrderDto.class, "id", "order_lines_id", "pizza_id");
-            return jdbcMapper.stream(rs).collect(Collectors.toCollection(LinkedHashSet::new));
-
+            return jdbcMapper.stream(rs)
+                    .collect(
+                            toCollection(LinkedHashSet::new)
+                    );
         } catch (Exception e) {
             throw new DataAccessException(
                     format("There was an error trying to find the orders using page: %d and size: %d",

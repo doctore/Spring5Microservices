@@ -69,7 +69,7 @@ public class SecurityManager {
             );
             ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.exchange(
                     authenticationInformationWebService,
-                    HttpMethod.GET,
+                    HttpMethod.POST,
                     request,
                     UsernameAuthoritiesDto.class,
                     token
@@ -100,7 +100,11 @@ public class SecurityManager {
                 )
                 .orElseGet(ArrayList::new);
 
-        return new UsernamePasswordAuthenticationToken(usernameAuthoritiesDto.getUsername(), null, authorities);
+        return new UsernamePasswordAuthenticationToken(
+                usernameAuthoritiesDto.getUsername(),
+                null,
+                authorities
+        );
     }
 
     /**

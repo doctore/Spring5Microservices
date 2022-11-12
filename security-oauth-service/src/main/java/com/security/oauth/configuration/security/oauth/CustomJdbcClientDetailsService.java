@@ -52,7 +52,10 @@ public class CustomJdbcClientDetailsService extends JdbcClientDetailsService {
         return clientDetailsCacheService.get(clientId)
                 .orElseGet(() -> {
                     ClientDetails clientDetails = super.loadClientByClientId(clientId);
-                    clientDetailsCacheService.put(clientId, clientDetails);
+                    clientDetailsCacheService.put(
+                            clientId,
+                            clientDetails
+                    );
                     return clientDetails;
                 });
     }

@@ -277,7 +277,12 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple, Serializable {
         Assert.notNull(f2, "f2 must be not null");
         Assert.notNull(f3, "f3 must be not null");
         Assert.notNull(f4, "f4 must be not null");
-        return of(f1.apply(_1), f2.apply(_2), f3.apply(_3), f4.apply(_4));
+        return of(
+                f1.apply(_1),
+                f2.apply(_2),
+                f3.apply(_3),
+                f4.apply(_4)
+        );
     }
 
 
@@ -311,7 +316,7 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple, Serializable {
     public <U> Tuple4<T1, U, T3, T4> map2(final Function<? super T2, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_2);
-        return Tuple.of(_1, u, _3, _4);
+        return of(_1, u, _3, _4);
     }
 
 
@@ -328,7 +333,7 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple, Serializable {
     public <U> Tuple4<T1, T2, U, T4> map3(final Function<? super T3, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_3);
-        return Tuple.of(_1, _2, u, _4);
+        return of(_1, _2, u, _4);
     }
 
 
@@ -345,7 +350,7 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple, Serializable {
     public <U> Tuple4<T1, T2, T3, U> map4(final Function<? super T4, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_4);
-        return Tuple.of(_1, _2, _3, u);
+        return of(_1, _2, _3, u);
     }
 
 

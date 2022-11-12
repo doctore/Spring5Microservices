@@ -35,24 +35,25 @@ public interface Tuple {
      *
      * @throws UnsupportedOperationException if {@link this#arity()} is equals or greater than {@link this#MAX_ALLOWED_TUPLE_ARITY}
      */
-    @SuppressWarnings("unchecked")
     default <T> Tuple globalAppend(final T t) {
-        switch (this.arity()) {
-            case 0:
-                return ((Tuple0)this).append(t);
-            case 1:
-                return ((Tuple1)this).append(t);
-            case 2:
-                return ((Tuple2)this).append(t);
-            case 3:
-                return ((Tuple3)this).append(t);
-            case 4:
-                return ((Tuple4)this).append(t);
-            default:
-                throw new UnsupportedOperationException(
-                        format("Append is not allowed for Tuples with arity equals or greater than %s", MAX_ALLOWED_TUPLE_ARITY)
-                );
-        }
+        return switch (this.arity()) {
+            case 0 ->
+                    ((Tuple0) this).append(t);
+            case 1 ->
+                    ((Tuple1<?>) this).append(t);
+            case 2 ->
+                    ((Tuple2<?, ?>) this).append(t);
+            case 3 ->
+                    ((Tuple3<?, ?, ?>) this).append(t);
+            case 4 ->
+                    ((Tuple4<?, ?, ?, ?>) this).append(t);
+            default ->
+                    throw new UnsupportedOperationException(
+                            format("Append is not allowed for Tuples with arity equals or greater than %s",
+                                    MAX_ALLOWED_TUPLE_ARITY
+                            )
+                    );
+        };
     }
 
 

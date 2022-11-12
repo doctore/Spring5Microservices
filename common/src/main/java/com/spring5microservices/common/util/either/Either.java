@@ -22,12 +22,12 @@ import static java.util.Optional.of;
 /**
  *    Represents a value of one of two possible types (a disjoint union). An instance of Either is an instance of
  * {@link Left} or {@link Right}.
- *
+ * <p>
  *    A common use of Either is as an alternative to {@link Optional} for dealing with possibly missing values. In this
  * usage, {@link Optional#empty()} is replaced with a {@link Left} which can contain useful information. {@link Right}
  * takes the place of {@link Optional#get()}. Convention dictates that {@link Left} is used for failure and {@link Right}
  * is used for success.
- *
+ * <p>
  *    For example, you could use {@link Either}<{@link String}, {@link Integer}> to indicate whether a received input
  * is a {@link String} or an {@link Integer}.
  *
@@ -96,11 +96,11 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      * Merges the given {@link Either}s in a one result that will be:
-     *
+     * <p>
      *   1. {@link Right} instance if all given {@code eithers} are {@link Right} ones or such parameters is {@code null}
      *      or empty. Using provided {@link BiFunction} {@code mapperRight} to get the final value added into the
      *      returned {@link Right}.
-     *
+     * <p>
      *   2. {@link Left} instance if there is at least one {@link Left} in the given {@code eithers}. Using provided
      *      {@link BiFunction} {@code mapperLeft} to get the final value added into the returned {@link Left}.
      *
@@ -219,10 +219,10 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      * Filters the current {@link Either} returning {@code Optional.of(this)} if:
-     *
+     * <p>
      *   1. Current instance is {@link Left}
      *   2. Current instance is {@link Right} and stored value verifies given {@link Predicate} (or {@code predicate} is {@code null})
-     *
+     * <p>
      * {@link Optional#empty()} otherwise.
      *
      * @param predicate
@@ -242,7 +242,7 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      * Filters the current {@link Either} returning:
-     *
+     * <p>
      *   1. {@link Right} if this is a {@link Right} and its value matches given {@link Predicate} (or {@code predicate} is {@code null})
      *   2. {@link Left} applying {@code zero} if this is {@link Right} but its value does not match given {@link Predicate}
      *   3. {@link Left} with the existing value if this is a {@link Left}
@@ -284,7 +284,7 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Either} if this is a {@link Right}.
-     * Otherwise does nothing if this is a {@link Left}.
+     * Otherwise, does nothing if this is a {@link Left}.
      *
      * @param mapper
      *    The mapping function to apply to a value of a {@link Right} instance.
@@ -309,7 +309,7 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Either} if this is a {@link Left}.
-     * Otherwise does nothing if this is a {@link Right}.
+     * Otherwise, does nothing if this is a {@link Right}.
      *
      * @param mapper
      *    The mapping function to apply to a value of a {@link Left} instance.
@@ -376,7 +376,7 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      *    If the current {@link Either} is a {@link Right} instance, returns the result of applying the given
-     * {@link Either}-bearing mapping function to the value. Otherwise does nothing if this is a {@link Left}.
+     * {@link Either}-bearing mapping function to the value. Otherwise, does nothing if this is a {@link Left}.
      *
      * @param mapper
      *    The mapping {@link Function} to apply the value of a {@link Right} instance
@@ -397,7 +397,7 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      * Merge given {@code either} with the current one, managing the following use cases:
-     *
+     * <p>
      *   1. this = {@link Right}, either = {@link Right}  =>  return a {@link Right} instance applying {@code mapperRight}
      *   2. this = {@link Right}, either = {@link Left}   =>  return the {@link Left}
      *   3. this = {@link Left},  either = {@link Right}  =>  return the {@link Left}
@@ -634,7 +634,7 @@ public abstract class Either<L, R> implements Serializable {
 
     /**
      * Verifies in the current instance has no value, that is:
-     *
+     * <p>
      *    1. Is a {@link Left} one.
      *    2. Is an empty {@link Right} instance.
      *

@@ -84,7 +84,7 @@ public class SecurityService {
      * @throws AccountStatusException if the {@link UserDetails} related with the given {@code username} included in the token is disabled
      * @throws ClientNotFoundException if the given {@code clientId} does not exist in database
      * @throws UnauthorizedException if the given {@code refreshToken} is not a valid one
-     * @throws UsernameNotFoundException if the {@code refreshToken} does not contain a {@code username} or the included one does not exists in database
+     * @throws UsernameNotFoundException if the {@code refreshToken} does not contain a {@code username} or the included one does not exist in database
      * @throws TokenExpiredException if the given {@code refreshToken} has expired
      */
     public Optional<AuthenticationInformationDto> refresh(final String refreshToken,
@@ -96,7 +96,10 @@ public class SecurityService {
                 .map(authConfig -> applicationContext.getBean(authConfig.getUserServiceClass()))
                 .flatMap(userService -> {
                     UserDetails userDetails = userService.loadUserByUsername(username);
-                    return authenticationService.getAuthenticationInformation(clientId, userDetails);
+                    return authenticationService.getAuthenticationInformation(
+                            clientId,
+                            userDetails
+                    );
                 });
     }
 
@@ -126,8 +129,18 @@ public class SecurityService {
 
         return UsernameAuthoritiesDto.builder()
                 .username(username)
-                .authorities(authenticationService.getRoles(payload, clientId))
-                .additionalInfo(authenticationService.getCustomInformationIncludedByClient(payload, clientId))
+                .authorities(
+                        authenticationService.getRoles(
+                                payload,
+                                clientId
+                        )
+                )
+                .additionalInfo(
+                        authenticationService.getCustomInformationIncludedByClient(
+                                payload,
+                                clientId
+                        )
+                )
                 .build();
     }
 
@@ -146,18 +159,21 @@ public class SecurityService {
      */
     private String getUsernameFromPayload(final Map<String, Object> payload,
                                           final String clientId) {
-        Optional<String> username = authenticationService.getUsername(payload, clientId);
-        if (username.isEmpty()) {
-            throw new UsernameNotFoundException(
-                    format("In the given payload with the keys: %s and related with the clientId: %s, there is no a username",
-                            null == payload
-                                    ? "null"
-                                    : StringUtils.collectionToCommaDelimitedString(payload.keySet()),
-                            clientId
-                    )
-            );
-        }
-        return username.get();
+        Optional<String> username = authenticationService.getUsername(
+                payload,
+                clientId
+        );
+        return username.
+                orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                format("In the given payload with the keys: %s and related with the clientId: %s, there is no a username",
+                                        null == payload
+                                                ? "null"
+                                                : StringUtils.collectionToCommaDelimitedString(payload.keySet()),
+                                        clientId
+                                )
+                        )
+                );
     }
 
 }

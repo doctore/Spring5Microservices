@@ -3,7 +3,6 @@ package com.security.jwt.configuration.cache;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.EvictionConfig;
 import com.hazelcast.config.EvictionPolicy;
-import com.hazelcast.config.IntegrityCheckerConfig;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.core.Hazelcast;

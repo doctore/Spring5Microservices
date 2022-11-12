@@ -36,7 +36,7 @@ public class JwtClientDetailsService implements ReactiveUserDetailsService {
      *
      * @return {@link Optional} of {@link JwtClientDetails} is exists, {@link Optional#empty()} otherwise
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in database
      */
     public JwtClientDetails findByClientId(final String clientId) {
         return jwtClientDetailsCacheService.get(clientId)
@@ -46,7 +46,13 @@ public class JwtClientDetailsService implements ReactiveUserDetailsService {
                                 jwtClientDetailsCacheService.put(clientId, c);
                                 return c;
                             })
-                            .orElseThrow(() -> new ClientNotFoundException(format("The given clientId: %s was not found in database", clientId)))
+                            .orElseThrow(() ->
+                                    new ClientNotFoundException(
+                                            format("The given clientId: %s was not found in database",
+                                                    clientId
+                                            )
+                                    )
+                            )
                 );
     }
 
@@ -59,7 +65,7 @@ public class JwtClientDetailsService implements ReactiveUserDetailsService {
      *
      * @return {@link Mono} of {@link UserDetails}
      *
-     * @throws ClientNotFoundException if the given {@code clientId} does not exists in database
+     * @throws ClientNotFoundException if the given {@code clientId} does not exist in database
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override

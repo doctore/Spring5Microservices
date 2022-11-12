@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.Math.abs;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
 @UtilityClass
@@ -40,10 +41,12 @@ public class DateTimeUtil {
                               final long epsilon,
                               final ChronoUnit timeUnit) {
         Assert.isTrue(0 <= epsilon, "epsilon must be equals or greater than 0");
-        if (Objects.isNull(one)) {
-            return null == two ? 0 : -1;
+        if (isNull(one)) {
+            return null == two
+                    ? 0
+                    : -1;
         }
-        if (Objects.isNull(two)) {
+        if (isNull(two)) {
             return 1;
         }
         if (0 == epsilon) {
@@ -69,7 +72,10 @@ public class DateTimeUtil {
      * @return {@link Optional} of {@link Date}
      */
     public static Optional<Date> fromLocalDateTimeToDate(final LocalDateTime localDateTime) {
-        return fromLocalDateTimeToDate(localDateTime, ZoneId.systemDefault());
+        return fromLocalDateTimeToDate(
+                localDateTime,
+                ZoneId.systemDefault()
+        );
     }
 
 
@@ -107,7 +113,10 @@ public class DateTimeUtil {
      * @return {@link Optional} of {@link LocalDateTime}
      */
     public static Optional<LocalDateTime> fromDateToLocalDateTime(final Date date) {
-        return fromDateToLocalDateTime(date, ZoneId.systemDefault());
+        return fromDateToLocalDateTime(
+                date,
+                ZoneId.systemDefault()
+        );
     }
 
 

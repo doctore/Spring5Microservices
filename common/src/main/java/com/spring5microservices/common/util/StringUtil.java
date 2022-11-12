@@ -100,7 +100,8 @@ public class StringUtil {
         if (Objects.isNull(sourceString) || Objects.isNull(stringToSearch)) {
             return false;
         }
-        return sourceString.toLowerCase().contains(stringToSearch.toLowerCase());
+        return sourceString.toLowerCase()
+                .contains(stringToSearch.toLowerCase());
     }
 
 
@@ -240,7 +241,12 @@ public class StringUtil {
         }
         List<String> parts = new ArrayList<>();
         for (int i = 0; i < sourceString.length() - size + 1; i++) {
-            parts.add(sourceString.substring(i, i + size));
+            parts.add(
+                    sourceString.substring(
+                            i,
+                            i + size
+                    )
+            );
         }
         return parts;
     }
@@ -277,8 +283,7 @@ public class StringUtil {
         if (Objects.isNull(sourceString)) {
             return new ArrayList<>();
         }
-        if (1 > size ||
-                size > sourceString.length()) {
+        if (1 > size || size > sourceString.length()) {
             return asList(sourceString);
         }
         ArrayList<String> result = new ArrayList<>();
@@ -286,7 +291,10 @@ public class StringUtil {
             result.add(
                     sourceString.substring(
                             i,
-                            Math.min(sourceString.length(), i + size)
+                            Math.min(
+                                    sourceString.length(),
+                                    i + size
+                            )
                     )
             );
         }
@@ -308,7 +316,12 @@ public class StringUtil {
     @SuppressWarnings("unchecked")
     public static <T> List<T> split(final String source,
                                     final Function<String, ? extends T> valueExtractor) {
-        return (List<T>)split(source, valueExtractor, DEFAULT_STRING_SEPARATOR, ArrayList::new);
+        return (List<T>)split(
+                source,
+                valueExtractor,
+                DEFAULT_STRING_SEPARATOR,
+                ArrayList::new
+        );
     }
 
 
@@ -321,7 +334,7 @@ public class StringUtil {
      * @param valueExtractor
      *    {@link Function} used to know how to split the provided {@link String}
      * @param separator
-     *    {@link String} used to know how the values are splitted inside {@code source}
+     *    {@link String} used to know how the values are split inside {@code source}
      *
      * @return {@link List}
      */
@@ -329,7 +342,12 @@ public class StringUtil {
     public static <T> List<T> split(final String source,
                                     final Function<String, ? extends T> valueExtractor,
                                     final String separator) {
-        return (List<T>)split(source, valueExtractor, separator, ArrayList::new);
+        return (List<T>)split(
+                source,
+                valueExtractor,
+                separator,
+                ArrayList::new
+        );
     }
 
 
@@ -342,7 +360,7 @@ public class StringUtil {
      * @param valueExtractor
      *    {@link Function} used to know how to split the provided {@link String}
      * @param separator
-     *    {@link String} used to know how the values are splitted inside {@code source}
+     *    {@link String} used to know how the values are split inside {@code source}
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements
      *
@@ -352,7 +370,13 @@ public class StringUtil {
                                           final Function<String, ? extends T> valueExtractor,
                                           final String separator,
                                           final Supplier<Collection<T>> collectionFactory) {
-        return split(source, separator, -1, valueExtractor, collectionFactory);
+        return split(
+                source,
+                separator,
+                -1,
+                valueExtractor,
+                collectionFactory
+        );
     }
 
 
@@ -363,9 +387,9 @@ public class StringUtil {
      * @param source
      *    Source {@link String} with the values to extract
      * @param separator
-     *    {@link String} used to know how the values are splitted inside {@code source}
+     *    {@link String} used to know how the values are split inside {@code source}
      * @param chunkLimit
-     *    Maximum number of elements of which the given {@code source} will be splitted
+     *    Maximum number of elements of which the given {@code source} will be split
      * @param valueExtractor
      *    {@link Function} used to know how to split the provided {@link String}
      * @param collectionFactory
@@ -374,7 +398,7 @@ public class StringUtil {
      *
      * @return {@link Collection}
      *
-     * @throws Exception if there is a splitted part that cannot be extracted using {@code valueExtractor}.
+     * @throws Exception if there is a split part that cannot be extracted using {@code valueExtractor}.
      *
      *                   <pre>
      *                   For example:
@@ -382,7 +406,7 @@ public class StringUtil {
      *                        chunkLimit = 2
      *                        valueExtractor = Integer::parseInt
      *
-     *                   Splitted parts will be:
+     *                   Split parts will be:
      *                        ["1", "2,3"] => second one could not be converted to an {@link Integer}
      *                   </pre>
      */
@@ -401,15 +425,23 @@ public class StringUtil {
                     if (Objects.isNull(valueExtractor)) {
                         return null;
                     }
-                    String[] splittedString =
+                    String[] splitString =
                             0 >= chunkLimit
-                                    ? s.split(null == separator ? DEFAULT_STRING_SEPARATOR : separator)
-                                    : s.split(null == separator ? DEFAULT_STRING_SEPARATOR : separator, chunkLimit);
-
-                    Stream<T> valueExtractedStream = Stream.of(splittedString)
+                                    ? s.split(
+                                            null == separator
+                                                    ? DEFAULT_STRING_SEPARATOR
+                                                    : separator
+                                    )
+                                    : s.split(
+                                            null == separator
+                                                    ? DEFAULT_STRING_SEPARATOR
+                                                    : separator, chunkLimit
+                                    );
+                    Stream<T> valueExtractedStream = Stream.of(splitString)
                             .map(valueExtractor);
 
-                    return valueExtractedStream.collect(toCollection(finalCollectionFactory));
+                    return valueExtractedStream
+                            .collect(toCollection(finalCollectionFactory));
                 })
                 .orElseGet(finalCollectionFactory);
     }
@@ -439,13 +471,17 @@ public class StringUtil {
      * @param source
      *    Source {@link String} with the values to extract
      * @param separators
-     *    Array used to know how the values are splitted inside {@code source}
+     *    Array used to know how the values are split inside {@code source}
      *
      * @return {@link Collection}
      */
     public static List<String> splitMultilevel(final String source,
                                                final String ...separators) {
-        return (List<String>) splitMultilevel(source, ArrayList::new, separators);
+        return (List<String>) splitMultilevel(
+                source,
+                ArrayList::new,
+                separators
+        );
     }
 
 
@@ -478,7 +514,7 @@ public class StringUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      * @param separators
-     *    Array used to know how the values are splitted inside {@code source}
+     *    Array used to know how the values are split inside {@code source}
      *
      * @return {@link Collection}
      */
@@ -497,10 +533,10 @@ public class StringUtil {
                         result.add(source);
                         return result;
                     }
-                    List<String> currentSplittedValues = asList(source);
+                    List<String> currentSplitValues = asList(source);
                     for (int i = 0; i < separators.length; i++) {
                         int finalI = i;
-                        currentSplittedValues = currentSplittedValues
+                        currentSplitValues = currentSplitValues
                                 .stream()
                                 .flatMap(elto ->
                                         Arrays.stream(
@@ -511,7 +547,7 @@ public class StringUtil {
                                 )
                                 .collect(toList());
                     }
-                    result.addAll(currentSplittedValues);
+                    result.addAll(currentSplitValues);
                     return result;
                 })
                 .orElseGet(finalCollectionFactory);

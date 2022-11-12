@@ -27,7 +27,11 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
 
 
     protected ParentDao(Table<R> table, Class<P> type, DSLContext dslContext) {
-        super(table, type, dslContext.configuration());
+        super(
+                table,
+                type,
+                dslContext.configuration()
+        );
         this.dsl = dslContext;
     }
 
@@ -50,8 +54,11 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
      *
      * @return a Java object of type T
      */
-    protected <T> JdbcMapper<T> getJdbcMapper(Class<T> classT, String... columns) {
-        return JdbcMapperFactory.newInstance().addKeys(columns).newMapper(classT);
+    protected <T> JdbcMapper<T> getJdbcMapper(final Class<T> classT,
+                                              final String... columns) {
+        return JdbcMapperFactory.newInstance()
+                .addKeys(columns)
+                .newMapper(classT);
     }
 
 
@@ -89,7 +96,10 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
         return ofNullable(models)
                        .map(m -> {
                            Map<Boolean, List<P>> insertAndUpdate =
-                                   models.stream().collect(partitioningBy(IModel::isNew));
+                                   models.stream()
+                                           .collect(
+                                                   partitioningBy(IModel::isNew)
+                                           );
 
                            List<P> toInsert = insertAndUpdate.get(true);
                            if (null != toInsert) {

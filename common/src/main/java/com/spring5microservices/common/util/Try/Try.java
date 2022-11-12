@@ -333,7 +333,7 @@ public abstract class Try<T> implements Serializable {
 
     /**
      *    If the current {@link Try} is a {@link Success} instance, returns the result of applying the given
-     * {@link Try}-bearing mapping function to the value. Otherwise does nothing if this is a {@link Failure}.
+     * {@link Try}-bearing mapping function to the value. Otherwise, does nothing if this is a {@link Failure}.
      * <p>
      * If given {@code mapper} invocation returns an {@link Exception} is thrown then returned {@link Try} will {@link Failure}.
      *

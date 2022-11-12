@@ -6,9 +6,10 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static java.util.Arrays.asList;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toSet;
 
@@ -27,42 +28,62 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
     }
 
     @Override
-    public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-        OAuth2AccessToken result = super.enhance(accessToken, authentication);
-        result.getAdditionalInformation().putAll(getAdditionalInformation(authentication));
+    public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken,
+                                     final OAuth2Authentication authentication) {
+        OAuth2AccessToken result = super.enhance(
+                accessToken,
+                authentication
+        );
+        result.getAdditionalInformation()
+                .putAll(
+                        getAdditionalInformation(authentication)
+                );
         return result;
     }
 
 
     @Override
-    public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
-        Map<String, Object> defaultInformation = (Map<String, Object>) super.convertAccessToken(token, authentication);
+    public Map<String, ?> convertAccessToken(final OAuth2AccessToken token,
+                                             final OAuth2Authentication authentication) {
+        Map<String, Object> defaultInformation = (Map<String, Object>) super.convertAccessToken(
+                token,
+                authentication
+        );
         return this.isRefreshToken(token)
                 ? getRefreshTokenInformation(defaultInformation)
-
                 : getAccessTokenInformation(defaultInformation);
     }
 
     /**
      * Filter the data included in the JWT access token
      */
-    private Map<String, ?> getAccessTokenInformation(Map<String, Object> sourceInformation) {
+    private Map<String, ?> getAccessTokenInformation(final Map<String, Object> sourceInformation) {
         Map<String, Object> accessTokenInformation = new HashMap<>(sourceInformation);
-        accessTokenInformation.keySet().removeIf(k -> asList(SCOPE).contains(k));
+        accessTokenInformation.keySet()
+                .removeIf(k ->
+                        Objects.equals(
+                                SCOPE,
+                                k
+                        )
+                );
         return accessTokenInformation;
     }
 
     /**
      * Filter the data included in the JWT refresh token
      */
-    private Map<String, ?> getRefreshTokenInformation(Map<String, Object> sourceInformation) {
+    private Map<String, ?> getRefreshTokenInformation(final Map<String, Object> sourceInformation) {
         Map<String, Object> refreshTokenInformation = new HashMap<>(sourceInformation);
-        refreshTokenInformation.keySet().removeIf(k -> asList(AUTHORITIES, SCOPE).contains(k));
+        refreshTokenInformation.keySet()
+                .removeIf(k ->
+                        List.of(AUTHORITIES, SCOPE)
+                                .contains(k)
+        );
         return refreshTokenInformation;
     }
 
     /**
-     * Include an specific section with extra information in the returned {@link OAuth2AccessToken}
+     * Include a specific section with extra information in the returned {@link OAuth2AccessToken}
      */
     private Map<String, Object> getAdditionalInformation(OAuth2Authentication authentication) {
         Map<String, Object> authenticationAdditionalInformation = Map.ofEntries(
@@ -77,7 +98,10 @@ public class CustomAccessTokenConverter extends JwtAccessTokenConverter {
                                 .collect(toSet())
                 )
         );
-        return Map.of(ADDITIONAL_INFO, authenticationAdditionalInformation);
+        return Map.of(
+                ADDITIONAL_INFO,
+                authenticationAdditionalInformation
+        );
     }
 
 }

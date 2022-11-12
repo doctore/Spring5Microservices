@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 @Service(value = "userDetailsService")
@@ -31,7 +32,7 @@ public class UserService implements UserDetailsService {
      *
      * @return {@link UserDetails}
      *
-     * @throws UsernameNotFoundException if the given username does not exists in database.
+     * @throws UsernameNotFoundException if the given username does not exist in database.
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override
@@ -39,10 +40,16 @@ public class UserService implements UserDetailsService {
         return ofNullable(username)
                 .flatMap(userRepository::findByUsername)
                 .map(u ->  {
-                    new AccountStatusUserDetailsChecker().check(u);
+                    new AccountStatusUserDetailsChecker()
+                            .check(u);
                     return u;
                 })
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("Username: %s not found in database", username)));
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                format("Username: %s not found in database",
+                                        username)
+                        )
+                );
     }
 
 }

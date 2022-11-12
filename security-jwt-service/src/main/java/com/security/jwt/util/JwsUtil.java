@@ -61,8 +61,15 @@ public class JwsUtil {
                                 final long expirationTimeInSeconds) {
         Assert.notNull(signatureAlgorithm, "signatureAlgorithm cannot be null");
         Assert.hasText(signatureSecret, "signatureSecret cannot be null or empty");
-        JWTClaimsSet claimsSet = addClaims(informationToInclude, expirationTimeInSeconds);
-        SignedJWT signedJWT = getSignedJWT(signatureAlgorithm, signatureSecret, claimsSet);
+        JWTClaimsSet claimsSet = addClaims(
+                informationToInclude,
+                expirationTimeInSeconds
+        );
+        SignedJWT signedJWT = getSignedJWT(
+                signatureAlgorithm,
+                signatureSecret,
+                claimsSet
+        );
         return signedJWT.serialize();
     }
 
@@ -92,7 +99,12 @@ public class JwsUtil {
         return getAllClaimsFromToken(jwsToken, signatureSecret, true)
                 .entrySet().stream()
                 .filter(e -> keysToInclude.contains(e.getKey()))
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue
+                        )
+                );
     }
 
 
@@ -121,7 +133,12 @@ public class JwsUtil {
         return getAllClaimsFromToken(jwsToken, signatureSecret, true)
                 .entrySet().stream()
                 .filter(e -> !keysToExclude.contains(e.getKey()))
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue
+                        )
+                );
     }
 
 
@@ -136,7 +153,11 @@ public class JwsUtil {
      * @throws IllegalArgumentException if {@code jwsToken} is {@code null} or empty
      */
     public Map<String, Object> getRawPayload(final String jwsToken) {
-        return getAllClaimsFromToken(jwsToken, null, false);
+        return getAllClaimsFromToken(
+                jwsToken,
+                null,
+                false
+        );
     }
 
 
@@ -209,12 +230,22 @@ public class JwsUtil {
                                    final String signatureSecret,
                                    final JWTClaimsSet claimsSet) {
         try {
-            SignedJWT signedJWT = new SignedJWT(new JWSHeader(signatureAlgorithm), claimsSet);
-            signedJWT.sign(getSuitableSigner(signatureAlgorithm, signatureSecret));
+            SignedJWT signedJWT = new SignedJWT(
+                    new JWSHeader(signatureAlgorithm),
+                    claimsSet
+            );
+            signedJWT.sign(
+                    getSuitableSigner(
+                            signatureAlgorithm,
+                            signatureSecret
+                    )
+            );
             return signedJWT;
-
         } catch (JOSEException e) {
-            throw new IllegalArgumentException("The was a problem trying to create a new JWS token", e);
+            throw new IllegalArgumentException(
+                    "The was a problem trying to create a new JWS token",
+                    e
+            );
         }
     }
 
@@ -241,19 +272,31 @@ public class JwsUtil {
                                                       final boolean verifyToken) {
         Assert.hasText(jwsToken, "jwsToken cannot be null or empty");
         if (!isJwsToken(jwsToken)) {
-            throw new TokenInvalidException(format("The token: %s is not a JWS one", jwsToken));
+            throw new TokenInvalidException(
+                    format("The token: %s is not a JWS one",
+                            jwsToken)
+            );
         }
         try {
             SignedJWT signedJWT = SignedJWT.parse(jwsToken);
             if (verifyToken) {
                 Assert.hasText(signatureSecret, "signatureSecret cannot be null or empty");
-                JWSVerifier verifier = getSuitableVerifier(signedJWT, signatureSecret);
+                JWSVerifier verifier = getSuitableVerifier(
+                        signedJWT,
+                        signatureSecret
+                );
                 if (!signedJWT.verify(verifier)) {
-                    throw new TokenInvalidException(format("The JWS token: %s does not match the provided signatureSecret", jwsToken));
+                    throw new TokenInvalidException(
+                            format("The JWS token: %s does not match the provided signatureSecret",
+                                    jwsToken)
+                    );
                 }
                 Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
                 if (null == expirationTime || expirationTime.before(new Date()))
-                    throw new TokenExpiredException(format("The JWT token: %s has expired at %s", jwsToken, expirationTime));
+                    throw new TokenExpiredException(
+                            format("The JWT token: %s has expired at %s",
+                                    jwsToken, expirationTime)
+                    );
             }
             return signedJWT.getJWTClaimsSet().getClaims();
 

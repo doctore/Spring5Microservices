@@ -11,7 +11,7 @@ public enum TokenKeyEnum {
     REFRESH_JWT_ID("ati"),
     USERNAME("username");
 
-    private String key;
+    private final String key;
 
     TokenKeyEnum(String key) {
         this.key = key;

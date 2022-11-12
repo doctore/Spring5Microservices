@@ -66,7 +66,8 @@ public class PizzaService {
                                                   final int size,
                                                   final Sort sort) {
         Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
-                                                   PageUtil.buildPageRequest(page,size,sort));
+                PageUtil.buildPageRequest(page,size,sort)
+        );
         return ofNullable(pizzaPage)
                 .map(p ->
                         new PageImpl<>(

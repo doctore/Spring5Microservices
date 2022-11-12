@@ -228,7 +228,11 @@ public final class Tuple3<T1, T2, T3> implements Tuple, Serializable {
         Assert.notNull(f1, "f1 must be not null");
         Assert.notNull(f2, "f2 must be not null");
         Assert.notNull(f3, "f3 must be not null");
-        return of(f1.apply(_1), f2.apply(_2), f3.apply(_3));
+        return of(
+                f1.apply(_1),
+                f2.apply(_2),
+                f3.apply(_3)
+        );
     }
 
 
@@ -262,7 +266,7 @@ public final class Tuple3<T1, T2, T3> implements Tuple, Serializable {
     public <U> Tuple3<T1, U, T3> map2(final Function<? super T2, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_2);
-        return Tuple.of(_1, u, _3);
+        return of(_1, u, _3);
     }
 
 
@@ -279,7 +283,7 @@ public final class Tuple3<T1, T2, T3> implements Tuple, Serializable {
     public <U> Tuple3<T1, T2, U> map3(final Function<? super T3, ? extends U> mapper) {
         Assert.notNull(mapper, "mapper must be not null");
         final U u = mapper.apply(_3);
-        return Tuple.of(_1, _2, u);
+        return of(_1, _2, u);
     }
 
 

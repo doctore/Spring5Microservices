@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 @AllArgsConstructor
@@ -34,7 +35,7 @@ public class UserService implements IUserService {
      *
      * @return {@link UserDetails}
      *
-     * @throws UsernameNotFoundException if the given {@code username} does not exists in database
+     * @throws UsernameNotFoundException if the given {@code username} does not exist in database
      * @see {@link AccountStatusUserDetailsChecker#check(UserDetails)} for more information about the other ones.
      */
     @Override
@@ -42,10 +43,16 @@ public class UserService implements IUserService {
         return ofNullable(username)
                 .flatMap(userRepository::findByUsername)
                 .map(u ->  {
-                    new AccountStatusUserDetailsChecker().check(u);
+                    new AccountStatusUserDetailsChecker()
+                            .check(u);
                     return u;
                 })
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("Username: %s not found in database", username)));
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                format("Username: %s not found in database",
+                                        username)
+                        )
+                );
     }
 
 
@@ -57,7 +64,10 @@ public class UserService implements IUserService {
                         !StringUtils.hasText(userDetails.getPassword()))) {
             return false;
         }
-        return passwordEncoder.matches(passwordToVerify, userDetails.getPassword());
+        return passwordEncoder.matches(
+                passwordToVerify,
+                userDetails.getPassword()
+        );
     }
 
 }

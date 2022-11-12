@@ -42,7 +42,12 @@ public class JwtClientDetailsCacheService {
      */
     public boolean contains(final String clientId) {
         return ofNullable(clientId)
-                .map(id -> cacheService.contains(cacheConfiguration.getJwtConfigurationCacheName(), id))
+                .map(id ->
+                        cacheService.contains(
+                                cacheConfiguration.getJwtConfigurationCacheName(),
+                                id
+                        )
+                )
                 .orElse(false);
     }
 
@@ -56,7 +61,10 @@ public class JwtClientDetailsCacheService {
      * @return @return {@link Optional} with the {@link JwtClientDetails} if it was found, {@link Optional#empty()} otherwise
      */
     public Optional<JwtClientDetails> get(final String clientId) {
-        return cacheService.get(cacheConfiguration.getJwtConfigurationCacheName(), clientId);
+        return cacheService.get(
+                cacheConfiguration.getJwtConfigurationCacheName(),
+                clientId
+        );
     }
 
 
@@ -72,7 +80,11 @@ public class JwtClientDetailsCacheService {
      */
     public boolean put(final String clientId,
                        final JwtClientDetails jwtClientDetails) {
-        return cacheService.put(cacheConfiguration.getJwtConfigurationCacheName(), clientId, jwtClientDetails);
+        return cacheService.put(
+                cacheConfiguration.getJwtConfigurationCacheName(),
+                clientId,
+                jwtClientDetails
+        );
     }
 
 }

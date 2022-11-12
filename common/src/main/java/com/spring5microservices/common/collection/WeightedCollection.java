@@ -54,7 +54,10 @@ public class WeightedCollection<T> {
         Assert.isTrue(0 < weight, "weight should be a positive value");
         Assert.notNull(toInsert, "toInsert must not be null");
         totalWeight += weight;
-        weightedMap.put(totalWeight, toInsert);
+        weightedMap.put(
+                totalWeight,
+                toInsert
+        );
     }
 
 
@@ -70,7 +73,10 @@ public class WeightedCollection<T> {
      */
     public WeightedCollection<T> addAndThen(int weight, T toInsert) {
         WeightedCollection<T> result = clone();
-        result.add(weight, toInsert);
+        result.add(
+                weight,
+                toInsert
+        );
         return result;
     }
 
@@ -87,7 +93,8 @@ public class WeightedCollection<T> {
         if (other == this) {
             return true;
         }
-        if (null == other || other.size() != size()) {
+        if (null == other ||
+                other.size() != size()) {
             return false;
         }
         return weightedMap.equals(other.weightedMap);
@@ -135,7 +142,11 @@ public class WeightedCollection<T> {
             return empty();
         }
         int value = randomElementSelector.nextInt(totalWeight);
-        return Optional.of(weightedMap.higherEntry(value).getValue());
+        return Optional.of(
+                weightedMap
+                        .higherEntry(value)
+                        .getValue()
+        );
     }
 
 
@@ -153,7 +164,10 @@ public class WeightedCollection<T> {
 
         for (Map.Entry<Integer, T> entry : weightedMap.entrySet()) {
             if (!entry.getValue().equals(toRemove)) {
-                result.add(entry.getKey() - totalAccumulated, entry.getValue());
+                result.add(
+                        entry.getKey() - totalAccumulated,
+                        entry.getValue()
+                );
             }
             totalAccumulated = entry.getKey();
         }
@@ -173,7 +187,10 @@ public class WeightedCollection<T> {
         WeightedCollection<T> result = of(randomElementSelector);
         int totalAccumulated = 0;
         for (Map.Entry<Integer, T> entry : weightedMap.entrySet()) {
-            result.add(entry.getKey() - totalAccumulated, entry.getValue());
+            result.add(
+                    entry.getKey() - totalAccumulated,
+                    entry.getValue()
+            );
             totalAccumulated = entry.getKey();
         }
         return result;

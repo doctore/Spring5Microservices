@@ -11,16 +11,21 @@
     - [order-service](#order-service)
     - [common](#common)
     - [sql](#sql)
+    - [Communication diagram](#communication-diagram)
 - [Previous steps](#previous-steps)
 - [Security services](#security-services)
+    - [security-oauth-service endpoints](#security-oauth-service-endpoints)
+    - [security-jwt-service endpoints](#security-jwt-service-endpoints)
 - [How to use it?](#how-to-use-it)
 - [Rest API documentation](#rest-api-documentation)
 - [Previous versions of the project](#previous-versions-of-the-project)
 
+
 ## Why was this project created?
 
 Basically to know how to create a project using the microservices approach with the last Spring version. Due to there are several options we can use for different features included
-in a "microservices architecture", the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
+in a microservices architecture, the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
+
 
 ## Elements included in this project
 
@@ -40,11 +45,10 @@ into the project:
 
 * [Spring5Microservices_ConfigServerData](https://github.com/doctore/Spring5Microservices_ConfigServerData)
 
-As we can see, there is an specific folder for every microservice and the important information is encoded (the next code is part of *pizza-service/pizza-service.yml* file):
+As we can see, there is a specific folder for every microservice and the important information is encoded (the next code is part of *pizza-service/pizza-service-dev.yml* file):
 
 ```
 spring:
-  ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
   datasource:
     url: jdbc:postgresql://localhost:5432/microservice
     username: microservice
@@ -53,8 +57,8 @@ spring:
     password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
 ```
 
-To increase the security level, in *bootstrap.yml* file I have deactivated the decryption on **config.server**, sending the information encrypted and delegating in every microservice
-the labour of decrypt it. That is the reason to include in their *pom.xml* file, the dependency:
+To increase the security level, in *application.yml* file I have deactivated the decryption on [config-server](#config-server), sending the information encrypted and delegating in
+every microservice the labour of decrypt it. That is the reason to include in their *pom.xml* file, the dependency:
 
 ```
 <dependency>
@@ -98,7 +102,7 @@ On the other hand, there are other "important folders":
 
 ### security-jwt-service
 
-Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provide a completely multi-application
+Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provided a completely multi-application
 platform to generate/manage their own access and refresh tokens (including additional information), choosing between JWS or JWE token type. Every application will be able to manage
 its own token configuration/generation adding a new row in the database table: **security.jwt_client_details** and implementing the interface `IAuthenticationGenerator`.
  
@@ -127,7 +131,7 @@ On the other hand, there are other "important folders":
 
 ### pizza-service
 
-One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservices. The main purpose of this microservice is the creation of an small one
+One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservice. The main purpose of this microservice is the creation of a small one
 on which I am using the following technologies:
 
 * **Hibernate** as ORM to deal with the PostgreSQL database.
@@ -151,19 +155,19 @@ On the other hand, there are other "important folders":
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from entities to dtos and vice versa.
 
-Using **Hazelcast** for that purpose, this microservices provides functionality to banned users temporally. That is the way we can use to disable any JWT active token related
+Using **Hazelcast** for that purpose, this microservice provides functionality to banned users temporally. That is the way we can use to disable any JWT active token related
 with a user we just disabled in database (through admin web page or similar tool). `UserController` resource provides the required web services.
 <br><br>
 
 ### order-service
 
-One order has several order lines and one order line contains a pizza. The main purpose of this microservice is the creation of an small one on which I am using the following
+One order has several order lines and one order line contains a pizza. The main purpose of this microservice is the creation of a small one on which I am using the following
 technologies:
 
 * **jOOQ** replacing to the traditional pair Hibernate/JPA. Allowing us to create type-safe queries and improve the performance between the microservice and the database.
 * **Lombok** to reduce the code development in models and DTOs.
 * **MapStruct** used to conversion between Models <--> DTOs in an easy way.
-* **SimpleFlatMapper** due to its integration with jOOQ, used to convert the some custom query results into a known Java object.
+* **SimpleFlatMapper** due to its integration with jOOQ, used to convert some custom query results into a known Java object.
 * **MVC** a traditional Spring MVC Rest API to manage the included requests.
 
 In this microservice, the layer's division is:
@@ -200,6 +204,8 @@ With SQL files included in the main database and the one used for testing purpos
 information initially included.
 <br><br>
 
+### Communication diagram
+
 In the next picture you will see a communication diagram of all microservices described above:
 
 ![Alt text](/documentation/CommunitationDiagram.png?raw=true "Communication diagram")
@@ -207,7 +213,7 @@ In the next picture you will see a communication diagram of all microservices de
 
 ## Previous steps
 
-Due to every microservice has to decrypt the information sent by **config-server**, some steps are required:
+Due to every microservice has to decrypt the information sent by [config-server](#config-server), some steps are required:
 
 #### Setting up an encryption key
 
@@ -258,7 +264,7 @@ And database table `security.jwt_client_details`, in the column `signature_secre
 
 To do it:
 
-- Run **registry-server** and **config-server**
+- Run [registry-server](#registry-server) and [config-server](#config-server)
 
 - Encrypt required values using the provided endpoint for that purpose, as follows: 
 
@@ -266,13 +272,18 @@ To do it:
 
 - Overwrite current values by the provided ones.
 
+
 ## Security services
 
-As you read previously, there are two different microservices you can use to manage the authentication/authorization functionality: **security-oauth-service** and
-**security-jwt-service**, in this proof of concept I have used the first one in **order-service** and the second one to securize **pizza-service**.
+As you read previously, there are two different microservices you can use to manage the authentication/authorization functionality: [security-oauth-service](#security-oauth-service)
+and [security-jwt-service](#security-jwt-service), in this proof of concept I have used the first one in *[order-service](#order-service) and the second one to securize
+[pizza-service](#pizza-service).
 
-Regarding to every microservice, in this section I will explain the web services provided by every one and how to use them, starting by **security-oauth-service**. Before
-enter in details about this security service, it is important to know that, for every request we have to include the Oauth 2.0 credentials:
+Regarding every microservice, in this section I will explain the web services provided by every one and how to use them, starting by [security-oauth-service](#security-oauth-service).
+
+### security-oauth-service endpoints
+
+Before enter in details about this security service, it is important to know that, for every request we have to include the Oauth 2.0 credentials.
 
 ![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
    
@@ -296,7 +307,9 @@ related with the table `eat.user`).
 
 ![Alt text](/documentation/SecurityOauthService_AuthorizationInfo.png?raw=true "Authorization information")
 
-Regarding to **security-jwt-service**, it has an equivalent list of web services to provide the same funcionality, starting with the required credentials for every request:
+### security-jwt-service endpoints
+
+This microservice has an equivalent list of web services to provide the same functionality, starting with the required credentials for every request:
 
 ![Alt text](/documentation/SecurityJwtService_Credentials.png?raw=true "Security Jwt credentials")
 
@@ -316,18 +329,19 @@ So, the list of web services is the following one:
 
 ![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")
 
+
 ## How to use it?
 
 The first step is adding in our databases: `main` and `test` ones, the SQL files included in the `sql` folder. Once we have finished, it will be necessary to run the following
 services (following the displayed ordination):
 
-1. **registry-server**
-2. **config-server**
-3. **gateway-server**
-4. **security-oauth-service** (if we want to use `order-service`)
-4. **security-jwt-service** (if we want to use `pizza-service`)
+1. [registry-server](#registry-server)
+2. [config-server](#config-server)
+3. [gateway-server](#gateway-server)
+4. [security-oauth-service](#security-oauth-service) (if we want to use [order-service](#order-service))
+4. [security-jwt-service](#security-jwt-service) (if we want to use [pizza-service](#pizza-service))
 
-And finally any of the other ones (or both): **pizza-service** and **order-service**.
+And finally any of the other ones (or both): [pizza-service](#pizza-service) and [order-service](#order-service).
 
 So, once you have obtained the required JWT access token (as I explained you in the previous section), you can use it to invoke the required web services:
 
@@ -337,23 +351,25 @@ or:
 
 ![Alt text](/documentation/OrderService.png?raw=true "Example of order service")
 
+
 ## Rest API documentation
 
 The following microservices have a well documented Rest API:
 
-* **security-jwt-service**
-* **pizza-service**
-* **order-service**
+* [security-jwt-service](#security-jwt-service)
+* [pizza-service](#pizza-service)
+* [order-service](#order-service)
  
 Swagger has been used in all cases, however two different libraries have been included depending of the main Spring module of every microservice:
 
 * **SpringFox** in [Gateway Server](#gateway-server) to unify the webpage used to access to the rest of documented microservices.
 * **Springdoc-OpenApi** in every documented microservice.
 
-To facilitate access to this documentation, we can use the **gateway-server** URL. On that way, using the upper selector, we will be able to choose
-between all existing microservices.
+To facilitate access to this documentation, we can use the [gateway-server](#gateway-server) URL. On that way, using the upper selector, we will be able
+to choose between all existing microservices.
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
+
 
 ## Previous versions of the project
 

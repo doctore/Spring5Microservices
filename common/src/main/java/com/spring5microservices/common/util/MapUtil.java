@@ -67,7 +67,13 @@ public class MapUtil {
                                                   final BiPredicate<? super T, ? super E> filterPredicate,
                                                   final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
                                                   final BiFunction<? super T, ? super E, ? extends R> orElseFunction) {
-        return applyOrElse(sourceMap, filterPredicate, defaultFunction, orElseFunction, HashMap::new);
+        return applyOrElse(
+                sourceMap,
+                filterPredicate,
+                defaultFunction,
+                orElseFunction,
+                HashMap::new
+        );
     }
 
 
@@ -176,7 +182,12 @@ public class MapUtil {
     public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
                                               final BiPredicate<? super T, ? super E> filterPredicate,
                                               final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
-        return collect(sourceMap, filterPredicate, mapFunction, HashMap::new);
+        return collect(
+                sourceMap,
+                filterPredicate,
+                mapFunction,
+                HashMap::new
+        );
     }
 
 
@@ -262,7 +273,12 @@ public class MapUtil {
         }
         return sourceMap.entrySet()
                 .stream()
-                .filter(entry -> filterPredicate.test(entry.getKey(), entry.getValue()))
+                .filter(entry ->
+                        filterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
                 .mapToInt(elto -> 1)
                 .sum();
     }
@@ -281,13 +297,17 @@ public class MapUtil {
      */
     public static <T, E> Optional<Tuple2<T, E>> find(final Map<? extends T, ? extends E> sourceMap,
                                                      final BiPredicate<? super T, ? super E> filterPredicate) {
-        if (CollectionUtils.isEmpty(sourceMap) ||
-                isNull(filterPredicate)) {
+        if (CollectionUtils.isEmpty(sourceMap) || isNull(filterPredicate)) {
             return empty();
         }
         return sourceMap.entrySet()
                 .stream()
-                .filter(entry -> filterPredicate.test(entry.getKey(), entry.getValue()))
+                .filter(entry ->
+                        filterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
                 .findFirst()
                 .map(entry -> Tuple.of(entry.getKey(), entry.getValue()));
     }
@@ -326,7 +346,11 @@ public class MapUtil {
                     R result = initialValue;
                     if (Objects.nonNull(accumulator)) {
                         for (var entry : sm.entrySet()) {
-                            result = accumulator.apply(result, entry.getKey(), entry.getValue());
+                            result = accumulator.apply(
+                                    result,
+                                    entry.getKey(),
+                                    entry.getValue()
+                            );
                         }
                     }
                     return result;
@@ -355,7 +379,12 @@ public class MapUtil {
      */
     public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator) {
-        return groupBy(sourceMap, discriminator, HashMap::new, HashMap::new);
+        return groupBy(
+                sourceMap,
+                discriminator,
+                HashMap::new,
+                HashMap::new
+        );
     }
 
 
@@ -400,12 +429,14 @@ public class MapUtil {
                         : mapValuesFactory;
 
         Map<R, Map<T, E>> result = finalMapResultFactory.get();
-        if (!CollectionUtils.isEmpty(sourceMap) &&
-                nonNull(discriminator)) {
+        if (!CollectionUtils.isEmpty(sourceMap) && nonNull(discriminator)) {
             sourceMap.forEach(
                     (k, v) -> {
                         R discriminatorResult = discriminator.apply(k, v);
-                        result.putIfAbsent(discriminatorResult, finalMapValuesFactory.get());
+                        result.putIfAbsent(
+                                discriminatorResult,
+                                finalMapValuesFactory.get()
+                        );
                         result.get(discriminatorResult)
                                 .put(k, v);
                     }
@@ -579,7 +610,11 @@ public class MapUtil {
      */
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
                                              final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction) {
-        return map(sourceMap, mapFunction, HashMap::new);
+        return map(
+                sourceMap,
+                mapFunction,
+                HashMap::new
+        );
     }
 
 
@@ -646,7 +681,11 @@ public class MapUtil {
      */
     public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
-        return mapValues(sourceMap, mapFunction, HashMap::new);
+        return mapValues(
+                sourceMap,
+                mapFunction,
+                HashMap::new
+        );
     }
 
 
@@ -703,7 +742,7 @@ public class MapUtil {
      * Finds the first element of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
      *
      * @param sourceMap
-     *    {@link Map} used to find largest element
+     *    {@link Map} used to find the largest element
      * @param comparator
      *    {@link Comparator} to be used for comparing elements
      *
@@ -738,7 +777,7 @@ public class MapUtil {
      * Finds the first value of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
      *
      * @param sourceMap
-     *    {@link Map} used to find largest value
+     *    {@link Map} used to find the largest value
      * @param comparator
      *    {@link Comparator} to be used for comparing values
      *
@@ -763,7 +802,7 @@ public class MapUtil {
      * Finds the first element of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
      *
      * @param sourceMap
-     *    {@link Map} used to find smallest element
+     *    {@link Map} used to find the smallest element
      * @param comparator
      *    {@link Comparator} to be used for comparing elements
      *
@@ -840,7 +879,11 @@ public class MapUtil {
      */
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator) {
-        return partition(sourceMap, discriminator, HashMap::new);
+        return partition(
+                sourceMap,
+                discriminator,
+                HashMap::new
+        );
     }
 
 
@@ -960,9 +1003,13 @@ public class MapUtil {
     public static <T, E> Map<T, E> slice(final Map<? extends T, ? extends E> sourceMap,
                                          final int from,
                                          final int until) {
-        Assert.isTrue(from < until, format("from: %d must be lower than to: %d", from, until));
-        if (CollectionUtils.isEmpty(sourceMap) ||
-                from > sourceMap.size() - 1) {
+        Assert.isTrue(
+                from < until,
+                format("from: %d must be lower than to: %d",
+                        from, until
+                )
+        );
+        if (CollectionUtils.isEmpty(sourceMap) || from > sourceMap.size() - 1) {
             return new HashMap<>();
         }
         int finalFrom = Math.max(0, from);
@@ -1014,8 +1061,7 @@ public class MapUtil {
     public static <T, E> List<Map<T, E>> sliding(final Map<T, E> sourceMap,
                                                  final int size) {
         Assert.isTrue(0 <= size, "size must be a positive value");
-        if (CollectionUtils.isEmpty(sourceMap) ||
-                0 == size) {
+        if (CollectionUtils.isEmpty(sourceMap) || 0 == size) {
             return new ArrayList<>();
         }
         if (size >= sourceMap.size()) {
@@ -1075,8 +1121,7 @@ public class MapUtil {
     public static <T, E> List<Map<T, E>> split(final Map<? extends T, ? extends E> sourceMap,
                                                final int size) {
         Assert.isTrue(0 <= size, "size must be a positive value");
-        if (CollectionUtils.isEmpty(sourceMap) ||
-                0 == size) {
+        if (CollectionUtils.isEmpty(sourceMap) || 0 == size) {
             return new ArrayList<>();
         }
         int expectedSize = 0 == sourceMap.size() % size

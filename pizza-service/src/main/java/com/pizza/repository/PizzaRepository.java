@@ -93,11 +93,16 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
                         new LinkedHashSet<>()).add((Ingredient)object[1])
         );
         List<Pizza> pizzas = new ArrayList<>();
-        mapPizzaIngredient.forEach((pizza, ingredients) -> {
-            pizza.setIngredients(ingredients);
-            pizzas.add(pizza);
+        mapPizzaIngredient.forEach(
+                (pizza, ingredients) -> {
+                    pizza.setIngredients(ingredients);
+                    pizzas.add(pizza);
         });
-        return new PageImpl<>(pizzas, pageable, this.count());
+        return new PageImpl<>(
+                pizzas,
+                pageable,
+                this.count()
+        );
     }
 
 

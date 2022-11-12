@@ -16,8 +16,8 @@ public class EnumHasInternalStringValueValidator implements ConstraintValidator<
 
 	private static final String ERROR_MESSAGE_PARAMETER = "values";
 
-	List<String> enumValidValues;
-	String constraintTemplate;
+	private List<String> enumValidValues;
+	private String constraintTemplate;
 	private boolean isNullAccepted;
 
 
@@ -42,9 +42,12 @@ public class EnumHasInternalStringValueValidator implements ConstraintValidator<
 		if (!isValid) {
 			HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
 			hibernateContext.disableDefaultConstraintViolation();
-			hibernateContext.addMessageParameter(ERROR_MESSAGE_PARAMETER, enumValidValues)
-					        .buildConstraintViolationWithTemplate(constraintTemplate)
-					        .addConstraintViolation();
+			hibernateContext.addMessageParameter(
+					        ERROR_MESSAGE_PARAMETER,
+							enumValidValues
+					)
+					.buildConstraintViolationWithTemplate(constraintTemplate)
+					.addConstraintViolation();
 		}
 		return isValid;
 	}

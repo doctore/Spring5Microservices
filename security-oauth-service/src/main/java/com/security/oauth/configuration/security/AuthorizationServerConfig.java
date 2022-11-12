@@ -46,7 +46,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+    public void configure(final AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints.pathMapping(
                         RestRoutes.ACCESS_TOKEN_URI.getFirst(),
                         RestRoutes.ACCESS_TOKEN_URI.getSecond()
@@ -66,17 +66,22 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     }
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) {
+    public void configure(final AuthorizationServerSecurityConfigurer security) {
         security.checkTokenAccess("isAuthenticated()");
     }
 
 
     @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+    public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
         clients.jdbc(dataSource)
                .passwordEncoder(passwordEncoder);
 
-        clients.withClientDetails(new CustomJdbcClientDetailsService(dataSource, clientDetailsCacheService));
+        clients.withClientDetails(
+                new CustomJdbcClientDetailsService(
+                        dataSource,
+                        clientDetailsCacheService
+                )
+        );
     }
 
 }

@@ -11,7 +11,7 @@ public enum SignatureAlgorithmEnum {
     HS384(JWSAlgorithm.HS384),
     HS512(JWSAlgorithm.HS512);
 
-    private JWSAlgorithm algorithm;
+    private final JWSAlgorithm algorithm;
 
     SignatureAlgorithmEnum(JWSAlgorithm algorithm) {
         this.algorithm = algorithm;

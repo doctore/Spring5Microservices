@@ -42,30 +42,58 @@ public class AuthenticationGenerator implements IAuthenticationGenerator {
 
     private RawAuthenticationInformationDto buildAuthenticationInformation(final User user) {
         return RawAuthenticationInformationDto.builder()
-                .accessTokenInformation(getAccessTokenInformation(user))
-                .refreshTokenInformation(getRefreshTokenInformation(user))
-                .additionalTokenInformation(getAdditionalTokenInformation(user))
+                .accessTokenInformation(
+                        getAccessTokenInformation(user)
+                )
+                .refreshTokenInformation(
+                        getRefreshTokenInformation(user)
+                )
+                .additionalTokenInformation(
+                        getAdditionalTokenInformation(user)
+                )
                 .build();
     }
 
     private Map<String, Object> getAccessTokenInformation(final User user) {
         return new HashMap<>() {{
-            put(USERNAME.getKey(), user.getUsername());
-            put(NAME.getKey(), user.getName());
-            put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
+            put(
+                    USERNAME.getKey(),
+                    user.getUsername()
+            );
+            put(
+                    NAME.getKey(),
+                    user.getName()
+            );
+            put(
+                    AUTHORITIES.getKey(),
+                    user.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .collect(toList())
+            );
         }};
     }
 
     private Map<String, Object> getRefreshTokenInformation(final User user) {
         return new HashMap<>() {{
-            put(USERNAME.getKey(), user.getUsername());
+            put(
+                    USERNAME.getKey(),
+                    user.getUsername()
+            );
         }};
     }
 
     private Map<String, Object> getAdditionalTokenInformation(final User user) {
         return new HashMap<>() {{
-            put(USERNAME.getKey(), user.getUsername());
-            put(AUTHORITIES.getKey(), user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()));
+            put(
+                    USERNAME.getKey(),
+                    user.getUsername()
+            );
+            put(
+                    AUTHORITIES.getKey(),
+                    user.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .collect(toList())
+            );
         }};
     }
 

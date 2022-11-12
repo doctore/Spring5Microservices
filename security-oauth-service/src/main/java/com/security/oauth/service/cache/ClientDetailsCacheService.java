@@ -32,7 +32,12 @@ public class ClientDetailsCacheService {
      */
     public boolean contains(final String clientId) {
         return ofNullable(clientId)
-                .map(id -> cacheService.contains(cacheConfiguration.getOauthClientCacheName(), id))
+                .map(id ->
+                        cacheService.contains(
+                                cacheConfiguration.getOauthClientCacheName(),
+                                id
+                        )
+                )
                 .orElse(false);
     }
 
@@ -46,7 +51,10 @@ public class ClientDetailsCacheService {
      * @return @return {@link Optional} with the {@link ClientDetails} if it was found, {@link Optional#empty()} otherwise
      */
     public Optional<ClientDetails> get(final String clientId) {
-        return cacheService.get(cacheConfiguration.getOauthClientCacheName(), clientId);
+        return cacheService.get(
+                cacheConfiguration.getOauthClientCacheName(),
+                clientId
+        );
     }
 
 
@@ -62,7 +70,11 @@ public class ClientDetailsCacheService {
      */
     public boolean put(final String clientId,
                        final ClientDetails clientDetails) {
-        return cacheService.put(cacheConfiguration.getOauthClientCacheName(), clientId, clientDetails);
+        return cacheService.put(
+                cacheConfiguration.getOauthClientCacheName(),
+                clientId,
+                clientDetails
+        );
     }
 
 }

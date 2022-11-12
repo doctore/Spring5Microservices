@@ -42,7 +42,10 @@ public class WebSecurityConfiguration {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 // Handle an authorized attempts
-                .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                .exceptionHandling().authenticationEntryPoint(
+                        (req, rsp, e) ->
+                                rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                )
                 .and()
                 .authorizeRequests()
                 // List of services do not require authentication

@@ -49,11 +49,17 @@ public class OrderLineService {
                 .map(dtos -> {
                     Assert.notNull(orderId, "OrderId cannot be null");
 
-                    Collection<OrderLine> orderLines = orderLineConverter.fromDtosToModels(dtos, orderId);
+                    Collection<OrderLine> orderLines = orderLineConverter.fromDtosToModels(
+                            dtos,
+                            orderId
+                    );
                     orderLineDao.saveAll(orderLines);
 
                     List<OrderLineDto> orderLineDtosPersisted = orderLineConverter.fromModelsToDtos(orderLines);
-                    mergePizzaInformation(orderLineDtos, orderLineDtosPersisted);
+                    mergePizzaInformation(
+                            orderLineDtos,
+                            orderLineDtosPersisted
+                    );
                     return  orderLineDtosPersisted;
                 })
                 .orElseGet(ArrayList::new);
@@ -84,7 +90,11 @@ public class OrderLineService {
         dtosWithoutPizzaInformation
                 .forEach(dto -> {
                     if (null != dto.getPizza()) {
-                        dto.setPizza(pizzaDtoMap.get(dto.getPizza().getId()));
+                        dto.setPizza(
+                                pizzaDtoMap.get(
+                                        dto.getPizza().getId()
+                                )
+                        );
                     }
                 });
     }

@@ -206,7 +206,10 @@ public final class Tuple2<T1, T2> implements Tuple, Serializable {
                                        final Function<? super T2, ? extends U2> f2) {
         Assert.notNull(f1, "f1 must be not null");
         Assert.notNull(f2, "f2 must be not null");
-        return of(f1.apply(_1), f2.apply(_2));
+        return of(
+                f1.apply(_1),
+                f2.apply(_2)
+        );
     }
 
 
