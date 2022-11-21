@@ -361,38 +361,6 @@ public class MapUtil {
                 finalFilterPredicate,
                 mapFactory
         );
-
-        /*
-        Supplier<Map<T, E>> finalMapFactory =
-                isNull(mapFactory)
-                        ? HashMap::new
-                        : mapFactory;
-
-        if (CollectionUtils.isEmpty(sourceMap)) {
-            return finalMapFactory.get();
-        }
-        BiPredicate<? super T, ? super E> finalFilterPredicate =
-                isNull(filterPredicate)
-                        ? (k, v) -> true
-                        : filterPredicate.negate();
-
-        return sourceMap.entrySet()
-                .stream()
-                .filter(entry ->
-                        finalFilterPredicate.test(
-                                entry.getKey(),
-                                entry.getValue()
-                        )
-                )
-                .collect(
-                        toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                overwriteWithNew(),
-                                finalMapFactory
-                        )
-                );
-         */
     }
 
 

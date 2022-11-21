@@ -508,27 +508,6 @@ public class CollectionUtil {
                 finalFilterPredicate,
                 collectionFactory
         );
-        /*
-        Supplier<Collection<T>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return finalCollectionFactory.get();
-        }
-        Predicate<? super T> finalFilterPredicate =
-                isNull(filterPredicate)
-                        ? t -> true
-                        : filterPredicate.negate();
-
-        return sourceCollection
-                .stream()
-                .filter(finalFilterPredicate)
-                .collect(
-                        toCollection(finalCollectionFactory)
-                );
-         */
     }
 
 
