@@ -8,7 +8,7 @@ package com.spring5microservices.common.converter.enums;
  * @param <V>
  *    Type of the "equivalent" {@code value} to manage
  */
-public interface BaseEnumConverter<E extends Enum, V> {
+public interface BaseEnumConverter<E extends Enum<?>, V> {
 
     /**
      * Create a new {@link Enum} using the given {@code value}.

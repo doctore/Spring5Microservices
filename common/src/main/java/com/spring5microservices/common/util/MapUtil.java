@@ -135,11 +135,17 @@ public class MapUtil {
                         finalFilterPredicate.test(entry.getKey(), entry.getValue())
                                 ? Map.entry(
                                         entry.getKey(),
-                                        defaultFunction.apply(entry.getKey(), entry.getValue())
+                                        defaultFunction.apply(
+                                                entry.getKey(),
+                                                entry.getValue()
+                                        )
                                 )
                                 : Map.entry(
                                         entry.getKey(),
-                                        orElseFunction.apply(entry.getKey(), entry.getValue())
+                                        orElseFunction.apply(
+                                                entry.getKey(),
+                                                entry.getValue()
+                                        )
                                 )
                 )
                 .collect(
@@ -163,7 +169,7 @@ public class MapUtil {
      * Example:
      *
      *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [("A", 2), ("B", 4)]
+     *    [(1, "Hi"), (2, "Hello")]     [(2, 7)]
      *    (k, v) -> k % 2 == 0
      *    (k, v) -> k + v.length()
      * </pre>
@@ -201,7 +207,7 @@ public class MapUtil {
      * Example:
      *
      *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [("A", 2), ("B", 4)]
+     *    [(1, "Hi"), (2, "Hello")]     [(2, 7)]
      *    (k, v) -> k % 2 == 0
      *    (k, v) -> k + v.length()
      *    HashMap::new
@@ -241,11 +247,20 @@ public class MapUtil {
 
         return sourceMap.entrySet()
                 .stream()
-                .filter(entry -> finalFilterPredicate.test(entry.getKey(), entry.getValue()))
+                .filter(entry ->
+                        finalFilterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
                 .collect(
                         toMap(
                                 Map.Entry::getKey,
-                                entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
+                                entry ->
+                                        mapFunction.apply(
+                                                entry.getKey(),
+                                                entry.getValue()
+                                        ),
                                 overwriteWithNew(),
                                 finalMapFactory
                         )
@@ -281,6 +296,103 @@ public class MapUtil {
                 )
                 .mapToInt(elto -> 1)
                 .sum();
+    }
+
+
+    /**
+     *    Returns a {@link Map} removing the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                   Result:
+     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *    (k, v) -> k % 2 == 0
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate) {
+
+        return dropWhile(
+                sourceMap,
+                filterPredicate,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Map} removing the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                   Result:
+     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *    (k, v) -> k % 2 == 0
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate,
+                                             final Supplier<Map<T, E>> mapFactory) {
+        BiPredicate<? super T, ? super E> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? (k, v) -> true
+                        : filterPredicate.negate();
+        return takeWhile(
+                sourceMap,
+                finalFilterPredicate,
+                mapFactory
+        );
+
+        /*
+        Supplier<Map<T, E>> finalMapFactory =
+                isNull(mapFactory)
+                        ? HashMap::new
+                        : mapFactory;
+
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalMapFactory.get();
+        }
+        BiPredicate<? super T, ? super E> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? (k, v) -> true
+                        : filterPredicate.negate();
+
+        return sourceMap.entrySet()
+                .stream()
+                .filter(entry ->
+                        finalFilterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                overwriteWithNew(),
+                                finalMapFactory
+                        )
+                );
+         */
     }
 
 
@@ -935,30 +1047,6 @@ public class MapUtil {
 
 
     /**
-     * Returns a {@link Map} with the information of the given {@code sourceMap} excluding the keys of {@code keysToExclude}
-     *
-     * @param sourceMap
-     *    {@link Map} with the information to filter
-     * @param keysToExclude
-     *    Keys to exclude from the provided {@link Map}
-     *
-     * @return {@link Map}
-     */
-    public static <T, E> Map<T, E> removeKeys(final Map<? extends T, ? extends E> sourceMap,
-                                              final Collection<? extends T> keysToExclude) {
-        return ofNullable(sourceMap)
-                .map(sm -> {
-                    Map<T, E> filteredMap = new HashMap<>(sourceMap);
-                    if (Objects.nonNull(keysToExclude)) {
-                        keysToExclude.forEach(filteredMap::remove);
-                    }
-                    return filteredMap;
-                })
-                .orElseGet(HashMap::new);
-    }
-
-
-    /**
      *    Using the provided {@code sourceMap}, return all elements beginning at index {@code from} and afterwards,
      * up to index {@code until} (excluding this one).
      *
@@ -1142,6 +1230,91 @@ public class MapUtil {
             }
         }
         return splits;
+    }
+
+
+    /**
+     *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                   Result:
+     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *    (k, v) -> k % 2 == 0
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate) {
+
+        return takeWhile(
+                sourceMap,
+                filterPredicate,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                   Result:
+     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *    (k, v) -> k % 2 == 0
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate,
+                                             final Supplier<Map<T, E>> mapFactory) {
+        Supplier<Map<T, E>> finalMapFactory =
+                isNull(mapFactory)
+                        ? HashMap::new
+                        : mapFactory;
+
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalMapFactory.get();
+        }
+        BiPredicate<? super T, ? super E> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? (k, v) -> true
+                        : filterPredicate;
+
+        return sourceMap.entrySet()
+                .stream()
+                .filter(entry ->
+                        finalFilterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                overwriteWithNew(),
+                                finalMapFactory
+                        )
+                );
     }
 
 

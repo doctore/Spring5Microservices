@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
 import static com.spring5microservices.common.util.MapUtil.count;
+import static com.spring5microservices.common.util.MapUtil.dropWhile;
 import static com.spring5microservices.common.util.MapUtil.find;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.groupBy;
@@ -39,10 +40,10 @@ import static com.spring5microservices.common.util.MapUtil.maxValue;
 import static com.spring5microservices.common.util.MapUtil.min;
 import static com.spring5microservices.common.util.MapUtil.minValue;
 import static com.spring5microservices.common.util.MapUtil.partition;
-import static com.spring5microservices.common.util.MapUtil.removeKeys;
 import static com.spring5microservices.common.util.MapUtil.slice;
 import static com.spring5microservices.common.util.MapUtil.sliding;
 import static com.spring5microservices.common.util.MapUtil.split;
+import static com.spring5microservices.common.util.MapUtil.takeWhile;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -380,6 +381,74 @@ public class MapUtilTest {
         ); //@formatter:on
     }
 
+
+    static Stream<Arguments> dropWhileNoMapFactoryTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        Map<Integer, String> intsAndStringsResult = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,          expectedResult
+                Arguments.of( null,             null,                     Map.of() ),
+                Arguments.of( Map.of(),         null,                     Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     intsAndStrings ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("dropWhileNoMapFactoryTestCases")
+    @DisplayName("dropWhile: without map factory test cases")
+    public <T, E> void dropWhileNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                       BiPredicate<? super T, ? super E> filterPredicate,
+                                                       Map<T, E> expectedResult) {
+        assertEquals(expectedResult, dropWhile(sourceMap, filterPredicate));
+    }
+
+
+    static Stream<Arguments> dropWhileAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, String> intsAndStringsResult = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,          mapFactory,          expectedResult
+                Arguments.of( null,             null,                     null,                Map.of() ),
+                Arguments.of( Map.of(),         null,                     null,                Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   null,                Map.of() ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     linkedMapSupplier,   intsAndStrings ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   linkedMapSupplier,   intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("dropWhileAllParametersTestCases")
+    @DisplayName("dropWhile: with all parameters test cases")
+    public <T, E> void dropWhileAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                        BiPredicate<? super T, ? super E> filterPredicate,
+                                                        Supplier<Map<T, E>> mapFactory,
+                                                        Map<T, E> expectedResult) {
+        assertEquals(expectedResult, dropWhile(sourceMap, filterPredicate, mapFactory));
+    }
+
+
     @ParameterizedTest
     @MethodSource("findTestCases")
     @DisplayName("find: test cases")
@@ -570,7 +639,7 @@ public class MapUtilTest {
             put(6, "!");
         }};
         BiFunction<Integer, String, Integer> keyMod3 = (k, v) -> k % 3;
-        BiFunction<Integer, String, Integer> valueLenght = (k, v) -> v.length();
+        BiFunction<Integer, String, Integer> valueLength = (k, v) -> v.length();
         Map<Integer, List<Integer>> usingKeyMod3AsDiscriminatorKey = new HashMap<>() {{
             put(0, List.of(1));
             put(1, List.of(2));
@@ -583,9 +652,9 @@ public class MapUtilTest {
                 Arguments.of( Map.of(),         null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   keyMod3,            null,          IllegalArgumentException.class,   null ),
-                Arguments.of( null,             keyMod3,            valueLenght,   null,                             Map.of() ),
-                Arguments.of( Map.of(),         keyMod3,            valueLenght,   null,                             Map.of() ),
-                Arguments.of( intsAndStrings,   keyMod3,            valueLenght,   null,                             usingKeyMod3AsDiscriminatorKey )
+                Arguments.of( null,             keyMod3,            valueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         keyMod3,            valueLength,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   keyMod3,            valueLength,   null,                             usingKeyMod3AsDiscriminatorKey )
         ); //@formatter:on
     }
 
@@ -612,7 +681,7 @@ public class MapUtilTest {
             put("C", 30);
             put("DH", 40);
         }};
-        BiFunction<String, Integer, Integer> keyLenght = (k, v) -> k.length();
+        BiFunction<String, Integer, Integer> keyLength = (k, v) -> k.length();
         BiFunction<String, Integer, Integer> valuePlus5 = (k, v) -> v + 5;
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
 
@@ -630,11 +699,11 @@ public class MapUtilTest {
                 Arguments.of( null,                 null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( Map.of(),             null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( stringsAndIntegers,   null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( stringsAndIntegers,   keyLenght,          null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,                 keyLenght,          valuePlus5,    null,                null,                             Map.of() ),
-                Arguments.of( Map.of(),             keyLenght,          valuePlus5,    null,                null,                             Map.of() ),
-                Arguments.of( stringsAndIntegers,   keyLenght,          valuePlus5,    null,                null,                             resultWithDefaultCollectionFactory ),
-                Arguments.of( stringsAndIntegers,   keyLenght,          valuePlus5,    setSupplier,         null,                             resultWithSetCollectionFactory )
+                Arguments.of( stringsAndIntegers,   keyLength,          null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 keyLength,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             keyLength,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   keyLength,          valuePlus5,    null,                null,                             resultWithDefaultCollectionFactory ),
+                Arguments.of( stringsAndIntegers,   keyLength,          valuePlus5,    setSupplier,         null,                             resultWithSetCollectionFactory )
         ); //@formatter:on
     }
 
@@ -663,7 +732,7 @@ public class MapUtilTest {
             put(4, "oPQRT");
         }};
         BiFunction<Integer, String, Integer> keyMod2 = (k, v) -> k % 2;
-        BiFunction<Integer, String, Integer> valueLenght = (k, v) -> v.length();
+        BiFunction<Integer, String, Integer> valueLength = (k, v) -> v.length();
         BinaryOperator<Integer> multiplyAll = (i1, i2) -> i1 * i2;
         Map<Integer, Integer> expectedResult = new HashMap<>() {{
             put(0, 15);
@@ -676,10 +745,10 @@ public class MapUtilTest {
                 Arguments.of( Map.of(),         null,               null,          null,           IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   null,               null,          null,           IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   keyMod2,            null,          null,           IllegalArgumentException.class,   null ),
-                Arguments.of( intsAndStrings,   keyMod2,            valueLenght,   null,           IllegalArgumentException.class,   null ),
-                Arguments.of( null,             keyMod2,            valueLenght,   multiplyAll,    null,                             Map.of() ),
-                Arguments.of( Map.of(),         keyMod2,            valueLenght,   multiplyAll,    null,                             Map.of() ),
-                Arguments.of( intsAndStrings,   keyMod2,            valueLenght,   multiplyAll,    null,                             expectedResult )
+                Arguments.of( intsAndStrings,   keyMod2,            valueLength,   null,           IllegalArgumentException.class,   null ),
+                Arguments.of( null,             keyMod2,            valueLength,   multiplyAll,    null,                             Map.of() ),
+                Arguments.of( Map.of(),         keyMod2,            valueLength,   multiplyAll,    null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   keyMod2,            valueLength,   multiplyAll,    null,                             expectedResult )
         ); //@formatter:on
     }
 
@@ -1158,36 +1227,6 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> removeKeysTestCases() {
-        Map<String, Integer> sourceMap = new HashMap<>() {{
-            put("A", 1);
-            put("B", 2);
-        }};
-        Map<String, Integer> sourceMapFiltered = new HashMap<>() {{
-            put("A", 1);
-        }};
-        List<String> keysToExcludeIncluded = List.of("B");
-        List<String> keysToExcludeNotIncluded = List.of("C");
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,   keysToExclude,              expectedResult
-                Arguments.of( null,        null,                       new HashMap<>() ),
-                Arguments.of( null,        keysToExcludeIncluded,      new HashMap<>() ),
-                Arguments.of( sourceMap,   keysToExcludeNotIncluded,   sourceMap ),
-                Arguments.of( sourceMap,   keysToExcludeIncluded,      sourceMapFiltered )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("removeKeysTestCases")
-    @DisplayName("removeKeys: test cases")
-    public <T, E> void removeKeys_testCases(Map<T, E> sourceMap,
-                                            Collection<T> keysToExclude,
-                                            HashMap<T, E> expectedResult) {
-        assertEquals(expectedResult, removeKeys(sourceMap, keysToExclude));
-    }
-
-
     static Stream<Arguments> sliceTestCases() {
         Map<String, Integer> sourceMap = new LinkedHashMap<>() {{
             put("A", 1);
@@ -1374,6 +1413,71 @@ public class MapUtilTest {
         else {
             assertEquals(expectedResult, split(sourceMap, size));
         }
+    }
+
+
+    static Stream<Arguments> takeWhileNoMapFactoryTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        Map<Integer, String> intsAndStringsResult = new HashMap<>() {{
+            put(4, "o");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,          expectedResult
+                Arguments.of( null,             null,                     Map.of() ),
+                Arguments.of( Map.of(),         null,                     Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     intsAndStrings ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("takeWhileNoMapFactoryTestCases")
+    @DisplayName("takeWhile: without map factory test cases")
+    public <T, E> void takeWhileNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                       BiPredicate<? super T, ? super E> filterPredicate,
+                                                       Map<T, E> expectedResult) {
+        assertEquals(expectedResult, takeWhile(sourceMap, filterPredicate));
+    }
+
+
+    static Stream<Arguments> takeWhileAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, String> intsAndStringsResult = new LinkedHashMap<>() {{
+            put(4, "o");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,          mapFactory,          expectedResult
+                Arguments.of( null,             null,                     null,                Map.of() ),
+                Arguments.of( Map.of(),         null,                     null,                Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   null,                Map.of() ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     linkedMapSupplier,   intsAndStrings ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   linkedMapSupplier,   intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("takeWhileAllParametersTestCases")
+    @DisplayName("takeWhile: with all parameters test cases")
+    public <T, E> void takeWhileAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                        BiPredicate<? super T, ? super E> filterPredicate,
+                                                        Supplier<Map<T, E>> mapFactory,
+                                                        Map<T, E> expectedResult) {
+        assertEquals(expectedResult, takeWhile(sourceMap, filterPredicate, mapFactory));
     }
 
 }

@@ -20,10 +20,9 @@ import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
  * Rest services to work with problems in accessible microservices
  */
 @AllArgsConstructor
+@Log4j2
 @RestController
 @RequestMapping(RestRoutes.CIRCUIT_BREAKER.ROOT)
-
-@Log4j2
 public class CircuitBreakerController {
 
     @RequestMapping(RestRoutes.CIRCUIT_BREAKER.ORDER_SERVICE)
@@ -94,9 +93,9 @@ public class CircuitBreakerController {
      *
      * @return {@link ResponseEntity} with the suitable response
      */
-    private ResponseEntity<ErrorResponseDto> buildErrorResponse(RestApiErrorCode errorCode,
-                                                                String errorMessage,
-                                                                HttpStatus httpStatus) {
+    private ResponseEntity<ErrorResponseDto> buildErrorResponse(final RestApiErrorCode errorCode,
+                                                                final String errorMessage,
+                                                                final HttpStatus httpStatus) {
         ErrorResponseDto error = new ErrorResponseDto(
                 errorCode,
                 List.of(errorMessage)

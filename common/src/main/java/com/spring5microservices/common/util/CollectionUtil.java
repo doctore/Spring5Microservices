@@ -138,7 +138,9 @@ public class CollectionUtil {
                                 ? defaultFunction.apply(elto)
                                 : orElseFunction.apply(elto)
                 )
-                .collect(toCollection(finalCollectionFactory));
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
     }
 
 
@@ -253,7 +255,9 @@ public class CollectionUtil {
                 .stream()
                 .filter(finalFilterPredicate)
                 .map(mapFunction)
-                .collect(toCollection(finalCollectionFactory));
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
     }
 
 
@@ -304,7 +308,9 @@ public class CollectionUtil {
                     Stream<E> propertyExtractedStream = sourceCollection.stream().map(propertyExtractor);
                     return isNull(collectionFactory)
                             ? propertyExtractedStream.collect(toList())
-                            : propertyExtractedStream.collect(toCollection(collectionFactory));
+                            : propertyExtractedStream.collect(
+                                    toCollection(collectionFactory)
+                              );
                 })
                 .orElseGet(() ->
                         isNull(collectionFactory)
@@ -382,7 +388,9 @@ public class CollectionUtil {
                                 }
                                 return result;
                             })
-                            .collect(toCollection(finalCollectionFactory))
+                            .collect(
+                                    toCollection(finalCollectionFactory)
+                            )
                 )
                 .orElseGet(finalCollectionFactory);
     }
@@ -433,6 +441,94 @@ public class CollectionUtil {
                 .filter(filterPredicate)
                 .mapToInt(elto -> 1)
                 .sum();
+    }
+
+
+    /**
+     *    Returns a {@link List} removing the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [2, 6]
+     *    i -> i % 2 == 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *
+     * @return {@link List}
+     */
+    public static <T> List<T> dropWhile(final Collection<? extends T> sourceCollection,
+                                        final Predicate<? super T> filterPredicate) {
+
+        return  (List<T>) dropWhile(
+                sourceCollection,
+                filterPredicate,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Collection} removing the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [2, 6]
+     *    i -> i % 2 == 1
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection}
+     */
+    public static <T> Collection<T> dropWhile(final Collection<? extends T> sourceCollection,
+                                              final Predicate<? super T> filterPredicate,
+                                              final Supplier<Collection<T>> collectionFactory) {
+        Predicate<? super T> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? t -> true
+                        : filterPredicate.negate();
+        return takeWhile(
+                sourceCollection,
+                finalFilterPredicate,
+                collectionFactory
+        );
+        /*
+        Supplier<Collection<T>> finalCollectionFactory =
+                isNull(collectionFactory)
+                        ? ArrayList::new
+                        : collectionFactory;
+
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Predicate<? super T> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? t -> true
+                        : filterPredicate.negate();
+
+        return sourceCollection
+                .stream()
+                .filter(finalFilterPredicate)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+         */
     }
 
 
@@ -525,7 +621,7 @@ public class CollectionUtil {
                 .map(sc -> {
                     E result = initialValue;
                     if (Objects.nonNull(accumulator)) {
-                        for (T element : sc) {
+                        for (T element: sc) {
                             result = accumulator.apply(result, element);
                         }
                     }
@@ -992,6 +1088,83 @@ public class CollectionUtil {
             );
         }
         return splits;
+    }
+
+
+    /**
+     *    Returns a {@link List} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [1, 3]
+     *    i -> i % 2 == 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *
+     * @return {@link List}
+     */
+    public static <T> List<T> takeWhile(final Collection<? extends T> sourceCollection,
+                                              final Predicate<? super T> filterPredicate) {
+
+        return  (List<T>) takeWhile(
+                sourceCollection,
+                filterPredicate,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Collection} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [1, 3]
+     *    i -> i % 2 == 1
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection}
+     */
+    public static <T> Collection<T> takeWhile(final Collection<? extends T> sourceCollection,
+                                              final Predicate<? super T> filterPredicate,
+                                              final Supplier<Collection<T>> collectionFactory) {
+        Supplier<Collection<T>> finalCollectionFactory =
+                isNull(collectionFactory)
+                        ? ArrayList::new
+                        : collectionFactory;
+
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Predicate<? super T> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? t -> true
+                        : filterPredicate;
+
+        return sourceCollection
+                .stream()
+                .filter(finalFilterPredicate)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
     }
 
 

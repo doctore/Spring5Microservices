@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,29 +35,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import static com.spring5microservices.common.util.CollectionUtil.applyOrElse;
-import static com.spring5microservices.common.util.CollectionUtil.asSet;
-import static com.spring5microservices.common.util.CollectionUtil.collect;
-import static com.spring5microservices.common.util.CollectionUtil.collectProperties;
-import static com.spring5microservices.common.util.CollectionUtil.collectProperty;
-import static com.spring5microservices.common.util.CollectionUtil.concatUniqueElements;
-import static com.spring5microservices.common.util.CollectionUtil.count;
-import static com.spring5microservices.common.util.CollectionUtil.find;
-import static com.spring5microservices.common.util.CollectionUtil.findLast;
-import static com.spring5microservices.common.util.CollectionUtil.foldLeft;
-import static com.spring5microservices.common.util.CollectionUtil.foldRight;
-import static com.spring5microservices.common.util.CollectionUtil.groupMap;
-import static com.spring5microservices.common.util.CollectionUtil.groupMapReduce;
-import static com.spring5microservices.common.util.CollectionUtil.iterate;
-import static com.spring5microservices.common.util.CollectionUtil.reverseList;
-import static com.spring5microservices.common.util.CollectionUtil.slice;
-import static com.spring5microservices.common.util.CollectionUtil.sliding;
-import static com.spring5microservices.common.util.CollectionUtil.split;
-import static com.spring5microservices.common.util.CollectionUtil.transpose;
-import static com.spring5microservices.common.util.CollectionUtil.unzip;
-import static com.spring5microservices.common.util.CollectionUtil.zip;
-import static com.spring5microservices.common.util.CollectionUtil.zipAll;
-import static com.spring5microservices.common.util.CollectionUtil.zipWithIndex;
+import static com.spring5microservices.common.util.CollectionUtil.*;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -134,7 +111,7 @@ public class CollectionUtilTest {
 
         List<String> expectedIntsResultNoFilterList = asList("2", "3", "4", "7");
         List<String> expectedIntsResultList = asList("2", "4", "4", "12");
-        Set<String> expectedIntsResultSet = new HashSet<>(expectedIntsResultList);
+        Set<String> expectedIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    collectionFactory,  expectedException,                expectedResult
@@ -222,7 +199,6 @@ public class CollectionUtilTest {
         ); //@formatter:on
     }
 
-
     @ParameterizedTest
     @MethodSource("collectNoCollectionFactoryTestCases")
     @DisplayName("collect: without collection factory test cases")
@@ -241,7 +217,7 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> collectAllParametersTestCases() {
         List<Integer> ints = asList(1, 2, 3, 6);
-        Set<String> collectedInts = new HashSet<>(asList("1", "3"));
+        Set<String> collectedInts = new LinkedHashSet<>(asList("1", "3"));
 
         Predicate<Integer> isOdd = i -> i % 2 == 1;
         Function<Integer, String> fromIntegerToString = Object::toString;
@@ -351,23 +327,23 @@ public class CollectionUtilTest {
         List<Function<UserDto, ?>> allPropertyExtractors = List.of(getId, getName, getAddress, getAge, getBirthday);
         List<Function<UserDto, ?>> allPropertyExtractorsPlusOne = List.of(getId, getName, getAddress, getAge, getBirthday, getId);
 
-        List<Tuple1> expectedResultOnePropertyExtractor = List.of(
+        List<Tuple1<Long>> expectedResultOnePropertyExtractor = List.of(
                 Tuple.of(1L),
                 Tuple.of(2L)
         );
-        List<Tuple2> expectedResultTwoPropertyExtractors = List.of(
+        List<Tuple2<Long, String>> expectedResultTwoPropertyExtractors = List.of(
                 Tuple.of(1L, "user1 name"),
                 Tuple.of(2L, "user2 name")
         );
-        List<Tuple3> expectedResultThreePropertyExtractors = List.of(
+        List<Tuple3<Long, String, String>> expectedResultThreePropertyExtractors = List.of(
                 Tuple.of(1L, "user1 name", "user1 address"),
                 Tuple.of(2L, "user2 name", "user2 address")
         );
-        List<Tuple4> expectedResultFourPropertyExtractors = List.of(
+        List<Tuple4<Long, String, String, Integer>> expectedResultFourPropertyExtractors = List.of(
                 Tuple.of(1L, "user1 name", "user1 address", 11),
                 Tuple.of(2L, "user2 name", "user2 address", 16)
         );
-        List<Tuple5> expectedResultFivePropertyExtractors = List.of(
+        List<Tuple5<Long, String, String, Integer, String>> expectedResultFivePropertyExtractors = List.of(
                 Tuple.of(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05"),
                 Tuple.of(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25")
         );
@@ -420,23 +396,23 @@ public class CollectionUtilTest {
 
         Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
 
-        Set<Tuple1> expectedResultOnePropertyExtractor = Set.of(
+        Set<Tuple1<Long>> expectedResultOnePropertyExtractor = Set.of(
                 Tuple.of(1L),
                 Tuple.of(2L)
         );
-        Set<Tuple2> expectedResultTwoPropertyExtractors = Set.of(
+        Set<Tuple2<Long, String>> expectedResultTwoPropertyExtractors = Set.of(
                 Tuple.of(1L, "user1 name"),
                 Tuple.of(2L, "user2 name")
         );
-        Set<Tuple3> expectedResultThreePropertyExtractors = Set.of(
+        Set<Tuple3<Long, String, String>> expectedResultThreePropertyExtractors = Set.of(
                 Tuple.of(1L, "user1 name", "user1 address"),
                 Tuple.of(2L, "user2 name", "user2 address")
         );
-        Set<Tuple4> expectedResultFourPropertyExtractors = Set.of(
+        Set<Tuple4<Long, String, String, Integer>> expectedResultFourPropertyExtractors = Set.of(
                 Tuple.of(1L, "user1 name", "user1 address", 11),
                 Tuple.of(2L, "user2 name", "user2 address", 16)
         );
-        Set<Tuple5> expectedResultFivePropertyExtractors = Set.of(
+        Set<Tuple5<Long, String, String, Integer, String>> expectedResultFivePropertyExtractors = Set.of(
                 Tuple.of(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05"),
                 Tuple.of(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25")
         );
@@ -565,6 +541,63 @@ public class CollectionUtilTest {
                                    Predicate<? super T> filterPredicate,
                                    Optional<T> expectedResult) {
         assertEquals(expectedResult, find(sourceCollection, filterPredicate));
+    }
+
+
+    static Stream<Arguments> dropWhileNoCollectionFactoryTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6);
+        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   expectedResult
+                Arguments.of( null,               null,              List.of() ),
+                Arguments.of( List.of(),          null,              List.of() ),
+                Arguments.of( null,               isEven,            List.of() ),
+                Arguments.of( intsSet,            null,              intsList ),
+                Arguments.of( intsSet,            isEven,            List.of(1, 3) )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("dropWhileNoCollectionFactoryTestCases")
+    @DisplayName("dropWhile: without collection factory test cases")
+    public <T> void dropWhileNoCollectionFactory_testCases(Collection<T> sourceCollection,
+                                                           Predicate<? super T> filterPredicate,
+                                                           List<T> expectedResult) {
+        assertEquals(expectedResult, dropWhile(sourceCollection, filterPredicate));
+    }
+
+
+    static Stream<Arguments> dropWhileAllParametersTestCases() {
+        List<Integer> ints = new ArrayList<>(asList(1, 2, 3, 6));
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
+
+        List<Integer> expectedIntsResultList = asList(1, 3);
+        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
+        Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   collectionFactory,   expectedResult
+                Arguments.of( null,               null,              null,                List.of() ),
+                Arguments.of( List.of(),          null,              null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            setSupplier,         Set.of() ),
+                Arguments.of( ints,               null,              setSupplier,         expectedAllIntsResultSet ),
+                Arguments.of( ints,               isEven,            setSupplier,         expectedIsEvenIntsResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("dropWhileAllParametersTestCases")
+    @DisplayName("dropWhile: with all parameters test cases")
+    public <T> void dropWhileAllParameters_testCases(Collection<T> sourceCollection,
+                                                     Predicate<? super T> filterPredicate,
+                                                     Supplier<Collection<T>> collectionFactory,
+                                                     Collection<T> expectedResult) {
+        assertEquals(expectedResult, dropWhile(sourceCollection, filterPredicate, collectionFactory));
     }
 
 
@@ -724,8 +757,8 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> groupMapAllParametersTestCases() {
         List<String> strings = asList("AA", "BFF", "5TR", "H", "B");
-        Function<String, Integer> lenght = String::length;
-        Function<String, String> version2 = s -> s + "2";
+        Function<String, Integer> sLength = String::length;
+        Function<String, String> sVersion2 = s -> s + "2";
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
 
         Map<Integer, List<String>> resultWithDefaultCollectionFactory = new HashMap<>() {{
@@ -744,11 +777,11 @@ public class CollectionUtilTest {
                 Arguments.of( null,               null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(),          null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(1),         lenght,             null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,               lenght,             version2,      null,                null,                             Map.of() ),
-                Arguments.of( List.of(),          lenght,             version2,      null,                null,                             Map.of() ),
-                Arguments.of( strings,            lenght,             version2,      null,                null,                             resultWithDefaultCollectionFactory ),
-                Arguments.of( strings,            lenght,             version2,      setSupplier,         null,                             resultWithSetCollectionFactory )
+                Arguments.of( List.of(1),         sLength,            null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               sLength,            sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          sLength,            sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( strings,            sLength,            sVersion2,     null,                null,                             resultWithDefaultCollectionFactory ),
+                Arguments.of( strings,            sLength,            sVersion2,     setSupplier,         null,                             resultWithSetCollectionFactory )
         ); //@formatter:on
     }
 
@@ -995,6 +1028,63 @@ public class CollectionUtilTest {
         } else {
             assertEquals(expectedResult, split(sourceCollection, size));
         }
+    }
+
+
+    static Stream<Arguments> takeWhileNoCollectionFactoryTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6);
+        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   expectedResult
+                Arguments.of( null,               null,              List.of() ),
+                Arguments.of( List.of(),          null,              List.of() ),
+                Arguments.of( null,               isEven,            List.of() ),
+                Arguments.of( intsSet,            null,              intsList ),
+                Arguments.of( intsSet,            isEven,            List.of(2, 6) )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("takeWhileNoCollectionFactoryTestCases")
+    @DisplayName("takeWhile: without collection factory test cases")
+    public <T> void takeWhileNoCollectionFactory_testCases(Collection<T> sourceCollection,
+                                                           Predicate<? super T> filterPredicate,
+                                                           List<T> expectedResult) {
+        assertEquals(expectedResult, takeWhile(sourceCollection, filterPredicate));
+    }
+
+
+    static Stream<Arguments> takeWhileAllParametersTestCases() {
+        List<Integer> ints = new ArrayList<>(asList(1, 2, 3, 6));
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
+
+        List<Integer> expectedIntsResultList = asList(2, 6);
+        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
+        Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   collectionFactory,   expectedResult
+                Arguments.of( null,               null,              null,                List.of() ),
+                Arguments.of( List.of(),          null,              null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            setSupplier,         Set.of() ),
+                Arguments.of( ints,               null,              setSupplier,         expectedAllIntsResultSet ),
+                Arguments.of( ints,               isEven,            setSupplier,         expectedIsEvenIntsResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("takeWhileAllParametersTestCases")
+    @DisplayName("takeWhile: with all parameters test cases")
+    public <T> void takeWhileAllParameters_testCases(Collection<T> sourceCollection,
+                                                     Predicate<? super T> filterPredicate,
+                                                     Supplier<Collection<T>> collectionFactory,
+                                                     Collection<T> expectedResult) {
+        assertEquals(expectedResult, takeWhile(sourceCollection, filterPredicate, collectionFactory));
     }
 
 
