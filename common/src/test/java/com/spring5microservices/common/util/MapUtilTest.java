@@ -633,8 +633,10 @@ public class MapUtilTest {
                 Arguments.of( null,          null,   null,           IllegalArgumentException.class,   null ),
                 Arguments.of( null,          2,      null,           IllegalArgumentException.class,   null ),
                 Arguments.of( Map.of(),      2,      null,           IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),      null,   always25,       null,                             always25.get() ),
                 Arguments.of( Map.of(),      1,      always25,       null,                             always25.get() ),
                 Arguments.of( integersMap,   1,      always25,       null,                             21 ),
+                Arguments.of( integersMap,   null,   always25,       null,                             always25.get() ),
                 Arguments.of( integersMap,   2,      always25,       null,                             always25.get() )
         ); //@formatter:on
     }

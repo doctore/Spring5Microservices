@@ -468,7 +468,8 @@ public class MapUtil {
                         ? Map.of()
                         : sourceMap;
 
-        return ofNullable((E) finalMapToSearch.get(key))
+        return ofNullable(key)
+                .map(k -> (E) finalMapToSearch.get(k))
                 .orElseGet(defaultValue);
     }
 
