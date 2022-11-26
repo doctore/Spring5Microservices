@@ -20,7 +20,7 @@ public class PredicateUtil {
      * @return unique object
      */
     public static <T> Predicate<T> distinctByKey(final Function<? super T, ?> keyExtractor) {
-        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        final Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
     }
 

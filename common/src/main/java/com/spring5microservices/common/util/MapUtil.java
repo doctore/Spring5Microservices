@@ -44,9 +44,9 @@ public class MapUtil {
      *
      *   Parameters:              Result:
      *    [("A", 1), ("B", 2)]     [("A", 2), ("B", 4)]
-     *    i -> i % 2 == 1
-     *    i -> i + 1
-     *    i -> i * 2
+     *    (k, v) -> v % 2 == 1
+     *    (k, v) -> v + 1
+     *    (k, v) -> v * 2
      * </pre>
      *
      * @param sourceMap
@@ -86,9 +86,9 @@ public class MapUtil {
      *
      *   Parameters:              Result:
      *    [("A", 1), ("B", 2)]     [("A", 2), ("B", 4)]
-     *    i -> i % 2 == 1
-     *    i -> i + 1
-     *    i -> i * 2
+     *    (k, v) -> v % 2 == 1
+     *    (k, v) -> v + 1
+     *    (k, v) -> v * 2
      *    HashMap::new
      * </pre>
      *
@@ -114,7 +114,7 @@ public class MapUtil {
                                                   final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
                                                   final BiFunction<? super T, ? super E, ? extends R> orElseFunction,
                                                   final Supplier<Map<T, R>> mapFactory) {
-        Supplier<Map<T, R>> finalMapFactory =
+        final Supplier<Map<T, R>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
                         : mapFactory;
@@ -124,7 +124,7 @@ public class MapUtil {
         }
         Assert.notNull(defaultFunction, "defaultFunction must be not null");
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
-        BiPredicate<? super T, ? super E> finalFilterPredicate =
+        final BiPredicate<? super T, ? super E> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? (k, v) -> true
                         : filterPredicate;
@@ -231,7 +231,7 @@ public class MapUtil {
                                               final BiPredicate<? super T, ? super E> filterPredicate,
                                               final BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                               final Supplier<Map<T, R>> mapFactory) {
-        Supplier<Map<T, R>> finalMapFactory =
+        final Supplier<Map<T, R>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
                         : mapFactory;
@@ -240,7 +240,7 @@ public class MapUtil {
             return finalMapFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        BiPredicate<? super T, ? super E> finalFilterPredicate =
+        final BiPredicate<? super T, ? super E> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? (k, v) -> true
                         : filterPredicate;
@@ -320,7 +320,6 @@ public class MapUtil {
      */
     public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate) {
-
         return dropWhile(
                 sourceMap,
                 filterPredicate,
@@ -352,7 +351,7 @@ public class MapUtil {
     public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate,
                                              final Supplier<Map<T, E>> mapFactory) {
-        BiPredicate<? super T, ? super E> finalFilterPredicate =
+        final BiPredicate<? super T, ? super E> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? (k, v) -> true
                         : filterPredicate.negate();
@@ -389,7 +388,12 @@ public class MapUtil {
                         )
                 )
                 .findFirst()
-                .map(entry -> Tuple.of(entry.getKey(), entry.getValue()));
+                .map(entry ->
+                        Tuple.of(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                );
     }
 
 
@@ -407,11 +411,11 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    {@link Map} with elements to combine.
+     *    {@link Map} with elements to combine
      * @param initialValue
-     *    The initial value to start with.
+     *    The initial value to start with
      * @param accumulator
-     *    A {@link TriFunction} which combines elements.
+     *    A {@link TriFunction} which combines elements
      *
      * @return a folded value
      *
@@ -436,6 +440,36 @@ public class MapUtil {
                     return result;
                 })
                 .orElse(initialValue);
+    }
+
+
+    /**
+     *    Returns the value associated with the given {@code key}, or the result of {@code defaultValue} if the {@code key}
+     * is not contained in {@code sourceMap}.
+     *
+     * @param sourceMap
+     *    {@link Map} to search {@code key}
+     * @param key
+     *    Key to search in {@code sourceMap}
+     * @param defaultValue
+     *    {@link Supplier} that yields a default value in case no binding for {@code key} is found in {@code sourceMap}
+     *
+     * @return value related with given {@code key} is exists,
+     *         {@code defaultValue} otherwise.
+     *
+     * @throws IllegalArgumentException if {@code defaultValue} is {@code null}
+     */
+    public static <T, E> E getOrElse(final Map<? extends T, ? extends E> sourceMap,
+                                     final T key,
+                                     final Supplier<E> defaultValue) {
+        Assert.notNull(defaultValue, "defaultValue must be not null");
+        final Map<? extends T, ? extends E> finalMapToSearch =
+                isNull(sourceMap)
+                        ? Map.of()
+                        : sourceMap;
+
+        return ofNullable((E) finalMapToSearch.get(key))
+                .orElseGet(defaultValue);
     }
 
 
@@ -498,12 +532,12 @@ public class MapUtil {
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator,
                                                       final Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                       final Supplier<Map<T, E>> mapValuesFactory) {
-        Supplier<Map<R, Map<T, E>>> finalMapResultFactory =
+        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory =
                 isNull(mapResultFactory)
                         ? HashMap::new
                         : mapResultFactory;
 
-        Supplier<Map<T, E>> finalMapValuesFactory =
+        final Supplier<Map<T, E>> finalMapValuesFactory =
                 isNull(mapValuesFactory)
                         ? HashMap::new
                         : mapValuesFactory;
@@ -561,7 +595,12 @@ public class MapUtil {
     public static <T, E, R, V> Map<R, List<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
                                                         final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
                                                         final BiFunction<? super T, ? super E, ? extends V> valueMapper) {
-        return (Map) groupMap(sourceMap, discriminatorKey, valueMapper, ArrayList::new);
+        return (Map) groupMap(
+                sourceMap,
+                discriminatorKey,
+                valueMapper,
+                ArrayList::new
+        );
     }
 
 
@@ -609,7 +648,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        Supplier<Collection<V>> finalCollectionFactory =
+        final Supplier<Collection<V>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
@@ -653,7 +692,8 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
+     *                                  is {@code null}
      */
     public static <T, E, R, V> Map<R, V> groupMapReduce(final Map<? extends T, ? extends E> sourceMap,
                                                         final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
@@ -682,7 +722,7 @@ public class MapUtil {
      * @param sourceMap
      *    {@link Map} to used as source of the new one
      * @param mapFunction
-     *    {@link BiFunction} used to transform given {@link Map} elements
+     *    {@link BiFunction} used to transform given {@code sourceMap} elements
      *
      * @return {@link Map}
      *
@@ -704,7 +744,7 @@ public class MapUtil {
      * @param sourceMap
      *    {@link Map} to used as source of the new one
      * @param mapFunction
-     *    {@link BiFunction} used to transform given {@link Map} elements
+     *    {@link BiFunction} used to transform given {@code sourceMap} elements
      * @param mapFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
      *    If {@code null} then {@link HashMap}
@@ -717,7 +757,7 @@ public class MapUtil {
                                              final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
                                              final Supplier<Map<R, V>> mapFactory) {
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        Supplier<Map<R, V>> finalMapFactory =
+        final Supplier<Map<R, V>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
                         : mapFactory;
@@ -727,7 +767,11 @@ public class MapUtil {
         }
         return sourceMap.entrySet()
                 .stream()
-                .map(entry -> mapFunction.apply(entry.getKey(), entry.getValue()))
+                .map(entry ->
+                        mapFunction.apply(
+                                entry.getKey(),
+                                entry.getValue())
+                )
                 .collect(
                         toMap(
                                 t -> t._1,
@@ -753,7 +797,7 @@ public class MapUtil {
      * @param sourceMap
      *    {@link Map} to used as source of the new one
      * @param mapFunction
-     *    {@link BiFunction} used to transform given {@link Map} values
+     *    {@link BiFunction} used to transform given {@code sourceMap} values
      *
      * @return updated {@link Map}
      *
@@ -784,7 +828,7 @@ public class MapUtil {
      * @param sourceMap
      *    {@link Map} to used as source of the new one
      * @param mapFunction
-     *    {@link BiFunction} used to transform given {@link Map} values
+     *    {@link BiFunction} used to transform given {@code sourceMap} values
      * @param mapFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
      *    If {@code null} then {@link HashMap}
@@ -797,7 +841,7 @@ public class MapUtil {
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                                 final Supplier<Map<T, R>> mapFactory) {
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        Supplier<Map<T, R>> finalMapFactory =
+        final Supplier<Map<T, R>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
                         : mapFactory;
@@ -993,7 +1037,7 @@ public class MapUtil {
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator,
                                                            final Supplier<Map<T, E>> mapFactory) {
-        Supplier<Map<T, E>> finalMapFactory =
+        final Supplier<Map<T, E>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
                         : mapFactory;
@@ -1068,17 +1112,25 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap) || from > sourceMap.size() - 1) {
             return new HashMap<>();
         }
-        int finalFrom = Math.max(0, from);
-        int finalUntil = Math.min(sourceMap.size(), until);
+        final int finalFrom = Math.max(0, from);
+        final int finalUntil = Math.min(sourceMap.size(), until);
 
         int i = 0;
-        Map<T, E> result = new LinkedHashMap<>(Math.max(finalUntil - finalFrom, finalUntil - finalFrom - 1));
+        Map<T, E> result = new LinkedHashMap<>(
+                Math.max(
+                        finalUntil - finalFrom,
+                        finalUntil - finalFrom - 1
+                )
+        );
         for (var entry : sourceMap.entrySet()) {
             if (i >= finalUntil) {
                 break;
             }
             if (i >= finalFrom) {
-                result.put(entry.getKey(), entry.getValue());
+                result.put(
+                        entry.getKey(),
+                        entry.getValue()
+                );
             }
             i++;
         }
@@ -1123,11 +1175,13 @@ public class MapUtil {
         if (size >= sourceMap.size()) {
             return asList(sourceMap);
         }
-        int expectedSize = sourceMap.size() - size + 1;
+        final int expectedSize = sourceMap.size() - size + 1;
 
         List<Map<T, E>> slides = IntStream.range(0, expectedSize)
                 .mapToObj(index -> new LinkedHashMap<T, E>())
-                .collect(Collectors.toList());
+                .collect(
+                        Collectors.toList()
+                );
 
         int i = 0;
         for (var entry : sourceMap.entrySet()) {
@@ -1136,7 +1190,11 @@ public class MapUtil {
 
             int window = xCoordinate;
             while (0 <= window && size > yCoordinate) {
-                slides.get(window).put(entry.getKey(), entry.getValue());
+                slides.get(window)
+                        .put(
+                                entry.getKey(),
+                                entry.getValue()
+                        );
                 yCoordinate = slides.get(window).size();
                 window--;
             }
@@ -1180,7 +1238,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap) || 0 == size) {
             return new ArrayList<>();
         }
-        int expectedSize = 0 == sourceMap.size() % size
+        final int expectedSize = 0 == sourceMap.size() % size
                 ? sourceMap.size() / size
                 : (sourceMap.size() / size) + 1;
 
@@ -1254,7 +1312,7 @@ public class MapUtil {
     public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate,
                                              final Supplier<Map<T, E>> mapFactory) {
-        Supplier<Map<T, E>> finalMapFactory =
+        final Supplier<Map<T, E>> finalMapFactory =
                 isNull(mapFactory)
                         ? HashMap::new
                         : mapFactory;
@@ -1262,7 +1320,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
-        BiPredicate<? super T, ? super E> finalFilterPredicate =
+        final BiPredicate<? super T, ? super E> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? (k, v) -> true
                         : filterPredicate;

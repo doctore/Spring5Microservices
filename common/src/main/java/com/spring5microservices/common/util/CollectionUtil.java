@@ -117,7 +117,7 @@ public class CollectionUtil {
                                                    final Function<? super T, ? extends E> defaultFunction,
                                                    final Function<? super T, ? extends E> orElseFunction,
                                                    final Supplier<Collection<E>> collectionFactory) {
-        Supplier<Collection<E>> finalCollectionFactory =
+        final Supplier<Collection<E>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
@@ -127,7 +127,7 @@ public class CollectionUtil {
         }
         Assert.notNull(defaultFunction, "defaultFunction must be not null");
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
-        Predicate<? super T> finalFilterPredicate =
+        final Predicate<? super T> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? t -> true
                         : filterPredicate;
@@ -237,7 +237,7 @@ public class CollectionUtil {
                                                final Predicate<? super T> filterPredicate,
                                                final Function<? super T, ? extends E> mapFunction,
                                                final Supplier<Collection<E>> collectionFactory) {
-        Supplier<Collection<E>> finalCollectionFactory =
+        final Supplier<Collection<E>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
@@ -246,7 +246,7 @@ public class CollectionUtil {
             return finalCollectionFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        Predicate<? super T> finalFilterPredicate =
+        final Predicate<? super T> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? t -> true
                         : filterPredicate;
@@ -363,7 +363,7 @@ public class CollectionUtil {
     public static <T> Collection<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
                                                           final Supplier<Collection<Tuple>> collectionFactory,
                                                           final Function<? super T, ?> ...propertyExtractors) {
-        Supplier<Collection<Tuple>> finalCollectionFactory =
+        final Supplier<Collection<Tuple>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
@@ -465,8 +465,7 @@ public class CollectionUtil {
      */
     public static <T> List<T> dropWhile(final Collection<? extends T> sourceCollection,
                                         final Predicate<? super T> filterPredicate) {
-
-        return  (List<T>) dropWhile(
+        return (List<T>) dropWhile(
                 sourceCollection,
                 filterPredicate,
                 ArrayList::new
@@ -499,7 +498,7 @@ public class CollectionUtil {
     public static <T> Collection<T> dropWhile(final Collection<? extends T> sourceCollection,
                                               final Predicate<? super T> filterPredicate,
                                               final Supplier<Collection<T>> collectionFactory) {
-        Predicate<? super T> finalFilterPredicate =
+        final Predicate<? super T> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? t -> true
                         : filterPredicate.negate();
@@ -739,7 +738,7 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new HashMap<>();
         }
-        Supplier<Collection<V>> finalCollectionFactory =
+        final Supplier<Collection<V>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
@@ -784,7 +783,7 @@ public class CollectionUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
-     *         is {@code null}
+     *                                  is {@code null}
      */
     public static <T, K, V> Map<K, V> groupMapReduce(final Collection<? extends T> sourceCollection,
                                                      final Function<? super T, ? extends K> discriminatorKey,
@@ -936,8 +935,8 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection) || from > sourceCollection.size() - 1) {
             return new ArrayList<>();
         }
-        int finalFrom = Math.max(0, from);
-        int finalUntil = Math.min(sourceCollection.size(), until);
+        final int finalFrom = Math.max(0, from);
+        final int finalUntil = Math.min(sourceCollection.size(), until);
         if (sourceCollection instanceof List) {
             return ((List<T>) sourceCollection).subList(
                     finalFrom,
@@ -999,7 +998,7 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection) || 0 == size) {
             return new ArrayList<>();
         }
-        List<T> listToSlide = new ArrayList<>(
+        final List<T> listToSlide = new ArrayList<>(
                 getCollectionKeepingInternalOrdination(sourceCollection)
         );
         if (size >= listToSlide.size()) {
@@ -1053,10 +1052,10 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection) || 0 == size) {
             return new ArrayList<>();
         }
-        List<T> listToSplit = new ArrayList<>(
+        final List<T> listToSplit = new ArrayList<>(
                 getCollectionKeepingInternalOrdination(sourceCollection)
         );
-        int expectedSize = 0 == listToSplit.size() % size
+        final int expectedSize = 0 == listToSplit.size() % size
                 ? listToSplit.size() / size
                 : (listToSplit.size() / size) + 1;
 
@@ -1090,9 +1089,9 @@ public class CollectionUtil {
      * @return {@link List}
      */
     public static <T> List<T> takeWhile(final Collection<? extends T> sourceCollection,
-                                              final Predicate<? super T> filterPredicate) {
+                                        final Predicate<? super T> filterPredicate) {
 
-        return  (List<T>) takeWhile(
+        return (List<T>) takeWhile(
                 sourceCollection,
                 filterPredicate,
                 ArrayList::new
@@ -1125,7 +1124,7 @@ public class CollectionUtil {
     public static <T> Collection<T> takeWhile(final Collection<? extends T> sourceCollection,
                                               final Predicate<? super T> filterPredicate,
                                               final Supplier<Collection<T>> collectionFactory) {
-        Supplier<Collection<T>> finalCollectionFactory =
+        final Supplier<Collection<T>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
@@ -1133,7 +1132,7 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
-        Predicate<? super T> finalFilterPredicate =
+        final Predicate<? super T> finalFilterPredicate =
                 isNull(filterPredicate)
                         ? t -> true
                         : filterPredicate;
@@ -1181,7 +1180,7 @@ public class CollectionUtil {
             return new ArrayList<>();
         }
         int sizeOfLongestSubCollection = -1;
-        List<Iterator<T>> iteratorList = new ArrayList<>(sourceCollection.size());
+        final List<Iterator<T>> iteratorList = new ArrayList<>(sourceCollection.size());
         for (Collection<T> c: sourceCollection) {
             if (sizeOfLongestSubCollection < c.size()) {
                 sizeOfLongestSubCollection = c.size();
@@ -1265,10 +1264,13 @@ public class CollectionUtil {
                 CollectionUtils.isEmpty(sourceRightCollection)) {
             return new ArrayList<>();
         }
-        int minCollectionsSize = Math.min(sourceLeftCollection.size(), sourceRightCollection.size());
+        final int minCollectionsSize = Math.min(
+                sourceLeftCollection.size(),
+                sourceRightCollection.size()
+        );
 
-        Iterator<? extends T> leftIterator = sourceLeftCollection.iterator();
-        Iterator<? extends E> rightIterator = sourceRightCollection.iterator();
+        final Iterator<? extends T> leftIterator = sourceLeftCollection.iterator();
+        final Iterator<? extends E> rightIterator = sourceRightCollection.iterator();
         List<Tuple2<T, E>> result = new ArrayList<>();
         for (int i = 0; i < minCollectionsSize; i++) {
             result.add(
@@ -1332,7 +1334,7 @@ public class CollectionUtil {
                                                    final Collection<E> sourceRightCollection,
                                                    final T defaultLeftElement,
                                                    final E defaultRightElement) {
-        int maxCollectionSize = Math.max(
+        final int maxCollectionSize = Math.max(
                 CollectionUtils.isEmpty(sourceLeftCollection)
                         ? 0
                         : sourceLeftCollection.size(),
@@ -1340,14 +1342,14 @@ public class CollectionUtil {
                         ? 0
                         : sourceRightCollection.size()
         );
-        Iterator<T> leftIterator = ofNullable(sourceLeftCollection)
+        final Iterator<T> leftIterator = ofNullable(sourceLeftCollection)
                 .map(Collection::iterator)
                 .orElse(null);
-        Iterator<E> rightIterator = ofNullable(sourceRightCollection)
+        final Iterator<E> rightIterator = ofNullable(sourceRightCollection)
                 .map(Collection::iterator)
                 .orElse(null);
-        List<Tuple2<T, E>> result = new ArrayList<>();
 
+        List<Tuple2<T, E>> result = new ArrayList<>();
         for (int i = 0; i < maxCollectionSize; i++) {
             result.add(
                     Tuple.of(
@@ -1412,7 +1414,7 @@ public class CollectionUtil {
      */
     private static <T> Collection<T> getCollectionKeepingInternalOrdination(Collection<T> sourceCollection) {
         if (sourceCollection instanceof PriorityQueue) {
-            PriorityQueue<T> cloneQueue = new PriorityQueue<>(sourceCollection);
+            final PriorityQueue<T> cloneQueue = new PriorityQueue<>(sourceCollection);
             List<T> result = new ArrayList<>(sourceCollection.size());
             for (int i = 0; i < sourceCollection.size(); i++) {
                 result.add(cloneQueue.poll());

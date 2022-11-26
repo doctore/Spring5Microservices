@@ -77,14 +77,14 @@ public class NumberUtil {
         if (isNull(two)) {
             return 1;
         }
-        RoundingMode finalRoundingMode = isNull(roundingMode)
+        final RoundingMode finalRoundingMode = isNull(roundingMode)
                 ? RoundingMode.HALF_UP
                 : roundingMode;
-        BigDecimal oneWithProvidedPrecision = one.setScale(
+        final BigDecimal oneWithProvidedPrecision = one.setScale(
                 numberOfDecimals,
                 finalRoundingMode
         );
-        BigDecimal twoWithProvidedPrecision = two.setScale(
+        final BigDecimal twoWithProvidedPrecision = two.setScale(
                 numberOfDecimals,
                 finalRoundingMode
         );

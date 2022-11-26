@@ -69,12 +69,13 @@ public class StringUtil {
         Assert.isTrue(0 < sizeOfEveryChunk, "sizeOfEveryChunk must be a positive value");
         return ofNullable(sourceString)
                 .map(s -> {
-                    String finalPutInTheMiddle = Objects.isNull(putInTheMiddle) || putInTheMiddle.trim().isEmpty()
-                            ? DEFAULT_MIDDLE_STRING_ABBREVIATION
-                            : putInTheMiddle;
+                    final String finalPutInTheMiddle =
+                            Objects.isNull(putInTheMiddle) || putInTheMiddle.trim().isEmpty()
+                                    ? DEFAULT_MIDDLE_STRING_ABBREVIATION
+                                    : putInTheMiddle;
 
                     if (sourceString.length() > (2 * sizeOfEveryChunk)) {
-                        int endPos = sourceString.length() - sizeOfEveryChunk;
+                        final int endPos = sourceString.length() - sizeOfEveryChunk;
 
                         return sourceString.substring(0, sizeOfEveryChunk)
                                 + finalPutInTheMiddle
@@ -131,7 +132,7 @@ public class StringUtil {
                     if (!hasLength(stringToFind)) {
                         return ss;
                     }
-                    int lastIndex = ss.lastIndexOf(stringToFind);
+                    final int lastIndex = ss.lastIndexOf(stringToFind);
                     return -1 == lastIndex
                             ? ss
                             : ss.substring(0, lastIndex);
@@ -286,7 +287,7 @@ public class StringUtil {
         if (1 > size || size > sourceString.length()) {
             return asList(sourceString);
         }
-        ArrayList<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         for (int i = 0; i < sourceString.length(); i += size) {
             result.add(
                     sourceString.substring(
@@ -415,7 +416,7 @@ public class StringUtil {
                                           final int chunkLimit,
                                           final Function<String, ? extends T> valueExtractor,
                                           final Supplier<Collection<T>> collectionFactory) {
-        Supplier<Collection<T>> finalCollectionFactory =
+        final Supplier<Collection<T>> finalCollectionFactory =
                 isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
@@ -425,7 +426,7 @@ public class StringUtil {
                     if (Objects.isNull(valueExtractor)) {
                         return null;
                     }
-                    String[] splitString =
+                    final String[] splitString =
                             0 >= chunkLimit
                                     ? s.split(
                                             null == separator
@@ -521,7 +522,7 @@ public class StringUtil {
     public static Collection<String> splitMultilevel(final String source,
                                                      final Supplier<Collection<String>> collectionFactory,
                                                      final String ...separators) {
-        Supplier<Collection<String>> finalCollectionFactory =
+        final Supplier<Collection<String>> finalCollectionFactory =
                 Objects.isNull(collectionFactory)
                         ? ArrayList::new
                         : collectionFactory;
