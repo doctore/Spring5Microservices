@@ -181,7 +181,8 @@ public class JwsUtil {
 
         } catch (ParseException e) {
             throw new IllegalArgumentException(
-                    format("The was a problem trying to figure out the type of token: %s", token),
+                    format("The was a problem trying to figure out the type of token: %s",
+                            token),
                     e
             );
         }
@@ -302,7 +303,8 @@ public class JwsUtil {
 
         } catch (JOSEException | ParseException e) {
             throw new TokenInvalidException(
-                    format("The was an error getting information included in JWS token: %s", jwsToken),
+                    format("The was an error getting information included in JWS token: %s",
+                            jwsToken),
                     e
             );
         }
@@ -326,7 +328,8 @@ public class JwsUtil {
             return new MACSigner(signatureSecret);
         }
         throw new IllegalArgumentException(
-                format("It was not possible to find a suitable signer for the signature algorithm: %s ", signatureAlgorithm)
+                format("It was not possible to find a suitable signer for the signature algorithm: %s ",
+                        signatureAlgorithm)
         );
     }
 
@@ -350,7 +353,8 @@ public class JwsUtil {
             return new MACVerifier(signatureSecret);
         }
         throw new IllegalArgumentException(
-                format("It was not possible to find a suitable verifier for the signature algorithm: %s ", signatureAlgorithm)
+                format("It was not possible to find a suitable verifier for the signature algorithm: %s ",
+                        signatureAlgorithm)
         );
     }
 

@@ -189,7 +189,8 @@ public class PizzaConverterTest {
     }
 
 
-    private void checkProperties(Pizza model, PizzaDto dto) {
+    private void checkProperties(Pizza model,
+                                 PizzaDto dto) {
         assertNotNull(model);
         assertNotNull(dto);
         assertEquals(model.getId(), dto.getId());

@@ -236,7 +236,8 @@ public class JweUtil {
 
         } catch (JOSEException e) {
             throw new IllegalArgumentException(
-                    format("The was a problem trying to encrypt the JWS token: %s", jwsToken),
+                    format("The was a problem trying to encrypt the JWS token: %s",
+                            jwsToken),
                     e
             );
         }
@@ -277,7 +278,8 @@ public class JweUtil {
                 );
             }
             throw new TokenInvalidException(
-                    format("The was a problem trying to decrypt the JWE token: %s", jweToken),
+                    format("The was a problem trying to decrypt the JWE token: %s",
+                            jweToken),
                     e
             );
         }

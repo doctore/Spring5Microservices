@@ -324,7 +324,8 @@ public class GlobalErrorWebExceptionHandler {
                     format("There was an type mismatch error in %s. The provided value was %s and required type is %s",
                             exception.getMethodParameter(),
                             ex.getValue(),
-                            ex.getRequiredType())
+                            ex.getRequiredType()
+                    )
             );
         }
         else {

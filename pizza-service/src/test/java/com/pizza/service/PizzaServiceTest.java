@@ -5,7 +5,6 @@ import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
-import com.pizza.repository.IngredientRepository;
 import com.pizza.repository.PizzaRepository;
 import com.pizza.util.PageUtil;
 import com.pizza.util.converter.PizzaConverter;
@@ -43,19 +42,20 @@ import static org.mockito.Mockito.when;
 public class PizzaServiceTest {
 
     @Mock
-    private IngredientRepository mockIngredientRepository;
+    private PizzaRepository mockPizzaRepository;
 
     @Mock
     private PizzaConverter mockPizzaConverter;
 
     @Mock
-    private PizzaRepository mockPizzaRepository;
+    private IngredientService mockIngredientService;
 
     private PizzaService service;
 
+
     @BeforeEach
     public void init() {
-        service = new PizzaService(mockIngredientRepository, mockPizzaConverter, mockPizzaRepository);
+        service = new PizzaService(mockPizzaRepository, mockPizzaConverter, mockIngredientService);
     }
 
 
@@ -82,11 +82,13 @@ public class PizzaServiceTest {
                                      Optional<PizzaDto> converterResult,
                                      Optional<PizzaDto> expectedResult) {
         if (null != name) {
-            when(mockPizzaRepository.findWithIngredientsByName(PizzaEnum.getFromDatabaseValue(name).get())).thenReturn(repositoryResult);
+            when(mockPizzaRepository.findWithIngredientsByName(PizzaEnum.getFromDatabaseValue(name).get()))
+                    .thenReturn(repositoryResult);
         }
-        if (repositoryResult.isPresent()) {
-            when(mockPizzaConverter.fromModelToOptionalDto(repositoryResult.get())).thenReturn(converterResult);
-        }
+        repositoryResult.ifPresent(pizza ->
+                when(mockPizzaConverter.fromModelToOptionalDto(pizza))
+                        .thenReturn(converterResult)
+        );
         Optional<PizzaDto> result = service.findByName(name);
 
         assertEquals(expectedResult, result);
@@ -126,8 +128,10 @@ public class PizzaServiceTest {
                                                   Page<Pizza> repositoryResult,
                                                   List<PizzaDto> converterResult,
                                                   Page<PizzaDto> expectedResult) {
-        when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(PageUtil.buildPageRequest(page, size, sort))).thenReturn(repositoryResult);
-        when(mockPizzaConverter.fromModelsToDtos(repositoryResult.getContent())).thenReturn(converterResult);
+        when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(PageUtil.buildPageRequest(page, size, sort)))
+                .thenReturn(repositoryResult);
+        when(mockPizzaConverter.fromModelsToDtos(repositoryResult.getContent()))
+                .thenReturn(converterResult);
 
         Page<PizzaDto> result = service.findPageWithIngredients(page, size, sort);
 
@@ -161,16 +165,18 @@ public class PizzaServiceTest {
                                Optional<PizzaDto> expectedResult) {
         when(mockPizzaConverter.fromDtoToOptionalModel(pizzaDto)).thenReturn(converterToModelResult);
         when(mockPizzaConverter.fromModelToOptionalDto(repositoryResult)).thenReturn(converterToDtoResult);
-        if (converterToModelResult.isPresent()) {
-            when(mockPizzaRepository.save(converterToModelResult.get())).thenReturn(repositoryResult);
-        }
+        converterToModelResult.ifPresent(pizza ->
+                when(mockPizzaRepository.save(pizza))
+                        .thenReturn(repositoryResult)
+        );
 
         Optional<PizzaDto> result = service.save(pizzaDto);
 
         assertEquals(expectedResult, result);
-        if (converterToModelResult.isPresent()) {
-            verify(mockIngredientRepository, times(1)).saveAll(converterToModelResult.get().getIngredients());
-        }
+        converterToModelResult.ifPresent(pizza ->
+                verify(mockIngredientService, times(1))
+                        .saveAll(pizza.getIngredients())
+        );
     }
 
 }

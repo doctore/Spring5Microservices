@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 
+import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
@@ -46,6 +48,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * Rest services to work with {@link Pizza}
  */
 @AllArgsConstructor
+@Log4j2
 @RestController
 @RequestMapping(RestRoutes.PIZZA.ROOT)
 @Validated
@@ -53,7 +56,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class PizzaController {
 
     @Lazy
-    private final PizzaService pizzaService;
+    private final PizzaService service;
 
 
     /**
@@ -113,14 +116,20 @@ public class PizzaController {
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> create(@RequestBody @Valid final PizzaDto pizzaDto) {
-        return Mono.just(pizzaService.save(pizzaDto)
-                                     .map(p ->
-                                             new ResponseEntity<>(
-                                                     p,
-                                                     CREATED
-                                             )
-                                     )
-                                     .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY)));
+        log.info(
+                format("Creating the pizza: %s",
+                        pizzaDto)
+        );
+        return Mono.just(
+                service.save(pizzaDto)
+                        .map(p ->
+                                new ResponseEntity<>(
+                                        p,
+                                        CREATED
+                                )
+                        )
+                        .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY))
+        );
     }
 
 
@@ -180,14 +189,20 @@ public class PizzaController {
     @GetMapping("/{name}")
     @RoleAdminOrUser
     public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) final String name) {
-        return Mono.just(pizzaService.findByName(name)
-                                     .map(p ->
-                                             new ResponseEntity<>(
-                                                     p,
-                                                     OK
-                                             )
-                                     )
-                                     .orElseGet(() -> new ResponseEntity<>(NOT_FOUND)));
+        log.info(
+                format("Searching the pizza with name: %s",
+                        name)
+        );
+        return Mono.just(
+                service.findByName(name)
+                        .map(p ->
+                                new ResponseEntity<>(
+                                        p,
+                                        OK
+                                )
+                )
+                .orElseGet(() -> new ResponseEntity<>(NOT_FOUND))
+        );
     }
 
 
@@ -245,8 +260,12 @@ public class PizzaController {
     @RoleAdminOrUser
     public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") @PositiveOrZero final int page,
                                                         @RequestParam(value = "size") @Positive final int size) {
+        log.info(
+                format("Returning the page of pizzas related with page: %d and size: %d",
+                        page, size)
+        );
         return Mono.just(
-                pizzaService.findPageWithIngredients(
+                service.findPageWithIngredients(
                         page,
                         size,
                         null
@@ -312,14 +331,20 @@ public class PizzaController {
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public Mono<ResponseEntity<PizzaDto>> update(@RequestBody @Valid final PizzaDto pizzaDto) {
-        return Mono.just(pizzaService.save(pizzaDto)
-                   .map(p ->
-                           new ResponseEntity<>(
-                                   p,
-                                   OK
-                           )
-                   )
-                   .orElseGet(() -> new ResponseEntity<>(NOT_FOUND)));
+        log.info(
+                format("Updating the pizza: %s",
+                        pizzaDto)
+        );
+        return Mono.just(
+                service.save(pizzaDto)
+                        .map(p ->
+                                new ResponseEntity<>(
+                                        p,
+                                        OK
+                                )
+                        )
+                        .orElseGet(() -> new ResponseEntity<>(NOT_FOUND))
+        );
     }
 
 }

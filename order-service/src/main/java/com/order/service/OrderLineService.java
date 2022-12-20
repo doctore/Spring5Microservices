@@ -25,10 +25,10 @@ import static java.util.stream.Collectors.toMap;
 public class OrderLineService {
 
     @Lazy
-    private final OrderLineDao orderLineDao;
+    private final OrderLineDao dao;
 
     @Lazy
-    private final OrderLineConverter orderLineConverter;
+    private final OrderLineConverter converter;
 
 
     /**
@@ -49,13 +49,13 @@ public class OrderLineService {
                 .map(dtos -> {
                     Assert.notNull(orderId, "OrderId cannot be null");
 
-                    Collection<OrderLine> orderLines = orderLineConverter.fromDtosToModels(
+                    Collection<OrderLine> orderLines = converter.fromDtosToModels(
                             dtos,
                             orderId
                     );
-                    orderLineDao.saveAll(orderLines);
+                    dao.saveAll(orderLines);
 
-                    List<OrderLineDto> orderLineDtosPersisted = orderLineConverter.fromModelsToDtos(orderLines);
+                    List<OrderLineDto> orderLineDtosPersisted = converter.fromModelsToDtos(orderLines);
                     mergePizzaInformation(
                             orderLineDtos,
                             orderLineDtosPersisted

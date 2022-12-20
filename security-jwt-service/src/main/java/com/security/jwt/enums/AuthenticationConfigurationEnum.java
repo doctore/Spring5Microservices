@@ -32,12 +32,15 @@ public enum AuthenticationConfigurationEnum {
     public String getClientId() {
         return clientId;
     }
+
     public Class<? extends IAuthenticationGenerator> getAuthenticationGeneratorClass() {
         return authenticationGeneratorClass;
     }
+
     public Class<? extends IUserService> getUserServiceClass() {
         return userServiceClass;
     }
+
 
     /**
      * Get the {@link AuthenticationConfigurationEnum} which clientId matches with the given one.
@@ -51,8 +54,19 @@ public enum AuthenticationConfigurationEnum {
      */
     public static AuthenticationConfigurationEnum getByClientId(@Nullable String clientId) {
         return ofNullable(clientId)
-                .flatMap(id -> Arrays.stream(AuthenticationConfigurationEnum.values()).filter(e -> clientId.equals(e.clientId)).findFirst())
-                .orElseThrow(() -> new ClientNotFoundException(format("The given clientId: %s was not found in AuthenticationGeneratorEnum", clientId)));
+                .flatMap(id ->
+                        Arrays.stream(AuthenticationConfigurationEnum.values())
+                                .filter(e ->
+                                        clientId.equals(e.clientId)
+                                )
+                                .findFirst()
+                )
+                .orElseThrow(() ->
+                        new ClientNotFoundException(
+                                format("The given clientId: %s was not found in AuthenticationGeneratorEnum",
+                                        clientId)
+                        )
+                );
     }
 
 }

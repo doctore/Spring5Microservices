@@ -360,7 +360,7 @@ The following microservices have a well documented Rest API:
 * [pizza-service](#pizza-service)
 * [order-service](#order-service)
  
-Swagger has been used in all cases, however two different libraries have been included depending of the main Spring module of every microservice:
+Swagger has been used in all cases, however two different libraries have been included:
 
 * **SpringFox** in [gateway-server](#gateway-server) to unify the webpage used to access to the rest of documented microservices.
 * **Springdoc-OpenApi** in every documented microservice.

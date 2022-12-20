@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 
+import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
@@ -40,13 +42,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * Rest services to work with {@link Order}
  */
 @AllArgsConstructor
+@Log4j2
 @RestController
 @RequestMapping(RestRoutes.ORDER.ROOT)
 @Validated
 public class OrderController {
 
     @Lazy
-    private final OrderService orderService;
+    private final OrderService service;
 
 
     /**
@@ -106,7 +109,11 @@ public class OrderController {
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public ResponseEntity<OrderDto> create(@RequestBody @Valid final OrderDto orderDto) {
-        return orderService.save(orderDto)
+        log.info(
+                format("Creating the order: %s",
+                        orderDto)
+        );
+        return service.save(orderDto)
                    .map(p ->
                            new ResponseEntity<>(
                                    p,
@@ -173,7 +180,11 @@ public class OrderController {
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
     @RoleAdminOrUser
     public ResponseEntity<OrderDto> findByIdWithOrderLines(@PathVariable @Positive final Integer id) {
-        return orderService.findByIdWithOrderLines(id)
+        log.info(
+                format("Searching order with identifier: %d",
+                        id)
+        );
+        return service.findByIdWithOrderLines(id)
                    .map(p ->
                            new ResponseEntity<>(
                                    p,
@@ -241,7 +252,11 @@ public class OrderController {
     @Transactional(rollbackFor = Exception.class)
     @RoleAdmin
     public ResponseEntity<OrderDto> update(@RequestBody @Valid final OrderDto orderDto) {
-        return orderService.save(orderDto)
+        log.info(
+                format("Updating the order: %s",
+                        orderDto)
+        );
+        return service.save(orderDto)
                    .map(p ->
                            new ResponseEntity<>(
                                    p,

@@ -21,10 +21,10 @@ import static java.util.Optional.ofNullable;
 public class OrderService {
 
     @Lazy
-    private OrderDao orderDao;
+    private OrderDao dao;
 
     @Lazy
-    private OrderConverter orderConverter;
+    private OrderConverter converter;
 
     @Lazy
     private OrderLineService orderLineService;
@@ -42,7 +42,7 @@ public class OrderService {
      * @throws DataAccessException if there is an error executing the query
      */
     public Optional<OrderDto> findByIdWithOrderLines(final Integer id) {
-        return orderDao.fetchToOrderDtoByIdWithOrderLineDto(id);
+        return dao.fetchToOrderDtoByIdWithOrderLineDto(id);
     }
 
 
@@ -61,7 +61,7 @@ public class OrderService {
      */
     public Set<OrderDto> findPageOrderedByCreatedWithOrderLines(final int page,
                                                                 final int size) {
-        return orderDao.fetchPageToOrderDtoByIdWithOrderLineDto(
+        return dao.fetchPageToOrderDtoByIdWithOrderLineDto(
                 page,
                 size
         );
@@ -78,14 +78,14 @@ public class OrderService {
      */
     public Optional<OrderDto> save(final OrderDto orderDto) {
         return ofNullable(orderDto)
-                .flatMap(orderConverter::fromDtoToOptionalModel)
+                .flatMap(converter::fromDtoToOptionalModel)
                 .flatMap(order -> {
-                    orderDao.save(order);
+                    dao.save(order);
                     List<OrderLineDto> orderLineDtos = orderLineService.saveAll(
                             orderDto.getOrderLines(),
                             order.getId()
                     );
-                    Optional<OrderDto> orderDtoPersisted = orderConverter.fromModelToOptionalDto(order);
+                    Optional<OrderDto> orderDtoPersisted = converter.fromModelToOptionalDto(order);
                     orderDtoPersisted.ifPresent(dto -> dto.setOrderLines(orderLineDtos));
                     return orderDtoPersisted;
                 });

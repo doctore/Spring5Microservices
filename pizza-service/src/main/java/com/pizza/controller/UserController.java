@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.Size;
 
+import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -34,6 +36,7 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
  * Rest services to work with users
  */
 @AllArgsConstructor
+@Log4j2
 @RestController
 @RequestMapping(RestRoutes.USER.ROOT)
 @Validated
@@ -100,6 +103,10 @@ public class UserController {
     @PostMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @RoleAdmin
     public Mono<ResponseEntity<String>> addToBlacklist(@PathVariable @Size(min = 1) final String username) {
+        log.info(
+                format("Adding to the blacklist the username: %s",
+                        username)
+        );
         return userBlackListCacheService.put(username)
                 ? Mono.just(
                         new ResponseEntity<>(
@@ -167,6 +174,10 @@ public class UserController {
     @DeleteMapping(RestRoutes.USER.BLACKLIST + "/{username}")
     @RoleAdmin
     public Mono<ResponseEntity<String>> removeFromBlacklist(@PathVariable @Size(min = 1) final String username) {
+        log.info(
+                format("Removing from the blacklist the username: %s",
+                        username)
+        );
         return userBlackListCacheService.remove(username)
                 ? Mono.just(
                         new ResponseEntity<>(

@@ -61,8 +61,7 @@ public class SecurityService {
                     if (!userService.passwordsMatch(password, userDetails)) {
                         throw new UnauthorizedException(
                                 format("The password given for the username: %s does not mismatch",
-                                        username
-                                )
+                                        username)
                         );
                     }
                     return authenticationService.getAuthenticationInformation(clientId, userDetails);

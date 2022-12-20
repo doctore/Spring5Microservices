@@ -14,16 +14,32 @@ import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.sql.RelationalPathBase;
 import com.querydsl.sql.SQLExpressions;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
 @Repository
 public interface IngredientRepository extends ExtendedQueryDslJpaRepository<Ingredient, Integer>, QuerydslPredicateExecutor<Ingredient> {
+
+    /**
+     * Return the {@link Ingredient}s contained in the {@link Pizza}'s identifier {@code pizzaId}
+     *
+     * @param pizzaId
+     *   {@link Pizza#getId()}
+     *
+     * @return {@link Set} of {@link Ingredient}
+     */
+    @Query(value = "SELECT DISTINCT i FROM Pizza p JOIN p.ingredients i WHERE p.id = :pizzaId")
+    Set<Ingredient> findByPizzaId(@Nullable @Param("pizzaId") Integer pizzaId);
+
 
     /**
      * Return the {@link Ingredient#getName()} with its more expensive {@link Pizza#getName()}

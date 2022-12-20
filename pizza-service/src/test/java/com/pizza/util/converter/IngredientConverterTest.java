@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 
 import static com.pizza.TestDataFactory.buildIngredient;
 import static com.pizza.TestDataFactory.buildIngredientDto;
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = IngredientConverterImpl.class)
@@ -181,7 +180,8 @@ public class IngredientConverterTest {
     }
 
 
-    private void checkProperties(Ingredient model, IngredientDto dto) {
+    private void checkProperties(Ingredient model,
+                                 IngredientDto dto) {
         assertNotNull(model);
         assertNotNull(dto);
         assertEquals(model.getId(), dto.getId());

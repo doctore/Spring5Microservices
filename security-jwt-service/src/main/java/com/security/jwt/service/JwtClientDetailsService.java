@@ -49,8 +49,7 @@ public class JwtClientDetailsService implements ReactiveUserDetailsService {
                             .orElseThrow(() ->
                                     new ClientNotFoundException(
                                             format("The given clientId: %s was not found in database",
-                                                    clientId
-                                            )
+                                                    clientId)
                                     )
                             )
                 );

@@ -6,7 +6,6 @@ import com.security.jwt.service.SecurityService;
 import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
-import com.spring5microservices.common.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,10 +16,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,18 +26,19 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
+import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @AllArgsConstructor
+@Log4j2
 @RestController
 @RequestMapping(value = RestRoutes.SECURITY.ROOT)
 @Validated
-@Log4j2
-public class SecurityController {
+public class SecurityController extends BaseController {
 
     @Lazy
-    private final SecurityService securityService;
+    private final SecurityService service;
 
 
     /**
@@ -102,9 +98,13 @@ public class SecurityController {
     )
     @PostMapping(value = RestRoutes.SECURITY.LOGIN)
     public Mono<ResponseEntity<AuthenticationInformationDto>> login(@RequestBody @Valid final AuthenticationRequestDto authenticationRequestDto) {
+        log.info(
+                format("Requesting login with: %s",
+                        authenticationRequestDto)
+        );
         return getPrincipal()
                 .map(userDetails ->
-                        securityService.login(
+                        service.login(
                                 userDetails.getUsername(),
                                 authenticationRequestDto.getUsername(),
                                 authenticationRequestDto.getPassword()
@@ -177,9 +177,13 @@ public class SecurityController {
     )
     @PostMapping(value = RestRoutes.SECURITY.REFRESH)
     public Mono<ResponseEntity<AuthenticationInformationDto>> refresh(@RequestBody @Size(min = 1) final String refreshToken) {
+        log.info(
+                format("Requesting refresh action using the provided token: %s",
+                        refreshToken)
+        );
         return getPrincipal()
                 .map(userDetails ->
-                        securityService.refresh(
+                        service.refresh(
                                 refreshToken,
                                 userDetails.getUsername()
                         )
@@ -241,31 +245,20 @@ public class SecurityController {
     )
     @PostMapping(RestRoutes.SECURITY.AUTHORIZATION_INFO)
     public Mono<ResponseEntity<UsernameAuthoritiesDto>> authorizationInformation(@RequestBody @Size(min = 1) final String accessToken) {
+        log.info(
+                format("Extracting authorization information of the token: %s",
+                        accessToken)
+        );
         return getPrincipal()
                 .map(userDetails ->
                         new ResponseEntity<>(
-                                securityService.getAuthorizationInformation(
+                                service.getAuthorizationInformation(
                                         accessToken,
                                         userDetails.getUsername()
                                 ),
                                 OK
                         )
                 );
-    }
-
-
-    /**
-     * Get the authenticated {@link UserDetails} to know the application is trying to use the provided web services.
-     *
-     * @return {@link UserDetails}
-     *
-     * @throws UnauthorizedException if the given {@code clientId} does not exist in database
-     */
-    private Mono<UserDetails> getPrincipal() {
-        return ReactiveSecurityContextHolder.getContext()
-                .map(SecurityContext::getAuthentication)
-                .map(Authentication::getPrincipal)
-                .cast(UserDetails.class);
     }
 
 }

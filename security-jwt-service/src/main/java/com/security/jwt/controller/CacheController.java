@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +25,11 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @AllArgsConstructor
+@Log4j2
 @RestController
 @RequestMapping(value = RestRoutes.CACHE.ROOT)
 @Validated
-public class CacheController {
+public class CacheController extends BaseController {
 
     @Lazy
     private final JwtClientDetailsCacheService jwtClientDetailsCacheService;
@@ -70,6 +72,7 @@ public class CacheController {
     )
     @PutMapping(value = RestRoutes.CACHE.CLEAR)
     public Mono<ResponseEntity> clear() {
+        log.info("Cleaning cache");
         return jwtClientDetailsCacheService.clear()
                 ? Mono.just(
                         new ResponseEntity<>(OK)

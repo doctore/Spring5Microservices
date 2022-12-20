@@ -4,7 +4,6 @@ import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
-import com.pizza.repository.IngredientRepository;
 import com.pizza.repository.PizzaRepository;
 import com.pizza.util.PageUtil;
 import com.pizza.util.converter.PizzaConverter;
@@ -25,13 +24,13 @@ import static java.util.Optional.ofNullable;
 public class PizzaService {
 
     @Lazy
-    private final IngredientRepository ingredientRepository;
+    private final PizzaRepository repository;
 
     @Lazy
-    private final PizzaConverter pizzaConverter;
+    private final PizzaConverter converter;
 
     @Lazy
-    private final PizzaRepository pizzaRepository;
+    private final IngredientService ingredientService;
 
 
     /**
@@ -45,8 +44,8 @@ public class PizzaService {
     public Optional<PizzaDto> findByName(final String name) {
         return ofNullable(name)
                 .flatMap(PizzaEnum::getFromDatabaseValue)
-                .flatMap(pizzaRepository::findWithIngredientsByName)
-                .flatMap(pizzaConverter::fromModelToOptionalDto);
+                .flatMap(repository::findWithIngredientsByName)
+                .flatMap(converter::fromModelToOptionalDto);
     }
 
 
@@ -65,13 +64,13 @@ public class PizzaService {
     public Page<PizzaDto> findPageWithIngredients(final int page,
                                                   final int size,
                                                   final Sort sort) {
-        Page<Pizza> pizzaPage = pizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
+        Page<Pizza> pizzaPage = repository.findPageWithIngredientsWithoutInMemoryPagination(
                 PageUtil.buildPageRequest(page,size,sort)
         );
         return ofNullable(pizzaPage)
                 .map(p ->
                         new PageImpl<>(
-                                pizzaConverter.fromModelsToDtos(p.getContent()),
+                                converter.fromModelsToDtos(p.getContent()),
                                 pizzaPage.getPageable(),
                                 pizzaPage.getTotalElements()
                         )
@@ -92,14 +91,14 @@ public class PizzaService {
      */
     public Optional<PizzaDto> save(final PizzaDto pizzaDto) {
         return ofNullable(pizzaDto)
-                .flatMap(pizzaConverter::fromDtoToOptionalModel)
+                .flatMap(converter::fromDtoToOptionalModel)
                 .map(p -> {
                     if (null != p.getIngredients()) {
-                        ingredientRepository.saveAll(p.getIngredients());
+                        ingredientService.saveAll(p.getIngredients());
                     }
-                    return pizzaRepository.save(p);
+                    return repository.save(p);
                 })
-                .flatMap(pizzaConverter::fromModelToOptionalDto);
+                .flatMap(converter::fromModelToOptionalDto);
     }
 
 }

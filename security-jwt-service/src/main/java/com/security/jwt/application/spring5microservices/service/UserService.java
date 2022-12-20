@@ -21,7 +21,7 @@ import static java.util.Optional.ofNullable;
 public class UserService implements IUserService {
 
     @Lazy
-    private final UserRepository userRepository;
+    private final UserRepository repository;
 
     @Lazy
     private final PasswordEncoder passwordEncoder;
@@ -41,7 +41,7 @@ public class UserService implements IUserService {
     @Override
     public UserDetails loadUserByUsername(final String username) {
         return ofNullable(username)
-                .flatMap(userRepository::findByUsername)
+                .flatMap(repository::findByUsername)
                 .map(u ->  {
                     new AccountStatusUserDetailsChecker()
                             .check(u);
