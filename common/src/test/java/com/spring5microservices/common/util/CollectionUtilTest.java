@@ -9,7 +9,6 @@ import com.spring5microservices.common.collection.tuple.Tuple3;
 import com.spring5microservices.common.collection.tuple.Tuple4;
 import com.spring5microservices.common.collection.tuple.Tuple5;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -161,19 +161,63 @@ public class CollectionUtilTest {
     }
 
 
-    @Test
-    @DisplayName("asSet: when null is given then new empty set is returned")
-    public void asSet_whenNullIsGiven_thenNewEmptySetIsReturned() {
-        Set<Object> result = asSet(null);
-        assertEquals(result, new LinkedHashSet<>());
+    static Stream<Arguments> asSetNoSetFactoryTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6, 6, 2);
+        Set<Integer> emptySet = new LinkedHashSet<>();
+        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(intsList);
+        return Stream.of(
+                //@formatter:off
+                //            elements,    expectedResult
+                Arguments.of( null,        emptySet ),
+                Arguments.of( List.of(),   emptySet ),
+                Arguments.of( intsList,    expectedAllIntsResultSet )
+        ); //@formatter:on
     }
 
 
-    @Test
-    @DisplayName("asSet: when several parameters are given then new set is returned with provided parameters")
-    public void asSet_whenSeveralParametersAreGiven_thenNewSetWithGivenParametersIsReturned() {
-        Set<Integer> result = asSet(2, 5, 8, 9, 11);
-        assertEquals(result, new LinkedHashSet<>(asList(2, 5, 8, 9, 11)));
+    @ParameterizedTest
+    @MethodSource("asSetNoSetFactoryTestCases")
+    @DisplayName("asSet: without set factory test cases")
+    public void asSetNoSetFactory_testCases(List<Integer> elements,
+                                            Set<Integer> expectedResult) {
+        Integer[] finalElements =
+                null == elements
+                        ? null
+                        : elements.toArray(new Integer[0]);
+
+        assertEquals(expectedResult, asSet(finalElements));
+    }
+
+
+    static Stream<Arguments> asSetAllParametersTestCases() {
+        List<String> stringList = List.of("A", "A", "B", "C", "D", "C");
+        Supplier<Set<String>> setFactory = HashSet::new;
+
+        Set<String> emptySet = new HashSet<>();
+        Set<String> expectedAllStringResultSet = new LinkedHashSet<>(stringList);
+        return Stream.of(
+                //@formatter:off
+                //            setFactory,   elements,     expectedResult
+                Arguments.of( null,         null,         emptySet ),
+                Arguments.of( setFactory,   null,         emptySet ),
+                Arguments.of( null,         List.of(),    emptySet ),
+                Arguments.of( setFactory,   stringList,   expectedAllStringResultSet )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("asSetAllParametersTestCases")
+    @DisplayName("asSet: with all parameters test cases")
+    public void asSetAllParameters_testCases(Supplier<Set<String>> setFactory,
+                                             List<String> elements,
+                                             Set<String> expectedResult) {
+        String[] finalElements =
+                null == elements
+                        ? null
+                        : elements.toArray(new String[0]);
+
+        assertEquals(expectedResult, asSet(setFactory, finalElements));
     }
 
 

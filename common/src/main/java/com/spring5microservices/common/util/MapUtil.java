@@ -21,7 +21,6 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
@@ -30,6 +29,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @UtilityClass
@@ -42,8 +42,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [("A", 1), ("B", 2)]     [("A", 2), ("B", 4)]
+     *   Parameters:               Result:
+     *    [("A", 1), ("B", 2)]      [("A", 2), ("B", 4)]
      *    (k, v) -> v % 2 == 1
      *    (k, v) -> v + 1
      *    (k, v) -> v * 2
@@ -84,8 +84,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [("A", 1), ("B", 2)]     [("A", 2), ("B", 4)]
+     *   Parameters:               Result:
+     *    [("A", 1), ("B", 2)]      [("A", 2), ("B", 4)]
      *    (k, v) -> v % 2 == 1
      *    (k, v) -> v + 1
      *    (k, v) -> v * 2
@@ -168,8 +168,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [(2, 7)]
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(2, 7)]
      *    (k, v) -> k % 2 == 0
      *    (k, v) -> k + v.length()
      * </pre>
@@ -206,8 +206,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [(2, 7)]
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(2, 7)]
      *    (k, v) -> k % 2 == 0
      *    (k, v) -> k + v.length()
      *    HashMap::new
@@ -271,6 +271,14 @@ public class MapUtil {
     /**
      * Counts the number of elements in the {@code sourceMap} which satisfy the {@code filterPredicate}.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      1
+     *    (k, v) -> k % 2 == 0
+     * </pre>
+     *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter
      * @param filterPredicate
@@ -306,8 +314,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      * </pre>
      *
@@ -335,8 +343,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      *    HashMap::new
      * </pre>
@@ -365,6 +373,14 @@ public class MapUtil {
 
     /**
      * Finds the first element of the given {@link Map} satisfying the provided {@link BiPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      Optional(Tuple2.of(2, "Hello"))
+     *    (k, v) -> k % 2 == 0
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to search
@@ -404,8 +420,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                        Result:
-     *    [(1, "Hi"), (2, "Hello")]          10
+     *   Parameters:                       Result:
+     *    [(1, "Hi"), (2, "Hello")]         10
      *    0
      *    (k, v) -> k + v.length()
      * </pre>
@@ -480,9 +496,9 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                     Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World")]         [(0,  [(2, "Hello")])
-     *    (k, v) -> k % 2                                  (1,  [(1, "Hi"), (5, "World")])]
+     *   Parameters:                                    Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World")]        [(0,  [(2, "Hello")])
+     *    (k, v) -> k % 2                                 (1,  [(1, "Hi"), (5, "World")])]
      * </pre>
      *
      * @param sourceMap
@@ -509,9 +525,9 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                     Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World")]         [(0,  [(2, "Hello")])
-     *    (k, v) -> k % 2                                  (1,  [(1, "Hi"), (5, "World")])]
+     *   Parameters:                                    Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World")]        [(0,  [(2, "Hello")])
+     *    (k, v) -> k % 2                                 (1,  [(1, "Hi"), (5, "World")])]
      *    HashMap::new
      *    HashMap::new
      * </pre>
@@ -658,7 +674,10 @@ public class MapUtil {
         sourceMap.forEach(
                 (k, v) -> {
                     R discriminatorKeyResult = discriminatorKey.apply(k, v);
-                    result.putIfAbsent(discriminatorKeyResult, finalCollectionFactory.get());
+                    result.putIfAbsent(
+                            discriminatorKeyResult,
+                            finalCollectionFactory.get()
+                    );
                     result.get(discriminatorKeyResult)
                             .add(valueMapper.apply(k, v));
                 }
@@ -705,20 +724,32 @@ public class MapUtil {
         Assert.notNull(reduceValues, "reduceValues must be not null");
 
         Map<R, V> result = new HashMap<>();
-        groupMap(sourceMap, discriminatorKey, valueMapper)
-                .forEach(
-                        (k, v) ->
-                                result.put(
-                                        k,
-                                        v.stream().reduce(reduceValues).get()
-                                )
-                );
+        groupMap(
+                sourceMap,
+                discriminatorKey,
+                valueMapper
+        )
+        .forEach(
+                (k, v) ->
+                        result.put(
+                                k,
+                                v.stream().reduce(reduceValues).get()
+                        )
+        );
         return result;
     }
 
 
     /**
      * Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                             Result:
+     *    [(1, "AGTF"), (3, "CD")]                [(1, 4), (3, 2)]
+     *    (k, v) -> Tuple.of(k, v.length())
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to used as source of the new one
@@ -741,6 +772,15 @@ public class MapUtil {
 
     /**
      * Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                             Result:
+     *    [(1, "AGTF"), (3, "CD")]                [(1, 4), (3, 2)]
+     *    (k, v) -> Tuple.of(k, v.length())
+     *    HashMap::new
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to used as source of the new one
@@ -771,7 +811,8 @@ public class MapUtil {
                 .map(entry ->
                         mapFunction.apply(
                                 entry.getKey(),
-                                entry.getValue())
+                                entry.getValue()
+                        )
                 )
                 .collect(
                         toMap(
@@ -855,7 +896,11 @@ public class MapUtil {
                 .collect(
                         toMap(
                                 Map.Entry::getKey,
-                                entry -> mapFunction.apply(entry.getKey(), entry.getValue()),
+                                entry ->
+                                        mapFunction.apply(
+                                                entry.getKey(),
+                                                entry.getValue()
+                                        ),
                                 overwriteWithNew(),
                                 finalMapFactory
                         )
@@ -883,7 +928,10 @@ public class MapUtil {
                 .map(m -> {
                     Tuple2<T, E> largestElement = null;
                     for (var entry : m.entrySet()) {
-                        Tuple2<T, E> currentElement = Tuple.of(entry.getKey(), entry.getValue());
+                        Tuple2<T, E> currentElement = Tuple.of(
+                                entry.getKey(),
+                                entry.getValue()
+                        );
                         if (Objects.isNull(largestElement)) {
                             largestElement = currentElement;
                         } else {
@@ -943,7 +991,10 @@ public class MapUtil {
                 .map(m -> {
                     Tuple2<T, E> smallestElement = null;
                     for (var entry : m.entrySet()) {
-                        Tuple2<T, E> currentElement = Tuple.of(entry.getKey(), entry.getValue());
+                        Tuple2<T, E> currentElement = Tuple.of(
+                                entry.getKey(),
+                                entry.getValue()
+                        );
                         if (Objects.isNull(smallestElement)) {
                             smallestElement = currentElement;
                         } else {
@@ -990,9 +1041,9 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                        Result:
-     *    [(1, "Hi"), (2, "Hello")]          [(true,  [(2, "Hello")])
-     *    (k, v) -> k % 2 == 0                (false, [(1, "Hi")])]
+     *   Parameters:                       Result:
+     *    [(1, "Hi"), (2, "Hello")]         [(true,  [(2, "Hello")])
+     *    (k, v) -> k % 2 == 0               (false, [(1, "Hi")])]
      * </pre>
      *
      * @param sourceMap
@@ -1019,9 +1070,9 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                        Result:
-     *    [(1, "Hi"), (2, "Hello")]          [(true,  [(2, "Hello")])
-     *    (k, v) -> k % 2 == 0                (false, [(1, "Hi")])]
+     *   Parameters:                       Result:
+     *    [(1, "Hi"), (2, "Hello")]         [(true,  [(2, "Hello")])
+     *    (k, v) -> k % 2 == 0               (false, [(1, "Hi")])]
      *    HashMap::new
      * </pre>
      *
@@ -1047,8 +1098,7 @@ public class MapUtil {
             put(Boolean.TRUE, finalMapFactory.get());
             put(Boolean.FALSE, finalMapFactory.get());
         }};
-        if (!CollectionUtils.isEmpty(sourceMap) &&
-                nonNull(discriminator)) {
+        if (!CollectionUtils.isEmpty(sourceMap) && nonNull(discriminator)) {
             sourceMap.forEach(
                     (k, v) ->
                             result.get(discriminator.test(k, v))
@@ -1181,7 +1231,7 @@ public class MapUtil {
         List<Map<T, E>> slides = IntStream.range(0, expectedSize)
                 .mapToObj(index -> new LinkedHashMap<T, E>())
                 .collect(
-                        Collectors.toList()
+                        toList()
                 );
 
         int i = 0;
@@ -1245,11 +1295,15 @@ public class MapUtil {
 
         List<Map<T, E>> splits = IntStream.range(0, expectedSize)
                 .mapToObj(index -> new LinkedHashMap<T, E>())
-                .collect(Collectors.toList());
+                .collect(toList());
 
         int i = 0, currentSplit = 0;
         for (var entry : sourceMap.entrySet()) {
-            splits.get(currentSplit).put(entry.getKey(), entry.getValue());
+            splits.get(currentSplit)
+                    .put(
+                            entry.getKey(),
+                            entry.getValue()
+                    );
             i++;
             if (i == size) {
                 currentSplit++;
@@ -1267,8 +1321,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      * </pre>
      *
@@ -1281,7 +1335,6 @@ public class MapUtil {
      */
     public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate) {
-
         return takeWhile(
                 sourceMap,
                 filterPredicate,
@@ -1297,8 +1350,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                   Result:
-     *    [(1, "Hi"), (2, "Hello")]     [(1, "Hi")]
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      *    HashMap::new
      * </pre>

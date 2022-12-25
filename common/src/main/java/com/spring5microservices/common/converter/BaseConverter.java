@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Parent interface of the all converters from Dto to Model and vice versa.
  *
@@ -37,7 +39,7 @@ public interface BaseConverter<M, D> {
      *         {@link Optional#empty()} otherwise.
      */
     default Optional<M> fromDtoToOptionalModel(final D dto) {
-        return Optional.ofNullable(this.fromDtoToModel(dto));
+        return ofNullable(this.fromDtoToModel(dto));
     }
 
     /**
@@ -72,7 +74,7 @@ public interface BaseConverter<M, D> {
      *         {@link Optional#empty()} otherwise.
      */
     default Optional<D> fromModelToOptionalDto(final M model) {
-        return Optional.ofNullable(this.fromModelToDto(model));
+        return ofNullable(this.fromModelToDto(model));
     }
 
     /**

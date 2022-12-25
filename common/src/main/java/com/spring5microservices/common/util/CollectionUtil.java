@@ -7,6 +7,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,8 +46,8 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [2, 4, 4, 12]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [2, 4, 4, 12]
      *    i -> i % 2 == 1
      *    i -> i + 1
      *    i -> i * 2
@@ -87,8 +88,8 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [2, 4, 4, 12]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [2, 4, 4, 12]
      *    i -> i % 2 == 1
      *    i -> i + 1
      *    i -> i * 2
@@ -145,22 +146,58 @@ public class CollectionUtil {
 
 
     /**
-     * Returns a {@link LinkedHashSet} with the provided {@code elements}.
+     * Returns a {@link Set} with the provided {@code elements}.
      *
      * @param elements
-     *    Elements to include.
+     *    Elements to include
      *
      * @return {@link LinkedHashSet}
      */
     @SafeVarargs
     public static <T> Set<T> asSet(final T ...elements) {
+        return asSet(
+                LinkedHashSet::new,
+                elements
+        );
+    }
+
+
+    /**
+     * Returns a {@link Set} with the provided {@code elements}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    LinkedHashSet::new       [2, 1]
+     *    2
+     *    1
+     *    2
+     * </pre>
+     *
+     * @param setFactory
+     *   {@link Supplier} of the {@link Set} used to store the returned elements
+     * @param elements
+     *    Elements to include
+     *
+     * @return {@link Set}
+     */
+    @SafeVarargs
+    public static <T> Set<T> asSet(final Supplier<Set<T>> setFactory,
+                                   final T ...elements) {
+        final Supplier<Set<T>> finalSetFactory =
+                isNull(setFactory)
+                        ? LinkedHashSet::new
+                        : setFactory;
+
         return ofNullable(elements)
                 .map(e ->
-                        new LinkedHashSet<>(
-                                asList(elements)
-                        )
+                        Arrays.stream(e)
+                                .collect(
+                                        toCollection(finalSetFactory)
+                                )
                 )
-                .orElseGet(LinkedHashSet::new);
+                .orElseGet(finalSetFactory);
     }
 
 
@@ -265,6 +302,14 @@ public class CollectionUtil {
      *    Returns a {@link List} with the extracted property of the given {@code sourceCollection} using provided
      *  {@code propertyExtractor}.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                             Result:
+     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
+     *    PizzaDto::getName
+     * </pre>
+     *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract.
      * @param propertyExtractor
@@ -286,6 +331,15 @@ public class CollectionUtil {
     /**
      *    Returns a {@link Collection} with the extracted property of the given {@code sourceCollection} using provided
      * {@code propertyExtractor}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                             Result:
+     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
+     *    PizzaDto::getName
+     *    ArrayList::new
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract
@@ -323,6 +377,14 @@ public class CollectionUtil {
      *    Returns a {@link List} of {@link Tuple} with the extracted properties of the given {@code sourceCollection}
      * using provided {@code propertyExtractors}.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                       Result:
+     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
+     *    [UserDto::getName, UserDto::getAge]
+     * </pre>
+     *
      * @param sourceCollection
      *    Source {@link Collection} with the properties to extract
      * @param propertyExtractors
@@ -330,7 +392,8 @@ public class CollectionUtil {
      *
      * @return {@link List}
      *
-     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and its length > 5
+     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and
+     *                                  its length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
      */
     @SafeVarargs
     public static <T> List<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
@@ -347,6 +410,15 @@ public class CollectionUtil {
      *    Returns a {@link Collection} of {@link Tuple} with the extracted properties of the given {@code sourceCollection}
      * using provided {@code propertyExtractors}.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                       Result:
+     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
+     *    [UserDto::getName, UserDto::getAge]
+     *    ArrayList::new
+     * </pre>
+     *
      * @param sourceCollection
      *    Source {@link Collection} with the properties to extract
      * @param propertyExtractors
@@ -357,7 +429,8 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      *
-     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and its length > 5
+     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and
+     *                                  its length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
      */
     @SafeVarargs
     public static <T> Collection<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
@@ -371,7 +444,7 @@ public class CollectionUtil {
         if (Objects.nonNull(propertyExtractors)) {
             Assert.isTrue(
                     Tuple.MAX_ALLOWED_TUPLE_ARITY >= propertyExtractors.length,
-                    format("If propertyExtractors is not null then its size should be <= %s",
+                    format("If propertyExtractors is not null then its size should be <= %d",
                             Tuple.MAX_ALLOWED_TUPLE_ARITY
                     )
             );
@@ -408,7 +481,8 @@ public class CollectionUtil {
     public static <T> Set<T> concatUniqueElements(final Collection<T> ...collections) {
         return ofNullable(collections)
                 .map(c ->
-                        Stream.of(c).filter(Objects::nonNull)
+                        Stream.of(c)
+                                .filter(Objects::nonNull)
                                 .flatMap(Collection::stream)
                                 .collect(
                                         toCollection(LinkedHashSet::new)
@@ -420,6 +494,14 @@ public class CollectionUtil {
 
     /**
      * Counts the number of elements in the {@code sourceCollection} which satisfy the {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            2
+     *    i -> i % 2 == 1
+     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter
@@ -451,8 +533,8 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [2, 6]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [2, 6]
      *    i -> i % 2 == 1
      * </pre>
      *
@@ -480,8 +562,8 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [2, 6]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [2, 6]
      *    i -> i % 2 == 1
      *    ArrayList::new
      * </pre>
@@ -491,7 +573,7 @@ public class CollectionUtil {
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param collectionFactory
-     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements
      *
      * @return {@link Collection}
      */
@@ -512,6 +594,14 @@ public class CollectionUtil {
 
     /**
      * Finds the first element of the given {@link Collection} satisfying the provided {@link Predicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            Optional(2)
+     *    i -> i % 2 == 0
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} to search
@@ -535,6 +625,14 @@ public class CollectionUtil {
 
     /**
      * Finds the last element of the given {@link Collection} satisfying the provided {@link Predicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            Optional(6)
+     *    i -> i % 2 == 0
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} to search
@@ -666,10 +764,10 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [(0,  [4, 7])
-     *    k -> i % 3                (1,  [2])
-     *    i -> i + 1                (2,  [3])]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [(0,  [4, 7])
+     *    k -> i % 3               (1,  [2])
+     *    i -> i + 1               (2,  [3])]
      * </pre>
      *
      * @param sourceCollection
@@ -747,7 +845,10 @@ public class CollectionUtil {
         sourceCollection.forEach(
                 e -> {
                     K discriminatorKeyResult = discriminatorKey.apply(e);
-                    result.putIfAbsent(discriminatorKeyResult, finalCollectionFactory.get());
+                    result.putIfAbsent(
+                            discriminatorKeyResult,
+                            finalCollectionFactory.get()
+                    );
                     result.get(discriminatorKeyResult)
                             .add(valueMapper.apply(e));
                 }
@@ -794,14 +895,18 @@ public class CollectionUtil {
         Assert.notNull(reduceValues, "reduceValues must be not null");
 
         Map<K, V> result = new HashMap<>();
-        groupMap(sourceCollection, discriminatorKey, valueMapper)
-                .forEach(
-                        (k, v) ->
-                            result.put(
-                                    k,
-                                    v.stream().reduce(reduceValues).get()
-                            )
-                );
+        groupMap(
+                sourceCollection,
+                discriminatorKey,
+                valueMapper
+        )
+        .forEach(
+                (k, v) ->
+                    result.put(
+                            k,
+                            v.stream().reduce(reduceValues).get()
+                    )
+        );
         return result;
     }
 
@@ -813,8 +918,8 @@ public class CollectionUtil {
      * <pre>
      * Example 1:
      *
-     *   Parameters:             Result:
-     *    42                      []
+     *   Parameters:            Result:
+     *    42                     []
      *    a -> a / 10
      *    a -> 50 >= a
      * </pre>
@@ -822,8 +927,8 @@ public class CollectionUtil {
      * <pre>
      * Example 2:
      *
-     *   Parameters:             Result:
-     *    42                      [42, 4]
+     *   Parameters:            Result:
+     *    42                     [42, 4]
      *    a -> a / 10
      *    a -> 0 >= a
      * </pre>
@@ -887,8 +992,8 @@ public class CollectionUtil {
      * <pre>
      * Example 1:
      *
-     *   Parameters:              Result:
-     *    [5, 7, 9, 6]             [7, 9]
+     *   Parameters:            Result:
+     *    [5, 7, 9, 6]           [7, 9]
      *    1
      *    3
      * </pre>
@@ -896,8 +1001,8 @@ public class CollectionUtil {
      * <pre>
      * Example 2:
      *
-     *   Parameters:              Result:
-     *    [a, b, c, d]             [d]
+     *   Parameters:            Result:
+     *    [a, b, c, d]           [d]
      *    3
      *    7
      * </pre>
@@ -905,8 +1010,8 @@ public class CollectionUtil {
      * <pre>
      * Example 3:
      *
-     *   Parameters:              Result:
-     *    [a, b, c, d]             [a, b]
+     *   Parameters:            Result:
+     *    [a, b, c, d]           [a, b]
      *    -1
      *    2
      * </pre>
@@ -970,16 +1075,16 @@ public class CollectionUtil {
      * <pre>
      * Example 1:
      *
-     *   Parameters:              Result:
-     *    [1, 2]                   [[1, 2]]
+     *   Parameters:            Result:
+     *    [1, 2]                 [[1, 2]]
      *    5
      * </pre>
      *
      * <pre>
      * Example 2:
      *
-     *   Parameters:              Result:
-     *    [7, 8, 9]                [[7, 8], [8, 9]]
+     *   Parameters:            Result:
+     *    [7, 8, 9]              [[7, 8], [8, 9]]
      *    2
      * </pre>
      *
@@ -1005,7 +1110,12 @@ public class CollectionUtil {
             return asList(listToSlide);
         }
         return IntStream.range(0, listToSlide.size() - size + 1)
-                .mapToObj(start -> listToSlide.subList(start, start + size))
+                .mapToObj(start ->
+                        listToSlide.subList(
+                                start,
+                                start + size
+                        )
+                )
                 .collect(toList());
     }
 
@@ -1016,24 +1126,24 @@ public class CollectionUtil {
      * <pre>
      * Example 1:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 4]             [[1, 2], [3, 4]]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 4]            [[1, 2], [3, 4]]
      *    2
      * </pre>
      *
      * <pre>
      * Example 2:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 4]             [[1, 2, 3], [4]]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 4]            [[1, 2, 3], [4]]
      *    3
      * </pre>
      *
      * <pre>
      * Example 3:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 4]             [[1, 2, 3, 4]]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 4]            [[1, 2, 3, 4]]
      *    5
      * </pre>
      *
@@ -1061,8 +1171,16 @@ public class CollectionUtil {
 
         List<List<T>> splits = new ArrayList<>(expectedSize);
         for (int i = 0; i < listToSplit.size(); i += size) {
-            splits.add(new ArrayList<>(
-                    listToSplit.subList(i, Math.min(listToSplit.size(), i + size)))
+            splits.add(
+                    new ArrayList<>(
+                            listToSplit.subList(
+                                    i,
+                                    Math.min(
+                                            listToSplit.size(),
+                                            i + size
+                                    )
+                            )
+                    )
             );
         }
         return splits;
@@ -1076,8 +1194,8 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [1, 3]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [1, 3]
      *    i -> i % 2 == 1
      * </pre>
      *
@@ -1090,7 +1208,6 @@ public class CollectionUtil {
      */
     public static <T> List<T> takeWhile(final Collection<? extends T> sourceCollection,
                                         final Predicate<? super T> filterPredicate) {
-
         return (List<T>) takeWhile(
                 sourceCollection,
                 filterPredicate,
@@ -1106,8 +1223,8 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [1, 3]
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [1, 3]
      *    i -> i % 2 == 1
      *    ArrayList::new
      * </pre>
@@ -1152,22 +1269,22 @@ public class CollectionUtil {
      * <pre>
      * Example 1:
      *
-     *   Parameters:                                   Result:
-     *    [[1, 2, 3], [4, 5, 6]]                        [[1, 4], [2, 5], [3, 6]]
+     *   Parameters:                                    Result:
+     *    [[1, 2, 3], [4, 5, 6]]                         [[1, 4], [2, 5], [3, 6]]
      * </pre>
      *
      * <pre>
      * Example 2:
      *
-     *   Parameters:                                   Result:
-     *    [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]     [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
+     *   Parameters:                                    Result:
+     *    [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]      [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
      * </pre>
      *
      * <pre>
      * Example 3:
      *
-     *   Parameters:                                   Result:
-     *    [[1, 2], [0], [7, 8, 9]]                      [[1, 0, 7], [2, 8], [9]]
+     *   Parameters:                                    Result:
+     *    [[1, 2], [0], [7, 8, 9]]                       [[1, 0, 7], [2, 8], [9]]
      * </pre>
      *
      * @param sourceCollection
@@ -1220,7 +1337,10 @@ public class CollectionUtil {
     public static <T, E> Tuple2<List<T>, List<E>> unzip(final Collection<Tuple2<T, E>> sourceCollection) {
         return foldLeft(
                 sourceCollection,
-                Tuple.of(new ArrayList<>(), new ArrayList<>()),
+                Tuple.of(
+                        new ArrayList<>(),
+                        new ArrayList<>()
+                ),
                 (tupleOfLists, currentElto) -> {
                     tupleOfLists._1.add(currentElto._1);
                     tupleOfLists._2.add(currentElto._2);

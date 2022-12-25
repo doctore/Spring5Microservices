@@ -1,7 +1,7 @@
 package com.spring5microservices.common.converter.enums;
 
 /**
- * Parent interface of the all converters from Enum to "equivalent" {@code value} and vice versa.
+ * Parent interface of the all converters from {@link Enum} to "equivalent" {@code value} and vice versa.
  *
  * @param <E>
  *    Type of the {@link Enum} to manage
