@@ -1,12 +1,10 @@
 package com.pizza.service;
 
-import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.repository.PizzaRepository;
 import com.pizza.util.PageUtil;
-import com.pizza.util.converter.PizzaConverter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -27,25 +25,21 @@ public class PizzaService {
     private final PizzaRepository repository;
 
     @Lazy
-    private final PizzaConverter converter;
-
-    @Lazy
     private final IngredientService ingredientService;
 
 
     /**
-     * Returns the {@link PizzaDto} which name matches with the given one.
+     * Returns the {@link Pizza} which name matches with the given one.
      *
      * @param name
      *    Name to search in the current {@link Pizza#getName()}s
      *
-     * @return {@link Optional} of {@link PizzaDto}
+     * @return {@link Optional} of {@link Pizza}
      */
-    public Optional<PizzaDto> findByName(final String name) {
+    public Optional<Pizza> findByName(final String name) {
         return ofNullable(name)
                 .flatMap(PizzaEnum::getFromDatabaseValue)
-                .flatMap(repository::findWithIngredientsByName)
-                .flatMap(converter::fromModelToOptionalDto);
+                .flatMap(repository::findWithIngredientsByName);
     }
 
 
@@ -61,44 +55,38 @@ public class PizzaService {
      *
      * @return {@link Page} of {@link Pizza}
      */
-    public Page<PizzaDto> findPageWithIngredients(final int page,
-                                                  final int size,
-                                                  final Sort sort) {
-        Page<Pizza> pizzaPage = repository.findPageWithIngredientsWithoutInMemoryPagination(
-                PageUtil.buildPageRequest(page,size,sort)
-        );
-        return ofNullable(pizzaPage)
-                .map(p ->
-                        new PageImpl<>(
-                                converter.fromModelsToDtos(p.getContent()),
-                                pizzaPage.getPageable(),
-                                pizzaPage.getTotalElements()
+    public Page<Pizza> findPageWithIngredients(final int page,
+                                               final int size,
+                                               final Sort sort) {
+        return ofNullable(
+                repository.findPageWithIngredientsWithoutInMemoryPagination(
+                        PageUtil.buildPageRequest(
+                                page,
+                                size,
+                                sort
                         )
                 )
-                .orElseGet(() ->
-                        new PageImpl<>(new ArrayList<>())
-                );
+        )
+        .orElseGet(() ->
+                new PageImpl<>(new ArrayList<>())
+        );
     }
 
 
     /**
-     * Persist the information included in the given {@link PizzaDto}
+     * Persist the information included in the given {@link Pizza}
      *
-     * @param pizzaDto
-     *    {@link PizzaDto} to save
+     * @param pizza
+     *    {@link Pizza} to save
      *
      * @return {@link Optional} of {@link Pizza} with its "final information" after this action
      */
-    public Optional<PizzaDto> save(final PizzaDto pizzaDto) {
-        return ofNullable(pizzaDto)
-                .flatMap(converter::fromDtoToOptionalModel)
+    public Optional<Pizza> save(final Pizza pizza) {
+        return ofNullable(pizza)
                 .map(p -> {
-                    if (null != p.getIngredients()) {
-                        ingredientService.saveAll(p.getIngredients());
-                    }
+                    ingredientService.saveAll(p.getIngredients());
                     return repository.save(p);
-                })
-                .flatMap(converter::fromModelToOptionalDto);
+                });
     }
 
 }

@@ -7,6 +7,7 @@ import com.pizza.dto.PizzaDto;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.service.PizzaService;
+import com.pizza.util.converter.PizzaConverter;
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -57,6 +58,9 @@ public class PizzaController {
 
     @Lazy
     private final PizzaService service;
+
+    @Lazy
+    private final PizzaConverter converter;
 
 
     /**
@@ -121,14 +125,19 @@ public class PizzaController {
                         pizzaDto)
         );
         return Mono.just(
-                service.save(pizzaDto)
+                service.save(
+                            converter.fromDtoToModel(pizzaDto)
+                        )
+                        .map(converter::fromModelToDto)
                         .map(p ->
                                 new ResponseEntity<>(
                                         p,
                                         CREATED
                                 )
                         )
-                        .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY))
+                        .orElseGet(() ->
+                                new ResponseEntity<>(UNPROCESSABLE_ENTITY)
+                        )
         );
     }
 
@@ -195,13 +204,16 @@ public class PizzaController {
         );
         return Mono.just(
                 service.findByName(name)
+                        .map(converter::fromModelToDto)
                         .map(p ->
                                 new ResponseEntity<>(
                                         p,
                                         OK
                                 )
                 )
-                .orElseGet(() -> new ResponseEntity<>(NOT_FOUND))
+                .orElseGet(() ->
+                        new ResponseEntity<>(NOT_FOUND)
+                )
         );
     }
 
@@ -270,6 +282,7 @@ public class PizzaController {
                         size,
                         null
                 )
+                .map(converter::fromModelToDto)
         );
     }
 
@@ -336,14 +349,19 @@ public class PizzaController {
                         pizzaDto)
         );
         return Mono.just(
-                service.save(pizzaDto)
+                service.save(
+                            converter.fromDtoToModel(pizzaDto)
+                        )
+                        .map(converter::fromModelToDto)
                         .map(p ->
                                 new ResponseEntity<>(
                                         p,
                                         OK
                                 )
                         )
-                        .orElseGet(() -> new ResponseEntity<>(NOT_FOUND))
+                        .orElseGet(() ->
+                                new ResponseEntity<>(NOT_FOUND)
+                        )
         );
     }
 

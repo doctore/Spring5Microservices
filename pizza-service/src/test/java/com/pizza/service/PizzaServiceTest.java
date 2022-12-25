@@ -1,13 +1,10 @@
 package com.pizza.service;
 
-import com.pizza.dto.IngredientDto;
-import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.repository.PizzaRepository;
 import com.pizza.util.PageUtil;
-import com.pizza.util.converter.PizzaConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,14 +18,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.pizza.TestDataFactory.buildIngredient;
-import static com.pizza.TestDataFactory.buildIngredientDto;
 import static com.pizza.TestDataFactory.buildPizza;
-import static com.pizza.TestDataFactory.buildPizzaDto;
 import static com.pizza.enums.PizzaEnum.CARBONARA;
 import static com.pizza.enums.PizzaEnum.MARGUERITA;
 import static java.util.Optional.empty;
@@ -45,9 +41,6 @@ public class PizzaServiceTest {
     private PizzaRepository mockPizzaRepository;
 
     @Mock
-    private PizzaConverter mockPizzaConverter;
-
-    @Mock
     private IngredientService mockIngredientService;
 
     private PizzaService service;
@@ -55,22 +48,19 @@ public class PizzaServiceTest {
 
     @BeforeEach
     public void init() {
-        service = new PizzaService(mockPizzaRepository, mockPizzaConverter, mockIngredientService);
+        service = new PizzaService(mockPizzaRepository, mockIngredientService);
     }
 
 
     static Stream<Arguments> findByNameTestCases() {
         Ingredient ingredient = buildIngredient(1, "Cheese");
-        IngredientDto ingredientDto = buildIngredientDto(ingredient.getId(), ingredient.getName());
         Pizza pizza = buildPizza(1, CARBONARA, 7D, Set.of(ingredient));
-        PizzaDto pizzaDto = buildPizzaDto(pizza.getId(), pizza.getName().name(), pizza.getCost(), Set.of(ingredientDto));
         return Stream.of(
                 //@formatter:off
-                //            name,                                   repositoryResult,    converterResult,    expectedResult
-                Arguments.of( null,                                   empty(),             empty(),            empty() ),
-                Arguments.of( CARBONARA.getInternalPropertyValue(),   empty(),             empty(),            empty() ),
-                Arguments.of( CARBONARA.getInternalPropertyValue(),   of(pizza),           empty(),            empty() ),
-                Arguments.of( CARBONARA.getInternalPropertyValue(),   of(pizza),           of(pizzaDto),       of(pizzaDto) )
+                //            name,                                   repositoryResult,    expectedResult
+                Arguments.of( null,                                   empty(),             empty() ),
+                Arguments.of( CARBONARA.getInternalPropertyValue(),   empty(),             empty() ),
+                Arguments.of( CARBONARA.getInternalPropertyValue(),   of(pizza),           of(pizza) )
         ); //@formatter:on
     }
 
@@ -79,17 +69,12 @@ public class PizzaServiceTest {
     @DisplayName("findByName: test cases")
     public void findByName_testCases(String name,
                                      Optional<Pizza> repositoryResult,
-                                     Optional<PizzaDto> converterResult,
-                                     Optional<PizzaDto> expectedResult) {
+                                     Optional<Pizza> expectedResult) {
         if (null != name) {
             when(mockPizzaRepository.findWithIngredientsByName(PizzaEnum.getFromDatabaseValue(name).get()))
                     .thenReturn(repositoryResult);
         }
-        repositoryResult.ifPresent(pizza ->
-                when(mockPizzaConverter.fromModelToOptionalDto(pizza))
-                        .thenReturn(converterResult)
-        );
-        Optional<PizzaDto> result = service.findByName(name);
+        Optional<Pizza> result = service.findByName(name);
 
         assertEquals(expectedResult, result);
     }
@@ -98,24 +83,18 @@ public class PizzaServiceTest {
     static Stream<Arguments> findPageWithIngredientsTestCases() {
         Ingredient ingredient1 = buildIngredient(1, "Cheese");
         Ingredient ingredient2 = buildIngredient(2, "Jam");
-        IngredientDto ingredientDto1 = buildIngredientDto(ingredient1.getId(), ingredient1.getName());
-        IngredientDto ingredientDto2 = buildIngredientDto(ingredient2.getId(), ingredient2.getName());
         Pizza pizza1 = buildPizza(1, CARBONARA, 7D, Set.of(ingredient1));
         Pizza pizza2 = buildPizza(2, MARGUERITA, 12D, Set.of(ingredient2));
-        PizzaDto pizzaDto1 = buildPizzaDto(pizza1.getId(), pizza1.getName().name(), pizza1.getCost(), Set.of(ingredientDto1));
-        PizzaDto pizzaDto2 = buildPizzaDto(pizza2.getId(), pizza2.getName().name(), pizza2.getCost(), Set.of(ingredientDto2));
         Sort sort = Sort.by(Sort.Direction.ASC, "name");
 
         Page<Pizza> pizzaEmptyPage = new PageImpl<>(List.of());
         Page<Pizza> pizzaPage = new PageImpl<>(List.of(pizza1, pizza2));
-        Page<PizzaDto> pizzaDtoEmptyPage = new PageImpl<>(List.of());
-        Page<PizzaDto> pizzaDtoPage = new PageImpl<>(List.of(pizzaDto1, pizzaDto2));
         return Stream.of(
                 //@formatter:off
-                //            page,   size,   sort,   repositoryResult,   converterResult,             expectedResult
-                Arguments.of( 0,      1,      null,   pizzaEmptyPage,     List.of(),                   pizzaDtoEmptyPage ),
-                Arguments.of( 0,      1,      sort,   pizzaEmptyPage,     List.of(),                   pizzaDtoEmptyPage ),
-                Arguments.of( 0,      1,      sort,   pizzaPage,          pizzaDtoPage.getContent(),   pizzaDtoPage )
+                //            page,   size,   sort,   repositoryResult,   expectedResult
+                Arguments.of( 0,      1,      null,   pizzaEmptyPage,     pizzaEmptyPage ),
+                Arguments.of( 0,      1,      sort,   pizzaEmptyPage,     pizzaEmptyPage ),
+                Arguments.of( 0,      1,      sort,   pizzaPage,          pizzaPage )
         ); //@formatter:on
     }
 
@@ -126,14 +105,12 @@ public class PizzaServiceTest {
                                                   int size,
                                                   Sort sort,
                                                   Page<Pizza> repositoryResult,
-                                                  List<PizzaDto> converterResult,
-                                                  Page<PizzaDto> expectedResult) {
-        when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(PageUtil.buildPageRequest(page, size, sort)))
-                .thenReturn(repositoryResult);
-        when(mockPizzaConverter.fromModelsToDtos(repositoryResult.getContent()))
-                .thenReturn(converterResult);
+                                                  Page<Pizza> expectedResult) {
+        when(mockPizzaRepository.findPageWithIngredientsWithoutInMemoryPagination(
+                PageUtil.buildPageRequest(page, size, sort))
+        ).thenReturn(repositoryResult);
 
-        Page<PizzaDto> result = service.findPageWithIngredients(page, size, sort);
+        Page<Pizza> result = service.findPageWithIngredients(page, size, sort);
 
         assertEquals(expectedResult, result);
     }
@@ -141,42 +118,31 @@ public class PizzaServiceTest {
 
     static Stream<Arguments> saveTestCases() {
         Ingredient ingredient = buildIngredient(1, "Cheese");
-        IngredientDto ingredientDto = buildIngredientDto(ingredient.getId(), ingredient.getName());
         Pizza pizza = buildPizza(1, CARBONARA, 7D, Set.of(ingredient));
-        PizzaDto pizzaDto = buildPizzaDto(pizza.getId(), pizza.getName().name(), pizza.getCost(), Set.of(ingredientDto));
         return Stream.of(
                 //@formatter:off
-                //            pizzaDto,   converterToModelResult,   repositoryResult,   converterToDtoResult,   expectedResult
-                Arguments.of( null,       empty(),                  null,               empty(),                empty() ),
-                Arguments.of( pizzaDto,   empty(),                  null,               empty(),                empty() ),
-                Arguments.of( pizzaDto,   of(pizza),                null,               empty(),                empty() ),
-                Arguments.of( pizzaDto,   of(pizza),                pizza,              empty(),                empty() ),
-                Arguments.of( pizzaDto,   of(pizza),                pizza,              of(pizzaDto),           of(pizzaDto) )
+                //            pizza,   repositoryResult,   expectedResult
+                Arguments.of( null,    null,               empty() ),
+                Arguments.of( pizza,   null,               empty() ),
+                Arguments.of( pizza,   pizza,              of(pizza) )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("saveTestCases")
     @DisplayName("save: test cases")
-    public void save_testCases(PizzaDto pizzaDto,
-                               Optional<Pizza> converterToModelResult,
+    public void save_testCases(Pizza pizza,
                                Pizza repositoryResult,
-                               Optional<PizzaDto> converterToDtoResult,
-                               Optional<PizzaDto> expectedResult) {
-        when(mockPizzaConverter.fromDtoToOptionalModel(pizzaDto)).thenReturn(converterToModelResult);
-        when(mockPizzaConverter.fromModelToOptionalDto(repositoryResult)).thenReturn(converterToDtoResult);
-        converterToModelResult.ifPresent(pizza ->
-                when(mockPizzaRepository.save(pizza))
-                        .thenReturn(repositoryResult)
-        );
+                               Optional<Pizza> expectedResult) {
+        when(mockPizzaRepository.save(pizza)).thenReturn(repositoryResult);
 
-        Optional<PizzaDto> result = service.save(pizzaDto);
+        Optional<Pizza> result = service.save(pizza);
 
         assertEquals(expectedResult, result);
-        converterToModelResult.ifPresent(pizza ->
-                verify(mockIngredientService, times(1))
-                        .saveAll(pizza.getIngredients())
-        );
+        if (Objects.nonNull(pizza)) {
+            verify(mockIngredientService, times(1))
+                    .saveAll(pizza.getIngredients());
+        }
     }
 
 }

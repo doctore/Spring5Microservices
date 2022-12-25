@@ -6,6 +6,9 @@ import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
+import com.pizza.grpc.server.GrpcServerRunner;
+import com.pizza.model.Ingredient;
+import com.pizza.model.Pizza;
 import com.pizza.service.PizzaService;
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +39,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.pizza.TestDataFactory.buildIngredient;
 import static com.pizza.TestDataFactory.buildIngredientDto;
+import static com.pizza.TestDataFactory.buildPizza;
 import static com.pizza.TestDataFactory.buildPizzaDto;
 import static com.pizza.enums.PizzaEnum.CARBONARA;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
@@ -46,6 +51,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static java.util.Optional.of;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @SpringBootTest(classes = PizzaServiceApplication.class)
@@ -64,6 +70,10 @@ public class PizzaControllerTest {
     @MockBean
     @Qualifier("cacheManager")
     private CacheManager mockCacheManager;
+
+    // To avoid gRPC server initialization
+    @MockBean
+    private GrpcServerRunner grpcServerRunner;
 
     private WebTestClient webTestClient;
 
@@ -106,6 +116,7 @@ public class PizzaControllerTest {
                 .collect(Collectors.joining(", "));
         PizzaDto dto1 = buildPizzaDto(1, "Not existing", 7D, Set.of());
         PizzaDto dto2 = buildPizzaDto(null, CARBONARA.getInternalPropertyValue(), null, Set.of());
+
         ErrorResponseDto response1 = new ErrorResponseDto(VALIDATION,
                 List.of("Field error in object 'pizzaDto' on field 'name' due to: must be one of the "
                       + "values included in [" + validPizzaNames + "]"));
@@ -125,6 +136,7 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
             PizzaDto dtoToCreate, ErrorResponseDto expectedResponse) {
+
         webTestClient.post()
                 .uri(RestRoutes.PIZZA.ROOT)
                 .body(Mono.just(dtoToCreate), PizzaDto.class)
@@ -158,13 +170,19 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void create_whenNotEmptyDtoIsGiven_thenCreatedHttpCodeAndPizzaDtoAreReturned() {
         // Given
+        PizzaEnum pizzaName = CARBONARA;
         IngredientDto beforeIngredientDto = buildIngredientDto(null, "Cheese");
+        Ingredient beforeIngredient = buildIngredient(beforeIngredientDto.getId(), beforeIngredientDto.getName());
         IngredientDto afterIngredientDto = buildIngredientDto(1, beforeIngredientDto.getName());
-        PizzaDto beforePizzaDto = buildPizzaDto(null, CARBONARA.getInternalPropertyValue(), 7D, Set.of(beforeIngredientDto));
+        Ingredient afterIngredient = buildIngredient(afterIngredientDto.getId(), afterIngredientDto.getName());
+
+        PizzaDto beforePizzaDto = buildPizzaDto(null, pizzaName.getInternalPropertyValue(), 7D, Set.of(beforeIngredientDto));
+        Pizza beforePizza = buildPizza(beforePizzaDto.getId(), pizzaName, 7D, Set.of(beforeIngredient));
         PizzaDto afterPizzaDto = buildPizzaDto(1, beforePizzaDto.getName(), beforePizzaDto.getCost(), Set.of(afterIngredientDto));
+        Pizza afterPizza = buildPizza(afterPizzaDto.getId(), pizzaName, afterPizzaDto.getCost(), Set.of(afterIngredient));
 
         // When
-        when(mockPizzaService.save(beforePizzaDto)).thenReturn(Optional.of(afterPizzaDto));
+        when(mockPizzaService.save(beforePizza)).thenReturn(Optional.of(afterPizza));
 
         // Then
         webTestClient.post()
@@ -176,7 +194,7 @@ public class PizzaControllerTest {
                 .expectBody(PizzaDto.class)
                 .isEqualTo(afterPizzaDto);
 
-        verify(mockPizzaService, times(1)).save(beforePizzaDto);
+        verify(mockPizzaService, times(1)).save(beforePizza);
     }
 
 
@@ -243,11 +261,14 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_USER})
     public void findByName_whenTheNameExists_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
+        PizzaEnum pizzaName = CARBONARA;
         IngredientDto ingredientDto = buildIngredientDto(null, "Bacon");
-        PizzaDto pizzaDto = buildPizzaDto(1, CARBONARA.getInternalPropertyValue(), 7D, Set.of(ingredientDto));
+        Ingredient ingredient = buildIngredient(ingredientDto.getId(), ingredientDto.getName());
+        PizzaDto pizzaDto = buildPizzaDto(1, pizzaName.getInternalPropertyValue(), 7D, Set.of(ingredientDto));
+        Pizza pizza = buildPizza(pizzaDto.getId(), pizzaName, pizzaDto.getCost(), Set.of(ingredient));
 
         // When
-        when(mockPizzaService.findByName(anyString())).thenReturn(Optional.of(pizzaDto));
+        when(mockPizzaService.findByName(anyString())).thenReturn(of(pizza));
 
         // Then
         webTestClient.get()
@@ -357,11 +378,14 @@ public class PizzaControllerTest {
         // Given
         int page = 0;
         int size = 1;
+        PizzaEnum pizzaName = CARBONARA;
         IngredientDto ingredientDto = buildIngredientDto(null, "Bacon");
-        PizzaDto pizzaDto = buildPizzaDto(1, CARBONARA.getInternalPropertyValue(), 7D, Set.of(ingredientDto));
+        Ingredient ingredient = buildIngredient(ingredientDto.getId(), ingredientDto.getName());
+        PizzaDto pizzaDto = buildPizzaDto(1, pizzaName.getInternalPropertyValue(), 7D, Set.of(ingredientDto));
+        Pizza pizza = buildPizza(pizzaDto.getId(), pizzaName, pizzaDto.getCost(), Set.of(ingredient));
 
         // When
-        when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(List.of(pizzaDto)));
+        when(mockPizzaService.findPageWithIngredients(anyInt(), anyInt(), any())).thenReturn(new PageImpl<>(List.of(pizza)));
 
         // Then
         webTestClient.get()
@@ -468,13 +492,19 @@ public class PizzaControllerTest {
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
     public void update_whenNotEmptyDtoIsGiven_thenOkHttpCodeAndPizzaDtoAreReturned() {
         // Given
+        PizzaEnum pizzaName = CARBONARA;
         IngredientDto beforeIngredientDto = buildIngredientDto(null, "Cheese");
+        Ingredient beforeIngredient = buildIngredient(beforeIngredientDto.getId(), beforeIngredientDto.getName());
         IngredientDto afterIngredientDto = buildIngredientDto(1, beforeIngredientDto.getName());
-        PizzaDto beforePizzaDto = buildPizzaDto(null, CARBONARA.getInternalPropertyValue(), 7D, Set.of(beforeIngredientDto));
+        Ingredient afterIngredient = buildIngredient(afterIngredientDto.getId(), afterIngredientDto.getName());
+
+        PizzaDto beforePizzaDto = buildPizzaDto(null, pizzaName.getInternalPropertyValue(), 7D, Set.of(beforeIngredientDto));
+        Pizza beforePizza = buildPizza(beforePizzaDto.getId(), pizzaName, 7D, Set.of(beforeIngredient));
         PizzaDto afterPizzaDto = buildPizzaDto(1, beforePizzaDto.getName(), beforePizzaDto.getCost(), Set.of(afterIngredientDto));
+        Pizza afterPizza = buildPizza(afterPizzaDto.getId(), pizzaName, afterPizzaDto.getCost(), Set.of(afterIngredient));
 
         // When
-        when(mockPizzaService.save(beforePizzaDto)).thenReturn(Optional.of(afterPizzaDto));
+        when(mockPizzaService.save(beforePizza)).thenReturn(Optional.of(afterPizza));
 
         // Then
         webTestClient.put()
@@ -486,7 +516,7 @@ public class PizzaControllerTest {
                 .expectBody(PizzaDto.class)
                 .isEqualTo(afterPizzaDto);
 
-        verify(mockPizzaService, times(1)).save(beforePizzaDto);
+        verify(mockPizzaService, times(1)).save(beforePizza);
     }
 
 }
