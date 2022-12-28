@@ -45,7 +45,6 @@ import static com.spring5microservices.common.util.MapUtil.slice;
 import static com.spring5microservices.common.util.MapUtil.sliding;
 import static com.spring5microservices.common.util.MapUtil.split;
 import static com.spring5microservices.common.util.MapUtil.takeWhile;
-import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -728,8 +727,8 @@ public class MapUtilTest {
             put(2, List.of(25, 45));
         }};
         Map<Integer, Set<Integer>> resultWithSetCollectionFactory = new HashMap<>() {{
-            put(1, new LinkedHashSet<>(asList(15, 35)));
-            put(2, new LinkedHashSet<>(asList(25, 45)));
+            put(1, new LinkedHashSet<>(List.of(15, 35)));
+            put(2, new LinkedHashSet<>(List.of(25, 45)));
         }};
         return Stream.of(
                 //@formatter:off

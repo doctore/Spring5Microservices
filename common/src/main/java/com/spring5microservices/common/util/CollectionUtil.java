@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -27,6 +29,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -753,6 +756,56 @@ public class CollectionUtil {
 
 
     /**
+     * Returns a {@link List} with the elements included in the given {@link Iterator}.
+     *
+     * @param sourceIterator
+     *    {@link Iterator} with the elements to add in the returned {@link List}
+     *
+     * @return {@link List}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> fromIterator(final Iterator<? extends T> sourceIterator) {
+        return (List<T>) fromIterator(
+                sourceIterator,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     * Returns a {@link Collection} with the elements included in the given {@link Iterator}.
+     *
+     * @param sourceIterator
+     *    {@link Iterator} with the elements to add in the returned {@link List}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements
+     *
+     * @return {@link Collection}
+     */
+    public static <T> Collection<T> fromIterator(final Iterator<? extends T> sourceIterator,
+                                                 final Supplier<Collection<T>> collectionFactory) {
+        final Supplier<Collection<T>> finalCollectionFactory =
+                isNull(collectionFactory)
+                        ? ArrayList::new
+                        : collectionFactory;
+
+        if (Objects.isNull(sourceIterator) || !sourceIterator.hasNext()) {
+            return finalCollectionFactory.get();
+        }
+        return StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(
+                                sourceIterator,
+                                Spliterator.ORDERED
+                        ),
+                        false
+                )
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
      * <p>
@@ -959,7 +1012,9 @@ public class CollectionUtil {
                     }
                     return result;
                 })
-                .orElseGet(() -> asList(initialValue));
+                .orElseGet(() ->
+                        asList(initialValue)
+                );
     }
 
 

@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,14 +46,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class CollectionUtilTest {
 
     static Stream<Arguments> applyOrElseNoCollectionFactoryTestCases() {
-        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
+        Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
 
         Function<Integer, String> plus1String = i -> String.valueOf(i + 1);
         Function<Integer, String> multiply2String = i -> String.valueOf(i * 2);
 
-        List<String> expectedIntsNoFilterResult = asList("2", "3", "4", "7");
-        List<String> expectedIntsResult = asList("2", "3", "6", "7");
+        List<String> expectedIntsNoFilterResult = List.of("2", "3", "4", "7");
+        List<String> expectedIntsResult = List.of("2", "3", "6", "7");
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    expectedException,                expectedResult
@@ -101,7 +102,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> applyOrElseAllParametersTestCases() {
-        List<Integer> ints = asList(1, 2, 3, 6);
+        List<Integer> ints = List.of(1, 2, 3, 6);
         Predicate<Integer> isOdd = i -> i % 2 == 1;
 
         Function<Integer, String> plus1String = i -> String.valueOf(i + 1);
@@ -109,8 +110,8 @@ public class CollectionUtilTest {
 
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
 
-        List<String> expectedIntsResultNoFilterList = asList("2", "3", "4", "7");
-        List<String> expectedIntsResultList = asList("2", "4", "4", "12");
+        List<String> expectedIntsResultNoFilterList = List.of("2", "3", "4", "7");
+        List<String> expectedIntsResultList = List.of("2", "4", "4", "12");
         Set<String> expectedIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
         return Stream.of(
                 //@formatter:off
@@ -191,17 +192,17 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> asSetAllParametersTestCases() {
         List<String> stringList = List.of("A", "A", "B", "C", "D", "C");
-        Supplier<Set<String>> setFactory = HashSet::new;
+        Supplier<Set<String>> setSupplier = HashSet::new;
 
         Set<String> emptySet = new HashSet<>();
         Set<String> expectedAllStringResultSet = new LinkedHashSet<>(stringList);
         return Stream.of(
                 //@formatter:off
-                //            setFactory,   elements,     expectedResult
-                Arguments.of( null,         null,         emptySet ),
-                Arguments.of( setFactory,   null,         emptySet ),
-                Arguments.of( null,         List.of(),    emptySet ),
-                Arguments.of( setFactory,   stringList,   expectedAllStringResultSet )
+                //            setFactory,    elements,     expectedResult
+                Arguments.of( null,          null,         emptySet ),
+                Arguments.of( setSupplier,   null,         emptySet ),
+                Arguments.of( null,         List.of(),     emptySet ),
+                Arguments.of( setSupplier,   stringList,   expectedAllStringResultSet )
         ); //@formatter:on
     }
 
@@ -222,7 +223,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> collectNoCollectionFactoryTestCases() {
-        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
+        Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
         Function<Integer, String> fromIntegerToString = Objects::toString;
         return Stream.of(
@@ -260,8 +261,8 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> collectAllParametersTestCases() {
-        List<Integer> ints = asList(1, 2, 3, 6);
-        Set<String> collectedInts = new LinkedHashSet<>(asList("1", "3"));
+        List<Integer> ints = List.of(1, 2, 3, 6);
+        Set<String> collectedInts = new LinkedHashSet<>(List.of("1", "3"));
 
         Predicate<Integer> isOdd = i -> i % 2 == 1;
         Function<Integer, String> fromIntegerToString = Object::toString;
@@ -305,16 +306,17 @@ public class CollectionUtilTest {
     static Stream<Arguments> collectPropertyNoCollectionFactoryTestCases() {
         PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
         PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
+        List<PizzaDto> allPizzas = List.of(carbonaraCheap, carbonaraExpense);
 
         Function<PizzaDto, String> getName = PizzaDto::getName;
         Function<PizzaDto, Double> getCost = PizzaDto::getCost;
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,                            propertyExtractor,   expectedResult
-                Arguments.of( null,                                        null,                List.of() ),
-                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),   null,                List.of() ),
-                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),   getName,             List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
-                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),   getCost,             List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
+                //            sourceCollection,   propertyExtractor,   expectedResult
+                Arguments.of( null,               null,                List.of() ),
+                Arguments.of( allPizzas,          null,                List.of() ),
+                Arguments.of( allPizzas,          getName,             List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
+                Arguments.of( allPizzas,          getCost,             List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
         ); //@formatter:on
     }
 
@@ -331,19 +333,20 @@ public class CollectionUtilTest {
     static Stream<Arguments> collectPropertyAllParametersTestCases() {
         PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
         PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
+        List<PizzaDto> allPizzas = List.of(carbonaraCheap, carbonaraExpense);
 
         Function<PizzaDto, String> getName = PizzaDto::getName;
         Function<PizzaDto, Double> getCost = PizzaDto::getCost;
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,                            propertyExtractor,   collectionFactory,   expectedResult
-                Arguments.of( null,                                        null,                null,                List.of() ),
-                Arguments.of( null,                                        null,                setSupplier,         new LinkedHashSet<>() ),
-                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),   getName,             null,                List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
-                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),   getName,             setSupplier,         Set.of(carbonaraCheap.getName()) ),
-                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),   getCost,             null,                List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) ),
-                Arguments.of( List.of(carbonaraCheap, carbonaraExpense),   getCost,             setSupplier,         Set.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
+                //            sourceCollection,   propertyExtractor,   collectionFactory,   expectedResult
+                Arguments.of( null,               null,                null,                List.of() ),
+                Arguments.of( null,               null,                setSupplier,         new LinkedHashSet<>() ),
+                Arguments.of( allPizzas,          getName,             null,                List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
+                Arguments.of( allPizzas,          getName,             setSupplier,         Set.of(carbonaraCheap.getName()) ),
+                Arguments.of( allPizzas,          getCost,             null,                List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) ),
+                Arguments.of( allPizzas,          getCost,             setSupplier,         Set.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
         ); //@formatter:on
     }
 
@@ -504,8 +507,8 @@ public class CollectionUtilTest {
                 //            collection1ToConcat,   collection2ToConcat,   collection3ToConcat,   expectedResult
                 Arguments.of( null,                  null,                  null,                  new LinkedHashSet<>() ),
                 Arguments.of( null,                  List.of(),             List.of(),             new LinkedHashSet<>() ),
-                Arguments.of( List.of(1, 2),         null,                  List.of(2, 3),         new LinkedHashSet<>(asList(1, 2, 3)) ),
-                Arguments.of( List.of(5, 6),         List.of(),             List.of(6, 7),         new LinkedHashSet<>(asList(5, 6, 7)) )
+                Arguments.of( List.of(1, 2),         null,                  List.of(2, 3),         new LinkedHashSet<>(List.of(1, 2, 3)) ),
+                Arguments.of( List.of(5, 6),         List.of(),             List.of(6, 7),         new LinkedHashSet<>(List.of(5, 6, 7)) )
         ); //@formatter:on
     }
 
@@ -521,10 +524,10 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> countTestCases() {
-        List<Integer> integers = asList(3, 7, 9, 11, 15);
-        Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        List<Integer> integers = List.of(3, 7, 9, 11, 15);
+        Set<String> strings = new LinkedHashSet<>(List.of("A", "BT", "YTGH", "IOP"));
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 78L, 12L));
+        longs.addAll(List.of(54L, 78L, 12L));
 
         Predicate<Integer> upperThan10 = i -> 10 < i;
         Predicate<String> lengthGreaterThan3 = i -> 3 < i.length();
@@ -553,10 +556,10 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> findTestCases() {
-        List<Integer> integers = asList(3, 7, 9, 11, 15);
-        Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        List<Integer> integers = List.of(3, 7, 9, 11, 15);
+        Set<String> strings = new LinkedHashSet<>(List.of("A", "BT", "YTGH", "IOP"));
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 78L, 12L));
+        longs.addAll(List.of(54L, 78L, 12L));
 
         Predicate<Integer> upperThan10 = i -> 10 < i;
         Predicate<Integer> upperThan20 = i -> 20 < i;
@@ -615,11 +618,11 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> dropWhileAllParametersTestCases() {
-        List<Integer> ints = new ArrayList<>(asList(1, 2, 3, 6));
+        List<Integer> ints = List.of(1, 2, 3, 6);
         Predicate<Integer> isEven = i -> i % 2 == 0;
         Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
 
-        List<Integer> expectedIntsResultList = asList(1, 3);
+        List<Integer> expectedIntsResultList = List.of(1, 3);
         Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
         Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
         return Stream.of(
@@ -646,10 +649,10 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> findLastTestCases() {
-        List<Integer> integers = asList(3, 7, 9, 11, 15);
-        Set<String> strings = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        List<Integer> integers = List.of(3, 7, 9, 11, 15);
+        Set<String> strings = new LinkedHashSet<>(List.of("A", "BT", "YTGH", "IOP"));
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 78L, 12L));
+        longs.addAll(List.of(54L, 78L, 12L));
 
         Predicate<Integer> upperThan10 = i -> 10 < i;
         Predicate<Integer> upperThan20 = i -> 20 < i;
@@ -682,10 +685,10 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> foldLeftTestCases() {
-        List<Integer> integers = asList(1, 3, 5);
-        List<String> strings = asList("AB", "E", "GMT");
+        List<Integer> integers = List.of(1, 3, 5);
+        List<String> strings = List.of("AB", "E", "GMT");
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 75L, 12L));
+        longs.addAll(List.of(54L, 75L, 12L));
 
         BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
         BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
@@ -722,10 +725,10 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> foldRightTestCases() {
-        List<Integer> integers = asList(1, 3, 5);
-        List<String> strings = asList("AB", "E", "GMT");
+        List<Integer> integers = List.of(1, 3, 5);
+        List<String> strings = List.of("AB", "E", "GMT");
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 75L, 12L));
+        longs.addAll(List.of(54L, 75L, 12L));
 
         BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
         BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
@@ -761,8 +764,57 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> fromIteratorNoCollectionFactoryTestCases() {
+        List<Integer> ints = List.of(1, 2, 3, 6, 5, 1, 21);
+        Iterator<String> emptyIterator = Collections.emptyIterator();
+        return Stream.of(
+                //@formatter:off
+                //            sourceIterator,    expectedResult
+                Arguments.of( null,              List.of() ),
+                Arguments.of( emptyIterator,     List.of() ),
+                Arguments.of( ints.iterator(),   ints )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromIteratorNoCollectionFactoryTestCases")
+    @DisplayName("fromIterator: without collection factory test cases")
+    public <T> void fromIteratorNoCollectionFactory_testCases(Iterator<? extends T> sourceIterator,
+                                                              List<T> expectedResult) {
+        assertEquals(expectedResult, fromIterator(sourceIterator));
+    }
+
+
+    static Stream<Arguments> fromIteratorAllParametersTestCases() {
+        List<String> stringList = List.of("A", "RF", "T", "BC", "YH", "CC", "D");
+        Iterator<String> emptyIterator = Collections.emptyIterator();
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Set<String> expectedAllStringResultSet = new LinkedHashSet<>(stringList);
+        return Stream.of(
+                //@formatter:off
+                //            sourceIterator,          collectionFactory,   expectedResult
+                Arguments.of( null,                    null,                List.of() ),
+                Arguments.of( null,                    setSupplier,         Set.of() ),
+                Arguments.of( emptyIterator,           null,                List.of() ),
+                Arguments.of( emptyIterator,           setSupplier,         Set.of() ),
+                Arguments.of( stringList.iterator(),   null,                stringList ),
+                Arguments.of( stringList.iterator(),   setSupplier,         expectedAllStringResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromIteratorAllParametersTestCases")
+    @DisplayName("fromIterator: with all parameters test cases")
+    public <T> void fromIteratorAllParameters_testCases(Iterator<? extends T> sourceIterator,
+                                                        Supplier<Collection<T>> collectionFactory,
+                                                        Collection<T> expectedResult) {
+        assertEquals(expectedResult, fromIterator(sourceIterator, collectionFactory));
+    }
+
+
     static Stream<Arguments> groupMapNoCollectionFactoryTestCases() {
-        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, 3, 6));
+        Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Function<Integer, Integer> mod3 = i -> i % 3;
         Function<Integer, Integer> square = i -> i * i;
         Map<Integer, List<Integer>> usingMod3AsDiscriminatorKey = new HashMap<>() {{
@@ -800,7 +852,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> groupMapAllParametersTestCases() {
-        List<String> strings = asList("AA", "BFF", "5TR", "H", "B");
+        List<String> strings = List.of("AA", "BFF", "5TR", "H", "B");
         Function<String, Integer> sLength = String::length;
         Function<String, String> sVersion2 = s -> s + "2";
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
@@ -847,7 +899,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> groupMapReduceTestCases() {
-        Set<Integer> ints = new LinkedHashSet<>(asList(2, 4, 5, 7, 9, 12));
+        Set<Integer> ints = new LinkedHashSet<>(List.of(2, 4, 5, 7, 9, 12));
         Function<Integer, Integer> mod3 = i -> i % 3;
         Function<Integer, Integer> square = i -> i * i;
         BinaryOperator<Integer> sumAll = Integer::sum;
@@ -919,19 +971,19 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> reverseListTestCases() {
-        List<Integer> integersList = asList(3, 7, 9, 11, 15);
-        Set<String> stringsLinkedSet = new LinkedHashSet<>(asList("A", "BT", "YTGH", "IOP"));
+        List<Integer> integersList = List.of(3, 7, 9, 11, 15);
+        Set<String> stringsLinkedSet = new LinkedHashSet<>(List.of("A", "BT", "YTGH", "IOP"));
 
         TreeSet<Integer> integersTreeSet = new TreeSet<>(Collections.reverseOrder());
-        integersTreeSet.addAll(asList(45, 71, 9, 11, 35));
+        integersTreeSet.addAll(List.of(45, 71, 9, 11, 35));
 
         PriorityQueue<Long> longsPriorityQueue = new PriorityQueue<>(Comparator.naturalOrder());
-        longsPriorityQueue.addAll(asList(54L, 78L, 12L));
+        longsPriorityQueue.addAll(List.of(54L, 78L, 12L));
 
-        List<Integer> reverseIntegersList = asList(15, 11, 9, 7, 3);
-        List<String> reverseStringsLinkedSet = asList("IOP", "YTGH", "BT", "A");
-        List<Integer> reverseIntegersTreeSet = asList(9, 11, 35, 45, 71);
-        List<Long> reverseLongsPriorityQueue = asList(78L, 54L, 12L);
+        List<Integer> reverseIntegersList = List.of(15, 11, 9, 7, 3);
+        List<String> reverseStringsLinkedSet = List.of("IOP", "YTGH", "BT", "A");
+        List<Integer> reverseIntegersTreeSet = List.of(9, 11, 35, 45, 71);
+        List<Long> reverseLongsPriorityQueue = List.of(78L, 54L, 12L);
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,     expectedResult
@@ -954,11 +1006,11 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> sliceTestCases() {
-        Set<Integer> integers = new LinkedHashSet<>(asList(11, 12, 13, 14));
+        Set<Integer> integers = new LinkedHashSet<>(List.of(11, 12, 13, 14));
         List<String> strings = List.of("a", "b", "c", "d", "f");
 
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 78L, 12L));
+        longs.addAll(List.of(54L, 78L, 12L));
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   from,   to,   expectedException,                expectedResult
@@ -997,7 +1049,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> slidingTestCases() {
-        List<Integer> integers = asList(1, 3, 5);
+        List<Integer> integers = List.of(1, 3, 5);
         Set<String> strings = new LinkedHashSet<>() {{
             add("A");
             add("E");
@@ -1005,7 +1057,7 @@ public class CollectionUtilTest {
             add("M");
         }};
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
-        longs.addAll(asList(54L, 78L, 12L));
+        longs.addAll(List.of(54L, 78L, 12L));
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   size,                  expectedException,                expectedResult
@@ -1102,11 +1154,11 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> takeWhileAllParametersTestCases() {
-        List<Integer> ints = new ArrayList<>(asList(1, 2, 3, 6));
+        List<Integer> ints = List.of(1, 2, 3, 6);
         Predicate<Integer> isEven = i -> i % 2 == 0;
         Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
 
-        List<Integer> expectedIntsResultList = asList(2, 6);
+        List<Integer> expectedIntsResultList = List.of(2, 6);
         Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
         Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
         return Stream.of(
@@ -1222,20 +1274,20 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> zipTestCases() {
-        List<Integer> integers = asList(11, 31, 55);
-        List<Boolean> booleans = asList(true, false);
-        List<String> strings = asList("h", "o", "p");
+        List<Integer> integers = List.of(11, 31, 55);
+        List<Boolean> booleans = List.of(true, false);
+        List<String> strings = List.of("h", "o", "p");
 
-        List<Tuple2<Integer, Boolean>> integersBooleansResult = asList(
+        List<Tuple2<Integer, Boolean>> integersBooleansResult = List.of(
                 Tuple.of(11, true),
                 Tuple.of(31, false)
         );
-        List<Tuple2<Integer, String>> integersStringsResult = asList(
+        List<Tuple2<Integer, String>> integersStringsResult = List.of(
                 Tuple.of(11, "h"),
                 Tuple.of(31, "o"),
                 Tuple.of(55, "p")
         );
-        List<Tuple2<Boolean, String>> booleansStringsResult = asList(
+        List<Tuple2<Boolean, String>> booleansStringsResult = List.of(
                 Tuple.of(true, "h"),
                 Tuple.of(false, "o")
         );
@@ -1264,9 +1316,9 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> zipAllTestCases() {
-        List<Integer> integers = asList(11, 31, 55);
-        List<Boolean> booleans = asList(true, false);
-        List<String> strings = asList("h", "o", "p");
+        List<Integer> integers = List.of(11, 31, 55);
+        List<Boolean> booleans = List.of(true, false);
+        List<String> strings = List.of("h", "o", "p");
 
         Integer defaultIntegerValue = 99;
         Boolean defaultBooleanValue = true;
@@ -1327,19 +1379,19 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> zipWithIndexTestCases() {
-        List<Integer> integers = asList(1, 3, 5);
+        List<Integer> integers = List.of(1, 3, 5);
         Set<String> strings = new LinkedHashSet<>() {{
             add("A");
             add("E");
             add("G");
             add("M");
         }};
-        List<Tuple2<Integer, Integer>> integersResult = asList(
+        List<Tuple2<Integer, Integer>> integersResult = List.of(
                 Tuple.of(0, 1),
                 Tuple.of(1, 3),
                 Tuple.of(2, 5)
         );
-        List<Tuple2<Integer, String>> stringsResult = asList(
+        List<Tuple2<Integer, String>> stringsResult = List.of(
                 Tuple.of(0, "A"),
                 Tuple.of(1, "E"),
                 Tuple.of(2, "G"),
