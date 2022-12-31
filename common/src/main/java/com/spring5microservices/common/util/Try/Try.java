@@ -8,7 +8,6 @@ import org.springframework.util.ObjectUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -17,6 +16,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 
 /**
@@ -378,7 +379,7 @@ public abstract class Try<T> implements Serializable {
     public final Try<T> ap(final Try<? extends T> t,
                            final BiFunction<? super Throwable, ? super Throwable, ? extends Throwable> mapperFailure,
                            final BiFunction<? super T, ? super T, ? extends T> mapperSuccess) {
-        if (Objects.isNull(t)) {
+        if (isNull(t)) {
             return this;
         }
         // This is a Success instance
@@ -459,7 +460,7 @@ public abstract class Try<T> implements Serializable {
      * @return {@link Try}
      */
     public final Try<T> peek(final Consumer<? super T> action) {
-        if (isSuccess() && Objects.nonNull(action)) {
+        if (isSuccess() && nonNull(action)) {
             action.accept(get());
         }
         return this;
@@ -475,7 +476,7 @@ public abstract class Try<T> implements Serializable {
      * @return {@link Try}
      */
     public final Try<T> peekFailure(final Consumer<? super Throwable> action) {
-        if (!isSuccess() && Objects.nonNull(action)) {
+        if (!isSuccess() && nonNull(action)) {
             action.accept(getException());
         }
         return this;
@@ -495,10 +496,10 @@ public abstract class Try<T> implements Serializable {
      */
     public final Try<T> peek(final Consumer<? super Throwable> actionFailure,
                                    final Consumer<? super T> actionSuccess) {
-        if (isSuccess() && Objects.nonNull(actionSuccess)) {
+        if (isSuccess() && nonNull(actionSuccess)) {
             actionSuccess.accept(get());
         }
-        if (!isSuccess() && Objects.nonNull(actionFailure)) {
+        if (!isSuccess() && nonNull(actionFailure)) {
             actionFailure.accept(getException());
         }
         return this;
@@ -618,7 +619,7 @@ public abstract class Try<T> implements Serializable {
      * @return {@code true} is the current instance is empty, {@code false} otherwise
      */
     public final boolean isEmpty() {
-        return !isSuccess() || Objects.isNull(get());
+        return !isSuccess() || isNull(get());
     }
 
 
@@ -658,7 +659,7 @@ public abstract class Try<T> implements Serializable {
         return isSuccess()
                 ? Validation.valid(get())
                 : Validation.invalid(
-                        Objects.isNull(getException())
+                        isNull(getException())
                                 ? new ArrayList<>()
                                 : asList(getException())
                   );
@@ -678,7 +679,7 @@ public abstract class Try<T> implements Serializable {
     private Try<T> filterTry(final Predicate<? super T> predicate,
                              final Supplier<? extends Throwable> throwableSupplier) {
         try {
-            if (Objects.isNull(predicate) || predicate.test(get())) {
+            if (isNull(predicate) || predicate.test(get())) {
                 return this;
             } else {
                 return failure(throwableSupplier.get());

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,6 +21,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
@@ -109,10 +110,10 @@ public abstract class Validation<E, T> implements Serializable {
      *         otherwise {@code Invalid(either.getLeft())}
      */
     public static <E, T> Validation<E, T> fromEither(final Either<? extends E, ? extends T> either) {
-        if (Objects.nonNull(either) && either.isRight()) {
+        if (nonNull(either) && either.isRight()) {
             return valid(either.get());
         }
-        List<E> errors = Objects.isNull(either) || Objects.isNull(either.getLeft())
+        List<E> errors = isNull(either) || isNull(either.getLeft())
                 ? new ArrayList<>()
                 : asList(either.getLeft());
         return invalid(errors);
@@ -132,10 +133,10 @@ public abstract class Validation<E, T> implements Serializable {
      *         otherwise {@code Invalid(t.getException())}
      */
     public static <T> Validation<Throwable, T> fromTry(final Try<? extends T> t) {
-        if (Objects.nonNull(t) && t.isSuccess()) {
+        if (nonNull(t) && t.isSuccess()) {
             return valid(t.get());
         }
-        List<Throwable> errors = Objects.isNull(t) || Objects.isNull(t.getException())
+        List<Throwable> errors = isNull(t) || isNull(t.getException())
                 ? new ArrayList<>()
                 : asList(t.getException());
         return invalid(errors);
@@ -223,7 +224,7 @@ public abstract class Validation<E, T> implements Serializable {
         if (!isValid()) {
             return of(this);
         }
-        return Objects.isNull(predicate) || predicate.test(get())
+        return isNull(predicate) || predicate.test(get())
                 ? of(this)
                 : empty();
     }
@@ -259,7 +260,7 @@ public abstract class Validation<E, T> implements Serializable {
         if (!isValid()) {
             return this;
         }
-        if (Objects.isNull(predicate) || predicate.test(get())) {
+        if (isNull(predicate) || predicate.test(get())) {
             return this;
         }
         Assert.notNull(zero, "zero must be not null");
@@ -402,7 +403,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @return {@link Validation}
      */
     public final Validation<E, T> ap(final Validation<E, T> validation) {
-        if (Objects.isNull(validation)) {
+        if (isNull(validation)) {
             return this;
         }
         // This is a Valid instance
@@ -474,7 +475,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @return {@link Validation}
      */
     public final Validation<E, T> peek(final Consumer<? super T> action) {
-        if (isValid() && Objects.nonNull(action)) {
+        if (isValid() && nonNull(action)) {
             action.accept(get());
         }
         return this;
@@ -490,7 +491,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @return {@link Validation}
      */
     public final Validation<E, T> peekError(final Consumer<Collection<? super E>> action) {
-        if (!isValid() && Objects.nonNull(action)) {
+        if (!isValid() && nonNull(action)) {
             action.accept(getErrors());
         }
         return this;
@@ -510,10 +511,10 @@ public abstract class Validation<E, T> implements Serializable {
      */
     public final Validation<E, T> peek(final Consumer<Collection<? super E>> actionInvalid,
                                        final Consumer<? super T> actionValid) {
-        if (isValid() && Objects.nonNull(actionValid)) {
+        if (isValid() && nonNull(actionValid)) {
             actionValid.accept(get());
         }
-        if (!isValid() && Objects.nonNull(actionInvalid)) {
+        if (!isValid() && nonNull(actionInvalid)) {
             actionInvalid.accept(getErrors());
         }
         return this;
@@ -601,7 +602,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @return {@code true} is the current instance is empty, {@code false} otherwise
      */
     public final boolean isEmpty() {
-        return !isValid() || Objects.isNull(get());
+        return !isValid() || isNull(get());
     }
 
 

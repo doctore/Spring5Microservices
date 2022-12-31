@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static java.util.Objects.isNull;
+
 /**
  * The left side of the disjoint union, as opposed to the {@link Right} side.
  *
@@ -69,7 +71,7 @@ public final class Left<L, R> extends Either<L, R> implements Serializable {
      * @return {@link Left}
      */
     public static <L, R> Left<L, R> ofNullable(final L value) {
-        return Objects.isNull(value)
+        return isNull(value)
                 ? empty()
                 : of(value);
     }

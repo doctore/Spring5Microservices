@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
@@ -214,9 +215,10 @@ public final class Lazy<T> implements Supplier<T> {
      */
     private T computeValue(boolean useCachedValue) {
         if (useCachedValue) {
-            cachedValue = Objects.isNull(cachedValue)
-                    ? supplier.get()
-                    : cachedValue;
+            cachedValue = getOrElse(
+                    cachedValue,
+                    supplier.get()
+            );
         } else {
             cachedValue = supplier.get();
         }

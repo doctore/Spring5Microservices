@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
 
+import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
@@ -77,9 +78,10 @@ public class NumberUtil {
         if (isNull(two)) {
             return 1;
         }
-        final RoundingMode finalRoundingMode = isNull(roundingMode)
-                ? RoundingMode.HALF_UP
-                : roundingMode;
+        final RoundingMode finalRoundingMode = getOrElse(
+                roundingMode,
+                RoundingMode.HALF_UP
+        );
         final BigDecimal oneWithProvidedPrecision = one.setScale(
                 numberOfDecimals,
                 finalRoundingMode

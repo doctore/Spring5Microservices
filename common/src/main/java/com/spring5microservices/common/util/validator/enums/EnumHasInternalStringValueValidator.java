@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.isNull;
+
 /**
  *    Validates if the given {@link String} matches with one of the internal {@link String} property belonging to the
  * provided {@link Class} of {@link Enum}
@@ -35,9 +37,10 @@ public class EnumHasInternalStringValueValidator implements ConstraintValidator<
 	@Override
 	public boolean isValid(final String value,
 						   final ConstraintValidatorContext context) {
-		boolean isValid = null == value
-				? isNullAccepted
-				: enumValidValues.contains(value);
+		boolean isValid =
+				isNull(value)
+						? isNullAccepted
+						: enumValidValues.contains(value);
 
 		if (!isValid) {
 			HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);

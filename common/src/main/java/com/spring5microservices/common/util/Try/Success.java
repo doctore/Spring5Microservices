@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static java.util.Objects.isNull;
+
 /**
  * The successful result of a {@link Try} operation.
  *
@@ -66,7 +68,7 @@ public final class Success<T> extends Try<T> implements Serializable {
      * @return {@link Success}
      */
     public static <T> Success<T> ofNullable(final T value) {
-        return Objects.isNull(value)
+        return isNull(value)
                 ? empty()
                 : of(value);
     }

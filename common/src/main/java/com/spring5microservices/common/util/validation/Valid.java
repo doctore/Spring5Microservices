@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static java.util.Objects.isNull;
+
 /**
  * An valid {@link Validation}.
  *
@@ -69,7 +71,7 @@ public final class Valid<E, T> extends Validation<E, T> implements Serializable 
      * @return {@link Valid}
      */
     public static <E, T> Valid<E, T> ofNullable(final T value) {
-        return Objects.isNull(value)
+        return isNull(value)
                 ? empty()
                 : of(value);
     }

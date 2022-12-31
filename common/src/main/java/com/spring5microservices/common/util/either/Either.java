@@ -7,7 +7,6 @@ import org.springframework.util.ObjectUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -16,6 +15,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
@@ -204,14 +205,14 @@ public abstract class Either<L, R> implements Serializable {
     public final boolean contains(final R value) {
         if (isRight()) {
             return (
-                    Objects.isNull(value) &&
-                            Objects.isNull(get())
-                   ) ||
-                   (
-                    Objects.nonNull(value) &&
-                            Objects.nonNull(get()) &&
+                    isNull(value) &&
+                            isNull(get())
+            ) ||
+            (
+                    nonNull(value) &&
+                            nonNull(get()) &&
                             get().equals(value)
-                   );
+            );
         }
         return false;
     }
@@ -234,7 +235,7 @@ public abstract class Either<L, R> implements Serializable {
         if (!isRight()) {
             return of(this);
         }
-        return Objects.isNull(predicate) || predicate.test(get())
+        return isNull(predicate) || predicate.test(get())
                 ? of(this)
                 : empty();
     }
@@ -270,7 +271,7 @@ public abstract class Either<L, R> implements Serializable {
         if (!isRight()) {
             return this;
         }
-        if (Objects.isNull(predicate) || predicate.test(get())) {
+        if (isNull(predicate) || predicate.test(get())) {
             return this;
         }
         Assert.notNull(zero, "zero must be not null");
@@ -420,7 +421,7 @@ public abstract class Either<L, R> implements Serializable {
     public final Either<L, R> ap(final Either<? extends L, ? extends R> either,
                                  final BiFunction<? super L, ? super L, ? extends L> mapperLeft,
                                  final BiFunction<? super R, ? super R, ? extends R> mapperRight) {
-        if (Objects.isNull(either)) {
+        if (isNull(either)) {
             return this;
         }
         // This is a Right instance
@@ -500,7 +501,7 @@ public abstract class Either<L, R> implements Serializable {
      * @return {@link Either}
      */
     public final Either<L, R> peek(final Consumer<? super R> action) {
-        if (isRight() && Objects.nonNull(action)) {
+        if (isRight() && nonNull(action)) {
             action.accept(get());
         }
         return this;
@@ -516,7 +517,7 @@ public abstract class Either<L, R> implements Serializable {
      * @return {@link Either}
      */
     public final Either<L, R> peekLeft(final Consumer<? super L> action) {
-        if (!isRight() && Objects.nonNull(action)) {
+        if (!isRight() && nonNull(action)) {
             action.accept(getLeft());
         }
         return this;
@@ -536,10 +537,10 @@ public abstract class Either<L, R> implements Serializable {
      */
     public final Either<L, R> peek(final Consumer<? super L> actionLeft,
                                    final Consumer<? super R> actionRight) {
-        if (isRight() && Objects.nonNull(actionRight)) {
+        if (isRight() && nonNull(actionRight)) {
             actionRight.accept(get());
         }
-        if (!isRight() && Objects.nonNull(actionLeft)) {
+        if (!isRight() && nonNull(actionLeft)) {
             actionLeft.accept(getLeft());
         }
         return this;
@@ -641,7 +642,7 @@ public abstract class Either<L, R> implements Serializable {
      * @return {@code true} is the current instance is empty, {@code false} otherwise
      */
     public final boolean isEmpty() {
-        return !isRight() || Objects.isNull(get());
+        return !isRight() || isNull(get());
     }
 
 
@@ -668,7 +669,7 @@ public abstract class Either<L, R> implements Serializable {
         return isRight()
                 ? Validation.valid(get())
                 : Validation.invalid(
-                        Objects.isNull(getLeft())
+                        isNull(getLeft())
                                 ? new ArrayList<>()
                                 : asList(getLeft())
                   );

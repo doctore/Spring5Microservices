@@ -31,9 +31,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
@@ -121,21 +123,19 @@ public class CollectionUtil {
                                                    final Function<? super T, ? extends E> defaultFunction,
                                                    final Function<? super T, ? extends E> orElseFunction,
                                                    final Supplier<Collection<E>> collectionFactory) {
-        final Supplier<Collection<E>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
+        final Supplier<Collection<E>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
         Assert.notNull(defaultFunction, "defaultFunction must be not null");
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
-        final Predicate<? super T> finalFilterPredicate =
-                isNull(filterPredicate)
-                        ? t -> true
-                        : filterPredicate;
-
+        final Predicate<? super T> finalFilterPredicate = getOrElse(
+                filterPredicate,
+                t -> true
+        );
         return sourceCollection.stream()
                 .map(elto ->
                         finalFilterPredicate.test(elto)
@@ -188,11 +188,10 @@ public class CollectionUtil {
     @SafeVarargs
     public static <T> Set<T> asSet(final Supplier<Set<T>> setFactory,
                                    final T ...elements) {
-        final Supplier<Set<T>> finalSetFactory =
-                isNull(setFactory)
-                        ? LinkedHashSet::new
-                        : setFactory;
-
+        final Supplier<Set<T>> finalSetFactory = getOrElse(
+                setFactory,
+                LinkedHashSet::new
+        );
         return ofNullable(elements)
                 .map(e ->
                         Arrays.stream(e)
@@ -277,20 +276,18 @@ public class CollectionUtil {
                                                final Predicate<? super T> filterPredicate,
                                                final Function<? super T, ? extends E> mapFunction,
                                                final Supplier<Collection<E>> collectionFactory) {
-        final Supplier<Collection<E>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
+        final Supplier<Collection<E>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        final Predicate<? super T> finalFilterPredicate =
-                isNull(filterPredicate)
-                        ? t -> true
-                        : filterPredicate;
-
+        final Predicate<? super T> finalFilterPredicate = getOrElse(
+                filterPredicate,
+                t -> true
+        );
         return sourceCollection
                 .stream()
                 .filter(finalFilterPredicate)
@@ -357,22 +354,22 @@ public class CollectionUtil {
     public static <T, E> Collection<E> collectProperty(final Collection<? extends T> sourceCollection,
                                                        final Function<? super T, ? extends E> propertyExtractor,
                                                        final Supplier<Collection<E>> collectionFactory) {
+        final Supplier<Collection<E>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         return ofNullable(sourceCollection)
                 .map(c -> {
                     if (isNull(propertyExtractor)) {
                         return null;
                     }
-                    Stream<E> propertyExtractedStream = sourceCollection.stream().map(propertyExtractor);
-                    return isNull(collectionFactory)
-                            ? propertyExtractedStream.collect(toList())
-                            : propertyExtractedStream.collect(
-                                    toCollection(collectionFactory)
-                              );
+                    return sourceCollection.stream()
+                            .map(propertyExtractor)
+                            .collect(
+                                    toCollection(finalCollectionFactory)
+                            );
                 })
-                .orElseGet(() ->
-                        isNull(collectionFactory)
-                                ? new ArrayList<>()
-                                : collectionFactory.get());
+                .orElseGet(finalCollectionFactory);
     }
 
 
@@ -439,12 +436,11 @@ public class CollectionUtil {
     public static <T> Collection<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
                                                           final Supplier<Collection<Tuple>> collectionFactory,
                                                           final Function<? super T, ?> ...propertyExtractors) {
-        final Supplier<Collection<Tuple>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
-        if (Objects.nonNull(propertyExtractors)) {
+        final Supplier<Collection<Tuple>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (nonNull(propertyExtractors)) {
             Assert.isTrue(
                     Tuple.MAX_ALLOWED_TUPLE_ARITY >= propertyExtractors.length,
                     format("If propertyExtractors is not null then its size should be <= %d",
@@ -460,7 +456,9 @@ public class CollectionUtil {
                             .map(elto -> {
                                 Tuple result = Tuple.empty();
                                 for (Function<? super T, ?> propertyExtractor: propertyExtractors) {
-                                    result = result.globalAppend(propertyExtractor.apply(elto));
+                                    result = result.globalAppend(
+                                            propertyExtractor.apply(elto)
+                                    );
                                 }
                                 return result;
                             })
@@ -587,6 +585,7 @@ public class CollectionUtil {
                 isNull(filterPredicate)
                         ? t -> true
                         : filterPredicate.negate();
+
         return takeWhile(
                 sourceCollection,
                 finalFilterPredicate,
@@ -699,7 +698,7 @@ public class CollectionUtil {
                 .map(CollectionUtil::getCollectionKeepingInternalOrdination)
                 .map(sc -> {
                     E result = initialValue;
-                    if (Objects.nonNull(accumulator)) {
+                    if (nonNull(accumulator)) {
                         for (T element: sc) {
                             result = accumulator.apply(result, element);
                         }
@@ -784,12 +783,11 @@ public class CollectionUtil {
      */
     public static <T> Collection<T> fromIterator(final Iterator<? extends T> sourceIterator,
                                                  final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
-        if (Objects.isNull(sourceIterator) || !sourceIterator.hasNext()) {
+        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (isNull(sourceIterator) || !sourceIterator.hasNext()) {
             return finalCollectionFactory.get();
         }
         return StreamSupport.stream(
@@ -889,11 +887,10 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new HashMap<>();
         }
-        final Supplier<Collection<V>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
+        final Supplier<Collection<V>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         Map<K, Collection<V>> result = new HashMap<>();
         sourceCollection.forEach(
                 e -> {
@@ -946,7 +943,6 @@ public class CollectionUtil {
         Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
         Assert.notNull(reduceValues, "reduceValues must be not null");
-
         Map<K, V> result = new HashMap<>();
         groupMap(
                 sourceCollection,
@@ -1296,19 +1292,17 @@ public class CollectionUtil {
     public static <T> Collection<T> takeWhile(final Collection<? extends T> sourceCollection,
                                               final Predicate<? super T> filterPredicate,
                                               final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
+        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
-        final Predicate<? super T> finalFilterPredicate =
-                isNull(filterPredicate)
-                        ? t -> true
-                        : filterPredicate;
-
+        final Predicate<? super T> finalFilterPredicate = getOrElse(
+                filterPredicate,
+                t -> true
+        );
         return sourceCollection
                 .stream()
                 .filter(finalFilterPredicate)

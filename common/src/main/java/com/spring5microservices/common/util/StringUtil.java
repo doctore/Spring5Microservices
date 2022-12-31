@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
@@ -70,7 +70,7 @@ public class StringUtil {
         return ofNullable(sourceString)
                 .map(s -> {
                     final String finalPutInTheMiddle =
-                            Objects.isNull(putInTheMiddle) || putInTheMiddle.trim().isEmpty()
+                            isNull(putInTheMiddle) || putInTheMiddle.trim().isEmpty()
                                     ? DEFAULT_MIDDLE_STRING_ABBREVIATION
                                     : putInTheMiddle;
 
@@ -98,7 +98,7 @@ public class StringUtil {
      */
     public static boolean containsIgnoreCase(final String sourceString,
                                              final String stringToSearch) {
-        if (Objects.isNull(sourceString) || Objects.isNull(stringToSearch)) {
+        if (isNull(sourceString) || isNull(stringToSearch)) {
             return false;
         }
         return sourceString.toLowerCase()
@@ -233,7 +233,7 @@ public class StringUtil {
      */
     public static List<String> sliding(final String sourceString,
                                        final int size) {
-        if (Objects.isNull(sourceString)) {
+        if (isNull(sourceString)) {
             return new ArrayList<>();
         }
         if (1 > size ||
@@ -281,7 +281,7 @@ public class StringUtil {
      */
     public static List<String> split(final String sourceString,
                                      final int size) {
-        if (Objects.isNull(sourceString)) {
+        if (isNull(sourceString)) {
             return new ArrayList<>();
         }
         if (1 > size || size > sourceString.length()) {
@@ -416,14 +416,13 @@ public class StringUtil {
                                           final int chunkLimit,
                                           final Function<String, ? extends T> valueExtractor,
                                           final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory =
-                isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
+        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         return ofNullable(source)
                 .map(s -> {
-                    if (Objects.isNull(valueExtractor)) {
+                    if (isNull(valueExtractor)) {
                         return null;
                     }
                     final String[] splitString =
@@ -442,7 +441,9 @@ public class StringUtil {
                             .map(valueExtractor);
 
                     return valueExtractedStream
-                            .collect(toCollection(finalCollectionFactory));
+                            .collect(
+                                    toCollection(finalCollectionFactory)
+                            );
                 })
                 .orElseGet(finalCollectionFactory);
     }
@@ -522,15 +523,14 @@ public class StringUtil {
     public static Collection<String> splitMultilevel(final String source,
                                                      final Supplier<Collection<String>> collectionFactory,
                                                      final String ...separators) {
-        final Supplier<Collection<String>> finalCollectionFactory =
-                Objects.isNull(collectionFactory)
-                        ? ArrayList::new
-                        : collectionFactory;
-
+        final Supplier<Collection<String>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         return ofNullable(source)
                 .map(s -> {
                     Collection<String> result = finalCollectionFactory.get();
-                    if (Objects.isNull(separators)) {
+                    if (isNull(separators)) {
                         result.add(source);
                         return result;
                     }

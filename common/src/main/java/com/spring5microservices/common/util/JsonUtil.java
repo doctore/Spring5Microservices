@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Objects;
 import java.util.Optional;
 
+import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
@@ -69,10 +69,10 @@ public class JsonUtil {
                 .filter(StringUtils::isNotBlank)
                 .map(json -> {
                     try {
-                        final ObjectMapper finalObjectMapper = Objects.isNull(objectMapper)
-                                ? DEFAULT_OBJECT_MAPPER
-                                : objectMapper;
-
+                        final ObjectMapper finalObjectMapper = getOrElse(
+                                objectMapper,
+                                DEFAULT_OBJECT_MAPPER
+                        );
                         return finalObjectMapper.readValue(
                                 json,
                                 clazzToConvert
@@ -127,10 +127,10 @@ public class JsonUtil {
         return ofNullable(sourceObject)
                 .map(o -> {
                     try {
-                        final ObjectMapper finalObjectMapper = Objects.isNull(objectMapper)
-                                ? DEFAULT_OBJECT_MAPPER
-                                : objectMapper;
-
+                        final ObjectMapper finalObjectMapper = getOrElse(
+                                objectMapper,
+                                DEFAULT_OBJECT_MAPPER
+                        );
                         return finalObjectMapper.writeValueAsString(o);
 
                     } catch (Exception e) {
