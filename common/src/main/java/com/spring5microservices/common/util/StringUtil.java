@@ -10,11 +10,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
@@ -27,6 +28,7 @@ public class StringUtil {
 
     private final String DEFAULT_MIDDLE_STRING_ABBREVIATION = "...";
     private final String DEFAULT_STRING_SEPARATOR = ",";
+    private final String EMPTY_STRING = "";
 
 
     /**
@@ -187,6 +189,75 @@ public class StringUtil {
                                               final String defaultValue) {
         return getBeforeLastIndexOf(sourceString, stringToFind)
                 .filter(StringUtils::hasLength)
+                .orElse(defaultValue);
+    }
+
+
+    /**
+     * Return the given {@code sourceString} if is not {@code null}. Otherwise, returns an empty {@link String}.
+     *
+     * @param sourceString
+     *    {@link String} returned only if is not {@code null}
+     *
+     * @return {@code sourceString} if is not {@code null}, empty {@link String} otherwise
+     */
+    public static String getOrEmpty(final String sourceString) {
+        return getOrElse(
+                sourceString,
+                EMPTY_STRING
+        );
+    }
+
+
+    /**
+     * Return the given {@code sourceString} if is not {@code null}. Otherwise, returns {@code defaultValue}.
+     *
+     * @param sourceString
+     *    {@link String} returned only if is not {@code null}
+     * @param defaultValue
+     *    Alternative value to return
+     *
+     * @return {@code sourceString} if is not {@code null}, {@code defaultValue} otherwise
+     */
+    public static String getOrElse(final String sourceString,
+                                   final String defaultValue) {
+        return ofNullable(sourceString)
+                .orElse(defaultValue);
+    }
+
+
+    /**
+     *    Return the given {@code sourceString} if is not {@code null} and verifies {@code predicateToMatch}.
+     * Otherwise, returns {@code defaultValue}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    "   "                      "other"
+     *    s -> s.trim().size() > 0
+     *    "other"
+     * </pre>
+     *
+     * @param sourceString
+     *    {@link String} returned only if is not {@code null}
+     * @param predicateToMatch
+     *    {@link Predicate} to apply if {@code sourceInstance} is not {@code null}
+     * @param defaultValue
+     *    Alternative value to return
+     *
+     * @return {@code sourceString} if is not {@code null} and verifies {@code predicateToMatch},
+     *         {@code defaultValue} otherwise
+     */
+    public static String getOrElse(final String sourceString,
+                                   final Predicate<String> predicateToMatch,
+                                   final String defaultValue) {
+        final Predicate<String> finalPredicateToMatch = ObjectsUtil.getOrElse(
+                predicateToMatch,
+                alwaysTrue()
+        );
+        return ofNullable(sourceString)
+                .filter(finalPredicateToMatch)
                 .orElse(defaultValue);
     }
 
@@ -416,7 +487,7 @@ public class StringUtil {
                                           final int chunkLimit,
                                           final Function<String, ? extends T> valueExtractor,
                                           final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
+        final Supplier<Collection<T>> finalCollectionFactory = ObjectsUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
         );
@@ -523,7 +594,7 @@ public class StringUtil {
     public static Collection<String> splitMultilevel(final String source,
                                                      final Supplier<Collection<String>> collectionFactory,
                                                      final String ...separators) {
-        final Supplier<Collection<String>> finalCollectionFactory = getOrElse(
+        final Supplier<Collection<String>> finalCollectionFactory = ObjectsUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
         );

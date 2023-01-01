@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
+import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
@@ -124,7 +125,7 @@ public class MapUtil {
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
         final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectsUtil.getOrElse(
                 filterPredicate,
-                (k, v) -> true
+                biAlwaysTrue()
         );
         return sourceMap.entrySet()
                 .stream()
@@ -238,7 +239,7 @@ public class MapUtil {
         Assert.notNull(mapFunction, "mapFunction must be not null");
         final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectsUtil.getOrElse(
                 filterPredicate,
-                (k, v) -> true
+                biAlwaysTrue()
         );
         return sourceMap.entrySet()
                 .stream()
@@ -356,7 +357,7 @@ public class MapUtil {
                                              final Supplier<Map<T, E>> mapFactory) {
         final BiPredicate<? super T, ? super E> finalFilterPredicate =
                 isNull(filterPredicate)
-                        ? (k, v) -> true
+                        ? biAlwaysTrue()
                         : filterPredicate.negate();
 
         return takeWhile(
@@ -1361,7 +1362,7 @@ public class MapUtil {
         }
         final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectsUtil.getOrElse(
                 filterPredicate,
-                (k, v) -> true
+                biAlwaysTrue()
         );
         return sourceMap.entrySet()
                 .stream()

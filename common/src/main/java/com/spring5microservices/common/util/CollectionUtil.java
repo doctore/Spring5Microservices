@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
@@ -134,7 +135,7 @@ public class CollectionUtil {
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
         final Predicate<? super T> finalFilterPredicate = getOrElse(
                 filterPredicate,
-                t -> true
+                alwaysTrue()
         );
         return sourceCollection.stream()
                 .map(elto ->
@@ -286,7 +287,7 @@ public class CollectionUtil {
         Assert.notNull(mapFunction, "mapFunction must be not null");
         final Predicate<? super T> finalFilterPredicate = getOrElse(
                 filterPredicate,
-                t -> true
+                alwaysTrue()
         );
         return sourceCollection
                 .stream()
@@ -583,7 +584,7 @@ public class CollectionUtil {
                                               final Supplier<Collection<T>> collectionFactory) {
         final Predicate<? super T> finalFilterPredicate =
                 isNull(filterPredicate)
-                        ? t -> true
+                        ? alwaysTrue()
                         : filterPredicate.negate();
 
         return takeWhile(
@@ -1301,7 +1302,7 @@ public class CollectionUtil {
         }
         final Predicate<? super T> finalFilterPredicate = getOrElse(
                 filterPredicate,
-                t -> true
+                alwaysTrue()
         );
         return sourceCollection
                 .stream()

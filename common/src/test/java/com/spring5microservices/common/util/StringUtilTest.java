@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -18,6 +20,8 @@ import static com.spring5microservices.common.util.CollectionUtil.asSet;
 import static com.spring5microservices.common.util.StringUtil.abbreviateMiddle;
 import static com.spring5microservices.common.util.StringUtil.containsIgnoreCase;
 import static com.spring5microservices.common.util.StringUtil.getBeforeLastIndexOf;
+import static com.spring5microservices.common.util.StringUtil.getOrElse;
+import static com.spring5microservices.common.util.StringUtil.getOrEmpty;
 import static com.spring5microservices.common.util.StringUtil.keepOnlyDigits;
 import static com.spring5microservices.common.util.StringUtil.sliding;
 import static com.spring5microservices.common.util.StringUtil.split;
@@ -156,6 +160,77 @@ public class StringUtilTest {
                 Arguments.of( "12-34 56",       of("123456") )
         ); //@formatter:on
     }
+
+
+    static Stream<Arguments> getOrEmptyTestCases() {
+        String emptyString = "";
+        String notEmptyString = "Test string";
+        return Stream.of(
+                //@formatter:off
+                //            sourceInstance,   expectedResult
+                Arguments.of( null,             emptyString ),
+                Arguments.of( notEmptyString,   notEmptyString )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrEmptyTestCases")
+    @DisplayName("getOrEmpty: test cases")
+    public void getOrEmpty_testCases(String sourceInstance,
+                                     String expectedResult) {
+        assertEquals(expectedResult, getOrEmpty(sourceInstance));
+    }
+
+
+    static Stream<Arguments> getOrElse_SourceDefaultParametersTestCases() {
+        String notEmptyString = "Test string";
+        return Stream.of(
+                //@formatter:off
+                //            sourceInstance,   defaultValue,         expectedResult
+                Arguments.of( null,             null,                 null ),
+                Arguments.of( null,             notEmptyString,       notEmptyString ),
+                Arguments.of( notEmptyString,   null,                 notEmptyString ),
+                Arguments.of( notEmptyString,   "testDefaultValue",   notEmptyString )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElse_SourceDefaultParametersTestCases")
+    @DisplayName("getOrElse: with source and default value as parameters test cases")
+    public void getOrElse_SourceDefaultParameters_testCases(String sourceInstance,
+                                                            String defaultValue,
+                                                            String expectedResult) {
+        assertEquals(expectedResult, getOrElse(sourceInstance, defaultValue));
+    }
+
+
+    static Stream<Arguments> getOrElse_SourcePredicateDefaultParametersTestCases() {
+        String emptyString = "   ";
+        String notEmptyString = "Test string";
+        Predicate<String> notEmptyStringPredicate = StringUtils::hasText;
+        return Stream.of(
+                //@formatter:off
+                //            sourceInstance,   predicateToMatch,          defaultValue,     expectedResult
+                Arguments.of( null,             null,                      null,             null ),
+                Arguments.of( null,             null,                      notEmptyString,   notEmptyString ),
+                Arguments.of( null,             notEmptyStringPredicate,   null,             null ),
+                Arguments.of( null,             notEmptyStringPredicate,   notEmptyString,   notEmptyString ),
+                Arguments.of( emptyString,      null,                      notEmptyString,   emptyString ),
+                Arguments.of( emptyString,      notEmptyStringPredicate,   notEmptyString,   notEmptyString ),
+                Arguments.of( notEmptyString,   notEmptyStringPredicate,   emptyString,      notEmptyString )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElse_SourcePredicateDefaultParametersTestCases")
+    @DisplayName("getOrElse: using source, predicate and default value parameters test cases")
+    public void getOrElse_GenericDefaultValue_SourcePredicateDefaultParameters_testCases(String sourceInstance,
+                                                                                         Predicate<String> predicateToMatch,
+                                                                                         String defaultValue,
+                                                                                         String expectedResult) {
+        assertEquals(expectedResult, getOrElse(sourceInstance, predicateToMatch, defaultValue));
+    }
+
 
     @ParameterizedTest
     @MethodSource("keepOnlyDigitsTestCases")
