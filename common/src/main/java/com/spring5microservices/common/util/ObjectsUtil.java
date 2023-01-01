@@ -3,7 +3,9 @@ package com.spring5microservices.common.util;
 import lombok.experimental.UtilityClass;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
+import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static java.util.Optional.ofNullable;
 
 @UtilityClass
@@ -15,13 +17,49 @@ public class ObjectsUtil {
      * @param sourceInstance
      *    Object returned only if is not {@code null}
      * @param defaultValue
-     *    Returned value if {@code sourceInstance} is {@code null}
+     *    Alternative value to return
      *
      * @return {@code sourceInstance} if is not {@code null}, {@code defaultValue} otherwise
      */
     public static <T> T getOrElse(final T sourceInstance,
                                   final T defaultValue) {
         return ofNullable(sourceInstance)
+                .orElse(defaultValue);
+    }
+
+
+    /**
+     *    Return the given {@code sourceInstance} if is not {@code null} and verifies {@code predicateToMatch}.
+     * Otherwise, returns {@code defaultValue}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    "   "                      "other"
+     *    s -> s.trim().size() > 0
+     *    "other"
+     * </pre>
+     *
+     * @param sourceInstance
+     *    Object returned only if is not {@code null}
+     * @param predicateToMatch
+     *    {@link Predicate} to apply if {@code sourceInstance} is not {@code null}
+     * @param defaultValue
+     *    Alternative value to return
+     *
+     * @return {@code sourceInstance} if is not {@code null} and verifies {@code predicateToMatch},
+     *         {@code defaultValue} otherwise
+     */
+    public static <T> T getOrElse(final T sourceInstance,
+                                  final Predicate<? super T> predicateToMatch,
+                                  final T defaultValue) {
+        final Predicate<? super T> finalPredicateToMatch = getOrElse(
+                predicateToMatch,
+                alwaysTrue()
+        );
+        return ofNullable(sourceInstance)
+                .filter(finalPredicateToMatch)
                 .orElse(defaultValue);
     }
 
@@ -59,7 +97,7 @@ public class ObjectsUtil {
      * @param sourceInstance
      *    Object returned only if is not {@code null}
      * @param defaultValue
-     *    Returned value if {@code sourceInstance} is {@code null}
+     *    Alternative value to return
      *
      * @return {@link String} representation of {@code sourceInstance} if is not {@code null},
      *         {@code defaultValue} otherwise
