@@ -1,11 +1,13 @@
 package com.order;
 
+import com.order.dto.IngredientAmountDto;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
 import com.order.model.Order;
 import com.order.model.OrderLine;
 import com.order.model.Pizza;
+import com.spring5microservices.grpc.IngredientResponse;
 import lombok.experimental.UtilityClass;
 
 import java.sql.Timestamp;
@@ -37,6 +39,17 @@ public class TestDataFactory {
 
     public static PizzaDto buildPizzaDto(Short id, String name, Double cost) {
         return new PizzaDto(id, name, cost);
+    }
+
+    public static IngredientAmountDto buildIngredientAmount(String name, Integer amount) {
+        return new IngredientAmountDto(name, amount);
+    }
+
+    public static IngredientResponse buildIngredientResponse(Integer id, String name) {
+        return IngredientResponse.newBuilder()
+                .setId(id)
+                .setName(name)
+                .build();
     }
 
 }

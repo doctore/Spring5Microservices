@@ -504,7 +504,7 @@ public class PizzaControllerTest {
         Pizza afterPizza = buildPizza(afterPizzaDto.getId(), pizzaName, afterPizzaDto.getCost(), Set.of(afterIngredient));
 
         // When
-        when(mockPizzaService.save(beforePizza)).thenReturn(Optional.of(afterPizza));
+        when(mockPizzaService.save(beforePizza)).thenReturn(of(afterPizza));
 
         // Then
         webTestClient.put()

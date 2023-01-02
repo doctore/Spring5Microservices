@@ -49,12 +49,12 @@ public abstract class ParentDao<R extends UpdatableRecord<R>, P extends IModel, 
      *    {@link Class} of the returned results.
      * @param columns
      *    {@link String}s used to match information of the query into returned object
-     * @param <T>
+     * @param <E>
      *    Type of the returned results
      *
-     * @return a Java object of type T
+     * @return a Java object of type E
      */
-    protected <T> JdbcMapper<T> getJdbcMapper(final Class<T> classT,
+    protected <E> JdbcMapper<E> getJdbcMapper(final Class<E> classT,
                                               final String... columns) {
         return JdbcMapperFactory.newInstance()
                 .addKeys(columns)

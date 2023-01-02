@@ -58,8 +58,8 @@ public class OrderController {
      * @param orderDto
      *    {@link OrderDto} to create
      *
-     * @return if orderDto is not {@code Null}: {@link HttpStatus#CREATED} and created {@link OrderDto}
-     *         if orderDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
+     * @return if {@code orderDto} is not {@code Null}: {@link HttpStatus#CREATED} and created {@link OrderDto}
+     *         if {@code orderDto} is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
     @Operation(
             summary = "Create an order",
@@ -120,18 +120,20 @@ public class OrderController {
                                    CREATED
                            )
                    )
-                   .orElseGet(() -> new ResponseEntity<>(UNPROCESSABLE_ENTITY));
+                   .orElseGet(() ->
+                           new ResponseEntity<>(UNPROCESSABLE_ENTITY)
+                   );
     }
 
 
     /**
-     * Return the {@link OrderDto} and its {@link OrderLineDto} information of the given {@link OrderDto#getId()}}.
+     * Return the {@link OrderDto} and its {@link OrderLineDto} information of the given {@link OrderDto#getId()}.
      *
      * @param id
-     *    {@link Order#getId()}  to find
+     *    {@link Order#getId()} to find
      *
-     * @return if id was found: {@link HttpStatus#OK} and {@link OrderDto} that matches
-     *         if id was not found: {@link HttpStatus#NOT_FOUND}
+     * @return if {@code id} was found: {@link HttpStatus#OK} and {@link OrderDto} that matches
+     *         if {@code id} was not found: {@link HttpStatus#NOT_FOUND}
      */
     @Operation(
             summary = "Find order information matches given id",
@@ -191,7 +193,9 @@ public class OrderController {
                                    OK
                            )
                    )
-                   .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
+                   .orElseGet(() ->
+                           new ResponseEntity<>(NOT_FOUND)
+                   );
     }
 
 
@@ -201,8 +205,8 @@ public class OrderController {
      * @param orderDto
      *    {@link OrderDto} to update
      *
-     * @return if orderDto is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link OrderDto}
-     *         if orderDto is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
+     * @return if {@code orderDto} is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link OrderDto}
+     *         if {@code orderDto} is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
     @Operation(
             summary = "Update an order",
@@ -263,7 +267,9 @@ public class OrderController {
                                    OK
                            )
                    )
-                   .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
+                   .orElseGet(() ->
+                           new ResponseEntity<>(NOT_FOUND)
+                   );
     }
 
 }

@@ -42,7 +42,8 @@ public class OrderService {
      * @throws DataAccessException if there is an error executing the query
      */
     public Optional<OrderDto> findByIdWithOrderLines(final Integer id) {
-        return dao.fetchToOrderDtoByIdWithOrderLineDto(id);
+        return ofNullable(id)
+                .flatMap(dao::fetchToOrderDtoByIdWithOrderLineDto);
     }
 
 
@@ -74,7 +75,7 @@ public class OrderService {
      * @param orderDto
      *    {@link OrderDto} to save
      *
-     * @return {@link Optional} of {@link OrderDto} with its "final information" after this action
+     * @return {@link Optional} of {@link OrderDto} with its updated data
      */
     public Optional<OrderDto> save(final OrderDto orderDto) {
         return ofNullable(orderDto)

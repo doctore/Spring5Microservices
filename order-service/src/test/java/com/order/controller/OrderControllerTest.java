@@ -8,6 +8,7 @@ import com.order.configuration.security.WebSecurityConfiguration;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
+import com.order.grpc.client.GrpcClientRunner;
 import com.order.service.OrderService;
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import lombok.SneakyThrows;
@@ -65,6 +66,10 @@ public class OrderControllerTest {
 
     @MockBean
     private DocumentationConfiguration documentationConfiguration;
+
+    // To avoid gRPC client initialization
+    @MockBean
+    private GrpcClientRunner grpcClientRunner;
 
     @Autowired
     private MockMvc mockMvc;

@@ -12,4 +12,9 @@ public final class RestRoutes {
         public static final String WITH_ORDERLINES = "/withOrderlines";
     }
 
+    public static final class INGREDIENT {
+        public static final String ROOT = RestRoutes.ROOT + "/ingredient";
+        public static final String SUMMARY = "/summary";
+    }
+
 }

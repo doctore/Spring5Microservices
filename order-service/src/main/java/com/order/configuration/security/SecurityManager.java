@@ -1,6 +1,7 @@
 package com.order.configuration.security;
 
 import com.order.dto.UsernameAuthoritiesDto;
+import com.spring5microservices.common.util.HttpUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -43,8 +43,11 @@ public class SecurityManager {
 
 
     public Optional<Authentication> authenticate(final String authToken) {
-        return getAuthenticationInformation(securityConfiguration.getAuthenticationInformationWebService(), authToken)
-                .map(this::getFromUsernameAuthoritiesDto);
+        return getAuthenticationInformation(
+                securityConfiguration.getAuthenticationInformationWebService(),
+                authToken
+        )
+        .map(this::getFromUsernameAuthoritiesDto);
     }
 
 
@@ -118,12 +121,13 @@ public class SecurityManager {
      * @return {@link HttpHeaders}
      */
     private HttpHeaders createHeaders(final String username,
-                                      final String password){
+                                      final String password) {
         return new HttpHeaders() {{
-            String auth = username + ":" + password;
-            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
-            String authHeader = "Basic " + new String(encodedAuth);
-            set("Authorization", authHeader);
+            String authHeader = HttpUtil.encodeBasicAuthentication(
+                    username,
+                    password
+            );
+            set(HttpHeaders.AUTHORIZATION, authHeader);
         }};
     }
 

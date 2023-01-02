@@ -3,6 +3,7 @@ package com.pizza.controller;
 import com.pizza.PizzaServiceApplication;
 import com.pizza.configuration.Constants;
 import com.pizza.configuration.rest.RestRoutes;
+import com.pizza.grpc.server.GrpcServerRunner;
 import com.pizza.service.cache.UserBlacklistCacheService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,10 @@ public class UserControllerTest {
     @MockBean
     @Qualifier("cacheManager")
     private CacheManager mockCacheManager;
+
+    // To avoid gRPC server initialization
+    @MockBean
+    private GrpcServerRunner grpcServerRunner;
 
     private WebTestClient webTestClient;
 

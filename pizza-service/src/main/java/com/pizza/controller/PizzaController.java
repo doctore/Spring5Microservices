@@ -69,8 +69,8 @@ public class PizzaController {
      * @param pizzaDto
      *    {@link PizzaDto} to create
      *
-     * @return if pizzaDto is not {@code Null}: {@link HttpStatus#CREATED} and created {@link Pizza}
-     *         if pizzaDto is {@code Null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
+     * @return if {@code pizzaDto} is not {@code null}: {@link HttpStatus#CREATED} and created {@link Pizza}
+     *         if {@code pizzaDto} is {@code null}: {@link HttpStatus#UNPROCESSABLE_ENTITY} and {@code Null}
      */
     @Operation(
             summary = "Create a pizza",
@@ -148,8 +148,8 @@ public class PizzaController {
      * @param name
      *    Name to search in the current {@link Pizza#getName()}s
      *
-     * @return if name was found: {@link HttpStatus#OK} and {@link PizzaDto} that matches
-     *         if name was not found: {@link HttpStatus#NOT_FOUND}
+     * @return if {@code name} was found: {@link HttpStatus#OK} and {@link PizzaDto} that matches
+     *         if {@code name} was not found: {@link HttpStatus#NOT_FOUND}
      */
     @Operation(
             summary = "Find pizza information matches given name",
@@ -293,8 +293,8 @@ public class PizzaController {
      * @param pizzaDto
      *    {@link PizzaDto} to update
      *
-     * @return if pizza is not {@code Null} and exists: {@link HttpStatus#OK} and updated {@link Pizza}
-     *         if pizza is {@code Null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
+     * @return if {@code pizzaDto} is not {@code null} and exists: {@link HttpStatus#OK} and updated {@link Pizza}
+     *         if {@code pizzaDto} is {@code null} or not exists: {@link HttpStatus#NOT_FOUND} and {@code Null}
      */
     @Operation(
             summary = "Update a pizza",

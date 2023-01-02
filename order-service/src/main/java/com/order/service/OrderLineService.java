@@ -39,7 +39,7 @@ public class OrderLineService {
      * @param orderId
      *    {@link Order#getId()} of the given dtos
      *
-     * @return {@link Collection} of {@link OrderLineDto}s with its "final information" after this action
+     * @return {@link Collection} of {@link OrderLineDto}s with its updated data
      *
      * @throws IllegalArgumentException if given orderLineDtos is not null but orderId is null
      */
@@ -60,7 +60,7 @@ public class OrderLineService {
                             orderLineDtos,
                             orderLineDtosPersisted
                     );
-                    return  orderLineDtosPersisted;
+                    return orderLineDtosPersisted;
                 })
                 .orElseGet(ArrayList::new);
     }
@@ -77,7 +77,6 @@ public class OrderLineService {
      */
     private void mergePizzaInformation(final Collection<OrderLineDto> dtosWithPizzaInformation,
                                        final Collection<OrderLineDto> dtosWithoutPizzaInformation) {
-
         Map<Short, PizzaDto> pizzaDtoMap = dtosWithPizzaInformation.stream()
                 .map(OrderLineDto::getPizza)
                 .collect(

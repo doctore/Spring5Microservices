@@ -115,7 +115,10 @@ public class SecurityController extends BaseController {
                                         OK
                                 )
                         )
-                        .orElseGet(() -> new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY)));
+                        .orElseGet(() ->
+                                new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY)
+                        )
+                );
     }
 
 
@@ -193,7 +196,10 @@ public class SecurityController extends BaseController {
                                         OK
                                 )
                         )
-                        .orElseGet(() -> new ResponseEntity<>(HttpStatus.UNAUTHORIZED)));
+                        .orElseGet(() ->
+                                new ResponseEntity<>(HttpStatus.UNAUTHORIZED)
+                        )
+                );
     }
 
 

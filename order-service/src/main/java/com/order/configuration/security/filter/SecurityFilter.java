@@ -35,7 +35,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         String token = request.getHeader(AUTHORIZATION);
         if (StringUtils.hasText(token)) {
             String tokenData = token.replace(SecurityConfiguration.TOKEN_PREFIX, "");
-            securityManager.authenticate(tokenData).ifPresent(SecurityContextHolder.getContext()::setAuthentication);
+            securityManager.authenticate(tokenData)
+                    .ifPresent(SecurityContextHolder.getContext()::setAuthentication);
         }
         filterChain.doFilter(request, response);
     }

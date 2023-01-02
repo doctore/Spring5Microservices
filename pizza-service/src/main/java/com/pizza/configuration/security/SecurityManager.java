@@ -4,6 +4,7 @@ import com.pizza.service.cache.UserBlacklistCacheService;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.enums.ExtendedHttpStatus;
 import com.spring5microservices.common.exception.UnauthorizedException;
+import com.spring5microservices.common.util.HttpUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
@@ -22,7 +23,6 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -163,20 +163,21 @@ public class SecurityManager implements ReactiveAuthenticationManager {
     }
 
     /**
-     * Build the required Basic Authentication header to send requests to the security server
+     * Build the required Basic Authentication header to send requests to the security server.
      *
      * @param username
      *    Security server client identifier
      * @param password
      *    Security server client password
      *
-     * @return {@link HttpHeaders}
+     * @return {@link String}
      */
     private String buildAuthorizationHeader(final String username,
                                             final String password) {
-        String auth = username + ":" + password;
-        byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes());
-        return "Basic " + new String(encodedAuth);
+        return HttpUtil.encodeBasicAuthentication(
+                username,
+                password
+        );
     }
 
 }
