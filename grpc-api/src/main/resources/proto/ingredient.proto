@@ -1,0 +1,34 @@
+// Proto version used
+syntax = "proto3";
+
+// Separate .java files will be generated for each of the Java classes/enums/etc. included in this .proto file
+option java_multiple_files = true;
+
+// Package used for your generated Java classes.
+option java_package = "com.spring5microservices.grpc";
+
+// Class name (and hence the file name) for the wrapper Java class to generate
+option java_outer_classname = "IngredientServiceProto";
+
+
+// Interface exported by the server.
+service IngredientService {
+
+  // A server-to-client streaming RPC:
+  // Obtains the list of Ingredient related with the given Pizza
+  rpc getIngredients(PizzaRequest) returns (stream IngredientResponse) {}
+
+}
+
+
+// Pizza's identifier
+message PizzaRequest {
+  int32 id = 1;
+}
+
+
+// Individual ingredients used in a Pizza
+message IngredientResponse {
+  int32 id = 1;
+  string name = 2;
+}
