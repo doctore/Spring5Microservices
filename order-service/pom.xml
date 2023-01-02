@@ -25,7 +25,8 @@
         <simpleflatmapper.version>8.2.3</simpleflatmapper.version>
         <spring-cloud.version>2021.0.4</spring-cloud.version>
         <springdoc.version>1.6.12</springdoc.version>
-        <spring5-microservices-common.version>3.0</spring5-microservices-common.version>
+        <spring5-microservices-common.version>3.1.0</spring5-microservices-common.version>
+        <spring5-microservices-grpc.version>1.0.0</spring5-microservices-grpc.version>
     </properties>
 
     <dependencies>
@@ -62,11 +63,16 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-rsa</artifactId>
         </dependency>
-        <!-- Spring5 microservices common -->
+        <!-- Spring5 microservices common libraries -->
         <dependency>
             <groupId>com.spring5microservices.common</groupId>
             <artifactId>spring5-microservices-common</artifactId>
             <version>${spring5-microservices-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.spring5microservices.grpc</groupId>
+            <artifactId>spring5-microservices-grpc</artifactId>
+            <version>${spring5-microservices-grpc.version}</version>
         </dependency>
         <!-- Database related -->
         <dependency>
@@ -124,6 +130,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
@@ -132,11 +143,6 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
             <version>${hamcrest.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -155,11 +161,13 @@
 
     <build>
         <plugins>
+            <!-- Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${project.parent.version}</version>
             </plugin>
+            <!-- MapStruct -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

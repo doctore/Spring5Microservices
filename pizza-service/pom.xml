@@ -25,7 +25,8 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <spring-cloud.version>2021.0.4</spring-cloud.version>
         <springdoc.version>1.6.12</springdoc.version>
-        <spring5-microservices-common.version>3.0</spring5-microservices-common.version>
+        <spring5-microservices-common.version>3.1.0</spring5-microservices-common.version>
+        <spring5-microservices-grpc.version>1.0.0</spring5-microservices-grpc.version>
     </properties>
 
     <dependencies>
@@ -62,11 +63,16 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-rsa</artifactId>
         </dependency>
-        <!-- Spring5 microservices common -->
+        <!-- Spring5 microservices common libraries -->
         <dependency>
             <groupId>com.spring5microservices.common</groupId>
             <artifactId>spring5-microservices-common</artifactId>
             <version>${spring5-microservices-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.spring5microservices.grpc</groupId>
+            <artifactId>spring5-microservices-grpc</artifactId>
+            <version>${spring5-microservices-grpc.version}</version>
         </dependency>
         <!-- Database related -->
         <dependency>
@@ -158,11 +164,13 @@
 
     <build>
         <plugins>
+            <!-- Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${project.parent.version}</version>
             </plugin>
+            <!-- QueryDSL -->
             <plugin>
                 <groupId>com.mysema.maven</groupId>
                 <artifactId>apt-maven-plugin</artifactId>
@@ -179,6 +187,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- MapStruct -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
