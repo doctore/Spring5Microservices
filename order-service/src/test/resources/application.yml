@@ -44,3 +44,11 @@ springdoc:
     path: testPath
   webjars:
     prefix: testPrefix
+
+grpc:
+  client:
+    awaitTerminationInSeconds: 0
+    withDeadlineAfterInSeconds: 0
+  server:
+    host: localhost
+    port: 11

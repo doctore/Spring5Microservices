@@ -64,6 +64,11 @@ springdoc:
   webjars:
     prefix: testPrefix
 
+grpc:
+  server:
+    port: 11
+    awaitTerminationInSeconds: 0
+
 #show sql statement
 #logging:
 #  level:
