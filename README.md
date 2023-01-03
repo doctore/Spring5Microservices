@@ -23,8 +23,8 @@
 
 ## Why was this project created?
 
-Basically to know how to create a project using the microservices approach with the last Spring version. Due to there are several options we can use for different features included
-in a microservices architecture, the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
+Basically to know how to create a project using the microservices approach with 5th version of Spring framework. Due to there are several options we can use for different features
+included in a microservice architecture, the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
 
 
 ## Elements included in this project
@@ -40,12 +40,13 @@ algorithm (Ribbon by default).
 
 ### config-server
 
-Configuration server used by the microservices included to get their required initial values like database configuration, for example. Those configuration values have been added
+Configuration server used by the included microservices to get their required initial values like database configuration, for example. Those configuration values have been added
 into the project:
 
 * [Spring5Microservices_ConfigServerData](https://github.com/doctore/Spring5Microservices_ConfigServerData)
 
-As we can see, there is a specific folder for every microservice and the important information is encoded (the next code is part of *pizza-service/pizza-service-dev.yml* file):
+As you can see, there is a specific folder for every microservice and the important information is encoded (the next code is part of
+[pizza-service-dev.yml](https://github.com/doctore/Spring5Microservices_ConfigServerData/blob/master/pizza-service/pizza-service-dev.yml) file):
 
 ```
 spring:
@@ -57,8 +58,8 @@ spring:
     password: "{cipher}c5c54009a56a0f215a208067a2b13189091c13480306c81ab68edfb22a6251ca"
 ```
 
-To increase the security level, in *application.yml* file I have deactivated the decryption on [config-server](#config-server), sending the information encrypted and delegating in
-every microservice the labour of decrypt it. That is the reason to include in their *pom.xml* file, the dependency:
+To increase the security level, in the [config-server](#config-server) microservice I have deactivated the decryption in [application.yml](https://github.com/doctore/Spring5Microservices/blob/master/config-server/src/main/resources/application.yml),
+sending the information encrypted and delegating in every microservice the labour of decrypt it. That is the reason to include in their *pom.xml* file, the dependency:
 
 ```
 <dependency>
@@ -71,7 +72,7 @@ every microservice the labour of decrypt it. That is the reason to include in th
 ### gateway-server
 
 Using Spring Gateway, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a filter to registry every web service
-invoked, helping to debug every request.
+invoked, helping to debug each request.
 <br><br>
 
 ### security-oauth-service
@@ -104,7 +105,8 @@ On the other hand, there are other "important folders":
 
 Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provided a completely multi-application
 platform to generate/manage their own access and refresh tokens (including additional information), choosing between JWS or JWE token type. Every application will be able to manage
-its own token configuration/generation adding a new row in the database table: **security.jwt_client_details** and implementing the interface `IAuthenticationGenerator`.
+its own token configuration/generation adding a new row in the database table: **security.jwt_client_details** and implementing the interface
+[IAuthenticationGenerator](https://github.com/doctore/Spring5Microservices/blob/master/security-jwt-service/src/main/java/com/security/jwt/interfaces/IAuthenticationGenerator.java).
  
 The technologies used are the following ones:
 
@@ -156,7 +158,8 @@ On the other hand, there are other "important folders":
 * **util/converter** to translate from entities to dtos and vice versa.
 
 Using **Hazelcast** for that purpose, this microservice provides functionality to banned users temporally. That is the way we can use to disable any JWT active token related
-with a user we just disabled in database (through admin web page or similar tool). `UserController` resource provides the required web services.
+with a user we just disabled in database (through admin web page or similar tool). [UserController](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/controller/UserController.java)
+class provides the required web services.
 <br><br>
 
 ### order-service
@@ -190,6 +193,7 @@ Maven project that includes common code used in several microservices, with seve
 
 * [CollectionUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/CollectionUtil.java)
 * [MapUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/MapUtil.java)
+* [JsonUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/JsonUtil.java)
 
 And functional programming structures and useful classes like:
 
@@ -287,8 +291,8 @@ Before enter in details about this security service, it is important to know tha
 
 ![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
    
-You can see the *raw password* in the SQL file `MasterDatabase_Data.sql`, when the information about this application is included in the table `security.oauth_client_details`.
-In this case, the password is `Spring5Microservices`. 
+You can see the *raw password* in the SQL file [MasterDatabase_Data.sql](https://github.com/doctore/Spring5Microservices/blob/master/sql/MasterDatabase_Data.sql), when the information
+about this application is included in the table `security.oauth_client_details`. In this case, the password is `Spring5Microservices`. 
 
 So, the list of web services is the following one:
 
@@ -296,8 +300,8 @@ So, the list of web services is the following one:
 
 ![Alt text](/documentation/SecurityOauthService_Login.png?raw=true "Login")
 
-In the previous image, I have used for this example `admin/admin`, there is another option: `user/user`, included in the SQL file `MasterDatabase_Data.sql` (in the inserts
-related with the table `eat.user`).
+In the previous image, I have used for this example `admin/admin`, there is another option: `user/user`, included in the SQL file [MasterDatabase_Data.sql](https://github.com/doctore/Spring5Microservices/blob/master/sql/MasterDatabase_Data.sql)
+(in the inserts related with the table `eat.user`).
 
 **2.** Refresh authentication information after the access token expiration:
 
@@ -332,8 +336,8 @@ So, the list of web services is the following one:
 
 ## How to use it?
 
-The first step is adding in our databases: `main` and `test` ones, the SQL files included in the `sql` folder. Once we have finished, it will be necessary to run the following
-services (following the displayed ordination):
+The first step is adding in our databases: `main` and `test` ones, the SQL files included in the [sql](https://github.com/doctore/Spring5Microservices/tree/master/sql) folder.
+Once we have finished, it will be necessary to run the following services (following the displayed ordination):
 
 1. [registry-server](#registry-server)
 2. [config-server](#config-server)
