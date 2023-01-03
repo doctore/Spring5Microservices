@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.order.TestDataFactory.buildIngredientAmount;
-import static com.order.TestUtil.fromJsonCollection;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
