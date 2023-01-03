@@ -1,14 +1,11 @@
 package com.order.controller;
 
 import com.order.configuration.Constants;
-import com.order.configuration.documentation.DocumentationConfiguration;
 import com.order.configuration.rest.RestRoutes;
-import com.order.configuration.security.SecurityManager;
 import com.order.configuration.security.WebSecurityConfiguration;
 import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.dto.PizzaDto;
-import com.order.grpc.client.GrpcClientRunner;
 import com.order.service.OrderService;
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import lombok.SneakyThrows;
@@ -56,20 +53,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @WebMvcTest(value = OrderController.class)
 @Import(WebSecurityConfiguration.class)
-public class OrderControllerTest {
-
-    @MockBean
-    private SecurityManager mockSecurityManager;
+public class OrderControllerTest extends BaseControllerTest {
 
     @MockBean
     private OrderService mockOrderService;
-
-    @MockBean
-    private DocumentationConfiguration documentationConfiguration;
-
-    // To avoid gRPC client initialization
-    @MockBean
-    private GrpcClientRunner grpcClientRunner;
 
     @Autowired
     private MockMvc mockMvc;
@@ -99,7 +86,8 @@ public class OrderControllerTest {
         mockMvc.perform(
                 post(RestRoutes.ORDER.ROOT)
                         .contentType(APPLICATION_JSON)
-                        .content(toJson(dtoToCreate)))
+                        .content(toJson(dtoToCreate))
+                )
                 .andExpect(status().isForbidden());
     }
 
@@ -129,7 +117,8 @@ public class OrderControllerTest {
         ResultActions result = mockMvc.perform(
                 post(RestRoutes.ORDER.ROOT)
                         .contentType(APPLICATION_JSON)
-                        .content(toJson(dtoToCreate)))
+                        .content(toJson(dtoToCreate))
+                )
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(APPLICATION_JSON));
 
@@ -167,7 +156,8 @@ public class OrderControllerTest {
         ResultActions result = mockMvc.perform(
                 post(RestRoutes.ORDER.ROOT)
                         .contentType(APPLICATION_JSON)
-                        .content(toJson(dtoToCreate)));
+                        .content(toJson(dtoToCreate))
+        );
 
         // Then
         result.andExpect(status().is(expectedResultHttpCode.value()));
@@ -184,8 +174,10 @@ public class OrderControllerTest {
         int validOrderId = 1;
 
         // When/Then
-        mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
+        )
+        .andExpect(status().isUnauthorized());
     }
 
 
@@ -198,8 +190,10 @@ public class OrderControllerTest {
         int validOrderId = 1;
 
         // When/Then
-        mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
+        )
+        .andExpect(status().isForbidden());
     }
 
 
@@ -216,7 +210,9 @@ public class OrderControllerTest {
         );
 
         // When/Then
-        ResultActions result = mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.ORDER.WITH_ORDERLINES));
+        ResultActions result = mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
+        );
 
         thenHttpErrorIsReturned(result, BAD_REQUEST, expectedResponse);
         verifyNoInteractions(mockOrderService);
@@ -249,7 +245,9 @@ public class OrderControllerTest {
         // When
         when(mockOrderService.findByIdWithOrderLines(validOrderId)).thenReturn(serviceResult);
 
-        ResultActions result = mockMvc.perform(get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES));
+        ResultActions result = mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.ORDER.WITH_ORDERLINES)
+        );
 
         // Then
         result.andExpect(status().is(expectedResultHttpCode.value()));
@@ -265,7 +263,8 @@ public class OrderControllerTest {
         mockMvc.perform(
                 put(RestRoutes.ORDER.ROOT)
                         .contentType(APPLICATION_JSON)
-                        .content(toJson(new OrderDto())))
+                        .content(toJson(new OrderDto()))
+                )
                 .andExpect(status().isUnauthorized());
     }
 
@@ -282,7 +281,8 @@ public class OrderControllerTest {
         mockMvc.perform(
                 put(RestRoutes.ORDER.ROOT)
                         .contentType(APPLICATION_JSON)
-                        .content(toJson(dtoToUpdate)))
+                        .content(toJson(dtoToUpdate))
+                )
                 .andExpect(status().isForbidden());
     }
 
@@ -311,12 +311,13 @@ public class OrderControllerTest {
     @MethodSource("updateWhenDtoDoesNotVerifyValidationsTestCases")
     @DisplayName("update: when dto does not verify validations")
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
-            OrderDto dtoToCreate, ErrorResponseDto expectedResponse) {
+    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(OrderDto dtoToCreate,
+                                                                                                                    ErrorResponseDto expectedResponse) {
         ResultActions result = mockMvc.perform(
                 put(RestRoutes.ORDER.ROOT)
                         .contentType(APPLICATION_JSON)
-                        .content(toJson(dtoToCreate)))
+                        .content(toJson(dtoToCreate))
+                )
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(APPLICATION_JSON));
 
@@ -354,20 +355,13 @@ public class OrderControllerTest {
         ResultActions result = mockMvc.perform(
                 post(RestRoutes.ORDER.ROOT)
                         .contentType(APPLICATION_JSON)
-                        .content(toJson(dtoToUpdate)));
+                        .content(toJson(dtoToUpdate))
+        );
 
         // Then
         result.andExpect(status().is(expectedResultHttpCode.value()));
         assertEquals(expectedBodyResult, fromJson(result.andReturn().getResponse().getContentAsString(), OrderDto.class));
         verify(mockOrderService, times(1)).save(dtoToUpdate);
-    }
-
-
-    @SneakyThrows
-    private void thenHttpErrorIsReturned(ResultActions webResult, HttpStatus expectedHttpCode,
-                                         ErrorResponseDto errorResponse) {
-        webResult.andExpect(status().is(expectedHttpCode.value()));
-        assertEquals(errorResponse, fromJson(webResult.andReturn().getResponse().getContentAsString(), ErrorResponseDto.class));
     }
 
 }

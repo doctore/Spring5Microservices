@@ -1,12 +1,9 @@
 package com.order.controller;
 
 import com.order.configuration.Constants;
-import com.order.configuration.documentation.DocumentationConfiguration;
 import com.order.configuration.rest.RestRoutes;
-import com.order.configuration.security.SecurityManager;
 import com.order.configuration.security.WebSecurityConfiguration;
 import com.order.dto.IngredientAmountDto;
-import com.order.grpc.client.GrpcClientRunner;
 import com.order.service.IngredientService;
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import lombok.SneakyThrows;
@@ -24,14 +21,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.order.TestDataFactory.buildIngredientAmount;
-import static com.order.TestUtil.fromJson;
-import static com.order.TestUtil.fromJsonSet;
+import static com.order.TestUtil.fromJsonCollection;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -48,20 +45,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(value = IngredientController.class)
 @Import(WebSecurityConfiguration.class)
-public class IngredientControllerTest {
-
-    @MockBean
-    private SecurityManager mockSecurityManager;
+public class IngredientControllerTest extends BaseControllerTest {
 
     @MockBean
     private IngredientService mockIngredientService;
-
-    @MockBean
-    private DocumentationConfiguration documentationConfiguration;
-
-    // To avoid gRPC client initialization
-    @MockBean
-    private GrpcClientRunner grpcClientRunner;
 
     @Autowired
     private MockMvc mockMvc;
@@ -75,8 +62,10 @@ public class IngredientControllerTest {
         int validOrderId = 1;
 
         // When/Then
-        mockMvc.perform(get(RestRoutes.INGREDIENT.ROOT + "/" + validOrderId + RestRoutes.INGREDIENT.SUMMARY))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.INGREDIENT.ROOT + RestRoutes.INGREDIENT.SUMMARY)
+        )
+        .andExpect(status().isUnauthorized());
     }
 
 
@@ -89,8 +78,10 @@ public class IngredientControllerTest {
         int validOrderId = 1;
 
         // When/Then
-        mockMvc.perform(get(RestRoutes.INGREDIENT.ROOT + "/" + validOrderId + RestRoutes.INGREDIENT.SUMMARY))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.INGREDIENT.ROOT + RestRoutes.INGREDIENT.SUMMARY)
+        )
+        .andExpect(status().isForbidden());
     }
 
 
@@ -107,13 +98,13 @@ public class IngredientControllerTest {
         );
 
         // When/Then
-        ResultActions result = mockMvc.perform(get(RestRoutes.INGREDIENT.ROOT + "/" + notValidOrderId + RestRoutes.INGREDIENT.SUMMARY));
+        ResultActions result = mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + notValidOrderId + RestRoutes.INGREDIENT.ROOT + RestRoutes.INGREDIENT.SUMMARY)
+        );
 
         thenHttpErrorIsReturned(result, BAD_REQUEST, expectedResponse);
         verifyNoInteractions(mockIngredientService);
     }
-
-
 
 
     static Stream<Arguments> getSummaryByOrderId_validIdTestCases() {
@@ -143,20 +134,21 @@ public class IngredientControllerTest {
         // When
         when(mockIngredientService.getSummaryByOrderId(validOrderId)).thenReturn(serviceResult);
 
-        ResultActions result = mockMvc.perform(get(RestRoutes.INGREDIENT.ROOT + "/" + validOrderId + RestRoutes.INGREDIENT.SUMMARY));
+        ResultActions result = mockMvc.perform(
+                get(RestRoutes.ORDER.ROOT + "/" + validOrderId + RestRoutes.INGREDIENT.ROOT + RestRoutes.INGREDIENT.SUMMARY)
+        );
 
         // Then
         result.andExpect(status().is(expectedResultHttpCode.value()));
-        assertEquals(expectedBodyResult, fromJsonSet(result.andReturn().getResponse().getContentAsString(), IngredientAmountDto.class));
+        assertEquals(
+                expectedBodyResult,
+                fromJsonCollection(
+                        result.andReturn().getResponse().getContentAsString(),
+                        IngredientAmountDto.class,
+                        HashSet.class
+                )
+        );
         verify(mockIngredientService, times(1)).getSummaryByOrderId(validOrderId);
-    }
-
-
-    @SneakyThrows
-    private void thenHttpErrorIsReturned(ResultActions webResult, HttpStatus expectedHttpCode,
-                                         ErrorResponseDto errorResponse) {
-        webResult.andExpect(status().is(expectedHttpCode.value()));
-        assertEquals(errorResponse, fromJson(webResult.andReturn().getResponse().getContentAsString(), ErrorResponseDto.class));
     }
 
 }

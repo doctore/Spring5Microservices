@@ -6,7 +6,6 @@ import com.pizza.configuration.rest.RestRoutes;
 import com.pizza.dto.IngredientDto;
 import com.pizza.dto.PizzaDto;
 import com.pizza.enums.PizzaEnum;
-import com.pizza.grpc.server.GrpcServerRunner;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.service.PizzaService;
@@ -17,18 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -55,25 +49,10 @@ import static java.util.Optional.of;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @SpringBootTest(classes = PizzaServiceApplication.class)
-public class PizzaControllerTest {
-
-    @Autowired
-    ApplicationContext context;
+public class PizzaControllerTest extends BaseControllerTest {
 
     @MockBean
     private PizzaService mockPizzaService;
-
-    @MockBean
-    private WebClient mockWebClient;
-
-    // To avoid Hazelcast instance creation
-    @MockBean
-    @Qualifier("cacheManager")
-    private CacheManager mockCacheManager;
-
-    // To avoid gRPC server initialization
-    @MockBean
-    private GrpcServerRunner grpcServerRunner;
 
     private WebTestClient webTestClient;
 

@@ -3,21 +3,15 @@ package com.pizza.controller;
 import com.pizza.PizzaServiceApplication;
 import com.pizza.configuration.Constants;
 import com.pizza.configuration.rest.RestRoutes;
-import com.pizza.grpc.server.GrpcServerRunner;
 import com.pizza.service.cache.UserBlacklistCacheService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -25,25 +19,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = PizzaServiceApplication.class)
-public class UserControllerTest {
-
-    @Autowired
-    ApplicationContext context;
+public class UserControllerTest extends BaseControllerTest {
 
     @MockBean
     private UserBlacklistCacheService mockUserBlacklistCacheService;
-
-    @MockBean
-    private WebClient mockWebClient;
-
-    // To avoid Hazelcast instance creation
-    @MockBean
-    @Qualifier("cacheManager")
-    private CacheManager mockCacheManager;
-
-    // To avoid gRPC server initialization
-    @MockBean
-    private GrpcServerRunner grpcServerRunner;
 
     private WebTestClient webTestClient;
 

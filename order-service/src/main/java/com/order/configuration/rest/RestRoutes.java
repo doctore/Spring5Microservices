@@ -13,7 +13,7 @@ public final class RestRoutes {
     }
 
     public static final class INGREDIENT {
-        public static final String ROOT = RestRoutes.ROOT + "/ingredient";
+        public static final String ROOT = "/ingredient";
         public static final String SUMMARY = "/summary";
     }
 

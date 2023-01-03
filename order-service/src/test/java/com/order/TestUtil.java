@@ -1,16 +1,13 @@
 package com.order;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.spring5microservices.common.exception.JsonException;
+import com.spring5microservices.common.util.JsonUtil;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
 
 @UtilityClass
 public class TestUtil {
@@ -18,85 +15,73 @@ public class TestUtil {
     /**
      * Convert the incoming object into a JSON-formatted string.
      *
-     * @param object
+     * @param sourceObject
      *    Object to map into string
      *
      * @return {@link String} with JSON-formatted given object properties
      *
-     * @throws JsonProcessingException
+     * @throws JsonException
      */
-    public static <T> String toJson(T object) throws JsonProcessingException {
+    public static <T> String toJson(final T sourceObject) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
-        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        return ow.writeValueAsString(object);
+        return JsonUtil.toJson(
+                sourceObject,
+                mapper
+        ).orElse(null);
     }
 
 
     /**
      * Transform the given JSON-formatted into an instance of a given {@link Class}.
      *
-     * @param json
+     * @param sourceJson
      *    Json string to transform
      * @param clazz
      *    {@link Class} of the returned object
      *
      * @return an instance of given {@link Class}
      *
-     * @throws IOException
+     * @throws JsonException
      */
-    public static <T> T fromJson(String json, Class<T> clazz) throws IOException {
-        if (!StringUtils.hasText(json)) {
+    public static <T> T fromJson(final String sourceJson,
+                                 final Class<T> clazz) {
+        if (!StringUtils.hasText(sourceJson)) {
             return null;
         }
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, clazz);
+        return JsonUtil.fromJson(
+                sourceJson,
+                clazz
+        )
+        .orElse(null);
     }
 
 
     /**
-     * Transform the given JSON-formatted array into a {@link List} of {@link Class} instances.
+     * Transform the given JSON-formatted array into a {@link Collection} of {@code clazzOfElements} instances.
      *
-     * @param json
-     *    Json string to transform
-     * @param clazz
-     *    {@link Class} of the returned object
+     * @param sourceJson
+     *    JSON-formatted {@link String} to transform
+     * @param clazzOfElements
+     *    {@link Class} of the elements included in the returned {@link Collection}
+     * @param clazzOfCollection
+     *    {@link Class} of the returned {@link Collection}. Provided {@link Class} must have a valid empty constructor.
      *
-     * @return {@link List} of {@link Class} instances
+     * @return {@link Collection} of {@code clazzOfElements} instances
      *
-     * @throws IOException
+     * @throws JsonException
      */
-    public static <T> List<T> fromJsonList(String json, Class<T> clazz) throws IOException {
-        if (!StringUtils.hasText(json)) {
+    public static <T> Collection<T> fromJsonCollection(final String sourceJson,
+                                                       final Class<? extends T> clazzOfElements,
+                                                       final Class<? extends Collection> clazzOfCollection) {
+        if (!StringUtils.hasText(sourceJson)) {
             return null;
         }
-        ObjectMapper mapper = new ObjectMapper();
-        JavaType type = mapper.getTypeFactory().
-                constructCollectionType(List.class, clazz);
-        return mapper.readValue(json, type);
-    }
-
-
-    /**
-     * Transform the given JSON-formatted array into a {@link Set} of {@link Class} instances.
-     *
-     * @param json
-     *    Json string to transform
-     * @param clazz
-     *    {@link Class} of the returned object
-     *
-     * @return {@link Set} of {@link Class} instances
-     *
-     * @throws IOException
-     */
-    public static <T> Set<T> fromJsonSet(String json, Class<T> clazz) throws IOException {
-        if (!StringUtils.hasText(json)) {
-            return null;
-        }
-        ObjectMapper mapper = new ObjectMapper();
-        JavaType type = mapper.getTypeFactory().
-                constructCollectionType(Set.class, clazz);
-        return mapper.readValue(json, type);
+        return JsonUtil.fromJsonCollection(
+                sourceJson,
+                clazzOfElements,
+                clazzOfCollection
+        );
     }
 
 }

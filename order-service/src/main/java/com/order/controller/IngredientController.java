@@ -34,7 +34,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @AllArgsConstructor
 @Log4j2
 @RestController
-@RequestMapping(RestRoutes.INGREDIENT.ROOT)
+@RequestMapping(RestRoutes.ORDER.ROOT + "/{orderId}")
 @Validated
 public class IngredientController {
 
@@ -95,7 +95,7 @@ public class IngredientController {
                     )
             }
     )
-    @GetMapping("/{orderId}" + RestRoutes.INGREDIENT.SUMMARY)
+    @GetMapping(RestRoutes.INGREDIENT.ROOT + RestRoutes.INGREDIENT.SUMMARY)
     @RoleAdminOrUser
     public ResponseEntity<Set<IngredientAmountDto>> getSummaryByOrderId(@PathVariable @Positive final Integer orderId) {
         log.info(
