@@ -10,9 +10,14 @@
     - [pizza-service](#pizza-service)
     - [order-service](#order-service)
     - [common](#common)
+    - [grpc-api](#grpc-api)
     - [sql](#sql)
     - [Communication diagram](#communication-diagram)
 - [Previous steps](#previous-steps)
+- [gRPC communication](#grpc-communication)
+    - [Security in gRPC](#security-in-grpc) 
+    - [RequestId in gRPC](#requestid-in-grpc)
+    - [gRPC request example](#grpc-request-example)
 - [Security services](#security-services)
     - [security-oauth-service endpoints](#security-oauth-service-endpoints)
     - [security-jwt-service endpoints](#security-jwt-service-endpoints)
@@ -21,15 +26,20 @@
 - [Previous versions of the project](#previous-versions-of-the-project)
 
 
+
 ## Why was this project created?
 
 Basically to know how to create a project using the microservices approach with 5th version of Spring framework. Due to there are several options we can use for different features
 included in a microservice architecture, the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
+<br><br>
+
 
 
 ## Elements included in this project
 
 Below is shown a brief introduction to the subprojects included in this one:
+<br><br>
+
 
 ### registry-server
 
@@ -37,6 +47,7 @@ Server used to register all microservices included in this project. In this case
 connected peer. In other words, a client retrieves a list of all connected peers of a service registry and makes all further requests to any other services through a load-balancing
 algorithm (Ribbon by default).
 <br><br> 
+
 
 ### config-server
 
@@ -67,13 +78,15 @@ sending the information encrypted and delegating in every microservice the labou
    <artifactId>spring-security-rsa</artifactId>
 </dependency>
 ```
-<br>
+<br><br>
+
 
 ### gateway-server
 
 Using Spring Gateway, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a filter to registry every web service
 invoked, helping to debug each request.
 <br><br>
+
 
 ### security-oauth-service
 
@@ -100,6 +113,7 @@ On the other hand, there are other "important folders":
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
 <br><br>
+
 
 ### security-jwt-service
 
@@ -131,6 +145,7 @@ On the other hand, there are other "important folders":
 * **util** to manage the JWS/JWE functionality.
 <br><br>
 
+
 ### pizza-service
 
 One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservice. The main purpose of this microservice is the creation of a small one
@@ -160,7 +175,10 @@ On the other hand, there are other "important folders":
 Using **Hazelcast** for that purpose, this microservice provides functionality to banned users temporally. That is the way we can use to disable any JWT active token related
 with a user we just disabled in database (through admin web page or similar tool). [UserController](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/controller/UserController.java)
 class provides the required web services.
+
+This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) server, more information in [gRPC communication](#gRPC-communication).
 <br><br>
+
 
 ### order-service
 
@@ -185,7 +203,25 @@ On the other hand, there are other "important folders":
 * **model** to store the Java objects that match with the tables in database.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from models to dtos and vice versa.
+
+This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) client, more information in [gRPC communication](#gRPC-communication).
 <br><br>
+
+
+### grpc-api
+
+Common functionality used by developed gRPC server and client. This one includes:
+
+* [ingredient.proto](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/resources/proto/ingredient.proto) with the contract which includes defining
+the gRPC service and the method request and response types using [protocol buffers]((https://developers.google.com/protocol-buffers/docs/reference/java-generated))
+specification.   
+
+* [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java) which
+carries the Basic Authentication that will be propagated from gRPC client to the server in the request metadata with the `Authorization` key.
+
+More information about how gRPC server and client uses it in [gRPC communication](#gRPC-communication).
+<br><br>
+
 
 ### common
 
@@ -202,24 +238,30 @@ And functional programming structures and useful classes like:
 * [Validation](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/validation)
 <br><br>
 
+
 ### sql
 
 With SQL files included in the main database and the one used for testing purpose. In both cases, there is one file with the structure of the tables and another one with the
 information initially included.
 <br><br>
 
+
 ### Communication diagram
 
 In the next picture you will see a communication diagram of all microservices described above:
 
 ![Alt text](/documentation/CommunitationDiagram.png?raw=true "Communication diagram")
+<br><br>
+
 
 
 ## Previous steps
 
 Due to every microservice has to decrypt the information sent by [config-server](#config-server), some steps are required:
+<br><br>
 
-#### Setting up an encryption key
+
+### Setting up an encryption key
 
 In this project a symmetric encryption key has been used. The symmetric encryption key is nothing more than a shared secret that's used by the encrypter to encrypt a value
 and the decrypter to decrypt a value. With the Spring Cloud configuration server, the symmetric encryption key is a string of characters you select that is passed to the
@@ -228,8 +270,10 @@ service via an operating system environment variable called **ENCRYPT_KEY**. For
 ```
 ENCRYPT_KEY=ENCRYPT_KEY
 ```
+<br><br>
 
-#### JDK and Oracle JCE
+
+### JDK and Oracle JCE
 
 If you are using Oracle JDK instead of OpenJDK, you need to download and install Oracle's Unlimited Strength Java Cryptography Extension (JCE). This isn't available through
 Maven and must be downloaded from Oracle Corporation. Once you've downloaded the zip files containing the JCE jars, you must do the following:
@@ -241,8 +285,10 @@ Maven and must be downloaded from Oracle Corporation. Once you've downloaded the
 - Unzip the JCE zip file you downloaded from Oracle
 
 - Copy the `local_policy.jar` and `US_export_policy.jar` to your `$JAVA_HOME/jre/lib/security` directory.
+<br><br>
 
-#### Problems resolution
+
+### Problems resolution
 
 If you receive some errors related with encryption like:
 
@@ -275,6 +321,54 @@ To do it:
 ![Alt text](/documentation/Encryption.png?raw=true "Encryption endpoint")
 
 - Overwrite current values by the provided ones.
+<br><br>
+
+
+
+## gRPC communication
+
+Besides the REST API developed in:
+
+* [pizza-service](#pizza-service)
+* [order-service](#order-service)
+* [security-oauth-service](#security-oauth-service)
+* [security-jwt-service](#security-jwt-service)
+
+In this project has been added a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) communication channel between:
+
+* **gRPC server:** in [pizza-service](https://github.com/doctore/Spring5Microservices/tree/master/pizza-service/src/main/java/com/pizza/grpc)
+* **gRPC client:** in [order-service](https://github.com/doctore/Spring5Microservices/tree/master/order-service/src/main/java/com/order/grpc)
+
+Both use the same approach to run server and client instances:
+
+* The instance definition:
+  - [Server instance](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/server/GrpcServer.java)
+  - [Client instance](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClient.java)
+<br><br>
+
+* The Spring functionality used to run it:
+  - [Server runner](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/server/GrpcServerRunner.java)
+  - [Client runner](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClientRunner.java)
+<br>
+
+
+### Security in gRPC
+
+Pending to add
+<br><br>
+
+
+### RequestId in gRPC
+
+Pending to add
+<br><br>
+
+
+### gRPC request example
+
+Pending to add
+<br><br>
+
 
 
 ## Security services
@@ -284,6 +378,8 @@ and [security-jwt-service](#security-jwt-service), in this proof of concept I ha
 [pizza-service](#pizza-service).
 
 Regarding every microservice, in this section I will explain the web services provided by every one and how to use them, starting by [security-oauth-service](#security-oauth-service).
+<br><br>
+
 
 ### security-oauth-service endpoints
 
@@ -310,6 +406,8 @@ In the previous image, I have used for this example `admin/admin`, there is anot
 **3.** Get authorization information using access token:
 
 ![Alt text](/documentation/SecurityOauthService_AuthorizationInfo.png?raw=true "Authorization information")
+<br><br>
+
 
 ### security-jwt-service endpoints
 
@@ -332,6 +430,8 @@ So, the list of web services is the following one:
 **3.** Get authorization information using access token:
 
 ![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")
+<br><br>
+
 
 
 ## How to use it?
@@ -354,6 +454,8 @@ So, once you have obtained the required JWT access token (as I explained you in 
 or:
 
 ![Alt text](/documentation/OrderService.png?raw=true "Example of order service")
+<br><br>
+
 
 
 ## Rest API documentation
@@ -373,6 +475,8 @@ To facilitate access to this documentation, we can use the [gateway-server](#gat
 to choose between all existing microservices.
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
+<br><br>
+
 
 
 ## Previous versions of the project
