@@ -14,13 +14,13 @@
     - [sql](#sql)
     - [Communication diagram](#communication-diagram)
 - [Previous steps](#previous-steps)
-- [gRPC communication](#grpc-communication)
-    - [Security in gRPC](#security-in-grpc) 
-    - [RequestId in gRPC](#requestid-in-grpc)
-    - [gRPC request example](#grpc-request-example)
 - [Security services](#security-services)
     - [security-oauth-service endpoints](#security-oauth-service-endpoints)
     - [security-jwt-service endpoints](#security-jwt-service-endpoints)
+- [gRPC communication](#grpc-communication)
+  - [Security in gRPC](#security-in-grpc)
+  - [RequestId in gRPC](#requestid-in-grpc)
+  - [gRPC request example](#grpc-request-example) 
 - [How to use it?](#how-to-use-it)
 - [Rest API documentation](#rest-api-documentation)
 - [Previous versions of the project](#previous-versions-of-the-project)
@@ -176,7 +176,7 @@ Using **Hazelcast** for that purpose, this microservice provides functionality t
 with a user we just disabled in database (through admin web page or similar tool). [UserController](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/controller/UserController.java)
 class provides the required web services.
 
-This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) server, more information in [gRPC communication](#gRPC-communication).
+This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) server, more information in [gRPC communication](#grpc-communication).
 <br><br>
 
 
@@ -204,7 +204,7 @@ On the other hand, there are other "important folders":
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from models to dtos and vice versa.
 
-This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) client, more information in [gRPC communication](#gRPC-communication).
+This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) client, more information in [gRPC communication](#grpc-communication).
 <br><br>
 
 
@@ -213,13 +213,12 @@ This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introducti
 Common functionality used by developed gRPC server and client. This one includes:
 
 * [ingredient.proto](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/resources/proto/ingredient.proto) with the contract which includes defining
-the gRPC service and the method request and response types using [protocol buffers]((https://developers.google.com/protocol-buffers/docs/reference/java-generated))
-specification.   
+the gRPC service and the method request and response types using [protocol buffers](https://developers.google.com/protocol-buffers/docs/reference/java-generated) specification.
 
 * [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java) which
 carries the Basic Authentication that will be propagated from gRPC client to the server in the request metadata with the `Authorization` key.
 
-More information about how gRPC server and client uses it in [gRPC communication](#gRPC-communication).
+More information about how gRPC server and client uses it in [gRPC communication](#grpc-communication).
 <br><br>
 
 
@@ -325,52 +324,6 @@ To do it:
 
 
 
-## gRPC communication
-
-Besides the REST API developed in:
-
-* [pizza-service](#pizza-service)
-* [order-service](#order-service)
-* [security-oauth-service](#security-oauth-service)
-* [security-jwt-service](#security-jwt-service)
-
-In this project has been added a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) communication channel between:
-
-* **gRPC server:** in [pizza-service](https://github.com/doctore/Spring5Microservices/tree/master/pizza-service/src/main/java/com/pizza/grpc)
-* **gRPC client:** in [order-service](https://github.com/doctore/Spring5Microservices/tree/master/order-service/src/main/java/com/order/grpc)
-
-Both use the same approach to run server and client instances:
-
-* The instance definition:
-  - [Server instance](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/server/GrpcServer.java)
-  - [Client instance](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClient.java)
-<br><br>
-
-* The Spring functionality used to run it:
-  - [Server runner](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/server/GrpcServerRunner.java)
-  - [Client runner](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClientRunner.java)
-<br>
-
-
-### Security in gRPC
-
-Pending to add
-<br><br>
-
-
-### RequestId in gRPC
-
-Pending to add
-<br><br>
-
-
-### gRPC request example
-
-Pending to add
-<br><br>
-
-
-
 ## Security services
 
 As you read previously, there are two different microservices you can use to manage the authentication/authorization functionality: [security-oauth-service](#security-oauth-service)
@@ -430,6 +383,71 @@ So, the list of web services is the following one:
 **3.** Get authorization information using access token:
 
 ![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")
+<br><br>
+
+
+
+## gRPC communication
+
+Besides the REST API developed in:
+
+* [pizza-service](#pizza-service)
+* [order-service](#order-service)
+* [security-oauth-service](#security-oauth-service)
+* [security-jwt-service](#security-jwt-service)
+
+In this project has been added a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) communication channel between:
+
+* **gRPC client:** in [order-service](https://github.com/doctore/Spring5Microservices/tree/master/order-service/src/main/java/com/order/grpc)
+* **gRPC server:** in [pizza-service](https://github.com/doctore/Spring5Microservices/tree/master/pizza-service/src/main/java/com/pizza/grpc)
+
+Both use the same approach to run server and client instances:
+
+* The instance definition:
+  - [Client instance](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClient.java)
+  - [Server instance](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/server/GrpcServer.java)
+<br>
+
+* The Spring functionality used to run it:
+  - [Client runner](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClientRunner.java)
+  - [Server runner](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/server/GrpcServerRunner.java)
+<br>
+
+
+### Security in gRPC
+
+The internal communication between a microservice and its related security server, that is:
+
+* [order-service](#order-service) => [security-oauth-service](#security-oauth-service)
+* [pizza-service](#pizza-service) => [security-jwt-service](#security-jwt-service)
+
+uses [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) to include the required credentials:
+
+* [order-service](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/configuration/security/SecurityManager.java)
+* [pizza-service](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/configuration/security/SecurityManager.java)
+
+In the current gRPC development I have followed the same approach:
+
+* In the **gRPC client** creating a new [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java)
+instance and adding it in the `Authorization` header sent to the server, using the method `buildCallCredentials` of the class [GrpcClient](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClient.java).
+<br>
+* In the **gRPC server**, the interceptor [AuthenticationInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/interceptor/AuthenticationInterceptor.java)
+manages required verifications.
+<br><br>
+
+
+### RequestId in gRPC
+
+This project uses [Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) for distributed tracing, to simulate the same behaviour two interceptors have been defined:
+
+* At **gRPC client** [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java)
+* At **gRPC server** [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java) 
+<br><br>
+
+
+### gRPC request example
+
+Pending to add
 <br><br>
 
 
