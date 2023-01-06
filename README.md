@@ -430,6 +430,7 @@ In the current gRPC development I have followed the same approach:
 
 * In the **gRPC client** creating a new [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java)
 instance and adding it in the `Authorization` header sent to the server, using the method `buildCallCredentials` of the class [GrpcClient](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClient.java).
+<br>
 * In the **gRPC server**, the interceptor [AuthenticationInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/interceptor/AuthenticationInterceptor.java)
 manages required verifications.
 <br><br>
@@ -439,8 +440,8 @@ manages required verifications.
 
 This project uses [Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) for distributed tracing, to simulate the same behaviour two interceptors have been defined:
 
-* At **gRPC client** [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java)
-* At **gRPC server** [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java) 
+* At **gRPC client** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java)
+* At **gRPC server** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java) 
 <br><br>
 
 
