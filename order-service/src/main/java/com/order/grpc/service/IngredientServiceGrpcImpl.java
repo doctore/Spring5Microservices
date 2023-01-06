@@ -25,16 +25,21 @@ public class IngredientServiceGrpcImpl {
     private final GrpcClient grpcClient;
 
 
-    public List<IngredientResponse> getByPizzaId(Short pizzaId) {
+    public List<IngredientResponse> findByPizzaId(Short pizzaId) {
         log.info(
                 format("Sending a request to get the ingredients contained in the pizza's identifier: %s",
                         pizzaId)
         );
         return ofNullable(pizzaId)
-                .map(id -> PizzaRequest.newBuilder().setId(id).build())
+                .map(id ->
+                        PizzaRequest.newBuilder()
+                                .setId(id)
+                                .build()
+                )
                 .map(request ->
                         CollectionUtil.fromIterator(
-                                getIngredientServiceGrpc().getIngredients(request)
+                                getIngredientServiceGrpc()
+                                        .getIngredients(request)
                         )
                 )
                 .orElseGet(ArrayList::new);
