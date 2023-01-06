@@ -45,10 +45,12 @@ public final class BasicCredential extends CallCredentials {
                         basicAuthorization
                 );
                 metadataApplier.apply(headers);
-            } catch (Throwable e) {
 
+            } catch (Throwable e) {
                 metadataApplier.fail(
-                        Status.UNAUTHENTICATED.withCause(e)
+                        Status.UNAUTHENTICATED
+                                .withCause(e)
+                                .withDescription("There was a problem with the basic authorization included in the request")
                 );
             }
         });

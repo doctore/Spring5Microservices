@@ -37,26 +37,6 @@ public abstract class BaseControllerTest {
 
 
     /**
-     * Convert the incoming object into a JSON-formatted string.
-     *
-     * @param sourceObject
-     *    Object to map into string
-     *
-     * @return {@link String} with JSON-formatted given object properties
-     *
-     * @throws JsonException if there was an error creating the JSON representation of given {@code sourceObject}
-     */
-    protected <T> String toJson(final T sourceObject) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
-        return JsonUtil.toJson(
-                sourceObject,
-                mapper
-        ).orElse(null);
-    }
-
-
-    /**
      * Transform the given JSON-formatted into an instance of a given {@link Class}.
      *
      * @param sourceJson
@@ -106,6 +86,26 @@ public abstract class BaseControllerTest {
                 clazzOfElements,
                 clazzOfCollection
         );
+    }
+
+
+    /**
+     * Convert the incoming object into a JSON-formatted string.
+     *
+     * @param sourceObject
+     *    Object to map into string
+     *
+     * @return {@link String} with JSON-formatted given object properties
+     *
+     * @throws JsonException if there was an error creating the JSON representation of given {@code sourceObject}
+     */
+    protected <T> String toJson(final T sourceObject) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        return JsonUtil.toJson(
+                sourceObject,
+                mapper
+        ).orElse(null);
     }
 
 

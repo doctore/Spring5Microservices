@@ -4,17 +4,19 @@ import com.pizza.grpc.configuration.GrpcConfiguration;
 import com.pizza.grpc.interceptor.AuthenticationInterceptor;
 import com.pizza.grpc.interceptor.RequestIdInterceptor;
 import com.pizza.grpc.service.IngredientServiceGrpcImpl;
+import io.grpc.BindableService;
 import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
+import io.grpc.ServerInterceptor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 /**
  * gRPC server used to communicate microservices.
@@ -59,7 +61,7 @@ public class GrpcServer {
      * Start serving requests
      */
     public void start() {
-        if (Objects.nonNull(server)) {
+        if (nonNull(server)) {
             log.info("gRPC server is starting");
             try {
                 server.start();
@@ -84,7 +86,7 @@ public class GrpcServer {
      * @throws InterruptedException if there was a problem shutting down the server
      */
     public void stop() throws InterruptedException {
-        if (Objects.nonNull(server)) {
+        if (nonNull(server)) {
             int awaitTerminationInSeconds = grpcConfiguration.getServerAwaitTerminationInSeconds();
             if (0 < awaitTerminationInSeconds) {
                 server.shutdown()
@@ -106,14 +108,14 @@ public class GrpcServer {
      * @throws InterruptedException if there was a problem shutting down the server
      */
     public void blockUntilShutdown() throws InterruptedException {
-        if (Objects.nonNull(server)) {
+        if (nonNull(server)) {
             server.awaitTermination();
         }
     }
 
 
     /**
-     * Configures the gRPC server.
+     * Configures the gRPC server including: {@link BindableService} and {@link ServerInterceptor}.
      *
      * @param port
      *    Port used by the gRPC server

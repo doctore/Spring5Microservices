@@ -13,10 +13,10 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 /**
  * gRPC client used to communicate microservices.
@@ -74,7 +74,7 @@ public class GrpcClient {
      * Start sending requests
      */
     public void start() {
-        if (Objects.nonNull(channel)) {
+        if (nonNull(channel)) {
             log.info(
                     format("gRPC client is starting. Configured server located on host: %s and port: %d",
                             grpcConfiguration.getServerHost(),
@@ -94,7 +94,7 @@ public class GrpcClient {
      * @throws InterruptedException if there was a problem shutting down the channel
      */
     public void stop() throws InterruptedException {
-        if (Objects.nonNull(channel)) {
+        if (nonNull(channel)) {
             int awaitTerminationInSeconds = grpcConfiguration.getClientAwaitTerminationInSeconds();
             channel.shutdown()
                     .awaitTermination(
@@ -125,7 +125,8 @@ public class GrpcClient {
 
 
     /**
-     * Returns a synchronous stub to manage functionality related with ingredients.
+     *    Returns a synchronous stub, which includes {@link CallCredentials} instance, to manage functionality
+     * related with ingredients.
      *
      * @return {@link IngredientServiceGrpc.IngredientServiceBlockingStub}
      */

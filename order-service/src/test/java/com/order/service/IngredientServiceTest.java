@@ -70,7 +70,7 @@ public class IngredientServiceTest {
                                                               Optional<OrderDto> orderServiceResult,
                                                               Optional<Set<IngredientAmountDto>> expectedResult) {
         when(mockOrderService.findByIdWithOrderLines(orderId)).thenReturn(orderServiceResult);
-        when(mockIngredientServiceGrpc.getByPizzaId(anyShort())).thenReturn(List.of());
+        when(mockIngredientServiceGrpc.findByPizzaId(anyShort())).thenReturn(List.of());
 
         Optional<Set<IngredientAmountDto>> result = service.getSummaryByOrderId(orderId);
 
@@ -104,8 +104,8 @@ public class IngredientServiceTest {
         );
 
         when(mockOrderService.findByIdWithOrderLines(order.getId())).thenReturn(of(order));
-        when(mockIngredientServiceGrpc.getByPizzaId(pizza1.getId())).thenReturn(ingredientsPizza1);
-        when(mockIngredientServiceGrpc.getByPizzaId(pizza2.getId())).thenReturn(ingredientsPizza2);
+        when(mockIngredientServiceGrpc.findByPizzaId(pizza1.getId())).thenReturn(ingredientsPizza1);
+        when(mockIngredientServiceGrpc.findByPizzaId(pizza2.getId())).thenReturn(ingredientsPizza2);
 
         Optional<Set<IngredientAmountDto>> result = service.getSummaryByOrderId(order.getId());
 

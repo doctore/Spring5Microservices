@@ -113,8 +113,8 @@ public class PizzaControllerTest extends BaseControllerTest {
     @MethodSource("createWhenDtoDoesNotVerifyValidationsTestCases")
     @DisplayName("create: when dto does not verify validations")
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
-            PizzaDto dtoToCreate, ErrorResponseDto expectedResponse) {
+    public void create_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(PizzaDto dtoToCreate,
+                                                                                                                    ErrorResponseDto expectedResponse) {
 
         webTestClient.post()
                 .uri(RestRoutes.PIZZA.ROOT)
@@ -310,8 +310,9 @@ public class PizzaControllerTest extends BaseControllerTest {
     @MethodSource("findPageWithIngredientsWhenParametersNotVerifyValidationsTestCases")
     @DisplayName("findPageWithIngredients: when parameters do not verify validations")
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void findPageWithIngredients_whenGivenParametersDoNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
-            int page, int size, ErrorResponseDto expectedResponse) {
+    public void findPageWithIngredients_whenGivenParametersDoNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(int page,
+                                                                                                                                          int size,
+                                                                                                                                          ErrorResponseDto expectedResponse) {
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path(RestRoutes.PIZZA.ROOT + RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
                         .queryParam("page", page)
@@ -436,8 +437,8 @@ public class PizzaControllerTest extends BaseControllerTest {
     @MethodSource("updateWhenDtoDoesNotVerifyValidationsTestCases")
     @DisplayName("update: when dto does not verify validations")
     @WithMockUser(authorities = {Constants.ROLE_ADMIN})
-    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(
-            PizzaDto dtoToUpdate, ErrorResponseDto expectedResponse) {
+    public void update_whenGivenDtoDoesNotVerifyTheValidations_thenBadRequestHttpCodeAndValidationErrorsAreReturned(PizzaDto dtoToUpdate,
+                                                                                                                    ErrorResponseDto expectedResponse) {
         webTestClient.put()
                 .uri(RestRoutes.PIZZA.ROOT)
                 .body(Mono.just(dtoToUpdate), PizzaDto.class)

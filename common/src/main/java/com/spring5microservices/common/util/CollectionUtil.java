@@ -416,8 +416,8 @@ public class CollectionUtil {
      *
      *   Parameters:                                                                       Result:
      *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
-     *    [UserDto::getName, UserDto::getAge]
      *    ArrayList::new
+     *    [UserDto::getName, UserDto::getAge]
      * </pre>
      *
      * @param sourceCollection

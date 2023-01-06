@@ -51,6 +51,15 @@ public class RequestIdInterceptor implements ServerInterceptor {
         return new ForwardingServerCallListener.SimpleForwardingServerCallListener<>(delegate) {
 
             @Override
+            public void onCancel() {
+                try {
+                    super.onCancel();
+                } finally {
+                    MDC.clear();
+                }
+            }
+
+            @Override
             public void onComplete() {
                 try {
                     super.onComplete();

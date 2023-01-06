@@ -51,17 +51,22 @@ public class IngredientService {
                                 .map(PizzaDto::getId)
                                 .collect(toList())
                 )
-                .map(this::getByPizzaIds);
+                .map(this::findByPizzaIds)
+                .map(this::groupIngredients);
     }
 
 
-    private Set<IngredientAmountDto> getByPizzaIds(final Collection<Short> pizzaIds) {
-        List<IngredientResponse> ingredientGrpc = pizzaIds.stream()
-                .flatMap(id -> ingredientServiceGrpc.getByPizzaId(id).stream())
-                .collect(toList());
 
+    private List<IngredientResponse> findByPizzaIds(final Collection<Short> pizzaIds) {
+        return pizzaIds.stream()
+                .flatMap(id -> ingredientServiceGrpc.findByPizzaId(id).stream())
+                .collect(toList());
+    }
+
+
+    private Set<IngredientAmountDto> groupIngredients(final Collection<IngredientResponse> ingredients) {
         Map<String, Integer> ingredientCount = CollectionUtil.groupMapReduce(
-                ingredientGrpc,
+                ingredients,
                 IngredientResponse::getName,
                 ing -> 1,
                 Integer::sum
