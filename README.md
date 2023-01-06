@@ -442,7 +442,7 @@ manages required verifications.
 This project uses [Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) for distributed tracing, to simulate the same behaviour two interceptors have been defined:
 
 * At **gRPC client** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java)
-* At **gRPC server** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java) 
+* At **gRPC server** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/interceptor/RequestIdInterceptor.java) 
 <br><br>
 
 
