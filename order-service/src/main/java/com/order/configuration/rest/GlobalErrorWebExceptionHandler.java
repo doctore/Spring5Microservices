@@ -3,6 +3,10 @@ package com.order.configuration.rest;
 import com.spring5microservices.common.dto.ErrorResponseDto;
 import com.spring5microservices.common.enums.RestApiErrorCode;
 import com.spring5microservices.common.exception.UnauthorizedException;
+import com.spring5microservices.grpc.util.GrpcErrorHandlerUtil;
+import io.grpc.Status;
+import io.grpc.StatusException;
+import io.grpc.StatusRuntimeException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -19,7 +23,7 @@ import static com.spring5microservices.common.enums.RestApiErrorCode.INTERNAL;
 import static com.spring5microservices.common.enums.RestApiErrorCode.SECURITY;
 import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -35,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.valueOf;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
@@ -95,6 +100,26 @@ public class GlobalErrorWebExceptionHandler {
     }
 
 
+    @ExceptionHandler(StatusException.class)
+    public ResponseEntity<ErrorResponseDto> grpcStatusException(final StatusException exception,
+                                                                final WebRequest request) {
+        return buildGrpcErrorResponse(
+                exception,
+                request
+        );
+    }
+
+
+    @ExceptionHandler(StatusRuntimeException.class)
+    public ResponseEntity<ErrorResponseDto> grpcStatusRuntimeException(final StatusRuntimeException exception,
+                                                                       final WebRequest request) {
+        return buildGrpcErrorResponse(
+                exception,
+                request
+        );
+    }
+
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponseDto> unauthorizedException(final UnauthorizedException exception,
                                                                   final WebRequest request) {
@@ -108,7 +133,8 @@ public class GlobalErrorWebExceptionHandler {
 
 
     @ExceptionHandler(Throwable.class)
-    public ResponseEntity<ErrorResponseDto> throwable(Throwable exception, WebRequest request) {
+    public ResponseEntity<ErrorResponseDto> throwable(final Throwable exception,
+                                                      final WebRequest request) {
         log.error(getErrorMessageUsingHttpRequest(request), exception);
         return buildErrorResponse(
                 INTERNAL,
@@ -126,7 +152,7 @@ public class GlobalErrorWebExceptionHandler {
      *
      * @return error message with Http request information
      */
-    private String getErrorMessageUsingHttpRequest(WebRequest request) {
+    private String getErrorMessageUsingHttpRequest(final WebRequest request) {
         HttpServletRequest httpRequest = ((ServletWebRequest)request).getRequest();
         return format("There was an error trying to execute the request with: %s"
                         + "Http method = %s %s "
@@ -140,14 +166,37 @@ public class GlobalErrorWebExceptionHandler {
 
 
     /**
-     * Get the list of internal errors included in the given exception
+     *    Using the given {@link ServerWebExchange} builds a message with information about the Http request, joining the
+     * result with provided information in {@link Status}.
+     *
+     * @param request
+     *    {@link WebRequest} with the request information
+     * @param status
+     *    {@link Status} with the result trying to send the request
+     *
+     * @return {@link String} with the error message
+     */
+    private String getErrorMessageUsingHttpRequestAndGrpcStatus(final WebRequest request,
+                                                                final Status status) {
+        String errorMessage = getErrorMessageUsingHttpRequest(request);
+        errorMessage += format(" . gRPC Status: %s, description: %s and cause class: %s",
+                status.getCode(),
+                status.getDescription(),
+                ofNullable(status.getCause()).map(c -> c.getClass().getName()).orElse("null")
+        );
+        return errorMessage;
+    }
+
+
+    /**
+     * Get the list of internal errors included in the given exception.
      *
      * @param exception
      *    {@link MethodArgumentNotValidException} with the error information
      *
      * @return {@link List} of {@link String} with the error messages
      */
-    private List<String> getMethodArgumentNotValidExceptionErrorMessages(MethodArgumentNotValidException exception) {
+    private List<String> getMethodArgumentNotValidExceptionErrorMessages(final MethodArgumentNotValidException exception) {
         return exception.getBindingResult().getFieldErrors().stream()
                 .map(fe -> "Field error in object '" + fe.getObjectName()
                         + "' on field '" + fe.getField()
@@ -157,7 +206,7 @@ public class GlobalErrorWebExceptionHandler {
 
 
     /**
-     * Get the list of internal errors included in the given exception
+     * Get the list of internal errors included in the given exception.
      *
      * @param exception
      *    {@link ConstraintViolationException} with the error information
@@ -191,6 +240,34 @@ public class GlobalErrorWebExceptionHandler {
 
         ErrorResponseDto error = new ErrorResponseDto(errorCode, errorMessages);
         return new ResponseEntity<>(error, headers, httpStatus);
+    }
+
+
+    /**
+     * Builds the Http response related with an error provoked by gRPC functionality, using the provided parameters.
+     *
+     * @param exception
+     *    {@link Exception} thrown trying to invoke gRPC method
+     * @param request
+     *    {@link WebRequest} with the request information
+     *
+     * @return {@link ResponseEntity} of {@link ErrorResponseDto} with the suitable Http response
+     */
+    private ResponseEntity<ErrorResponseDto> buildGrpcErrorResponse(final Exception exception,
+                                                                    final WebRequest request) {
+        Status status = GrpcErrorHandlerUtil.getStatusFromThrowable(exception);
+        log.error(
+                getErrorMessageUsingHttpRequestAndGrpcStatus(request, status),
+                exception
+        );
+        HttpStatus httpStatus = valueOf(
+                GrpcErrorHandlerUtil.getHttpCodeFromStatus(status)
+        );
+        return buildErrorResponse(
+                INTERNAL,
+                List.of("Internal error in the application"),
+                httpStatus
+        );
     }
 
 }
