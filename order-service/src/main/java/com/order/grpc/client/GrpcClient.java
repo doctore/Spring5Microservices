@@ -56,6 +56,13 @@ public class GrpcClient {
     }
 
 
+    /**
+     *    Returns a synchronous stub based on one created by {@link this#buildIngredientService}. This method is the
+     * public provider of ingredient-related functionality, adding a deadline in seconds to the new requests is that
+     * configuration value was set in {@link GrpcConfiguration#getClientAwaitTerminationInSeconds()} other than 0.
+     *
+     * @return {@link IngredientServiceGrpc.IngredientServiceBlockingStub}
+     */
     public IngredientServiceGrpc.IngredientServiceBlockingStub getIngredientServiceGrpc() {
         int withDeadlineAfterInSeconds = grpcConfiguration.getClientAwaitTerminationInSeconds();
         if (0 < withDeadlineAfterInSeconds) {

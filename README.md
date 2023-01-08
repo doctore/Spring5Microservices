@@ -17,11 +17,11 @@
 - [Security services](#security-services)
     - [security-oauth-service endpoints](#security-oauth-service-endpoints)
     - [security-jwt-service endpoints](#security-jwt-service-endpoints)
+- [How to use it?](#how-to-use-it)
 - [gRPC communication](#grpc-communication)
   - [Security in gRPC](#security-in-grpc)
-  - [RequestId in gRPC](#requestid-in-grpc)
-  - [gRPC request example](#grpc-request-example) 
-- [How to use it?](#how-to-use-it)
+  - [Request identifier in gRPC](#request-identifier-grpc)
+  - [gRPC example request](#grpc-example-request)
 - [Rest API documentation](#rest-api-documentation)
 - [Previous versions of the project](#previous-versions-of-the-project)
 
@@ -29,8 +29,9 @@
 
 ## Why was this project created?
 
-Basically to know how to create a project using the microservices approach with 5th version of Spring framework. Due to there are several options we can use for different features
-included in a microservice architecture, the main purpose of this project is explore the most widely used creating a good base we will be able to use in a real one.
+Basically to know how to create a project using the microservices approach with 5th version of Spring framework. Due to there are several options we
+can use for different features included in a microservice architecture, the main purpose of this project is explore the most widely used creating a
+good base we will be able to use in a real one.
 <br><br>
 
 
@@ -43,16 +44,16 @@ Below is shown a brief introduction to the subprojects included in this one:
 
 ### registry-server
 
-Server used to register all microservices included in this project. In this case, using Netflix Eureka each client can simultaneously act as a server, to replicate its status to a
-connected peer. In other words, a client retrieves a list of all connected peers of a service registry and makes all further requests to any other services through a load-balancing
-algorithm (Ribbon by default).
+Server used to register all microservices included in this project. In this case, using Netflix Eureka each client can simultaneously act as a server,
+to replicate its status to a connected peer. In other words, a client retrieves a list of all connected peers of a service registry and makes all
+further requests to any other services through a load-balancing algorithm (Ribbon by default).
 <br><br> 
 
 
 ### config-server
 
-Configuration server used by the included microservices to get their required initial values like database configuration, for example. Those configuration values have been added
-into the project:
+Configuration server used by the included microservices to get their required initial values like database configuration, for example. Those configuration
+values have been added into the project:
 
 * [Spring5Microservices_ConfigServerData](https://github.com/doctore/Spring5Microservices_ConfigServerData)
 
@@ -70,7 +71,8 @@ spring:
 ```
 
 To increase the security level, in the [config-server](#config-server) microservice I have deactivated the decryption in [application.yml](https://github.com/doctore/Spring5Microservices/blob/master/config-server/src/main/resources/application.yml),
-sending the information encrypted and delegating in every microservice the labour of decrypt it. That is the reason to include in their *pom.xml* file, the dependency:
+sending the information encrypted and delegating in every microservice the labour of decrypt it. That is the reason to include in their *pom.xml* file,
+the dependency:
 
 ```
 <dependency>
@@ -83,17 +85,17 @@ sending the information encrypted and delegating in every microservice the labou
 
 ### gateway-server
 
-Using Spring Gateway, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a filter to registry every web service
-invoked, helping to debug each request.
+Using Spring Gateway, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a
+filter to registry every web service invoked, helping to debug each request.
 <br><br>
 
 
 ### security-oauth-service
 
-Full integration with Oauth 2.0 + Jwt functionality provided by Spring, used to have an option to manage authentication/authorization functionalities through access and refresh
-tokens. With this microservice working as Oauth server we will be able to configure the details of every allowed application using the table in database:
-**security.oauth_client_details**. On the other hand, several customizations have been included to the manage the creation of both JWT tokens and how to append additional information
-too.
+Full integration with Oauth 2.0 + Jwt functionality provided by Spring, used to have an option to manage authentication/authorization functionalities
+through access and refresh tokens. With this microservice working as Oauth server we will be able to configure the details of every allowed application
+using the table in database: **security.oauth_client_details**. On the other hand, several customizations have been included to the manage the creation
+of both JWT tokens and how to append additional information too.
  
 The technologies used are the following ones:
 
@@ -117,10 +119,10 @@ On the other hand, there are other "important folders":
 
 ### security-jwt-service
 
-Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provided a completely multi-application
-platform to generate/manage their own access and refresh tokens (including additional information), choosing between JWS or JWE token type. Every application will be able to manage
-its own token configuration/generation adding a new row in the database table: **security.jwt_client_details** and implementing the interface
-[IAuthenticationGenerator](https://github.com/doctore/Spring5Microservices/blob/master/security-jwt-service/src/main/java/com/security/jwt/interfaces/IAuthenticationGenerator.java).
+Based on JWT token, this module was created to centralize the management of authentication/authorization functionalities. Its main purpose is provided
+a completely multi-application platform to generate/manage their own access and refresh tokens (including additional information), choosing between JWS
+or JWE token type. Every application will be able to manage its own token configuration/generation adding a new row in the database table: **security.jwt_client_details**
+and implementing the interface [IAuthenticationGenerator](https://github.com/doctore/Spring5Microservices/blob/master/security-jwt-service/src/main/java/com/security/jwt/interfaces/IAuthenticationGenerator.java).
  
 The technologies used are the following ones:
 
@@ -148,8 +150,8 @@ On the other hand, there are other "important folders":
 
 ### pizza-service
 
-One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservice. The main purpose of this microservice is the creation of a small one
-on which I am using the following technologies:
+One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservice. The main purpose of this microservice is
+the creation of a small one on which I am using the following technologies:
 
 * **Hibernate** as ORM to deal with the PostgreSQL database.
 * **JPA** for accessing, persisting, and managing data between Java objects and database.
@@ -172,8 +174,8 @@ On the other hand, there are other "important folders":
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from entities to dtos and vice versa.
 
-Using **Hazelcast** for that purpose, this microservice provides functionality to banned users temporally. That is the way we can use to disable any JWT active token related
-with a user we just disabled in database (through admin web page or similar tool). [UserController](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/controller/UserController.java)
+Using **Hazelcast** for that purpose, this microservice provides functionality to banned users temporally. That is the way we can use to disable any
+JWT active token related with a user we just disabled in database (through admin web page or similar tool). [UserController](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/controller/UserController.java)
 class provides the required web services.
 
 This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) server, more information in [gRPC communication](#grpc-communication).
@@ -182,8 +184,8 @@ This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introducti
 
 ### order-service
 
-One order has several order lines and one order line contains a pizza. The main purpose of this microservice is the creation of a small one on which I am using the following
-technologies:
+One order has several order lines and one order line contains a pizza. The main purpose of this microservice is the creation of a small one on which
+I am using the following technologies:
 
 * **jOOQ** replacing to the traditional pair Hibernate/JPA. Allowing us to create type-safe queries and improve the performance between the microservice and the database.
 * **Lombok** to reduce the code development in models and DTOs.
@@ -210,10 +212,11 @@ This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introducti
 
 ### grpc-api
 
-Common functionality used by developed gRPC server and client. This one includes:
+Common functionality used by developed gRPC server and client. This one contains:
 
-* [ingredient.proto](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/resources/proto/ingredient.proto) with the contract which includes defining
-the gRPC service and the method request and response types using [protocol buffers](https://developers.google.com/protocol-buffers/docs/reference/java-generated) specification.
+* [ingredient.proto](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/resources/proto/ingredient.proto) with the contract 
+which includes defining the gRPC service and the method request and response types using [protocol buffers](https://developers.google.com/protocol-buffers/docs/reference/java-generated)
+specification.
 
 * [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java) which
 carries the Basic Authentication that will be propagated from gRPC client to the server in the request metadata with the `Authorization` key.
@@ -240,8 +243,8 @@ And functional programming structures and useful classes like:
 
 ### sql
 
-With SQL files included in the main database and the one used for testing purpose. In both cases, there is one file with the structure of the tables and another one with the
-information initially included.
+With SQL files included in the main database and the one used for testing purpose. In both cases, there is one file with the structure of the tables
+and another one with the information initially included.
 <br><br>
 
 
@@ -262,9 +265,10 @@ Due to every microservice has to decrypt the information sent by [config-server]
 
 ### Setting up an encryption key
 
-In this project a symmetric encryption key has been used. The symmetric encryption key is nothing more than a shared secret that's used by the encrypter to encrypt a value
-and the decrypter to decrypt a value. With the Spring Cloud configuration server, the symmetric encryption key is a string of characters you select that is passed to the
-service via an operating system environment variable called **ENCRYPT_KEY**. For those microservices, I have used:
+In this project a symmetric encryption key has been used. The symmetric encryption key is nothing more than a shared secret that's used by the encrypter
+to encrypt a value and the decrypter to decrypt a value. With the Spring Cloud configuration server, the symmetric encryption key is a string of
+characters you select that is passed to the service via an operating system environment variable called **ENCRYPT_KEY**. For those microservices, I
+have used:
 
 ```
 ENCRYPT_KEY=ENCRYPT_KEY
@@ -274,8 +278,9 @@ ENCRYPT_KEY=ENCRYPT_KEY
 
 ### JDK and Oracle JCE
 
-If you are using Oracle JDK instead of OpenJDK, you need to download and install Oracle's Unlimited Strength Java Cryptography Extension (JCE). This isn't available through
-Maven and must be downloaded from Oracle Corporation. Once you've downloaded the zip files containing the JCE jars, you must do the following:
+If you are using Oracle JDK instead of OpenJDK, you need to download and install Oracle's Unlimited Strength Java Cryptography Extension (JCE). This
+isn't available through Maven and must be downloaded from Oracle Corporation. Once you've downloaded the zip files containing the JCE jars, you must
+do the following:
 
 - Locate your `$JAVA_HOME/jre/lib/security` directory
 
@@ -295,8 +300,8 @@ If you receive some errors related with encryption like:
 IllegalStateException: Cannot decrypt: ...
 ```
 
-Please, take a look to the previous steps in this section, maybe one of them is missing. If you still see same error messages, the best way to solve it is changing the
-"cipher values" added in the microservices configuration files included in: 
+Please, take a look to the previous steps in this section, maybe one of them is missing. If you still see same error messages, the best way to solve
+it is changing the *cipher values* added in the microservices configuration files included in: 
 
 * [Spring5Microservices_ConfigServerData](https://github.com/doctore/Spring5Microservices_ConfigServerData)
 
@@ -327,8 +332,8 @@ To do it:
 ## Security services
 
 As you read previously, there are two different microservices you can use to manage the authentication/authorization functionality: [security-oauth-service](#security-oauth-service)
-and [security-jwt-service](#security-jwt-service), in this proof of concept I have used the first one in [order-service](#order-service) and the second one to securize
-[pizza-service](#pizza-service).
+and [security-jwt-service](#security-jwt-service), in this proof of concept I have used the first one in [order-service](#order-service) and the second
+one to securize [pizza-service](#pizza-service).
 
 Regarding every microservice, in this section I will explain the web services provided by every one and how to use them, starting by [security-oauth-service](#security-oauth-service).
 <br><br>
@@ -340,8 +345,8 @@ Before enter in details about this security service, it is important to know tha
 
 ![Alt text](/documentation/SecurityOauthService_Credentials.png?raw=true "Oauth 2.0 credentials")
    
-You can see the *raw password* in the SQL file [MasterDatabase_Data.sql](https://github.com/doctore/Spring5Microservices/blob/master/sql/MasterDatabase_Data.sql), when the information
-about this application is included in the table `security.oauth_client_details`. In this case, the password is `Spring5Microservices`. 
+You can see the *raw password* in the SQL file [MasterDatabase_Data.sql](https://github.com/doctore/Spring5Microservices/blob/master/sql/MasterDatabase_Data.sql),
+when the information about this application is included in the table `security.oauth_client_details`. In this case, the password is `Spring5Microservices`. 
 
 So, the list of web services is the following one:
 
@@ -349,8 +354,9 @@ So, the list of web services is the following one:
 
 ![Alt text](/documentation/SecurityOauthService_Login.png?raw=true "Login")
 
-In the previous image, I have used for this example `admin/admin`, there is another option: `user/user`, included in the SQL file [MasterDatabase_Data.sql](https://github.com/doctore/Spring5Microservices/blob/master/sql/MasterDatabase_Data.sql)
-(in the inserts related with the table `eat.user`).
+In the previous image, I have used for this example `admin/admin`, there is another option: `user/user`, included in the SQL file
+[MasterDatabase_Data.sql](https://github.com/doctore/Spring5Microservices/blob/master/sql/MasterDatabase_Data.sql) (in the inserts related with the
+table `eat.user`).
 
 **2.** Refresh authentication information after the access token expiration:
 
@@ -383,6 +389,31 @@ So, the list of web services is the following one:
 **3.** Get authorization information using access token:
 
 ![Alt text](/documentation/SecurityJwtService_AuthorizationInfo.png?raw=true "Authorization information")
+<br><br>
+
+
+
+## How to use it?
+
+The first step is adding in our databases: `main` and `test` ones, the SQL files included in the [sql](https://github.com/doctore/Spring5Microservices/tree/master/sql)
+folder. Once we have finished, it will be necessary to run the following services (following the displayed ordination):
+
+1. [registry-server](#registry-server)
+2. [config-server](#config-server)
+3. [gateway-server](#gateway-server)
+4. [security-oauth-service](#security-oauth-service) (if we want to use [order-service](#order-service))
+5. [security-jwt-service](#security-jwt-service) (if we want to use [pizza-service](#pizza-service))
+
+And finally any of the other ones (or both): [pizza-service](#pizza-service) and [order-service](#order-service).
+
+So, as I explained you in [Security services](#security-services), once you have obtained the required JWT access token, you can use it to invoke the
+required web services:
+
+![Alt text](/documentation/PizzaService.png?raw=true "Example of pizza service")
+
+or:
+
+![Alt text](/documentation/OrderService.png?raw=true "Example of order service")
 <br><br>
 
 
@@ -421,58 +452,47 @@ The internal communication between a microservice and its related security serve
 * [order-service](#order-service) => [security-oauth-service](#security-oauth-service)
 * [pizza-service](#pizza-service) => [security-jwt-service](#security-jwt-service)
 
-uses [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) to include the required credentials:
+Uses [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) to include the required credentials:
 
-* [order-service](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/configuration/security/SecurityManager.java)
-* [pizza-service](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/configuration/security/SecurityManager.java)
+* [order-service](#order-service) in the class [SecurityManager](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/configuration/security/SecurityManager.java)
+* [pizza-service](#pizza-service) in the class [SecurityManager](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/configuration/security/SecurityManager.java)
 
 In the current gRPC development I have followed the same approach:
 
 * In the **gRPC client** creating a new [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java)
 instance and adding it in the `Authorization` header sent to the server, using the method `buildCallCredentials` of the class [GrpcClient](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/client/GrpcClient.java).
-<br>
 
 * In the **gRPC server**, the interceptor [AuthenticationInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/interceptor/AuthenticationInterceptor.java)
 manages required verifications.
 <br><br>
 
 
-### RequestId in gRPC
+### Request identifier in gRPC
 
-This project uses [Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) for distributed tracing, to simulate the same behaviour two interceptors have been defined:
+This project uses [Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) for distributed tracing, to simulate the same behaviour two interceptors
+have been defined:
 
 * At **gRPC client** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/order-service/src/main/java/com/order/grpc/interceptor/RequestIdInterceptor.java)
-* At **gRPC server** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/interceptor/RequestIdInterceptor.java) 
+* At **gRPC server** with [RequestIdInterceptor](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/grpc/interceptor/RequestIdInterceptor.java)
 <br><br>
 
 
-### gRPC request example
+### gRPC example request
 
-Pending to add
-<br><br>
+[order-service](#order-service) contains an endpoint to get the summary of ingredients related with an order. Such endpoint receives the order's
+identifier as parameter and uses it to obtain the identifiers of the related pizzas from its own database. To get the list of ingredients use
+the developed [gRPC](https://grpc.io/docs/what-is-grpc/introduction/) communication channel to receive from [pizza-service](#pizza-service) the
+requested information.
 
+The communication diagram including also the invocation of [security-oauth-service](#security-oauth-service) is the following:
 
+![Alt text](/documentation/GrpcCommunicationDiagram.png?raw=true "gRPC Communication diagram")
+<br>
 
-## How to use it?
+So, as I explained you in [security-oauth-service endpoints](#security-oauth-service-endpoints), once you have obtained the required JWT access token,
+you can use it to invoke the web service that uses the developed gRPC channel:
 
-The first step is adding in our databases: `main` and `test` ones, the SQL files included in the [sql](https://github.com/doctore/Spring5Microservices/tree/master/sql) folder.
-Once we have finished, it will be necessary to run the following services (following the displayed ordination):
-
-1. [registry-server](#registry-server)
-2. [config-server](#config-server)
-3. [gateway-server](#gateway-server)
-4. [security-oauth-service](#security-oauth-service) (if we want to use [order-service](#order-service))
-5. [security-jwt-service](#security-jwt-service) (if we want to use [pizza-service](#pizza-service))
-
-And finally any of the other ones (or both): [pizza-service](#pizza-service) and [order-service](#order-service).
-
-So, once you have obtained the required JWT access token (as I explained you in the previous section), you can use it to invoke the required web services:
-
-![Alt text](/documentation/PizzaService.png?raw=true "Example of pizza service")
-
-or:
-
-![Alt text](/documentation/OrderService.png?raw=true "Example of order service")
+![Alt text](/documentation/WebServiceWithGRPC.png?raw=true "Example of web service using gRPC channel")
 <br><br>
 
 
