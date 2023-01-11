@@ -4,9 +4,10 @@ import com.spring5microservices.common.util.HttpUtil;
 import com.spring5microservices.grpc.configuration.GrpcHeader;
 import io.grpc.CallCredentials;
 import io.grpc.Metadata;
-import io.grpc.Status;
 
 import java.util.concurrent.Executor;
+
+import static io.grpc.Status.UNAUTHENTICATED;
 
 /**
  *    {@link CallCredentials} implementation, which carries the Basic Authentication that will be propagated from gRPC
@@ -48,9 +49,9 @@ public final class BasicCredential extends CallCredentials {
 
             } catch (Throwable e) {
                 metadataApplier.fail(
-                        Status.UNAUTHENTICATED
-                                .withCause(e)
+                        UNAUTHENTICATED
                                 .withDescription("There was a problem with the basic authorization included in the request")
+                                .withCause(e)
                 );
             }
         });
