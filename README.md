@@ -218,8 +218,11 @@ Common functionality used by developed gRPC server and client. This one contains
 which includes defining the gRPC service and the method request and response types using [protocol buffers](https://developers.google.com/protocol-buffers/docs/reference/java-generated)
 specification.
 
-* [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java) which
-carries the Basic Authentication that will be propagated from gRPC client to the server in the request metadata with the `Authorization` key.
+* [BasicCredential](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/security/BasicCredential.java) 
+which carries the Basic Authentication that will be propagated from gRPC client to the server in the request metadata with the `Authorization` key.
+
+* [GrpcErrorHandlerUtil](https://github.com/doctore/Spring5Microservices/blob/master/grpc-api/src/main/java/com/spring5microservices/grpc/util/GrpcErrorHandlerUtil.java) 
+helper class with several methods to manage errors both on gRPC client and server side. 
 
 More information about how gRPC server and client uses it in [gRPC communication](#grpc-communication).
 <br><br>
