@@ -56,23 +56,8 @@ public class GrpcErrorHandlerUtil {
      * @return non-{@code null} {@link Status}
      */
     public static Status getStatusFromThrowable(final Throwable throwable) {
-        return ofNullable(throwable)
-                .map(t -> {
-                    try {
-                        return Status.fromThrowable(t);
-                    } catch (Exception e) {
-                        return UNKNOWN
-                                .withDescription(
-                                        format("There was an error trying to determine the suitable status using an instance of: %s",
-                                                t.getClass().getName())
-                                )
-                                .withCause(e);
-                    }
-                })
-                .orElseGet(() ->
-                        UNKNOWN
-                          .withDescription("No source exception was provided to determine the related status value")
-                );
+        return getStatusRuntimeExceptionFromThrowable(throwable)
+                .getStatus();
     }
 
 
@@ -123,7 +108,7 @@ public class GrpcErrorHandlerUtil {
                 })
                 .orElseGet(() ->
                         UNKNOWN
-                          .withDescription("No source exception was provided to determine the related StatusRuntimeException")
+                          .withDescription("No source exception was provided")
                           .asRuntimeException()
                 );
     }

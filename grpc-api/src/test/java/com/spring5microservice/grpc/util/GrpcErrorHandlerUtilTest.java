@@ -72,21 +72,44 @@ public class GrpcErrorHandlerUtilTest {
 
 
     static Stream<Arguments> getStatusFromThrowableTestCases() {
+        IllegalArgumentException illegalArgumentException = new IllegalArgumentException("Argument not valid");
         ConnectException connectException = new ConnectException("Connection refused");
+        SecurityException securityException = new SecurityException("Operation not allowed", illegalArgumentException);
 
         Status unavailableStatus = UNAVAILABLE.withDescription("io exception").withCause(connectException);
         Status unauthenticatedStatus = UNAUTHENTICATED.withDescription("Provided authentication is not valid").withCause(null);
 
         StatusException unavailableException = new StatusException(unavailableStatus);
         StatusRuntimeException unauthenticatedException = new StatusRuntimeException(unauthenticatedStatus);
+        IllegalStateException illegalStateException = new IllegalStateException("State not valid", unauthenticatedException);
 
-        Status resultNullProvidedThrowable = UNKNOWN.withDescription("No source exception was provided to determine the related status value");
+        Status resultNullProvidedThrowable = UNKNOWN.withDescription("No source exception was provided");
+        Status resultNoStatusExceptionInHierarchy =
+                INTERNAL
+                  .withDescription(
+                          format("There was an error caused by an instance of: %s",
+                                  securityException.getCause().getClass().getName())
+                  )
+                  .withCause(securityException);
+        Status resultNoStatusEquivalenceFound =
+                UNKNOWN
+                  .withDescription(
+                          format("Not found the right status equivalence using an instance of: %s and last not null cause: %s",
+                                  connectException.getClass().getName(),
+                                  connectException.getClass().getName()
+                          )
+                  )
+                  .withCause(connectException);
+
         return Stream.of(
                 //@formatter:off
                 //            throwable,                  expectedResult
                 Arguments.of( null,                       resultNullProvidedThrowable ),
                 Arguments.of( unavailableException,       unavailableStatus ),
-                Arguments.of( unauthenticatedException,   unauthenticatedStatus )
+                Arguments.of( unauthenticatedException,   unauthenticatedStatus ),
+                Arguments.of( illegalStateException,      unauthenticatedStatus ),
+                Arguments.of( securityException,          resultNoStatusExceptionInHierarchy ),
+                Arguments.of( connectException,           resultNoStatusEquivalenceFound )
         ); //@formatter:on
     }
 
@@ -116,7 +139,7 @@ public class GrpcErrorHandlerUtilTest {
 
         StatusRuntimeException resultNullProvidedThrowable =
                 UNKNOWN
-                  .withDescription("No source exception was provided to determine the related StatusRuntimeException")
+                  .withDescription("No source exception was provided")
                   .asRuntimeException();
         StatusRuntimeException resultStatusExceptionProvided = new StatusRuntimeException(unavailableStatusException.getStatus());
         StatusRuntimeException resultStatusRuntimeExceptionProvided = unauthenticatedStatusRuntimeException;
