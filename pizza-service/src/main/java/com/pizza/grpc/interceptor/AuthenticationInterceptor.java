@@ -18,8 +18,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import static io.grpc.Status.OK;
+import static io.grpc.Status.UNAUTHENTICATED;
 import static java.lang.String.format;
 
+/**
+ *    Gets {@link GrpcHeader#AUTHORIZATION} from the metadata, verifies it and sets the client identifier
+ * obtained from the provided data into the {@link Context}.
+ */
 @AllArgsConstructor
 @Log4j2
 @Component
@@ -34,7 +40,7 @@ public class AuthenticationInterceptor implements ServerInterceptor {
                                                                  final ServerCallHandler<ReqT, RespT> serverCallHandler) {
         String basicAuthentication = metadata.get(GrpcHeader.AUTHORIZATION);
         Status finalStatus = verifyRequest(basicAuthentication);
-        if (Status.OK == finalStatus) {
+        if (OK == finalStatus) {
             // Set gRPC Client id into current context
             Context ctx = Context.current()
                     .withValue(
@@ -68,7 +74,7 @@ public class AuthenticationInterceptor implements ServerInterceptor {
      */
     private Status verifyRequest(final String basicAuthentication) {
         if (!StringUtils.hasText(basicAuthentication)) {
-            return Status.UNAUTHENTICATED
+            return UNAUTHENTICATED
                     .withDescription("Authentication data is missing");
         }
         try {
@@ -82,22 +88,23 @@ public class AuthenticationInterceptor implements ServerInterceptor {
                         format("Provided gRPC client identifier: %s does not match with configured one: %s",
                                 usernameAndPassword._1, securityConfiguration.getClientId())
                 );
-                return Status.UNAUTHENTICATED
+                return UNAUTHENTICATED
                         .withDescription("Provided authentication is not valid");
             }
             if (!usernameAndPassword._2.equals(securityConfiguration.getClientPassword())) {
                 log.error("Provided gRPC client password does not match with configured one");
-                return Status.UNAUTHENTICATED
+                return UNAUTHENTICATED
                         .withDescription("Provided authentication is not valid");
             }
-            return Status.OK;
+            return OK;
+
         } catch (Exception e) {
             log.error(
                     format("There was an error trying to verify the basic authentication data: %s",
                             basicAuthentication),
                     e
             );
-            return Status.UNAUTHENTICATED
+            return UNAUTHENTICATED
                     .withDescription("There was an error trying to verify provided authentication");
         }
     }

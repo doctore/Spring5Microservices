@@ -2,6 +2,7 @@ package com.pizza.grpc.server;
 
 import com.pizza.grpc.configuration.GrpcConfiguration;
 import com.pizza.grpc.interceptor.AuthenticationInterceptor;
+import com.pizza.grpc.interceptor.ExceptionHandlerInterceptor;
 import com.pizza.grpc.interceptor.RequestIdInterceptor;
 import com.pizza.grpc.service.IngredientServiceGrpcImpl;
 import io.grpc.BindableService;
@@ -38,6 +39,9 @@ public class GrpcServer {
     private final AuthenticationInterceptor authenticationInterceptor;
 
     @Lazy
+    private final ExceptionHandlerInterceptor exceptionHandlerInterceptor;
+
+    @Lazy
     private final IngredientServiceGrpcImpl ingredientServiceGrpc;
 
     private final Server server;
@@ -46,10 +50,12 @@ public class GrpcServer {
     public GrpcServer(final GrpcConfiguration grpcConfiguration,
                       final RequestIdInterceptor requestIdInterceptor,
                       final AuthenticationInterceptor authenticationInterceptor,
+                      final ExceptionHandlerInterceptor exceptionHandlerInterceptor,
                       final IngredientServiceGrpcImpl ingredientServiceGrpc) {
         this.grpcConfiguration = grpcConfiguration;
         this.requestIdInterceptor = requestIdInterceptor;
         this.authenticationInterceptor = authenticationInterceptor;
+        this.exceptionHandlerInterceptor = exceptionHandlerInterceptor;
         this.ingredientServiceGrpc = ingredientServiceGrpc;
         this.server = buildServer(
                 grpcConfiguration.getServerPort()
@@ -128,6 +134,7 @@ public class GrpcServer {
                 InsecureServerCredentials.create()
         )
         .addService(ingredientServiceGrpc)
+        .intercept(exceptionHandlerInterceptor)
         .intercept(authenticationInterceptor)
         .intercept(requestIdInterceptor)
         .build();

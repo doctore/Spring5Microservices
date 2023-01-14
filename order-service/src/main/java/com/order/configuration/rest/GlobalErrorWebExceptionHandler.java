@@ -182,7 +182,9 @@ public class GlobalErrorWebExceptionHandler {
         errorMessage += format(" . gRPC Status: %s, description: %s and cause class: %s",
                 status.getCode(),
                 status.getDescription(),
-                ofNullable(status.getCause()).map(c -> c.getClass().getName()).orElse("null")
+                ofNullable(status.getCause())
+                        .map(c -> c.getClass().getName())
+                        .orElse("null")
         );
         return errorMessage;
     }
@@ -244,7 +246,7 @@ public class GlobalErrorWebExceptionHandler {
 
 
     /**
-     * Builds the Http response related with an error provoked by gRPC functionality, using the provided parameters.
+     * Builds the Http response related with an error caused using the gRPC communication channel.
      *
      * @param exception
      *    {@link Exception} thrown trying to invoke gRPC method
