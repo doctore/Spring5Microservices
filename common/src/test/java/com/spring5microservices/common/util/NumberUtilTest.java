@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.util.either.Either;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -11,6 +12,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.NumberUtil.fromString;
+import static com.spring5microservices.common.util.either.Either.left;
+import static com.spring5microservices.common.util.either.Either.right;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,9 +58,9 @@ public class NumberUtilTest {
         } else {
             int result = NumberUtil.compare(one, two, numberOfDecimals);
             switch (expectedResult) {
-                case LESS_THAN_ZERO: assertTrue(0 > result); break;
-                case ZERO: assertEquals(0, result); break;
-                case GREATER_THAN_ZERO: assertTrue(0 < result); break;
+                case LESS_THAN_ZERO -> assertTrue(0 > result);
+                case ZERO -> assertEquals(0, result);
+                case GREATER_THAN_ZERO -> assertTrue(0 < result);
             }
         }
     }
@@ -106,24 +109,55 @@ public class NumberUtilTest {
         } else {
             int result = NumberUtil.compare(one, two, numberOfDecimals, roundingMode);
             switch (expectedResult) {
-                case LESS_THAN_ZERO: assertTrue(0 > result); break;
-                case ZERO: assertEquals(0, result); break;
-                case GREATER_THAN_ZERO: assertTrue(0 < result); break;
+                case LESS_THAN_ZERO -> assertTrue(0 > result);
+                case ZERO -> assertEquals(0, result);
+                case GREATER_THAN_ZERO -> assertTrue(0 < result);
             }
         }
     }
 
 
-    static Stream<Arguments> fromStringWithClazzTestCases() {
+    static Stream<Arguments> fromStringTestCases() {
+        String errorMessageNoNumber = "There was an error trying to convert the string: aa to an instance of: java.lang.Integer. "
+                + "The cause was: java.lang.NumberFormatException with message: For input string: \"aa\"";
+        String errorMessageNoInteger = "There was an error trying to convert the string: 12.1 to an instance of: java.lang.Integer. "
+                + "The cause was: java.lang.NumberFormatException with message: For input string: \"12.1\"";
         return Stream.of(
                 //@formatter:off
-                //            potentialNumber,   clazzReturnedInstance,   expectedException,                expectedResult
-                Arguments.of( null,              null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( "12",              null,                    IllegalArgumentException.class,   null ),
-                Arguments.of( "aa",              Integer.class,           null,                             empty() ),
-                Arguments.of( "12",              Integer.class,           null,                             of(12) ),
-                Arguments.of( "aa",              Long.class,              null,                             empty() ),
-                Arguments.of( "12",              Long.class,              null,                             of(12L) )
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              right(empty()) ),
+                Arguments.of( "aa",              left(errorMessageNoNumber) ),
+                Arguments.of( "12.1",            left(errorMessageNoInteger) ),
+                Arguments.of( "12",              right(of(12)) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromStringTestCases")
+    @DisplayName("fromString: test cases")
+    public void fromString_testCases(String potentialNumber,
+                                     Either<String, Optional<Integer>> expectedResult) {
+        assertEquals(expectedResult, fromString(potentialNumber));
+    }
+
+
+    static Stream<Arguments> fromStringWithClazzTestCases() {
+        String errorMessageNoNumber = "There was an error trying to convert the string: aa to an instance of: java.lang.Integer. "
+                + "The cause was: java.lang.NumberFormatException with message: For input string: \"aa\"";
+        String errorMessageNoInteger = "There was an error trying to convert the string: 12.1 to an instance of: java.lang.Integer. "
+                + "The cause was: java.lang.NumberFormatException with message: For input string: \"12.1\"";
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   clazzReturnedInstance,   expectedResult
+                Arguments.of( null,              null,                    right(empty()) ),
+                Arguments.of( "aa",              null,                    left(errorMessageNoNumber) ),
+                Arguments.of( "aa",              Integer.class,           left(errorMessageNoNumber) ),
+                Arguments.of( "12",              null,                    right(of(12)) ),
+                Arguments.of( "12",              Integer.class,           right(of(12)) ),
+                Arguments.of( "12",              Long.class,              right(of(12L)) ),
+                Arguments.of( "12.1",            null,                    left(errorMessageNoInteger) ),
+                Arguments.of( "12.1",            Integer.class,           left(errorMessageNoInteger) ),
+                Arguments.of( "12.1",            Double.class,            right(of(12.1D)) )
         ); //@formatter:on
     }
 
@@ -132,32 +166,8 @@ public class NumberUtilTest {
     @DisplayName("fromString: providing a result class test cases")
     public <T extends Number> void fromStringWithClazz_testCases(String potentialNumber,
                                                                  Class<T> clazzReturnedInstance,
-                                                                 Class<? extends Exception> expectedException,
-                                                                 Optional<T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> fromString(potentialNumber, clazzReturnedInstance));
-        } else {
-            assertEquals(expectedResult, fromString(potentialNumber, clazzReturnedInstance));
-        }
-    }
-
-    static Stream<Arguments> fromStringTestCases() {
-        return Stream.of(
-                //@formatter:off
-                //            potentialNumber,   expectedResult
-                Arguments.of( null,              empty() ),
-                Arguments.of( "aa",              empty() ),
-                Arguments.of( "12.1",            empty() ),
-                Arguments.of( "12",              of(12) )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("fromStringTestCases")
-    @DisplayName("fromString: test cases")
-    public void fromString_testCases(String potentialNumber,
-                                     Optional<Integer> expectedResult) {
-        assertEquals(expectedResult, fromString(potentialNumber));
+                                                                 Either<String, Optional<Integer>> expectedResult) {
+        assertEquals(expectedResult, fromString(potentialNumber, clazzReturnedInstance));
     }
 
 

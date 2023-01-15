@@ -1,7 +1,11 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.util.either.Either;
+import com.spring5microservices.common.util.either.Left;
+import com.spring5microservices.common.util.either.Right;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Constructor;
@@ -10,9 +14,12 @@ import java.math.RoundingMode;
 import java.util.Optional;
 
 import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.either.Either.left;
+import static com.spring5microservices.common.util.either.Either.right;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 @UtilityClass
 @Log4j2
@@ -95,64 +102,71 @@ public class NumberUtil {
 
 
     /**
-     * Returns an instance of the provided {@link Class} if is possible to do the conversion of given {@code potentialNumber}.
-     *
-     * @param potentialNumber
-     *    {@link String} to convert into a {@link Number} instance.
-     *
-     * @param clazzReturnedInstance
-     *    {@link Number} subclass of the returned instance.
-     *
-     * @return {@link Optional} with a value if provided {@code potentialNumber} could be converted,
-     *         {@link Optional#empty()} otherwise.
-     *
-     * @throws IllegalArgumentException if {@code clazzReturnedInstance} is {@code null}
-     */
-    public static <T extends Number> Optional<T> fromString(final String potentialNumber,
-                                                            final Class<T> clazzReturnedInstance) {
-        Assert.notNull(clazzReturnedInstance, "clazzReturnedInstance must be not null");
-        return ofNullable(potentialNumber)
-                .map(s -> {
-                    try {
-                        Constructor<T> ctor = clazzReturnedInstance.getConstructor(String.class);
-                        return ctor.newInstance(s);
-                    }
-                    catch (Exception e) {
-                        log.warn(
-                                format("There was an error trying to convert the string: %s to a number",
-                                        potentialNumber),
-                                e
-                        );
-                        return null;
-                    }
-                });
-    }
-
-
-    /**
-     * Returns an {@link Integer} instance if is possible to do the conversion of given {@code potentialNumber}.
+     *    Returns an {@link Right} with {@link Integer} instance if is possible to do the conversion of given {@code potentialNumber}.
+     * {@link Left} with the error message otherwise.
      *
      * @param potentialNumber
      *    {@link String} to convert into a {@link Integer} instance.
      *
-     * @return {@link Optional} of {@link Integer} if provided {@code potentialNumber} could be converted,
-     *         {@link Optional#empty()} otherwise.
+     * @return {@link Right} with {@link Optional} of {@link Integer} if provided {@code potentialNumber} could be converted,
+     *         {@link Left} with the error message otherwise.
      */
-    public static Optional<Integer> fromString(final String potentialNumber) {
-        return ofNullable(potentialNumber)
-                .map(s -> {
-                    try {
-                        return Integer.valueOf(potentialNumber);
-                    }
-                    catch (Exception e) {
-                        log.warn(
-                                format("There was an error trying to convert the string: %s to a number",
-                                        potentialNumber),
-                                e
-                        );
-                        return null;
-                    }
-                });
+    public static Either<String, Optional<Integer>> fromString(final String potentialNumber) {
+        return fromString(
+                potentialNumber,
+                Integer.class
+        );
+    }
+
+
+    /**
+     *    Returns an {@link Right} with {@code clazzReturnedInstance} instance if is possible to do the conversion of given
+     * {@code potentialNumber}. {@link Left} with the error message otherwise.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Number} instance.
+     * @param clazzReturnedInstance
+     *    {@link Number} subclass of the returned instance.
+     *
+     * @return {@link Right} with {@link Optional} of {@code clazzReturnedInstance} instance if provided {@code potentialNumber}
+     *         could be converted. {@link Left} with the error message otherwise.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Number> Either<String, Optional<T>> fromString(final String potentialNumber,
+                                                                            final Class<T> clazzReturnedInstance) {
+        final Class<T> finalClazzReturnedInstance = (Class<T>) getOrElse(
+                clazzReturnedInstance,
+                Integer.class
+        );
+        if (isNull(potentialNumber)) {
+            return right(empty());
+        }
+        try {
+            Constructor<T> ctor = finalClazzReturnedInstance.getConstructor(String.class);
+            return right(
+                    of(
+                            ctor.newInstance(potentialNumber)
+                    )
+            );
+        }
+        catch (Exception e) {
+            String mainErrorMessage = format(
+                    "There was an error trying to convert the string: %s to an instance of: %s",
+                    potentialNumber,
+                    finalClazzReturnedInstance.getName()
+            );
+            log.warn(
+                    mainErrorMessage,
+                    e
+            );
+            Throwable rootCause = ExceptionUtils.getRootCause(e);
+            return left(
+                    format(mainErrorMessage + ". The cause was: %s with message: %s",
+                            rootCause.getClass().getName(),
+                            rootCause.getMessage()
+                    )
+            );
+        }
     }
 
 }
