@@ -5,7 +5,6 @@ import com.spring5microservices.common.util.either.Left;
 import com.spring5microservices.common.util.either.Right;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Constructor;
@@ -13,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
 
+import static com.spring5microservices.common.util.ExceptionUtil.getRootCause;
 import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
 import static com.spring5microservices.common.util.either.Either.left;
 import static com.spring5microservices.common.util.either.Either.right;
@@ -159,11 +159,11 @@ public class NumberUtil {
                     mainErrorMessage,
                     e
             );
-            Throwable rootCause = ExceptionUtils.getRootCause(e);
+            Throwable rootCauseOrProvided = getRootCause(e).orElse(e);
             return left(
                     format(mainErrorMessage + ". The cause was: %s with message: %s",
-                            rootCause.getClass().getName(),
-                            rootCause.getMessage()
+                            rootCauseOrProvided.getClass().getName(),
+                            rootCauseOrProvided.getMessage()
                     )
             );
         }

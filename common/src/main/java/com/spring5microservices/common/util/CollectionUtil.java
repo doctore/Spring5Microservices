@@ -968,18 +968,18 @@ public class CollectionUtil {
      * <pre>
      * Example 1:
      *
-     *   Parameters:            Result:
-     *    42                     []
-     *    a -> a / 10
+     *   Parameters:              Result:
+     *    42                       []
+     *    a -> (int) a / 10
      *    a -> 50 >= a
      * </pre>
      *
      * <pre>
      * Example 2:
      *
-     *   Parameters:            Result:
-     *    42                     [42, 4]
-     *    a -> a / 10
+     *   Parameters:              Result:
+     *    42                       [42, 4]
+     *    a -> (int) a / 10
      *    a -> 0 >= a
      * </pre>
      *
