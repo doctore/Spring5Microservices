@@ -10,6 +10,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
@@ -145,7 +147,7 @@ public final class Lazy<T> implements Supplier<T> {
      */
     public Optional<T> filter(final Predicate<? super T> predicate) {
         final T v = get();
-        return Objects.isNull(predicate) || predicate.test(v)
+        return isNull(predicate) || predicate.test(v)
                 ? Optional.of(v)
                 : empty();
     }
@@ -157,7 +159,7 @@ public final class Lazy<T> implements Supplier<T> {
      * @return {@code true} if the provided supplier value was evaluated, {@code false} otherwise.
      */
     public boolean isEvaluated() {
-        return Objects.nonNull(cachedValue);
+        return nonNull(cachedValue);
     }
 
 
@@ -187,7 +189,7 @@ public final class Lazy<T> implements Supplier<T> {
      * @return {@code Lazy}
      */
     public Lazy<T> peek(final Consumer<? super T> action) {
-        if (Objects.nonNull(action)) {
+        if (nonNull(action)) {
             action.accept(get());
         }
         return this;

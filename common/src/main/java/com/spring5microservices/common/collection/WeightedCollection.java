@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 
 /**
@@ -35,7 +36,7 @@ public class WeightedCollection<T> {
         this.randomElementSelector = randomElementSelector;
     }
 
-    public static <T> WeightedCollection<T> of(SecureRandom randomElementSelector) {
+    public static <T> WeightedCollection<T> of(final SecureRandom randomElementSelector) {
         return new WeightedCollection<>(randomElementSelector);
     }
 
@@ -50,7 +51,8 @@ public class WeightedCollection<T> {
      *
      * @throws IllegalArgumentException if {@code weight} < 1 or {@code toInsert} is {@code null}
      */
-    public void add(int weight, T toInsert) {
+    public void add(final int weight,
+                    final T toInsert) {
         Assert.isTrue(0 < weight, "weight should be a positive value");
         Assert.notNull(toInsert, "toInsert must not be null");
         totalWeight += weight;
@@ -71,7 +73,8 @@ public class WeightedCollection<T> {
      *
      * @return new updated {@link WeightedCollection}
      */
-    public WeightedCollection<T> addAndThen(int weight, T toInsert) {
+    public WeightedCollection<T> addAndThen(final int weight,
+                                            final T toInsert) {
         WeightedCollection<T> result = clone();
         result.add(
                 weight,
@@ -89,11 +92,11 @@ public class WeightedCollection<T> {
      *
      * @return {@code true} if both collections are equals, {@code false} otherwise.
      */
-    public boolean equals(WeightedCollection<?> other) {
+    public boolean equals(final WeightedCollection<?> other) {
         if (other == this) {
             return true;
         }
-        if (null == other ||
+        if (isNull(other) ||
                 other.size() != size()) {
             return false;
         }
@@ -158,7 +161,7 @@ public class WeightedCollection<T> {
      *
      * @return new updated {@link WeightedCollection}
      */
-    public WeightedCollection<T> removeAndThen(T toRemove) {
+    public WeightedCollection<T> removeAndThen(final T toRemove) {
         WeightedCollection<T> result = of(randomElementSelector);
         int totalAccumulated = 0;
 

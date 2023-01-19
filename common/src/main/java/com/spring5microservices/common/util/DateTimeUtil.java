@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Optional;
 
+import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
 import static java.lang.Math.abs;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
@@ -27,7 +27,7 @@ public class DateTimeUtil {
      * @param epsilon
      *    Timeframe used to consider equals two {@link LocalDateTime} values
      * @param timeUnit
-     *    {@link ChronoUnit} of the given {@code epsilon}. If no value is given, {@link ChronoUnit#MINUTES} will be used.
+     *    {@link ChronoUnit} of the given {@code epsilon}. If {@code null} then {@link ChronoUnit#MINUTES} will be used.
      *
      * @return using {@code epsilon} as value in {@link ChronoUnit} format:
      *          -1 if {@code one} is before than {@code two}
@@ -52,10 +52,10 @@ public class DateTimeUtil {
         if (0 == epsilon) {
             return one.compareTo(two);
         }
-        ChronoUnit finalTimeUnit = Objects.nonNull(timeUnit)
-                ? timeUnit
-                : ChronoUnit.MINUTES;
-
+        final ChronoUnit finalTimeUnit = getOrElse(
+                timeUnit,
+                ChronoUnit.MINUTES
+        );
         long difference = finalTimeUnit.between(one, two);
         return abs(difference) <= epsilon
                 ? 0
@@ -93,10 +93,10 @@ public class DateTimeUtil {
                                                          final ZoneId zoneId) {
         return ofNullable(localDateTime)
                 .map(lcd -> {
-                    ZoneId finalZoneId = Objects.nonNull(zoneId)
-                            ? zoneId
-                            : ZoneId.systemDefault();
-
+                    final ZoneId finalZoneId = getOrElse(
+                            zoneId,
+                            ZoneId.systemDefault()
+                    );
                     return Date.from(
                             lcd.atZone(finalZoneId).toInstant()
                     );
@@ -134,10 +134,10 @@ public class DateTimeUtil {
                                                                   final ZoneId zoneId) {
         return ofNullable(date)
                 .map(d -> {
-                    ZoneId finalZoneId = Objects.nonNull(zoneId)
-                            ? zoneId
-                            : ZoneId.systemDefault();
-
+                    final ZoneId finalZoneId = getOrElse(
+                            zoneId,
+                            ZoneId.systemDefault()
+                    );
                     return d.toInstant()
                             .atZone(finalZoneId)
                             .toLocalDateTime();

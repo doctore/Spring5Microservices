@@ -37,16 +37,11 @@ public interface Tuple {
      */
     default <T> Tuple globalAppend(final T t) {
         return switch (this.arity()) {
-            case 0 ->
-                    ((Tuple0) this).append(t);
-            case 1 ->
-                    ((Tuple1<?>) this).append(t);
-            case 2 ->
-                    ((Tuple2<?, ?>) this).append(t);
-            case 3 ->
-                    ((Tuple3<?, ?, ?>) this).append(t);
-            case 4 ->
-                    ((Tuple4<?, ?, ?, ?>) this).append(t);
+            case 0 -> ((Tuple0) this).append(t);
+            case 1 -> ((Tuple1<?>) this).append(t);
+            case 2 -> ((Tuple2<?, ?>) this).append(t);
+            case 3 -> ((Tuple3<?, ?, ?>) this).append(t);
+            case 4 -> ((Tuple4<?, ?, ?, ?>) this).append(t);
             default ->
                     throw new UnsupportedOperationException(
                             format("Append is not allowed for Tuples with arity equals or greater than %s",

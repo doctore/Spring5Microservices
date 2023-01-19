@@ -32,7 +32,7 @@ public class ExceptionUtilTest {
                 //@formatter:off
                 //            sourceThrowable,   expectedResult
                 Arguments.of( null,                       empty() ),
-                Arguments.of( connectException,           empty() ),
+                Arguments.of( connectException,           of(connectException) ),
                 Arguments.of( illegalArgumentException,   of(connectException) ),
                 Arguments.of( securityException,          of(connectException) ),
                 Arguments.of( cyclicExceptionHierarchy,   of(exception2) )

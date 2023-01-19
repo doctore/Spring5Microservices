@@ -12,7 +12,7 @@ public enum RestApiErrorCode {
 
     private final String value;
 
-    RestApiErrorCode(String value) {
+    RestApiErrorCode(final String value) {
         this.value = value;
     }
 

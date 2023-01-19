@@ -1582,7 +1582,7 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      */
-    private static <T> Collection<T> getCollectionKeepingInternalOrdination(Collection<T> sourceCollection) {
+    private static <T> Collection<T> getCollectionKeepingInternalOrdination(final Collection<T> sourceCollection) {
         if (sourceCollection instanceof PriorityQueue) {
             final PriorityQueue<T> cloneQueue = new PriorityQueue<>(sourceCollection);
             List<T> result = new ArrayList<>(sourceCollection.size());

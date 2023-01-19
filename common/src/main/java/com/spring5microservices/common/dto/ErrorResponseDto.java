@@ -21,7 +21,7 @@ public class ErrorResponseDto {
     @Schema(description = "Details about the error")
     private List<String> errors;
 
-    public ErrorResponseDto(RestApiErrorCode code) {
+    public ErrorResponseDto(final RestApiErrorCode code) {
         this.code = code;
         this.errors = new ArrayList<>();
     }

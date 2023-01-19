@@ -53,13 +53,13 @@ public interface QuadFunction<T, U, V, W, R> {
      * function.
      *
      * @param after
-     *    The function to apply after this function is applied
+     *    The {@link Function} to apply after this function is applied
      * @param <Z>
      *    The type of the output of the {@code after} function, and of the composed function
      *
      * @return a composed function that first applies this function and then applies the {@code after} function.
      *
-     * @throws NullPointerException if {@code after} is null
+     * @throws NullPointerException if {@code after} is {@code null}
      */
     default <Z> QuadFunction<T, U, V, W, Z> andThen(final Function<? super R, ? extends Z> after) {
         Objects.requireNonNull(after, "after must be not null");

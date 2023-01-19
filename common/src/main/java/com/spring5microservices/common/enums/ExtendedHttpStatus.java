@@ -10,7 +10,8 @@ public enum ExtendedHttpStatus {
     private final int value;
     private final String reasonPhrase;
 
-    ExtendedHttpStatus(int value, String reasonPhrase) {
+    ExtendedHttpStatus(final int value,
+                       final String reasonPhrase) {
         this.value = value;
         this.reasonPhrase = reasonPhrase;
     }

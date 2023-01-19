@@ -7,9 +7,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static java.util.Objects.isNull;
 
 @Builder
 @Data
@@ -27,14 +30,16 @@ public class UsernameAuthoritiesDto {
     @Schema(description = "Extra data returned by security service")
     private Map<String, Object> additionalInfo;
 
-    public UsernameAuthoritiesDto(String username,
-                                  Collection<String> authorities,
-                                  Map<String, Object> additionalInfo) {
+    public UsernameAuthoritiesDto(final String username,
+                                  final Collection<String> authorities,
+                                  final Map<String, Object> additionalInfo) {
         this.username = username;
-        this.authorities = null == authorities
+        this.authorities = isNull(authorities)
                 ? new HashSet<>()
                 : new HashSet<>(authorities);
-        this.additionalInfo = additionalInfo;
+        this.additionalInfo = isNull(additionalInfo)
+                ? new HashMap<>()
+                : new HashMap<>(additionalInfo);
     }
 
 }

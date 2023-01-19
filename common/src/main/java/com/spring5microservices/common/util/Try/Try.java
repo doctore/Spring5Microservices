@@ -495,7 +495,7 @@ public abstract class Try<T> implements Serializable {
      * @return {@link Try}
      */
     public final Try<T> peek(final Consumer<? super Throwable> actionFailure,
-                                   final Consumer<? super T> actionSuccess) {
+                             final Consumer<? super T> actionSuccess) {
         if (isSuccess() && nonNull(actionSuccess)) {
             actionSuccess.accept(get());
         }

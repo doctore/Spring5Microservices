@@ -99,7 +99,7 @@ public final class Failure<T> extends Try<T> implements Serializable {
      * @return {@code true} if {@code throwable} is a fatal {@link Throwable},
      *         {@code false} otherwise.
      */
-    private boolean isFatal(Throwable throwable) {
+    private boolean isFatal(final Throwable throwable) {
         return throwable instanceof InterruptedException
                 || throwable instanceof LinkageError
                 || throwable instanceof ThreadDeath

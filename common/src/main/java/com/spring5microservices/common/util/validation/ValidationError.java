@@ -21,7 +21,8 @@ public class ValidationError implements Comparable<ValidationError> {
      * @param errorMessage
      *    Error message
      */
-    private ValidationError(int priority, String errorMessage) {
+    private ValidationError(int priority,
+                            String errorMessage) {
         this.priority = priority;
         this.errorMessage = errorMessage;
     }
@@ -44,7 +45,7 @@ public class ValidationError implements Comparable<ValidationError> {
 
 
     @Override
-    public int compareTo(ValidationError other) {
+    public int compareTo(final ValidationError other) {
         return ofNullable(other)
                 .map(o -> priority - o.priority)
                 .orElse(1);

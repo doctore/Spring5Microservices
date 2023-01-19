@@ -24,13 +24,13 @@ public class ExceptionUtil {
      * @param sourceThrowable
      *    {@link Throwable} to get the root cause for
      *
-     * @return {@link Optional} containing the root cause of the provided {@code sourceThrowable},
-     *         {@link Optional#empty()} if provided {@code sourceThrowable} is {@code null} or has no cause.
+     * @return {@link Optional} containing the root cause of the provided {@link Throwable} or {@code sourceThrowable} if has no cause,
+     *         {@link Optional#empty()} if {@code sourceThrowable} is {@code null}.
      */
     public static Optional<Throwable> getRootCause(final Throwable sourceThrowable) {
         return ofNullable(sourceThrowable)
                 .map(ExceptionUtil::getThrowableList)
-                .filter(l -> 1 < l.size())
+                .filter(l -> 0 < l.size())
                 .map(l -> l.get(l.size() - 1));
     }
 
