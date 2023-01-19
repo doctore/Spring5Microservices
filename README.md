@@ -44,16 +44,16 @@ Below is shown a brief introduction to the subprojects included in this one:
 
 ### registry-server
 
-Server used to register all microservices included in this project. In this case, using Netflix Eureka each client can simultaneously act as a server,
-to replicate its status to a connected peer. In other words, a client retrieves a list of all connected peers of a service registry and makes all
-further requests to any other services through a load-balancing algorithm (Ribbon by default).
+Server used to register all microservices included in this project. In this case, using [Netflix Eureka](https://cloud.spring.io/spring-cloud-netflix/reference/html/)
+each client can simultaneously act as a server, to replicate its status to a connected peer. In other words, a client retrieves a list of all connected
+peers of a service registry and makes all further requests to any other services through a load-balancing algorithm (Ribbon by default).
 <br><br> 
 
 
 ### config-server
 
-Configuration server used by the included microservices to get their required initial values like database configuration, for example. Those configuration
-values have been added into the project:
+[Configuration server](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_spring_cloud_config_server) used by the included microservices
+to get their required initial values like database configuration, for example. Those configuration values have been added into the project:
 
 * [Spring5Microservices_ConfigServerData](https://github.com/doctore/Spring5Microservices_ConfigServerData)
 
@@ -85,8 +85,8 @@ the dependency:
 
 ### gateway-server
 
-Using Spring Gateway, this is the gateway implementation used by the other microservices included in this proof of concept. This module contains a
-filter to registry every web service invoked, helping to debug each request.
+Using [Spring Gateway](https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html), this is the gateway implementation used by the other
+microservices included in this proof of concept. This module contains a filter to registry every web service invoked, helping to debug each request.
 <br><br>
 
 
@@ -99,17 +99,17 @@ of both JWT tokens and how to append additional information too.
  
 The technologies used are the following ones:
 
-* **Hibernate** as ORM to deal with the PostgreSQL database.
-* **JPA** for accessing, persisting, and managing data between Java objects and database.
-* **Lombok** to reduce the code development in entities and DTOs.
-* **Cache2k** as cache to reduce the invocations to the database.
+* **[Hibernate](https://hibernate.org)** as ORM to deal with the PostgreSQL database.
+* **[JPA](https://en.wikipedia.org/wiki/Jakarta_Persistence)** for accessing, persisting, and managing data between Java objects and database.
+* **[Lombok](https://projectlombok.org/features)** to reduce the code development in entities and DTOs.
+* **[Cache2k](https://cache2k.org)** as cache to reduce the invocations to the database.
 
 In this microservice, the layer's division is:
 
 * **repository** layer used to access to the database.
 * **service** containing the business logic.
 
-On the other hand, there are other "important folders": 
+On the other hand, there are other important folders: 
 
 * **configuration** with several classes used to manage several areas such: security, exception handlers, cache, etc.
 * **model** to store the entities.
@@ -126,12 +126,12 @@ and implementing the interface [IAuthenticationGenerator](https://github.com/doc
  
 The technologies used are the following ones:
 
-* **Hibernate** as ORM to deal with the PostgreSQL database.
-* **JPA** for accessing, persisting, and managing data between Java objects and database.
-* **Lombok** to reduce the code development in entities and DTOs.
-* **Hazelcast** as cache to reduce the invocations to the database.
-* **NimbusJoseJwt** to work with JWS/JWE tokens.
-* **Webflux** creating a reactive REST Api to manage the authentication/authorization requests.
+* **[Hibernate](https://hibernate.org)** as ORM to deal with the PostgreSQL database.
+* **[JPA](https://en.wikipedia.org/wiki/Jakarta_Persistence)** for accessing, persisting, and managing data between Java objects and database.
+* **[Lombok](https://projectlombok.org/features)** to reduce the code development in entities and DTOs.
+* **[Hazelcast](https://hazelcast.com)** as cache to reduce the invocations to the database.
+* **[NimbusJoseJwt](https://connect2id.com/products/nimbus-jose-jwt)** to work with JWS/JWE tokens.
+* **[Webflux](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)** creating a reactive REST Api to manage the authentication/authorization requests.
 
 In this microservice, the layer's division is:
 
@@ -139,7 +139,7 @@ In this microservice, the layer's division is:
 * **service** containing the business logic.
 * **controller** REST Api using Webflux.
 
-On the other hand, there are other "important folders": 
+On the other hand, there are other important folders: 
 
 * **configuration** with several classes used to manage several areas such: security, exception handlers, cache, etc.
 * **model** to store the entities.
@@ -153,13 +153,13 @@ On the other hand, there are other "important folders":
 One pizza has several ingredients, this is the summary of the entities/DTOs included on this microservice. The main purpose of this microservice is
 the creation of a small one on which I am using the following technologies:
 
-* **Hibernate** as ORM to deal with the PostgreSQL database.
-* **JPA** for accessing, persisting, and managing data between Java objects and database.
-* **QueryDSL** allowing us to create type-safe queries as an alternative to the "potential problematic" ones development with HQL and/or Spring JPA repository. 
-* **Lombok** to reduce the code development in entities and DTOs.
-* **Hazelcast** as cache to store temporary banned users.
-* **MapStruct** used to conversion between Entities <--> DTOs in an easy way.
-* **Webflux** creating a reactive REST Api as alternative to the traditional Spring MVC.
+* **[Hibernate](https://hibernate.org)** as ORM to deal with the PostgreSQL database.
+* **[JPA](https://en.wikipedia.org/wiki/Jakarta_Persistence)** for accessing, persisting, and managing data between Java objects and database.
+* **[QueryDSL](http://querydsl.com)** allowing us to create type-safe queries as an alternative to the "potential problematic" ones development with HQL and/or Spring JPA repository. 
+* **[Lombok](https://projectlombok.org/features)** to reduce the code development in entities and DTOs.
+* **[Hazelcast](https://hazelcast.com)** as cache to store temporary banned users.
+* **[MapStruct](https://mapstruct.org)** used to conversion between Entities <--> DTOs in an easy way.
+* **[Webflux](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)** creating a reactive REST Api as alternative to the traditional Spring MVC.
 
 In this microservice, the layer's division is:
 
@@ -167,14 +167,14 @@ In this microservice, the layer's division is:
 * **service** containing the business logic.
 * **controller** REST Api using Webflux.
 
-On the other hand, there are other "important folders": 
+On the other hand, there are other important folders: 
 
 * **configuration** with several classes used to manage several areas such: persistence, exception handlers, etc.
 * **model** to store the entities.
 * **dto** custom objects to contain specific data.
 * **util/converter** to translate from entities to dtos and vice versa.
 
-Using **Hazelcast** for that purpose, this microservice provides functionality to banned users temporally. That is the way we can use to disable any
+Using **[Hazelcast](https://hazelcast.com)** for that purpose, this microservice provides functionality to banned users temporally. That is the way we can use to disable any
 JWT active token related with a user we just disabled in database (through admin web page or similar tool). [UserController](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/src/main/java/com/pizza/controller/UserController.java)
 class provides the required web services.
 
@@ -187,11 +187,11 @@ This microservice includes a [gRPC](https://grpc.io/docs/what-is-grpc/introducti
 One order has several order lines and one order line contains a pizza. The main purpose of this microservice is the creation of a small one on which
 I am using the following technologies:
 
-* **jOOQ** replacing to the traditional pair Hibernate/JPA. Allowing us to create type-safe queries and improve the performance between the microservice and the database.
-* **Lombok** to reduce the code development in models and DTOs.
-* **MapStruct** used to conversion between Models <--> DTOs in an easy way.
-* **SimpleFlatMapper** due to its integration with jOOQ, used to convert some custom query results into a known Java object.
-* **MVC** a traditional Spring MVC Rest API to manage the included requests.
+* **[jOOQ](https://www.jooq.org)** replacing to the traditional pair Hibernate/JPA. Allowing us to create type-safe queries and improve the performance between the microservice and the database.
+* **[Lombok](https://projectlombok.org/features)** to reduce the code development in models and DTOs.
+* **[MapStruct](https://mapstruct.org)** used to conversion between Models <--> DTOs in an easy way.
+* **[SimpleFlatMapper](https://simpleflatmapper.org)** due to its integration with jOOQ, used to convert some custom query results into a known Java object.
+* **[MVC](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html)** a traditional Spring MVC Rest API to manage the included requests.
 
 In this microservice, the layer's division is:
 
@@ -199,7 +199,7 @@ In this microservice, the layer's division is:
 * **service** containing the business logic.
 * **controller** REST Api using Spring MVC.
 
-On the other hand, there are other "important folders": 
+On the other hand, there are other important folders: 
 
 * **configuration** with several classes used to manage several areas such: exception handlers, etc.
 * **model** to store the Java objects that match with the tables in database.
@@ -233,13 +233,25 @@ More information about how gRPC server and client uses it in [gRPC communication
 Maven project that includes common code used in several microservices, with several useful helper classes like:
 
 * [CollectionUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/CollectionUtil.java)
+* [DateTimeUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/DateTimeUtil.java)
+* [ExceptionUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/ExceptionUtil.java) 
+* [JsonUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/JsonUtil.java) 
 * [MapUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/MapUtil.java)
-* [JsonUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/JsonUtil.java)
+* [NumberUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/NumberUtil.java)
+* [ObjectsUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/ObjectsUtil.java)
+* [StringUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/StringUtil.java) 
+
+Generic interfaces used to provide common conversion functionality using [MapStruct](https://mapstruct.org): 
+
+* [BaseConverter](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/converter/BaseConverter.java)
+* [BaseEnumConverter](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/converter/enums/BaseEnumConverter.java) 
 
 And functional programming structures and useful classes like:
 
-* [Tuple](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/collection/tuple)
 * [Either](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/either)
+* [Lazy](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/Lazy.java)
+* [Try](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/Try) 
+* [Tuple](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/collection/tuple)
 * [Validation](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/validation)
 <br><br>
 
@@ -269,9 +281,9 @@ Due to every microservice has to decrypt the information sent by [config-server]
 ### Setting up an encryption key
 
 In this project a symmetric encryption key has been used. The symmetric encryption key is nothing more than a shared secret that's used by the encrypter
-to encrypt a value and the decrypter to decrypt a value. With the Spring Cloud configuration server, the symmetric encryption key is a string of
-characters you select that is passed to the service via an operating system environment variable called **ENCRYPT_KEY**. For those microservices, I
-have used:
+to encrypt a value and the decrypter to decrypt a value. With the Spring Cloud configuration server developed in [config-server](#config-server), the
+symmetric encryption key is a string of characters you select that is passed to the service via an operating system environment variable called
+**ENCRYPT_KEY**. For those microservices, I have used:
 
 ```
 ENCRYPT_KEY=ENCRYPT_KEY
@@ -281,9 +293,9 @@ ENCRYPT_KEY=ENCRYPT_KEY
 
 ### JDK and Oracle JCE
 
-If you are using Oracle JDK instead of OpenJDK, you need to download and install Oracle's Unlimited Strength Java Cryptography Extension (JCE). This
-isn't available through Maven and must be downloaded from Oracle Corporation. Once you've downloaded the zip files containing the JCE jars, you must
-do the following:
+If you are using [Oracle JDK](https://www.oracle.com/java/technologies/downloads) instead of [OpenJDK](https://openjdk.org), you need to download and
+install Oracle's Unlimited Strength Java Cryptography Extension (JCE). This isn't available through Maven and must be downloaded from Oracle Corporation.
+Once you've downloaded the zip files containing the JCE jars, you must do the following:
 
 - Locate your `$JAVA_HOME/jre/lib/security` directory
 
@@ -508,10 +520,10 @@ The following microservices have a well documented Rest API:
 * [pizza-service](#pizza-service)
 * [order-service](#order-service)
  
-Swagger has been used in all cases, however two different libraries have been included:
+[Swagger](https://swagger.io) has been used in all cases, however two different libraries have been included:
 
-* **SpringFox** in [gateway-server](#gateway-server) to unify the webpage used to access to the rest of documented microservices.
-* **Springdoc-OpenApi** in every documented microservice.
+* **[SpringFox](http://springfox.github.io/springfox/docs/current)** in [gateway-server](#gateway-server) to unify the webpage used to access to the rest of documented microservices.
+* **[Springdoc-OpenApi](https://springdoc.org)** in every documented microservice.
 
 To facilitate access to this documentation, we can use the [gateway-server](#gateway-server) URL. On that way, using the upper selector, we will be able
 to choose between all existing microservices.
@@ -528,10 +540,12 @@ There are several archive git branches with previous versions of the current pro
 * [Archive master](https://github.com/doctore/Spring5Microservices/tree/archive/v0/master) equivalent to the current `master` but using previous
 versions of Spring and other libraries.
 <br><br>
+
 * [Archive multi datasource security](https://github.com/doctore/Spring5Microservices/tree/archive/v0/multi-datasource-security) specialization of
 [security-jwt-service](#security-jwt-service) on which every application has its own datasource, so different persistent context are defined for
 every one. Uses previous versions of Spring and other libraries.
 <br><br>
+
 * [Archive Spring Jdbc security](https://github.com/doctore/Spring5Microservices/tree/archive/v0/spring-jdbc-security) specialization of
 [security-jwt-service](#security-jwt-service) but in this case there is only one datasource but Hibernate + JPA have been replaced by Spring JDBC
 template to improve the performance. Uses previous versions of Spring and other libraries. 
