@@ -796,7 +796,7 @@ public class CollectionUtil {
         }
         return count(
                 sourceCollection,
-                elto -> elto.equals(objectToSearch)
+                t -> nonNull(t) && t.equals(objectToSearch)
         );
     }
 
