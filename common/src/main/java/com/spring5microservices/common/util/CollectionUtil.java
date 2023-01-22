@@ -756,6 +756,52 @@ public class CollectionUtil {
 
 
     /**
+     * Returns the number of occurrences of each element contained in {@code sourceCollection}.
+     *
+     * @param sourceCollection
+     *    {@link Collection} to search
+     *
+     * @return {@link Map} with number of occurrences of each element in {@code sourceCollection}
+     */
+    public static <T> Map<T, Integer> frequency(final Collection<? extends T> sourceCollection) {
+        return groupMapReduce(
+                sourceCollection,
+                Function.identity(),
+                t -> 1,
+                Integer::sum
+        );
+    }
+
+
+    /**
+     * Returns the number of occurrences of {@code objectToSearch} in {@code sourceCollection}.
+     *
+     * @param sourceCollection
+     *    {@link Collection} to search
+     * @param objectToSearch
+     *    The object to find the cardinality of
+     *
+     * @return number of occurrences of {@code objectToSearch} in {@code sourceCollection}
+     */
+    public static <T> int frequency(final Collection<? extends T> sourceCollection,
+                                    final T objectToSearch) {
+        if (CollectionUtils.isEmpty(sourceCollection) ||
+                isNull(objectToSearch)) {
+            return 0;
+        }
+        if (sourceCollection instanceof Set) {
+            return sourceCollection.contains(objectToSearch)
+                    ? 1
+                    : 0;
+        }
+        return count(
+                sourceCollection,
+                elto -> elto.equals(objectToSearch)
+        );
+    }
+
+
+    /**
      * Returns a {@link List} with the elements included in the given {@link Iterator}.
      *
      * @param sourceIterator

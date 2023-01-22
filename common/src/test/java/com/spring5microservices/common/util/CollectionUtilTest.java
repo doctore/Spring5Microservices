@@ -764,6 +764,81 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> frequencyWithNoObjectToSearchTestCases() {
+        PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
+        PizzaDto carbonaraExpensive = new PizzaDto("Carbonara", 10D);
+        PizzaDto margherita = new PizzaDto("Margherita", 7.5d);
+
+        Set<PizzaDto> allPizzasSet = Set.of(carbonaraCheap, carbonaraExpensive, margherita);
+        List<PizzaDto> allPizzasListNotRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita);
+        List<PizzaDto> allPizzasListRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita, margherita, carbonaraExpensive, margherita);
+
+        Map<PizzaDto, Integer> resultNotRepeated = new HashMap<>() {{
+            put(carbonaraCheap, 1);
+            put(carbonaraExpensive, 1);
+            put(margherita, 1);
+        }};
+        Map<PizzaDto, Integer> resultRepeated = new HashMap<>() {{
+            put(carbonaraCheap, 1);
+            put(carbonaraExpensive, 2);
+            put(margherita, 3);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,           expectedResult
+                Arguments.of( null,                       Map.of() ),
+                Arguments.of( List.of(),                  Map.of() ),
+                Arguments.of( allPizzasSet,               resultNotRepeated ),
+                Arguments.of( allPizzasListNotRepeated,   resultNotRepeated ),
+                Arguments.of( allPizzasListRepeated,      resultRepeated )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("frequencyWithNoObjectToSearchTestCases")
+    @DisplayName("frequency: with no object to search test cases")
+    public <T> void frequencyWithNoObjectToSearch_testCases(Collection<? extends T> sourceCollection,
+                                                            Map<T, Integer> expectedResult) {
+        assertEquals(expectedResult, frequency(sourceCollection));
+    }
+
+
+    static Stream<Arguments> frequencyWithObjectToSearchTestCases() {
+        PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
+        PizzaDto carbonaraExpensive = new PizzaDto("Carbonara", 10D);
+        PizzaDto margherita = new PizzaDto("Margherita", 7.5d);
+        PizzaDto notIncluded = new PizzaDto("Not found", 9d);
+
+        Set<PizzaDto> allPizzasSet = Set.of(carbonaraCheap, carbonaraExpensive, margherita);
+        List<PizzaDto> allPizzasListNotRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita);
+        List<PizzaDto> allPizzasListRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita, margherita, carbonaraExpensive, margherita);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,           objectToSearch,       expectedResult
+                Arguments.of( null,                       null,                 0 ),
+                Arguments.of( null,                       carbonaraCheap,       0 ),
+                Arguments.of( List.of(),                  null,                 0 ),
+                Arguments.of( List.of(),                  carbonaraCheap,       0 ),
+                Arguments.of( allPizzasSet,               null,                 0 ),
+                Arguments.of( allPizzasSet,               notIncluded,          0 ),
+                Arguments.of( allPizzasSet,               carbonaraCheap,       1 ),
+                Arguments.of( allPizzasListNotRepeated,   notIncluded,          0 ),
+                Arguments.of( allPizzasListNotRepeated,   carbonaraCheap,       1 ),
+                Arguments.of( allPizzasListRepeated,      carbonaraExpensive,   2 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("frequencyWithObjectToSearchTestCases")
+    @DisplayName("frequency: with object to search test cases")
+    public <T> void frequencyWithObjectToSearch_testCases(Collection<? extends T> sourceCollection,
+                                                          T objectToSearch,
+                                                          int expectedResult) {
+        assertEquals(expectedResult, frequency(sourceCollection, objectToSearch));
+    }
+
+
     static Stream<Arguments> fromIteratorNoCollectionFactoryTestCases() {
         List<Integer> ints = List.of(1, 2, 3, 6, 5, 1, 21);
         Iterator<String> emptyIterator = Collections.emptyIterator();
