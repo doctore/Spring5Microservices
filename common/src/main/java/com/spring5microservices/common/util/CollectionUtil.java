@@ -785,18 +785,20 @@ public class CollectionUtil {
      */
     public static <T> int frequency(final Collection<? extends T> sourceCollection,
                                     final T objectToSearch) {
-        if (CollectionUtils.isEmpty(sourceCollection) ||
-                isNull(objectToSearch)) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return 0;
         }
-        if (sourceCollection instanceof Set) {
+        if (sourceCollection instanceof Set && nonNull(objectToSearch)) {
             return sourceCollection.contains(objectToSearch)
                     ? 1
                     : 0;
         }
         return count(
                 sourceCollection,
-                t -> nonNull(t) && t.equals(objectToSearch)
+                t ->
+                        isNull(objectToSearch)
+                                ? isNull(t)
+                                : nonNull(t) && t.equals(objectToSearch)
         );
     }
 

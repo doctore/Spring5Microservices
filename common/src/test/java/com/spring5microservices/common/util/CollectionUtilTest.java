@@ -769,14 +769,21 @@ public class CollectionUtilTest {
         PizzaDto carbonaraExpensive = new PizzaDto("Carbonara", 10D);
         PizzaDto margherita = new PizzaDto("Margherita", 7.5d);
 
-        Set<PizzaDto> allPizzasSet = Set.of(carbonaraCheap, carbonaraExpensive, margherita);
-        List<PizzaDto> allPizzasListNotRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita);
+        Set<PizzaDto> allPizzasSet = new HashSet<>(asList(carbonaraCheap, carbonaraExpensive, margherita, null));
+        List<PizzaDto> allPizzasListWithNulls = asList(carbonaraCheap, carbonaraExpensive, margherita, null, null);
         List<PizzaDto> allPizzasListRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita, margherita, carbonaraExpensive, margherita);
 
-        Map<PizzaDto, Integer> resultNotRepeated = new HashMap<>() {{
+        Map<PizzaDto, Integer> resultSet = new HashMap<>() {{
             put(carbonaraCheap, 1);
             put(carbonaraExpensive, 1);
             put(margherita, 1);
+            put(null, 1);
+        }};
+        Map<PizzaDto, Integer> resultWithNulls = new HashMap<>() {{
+            put(carbonaraCheap, 1);
+            put(carbonaraExpensive, 1);
+            put(margherita, 1);
+            put(null, 2);
         }};
         Map<PizzaDto, Integer> resultRepeated = new HashMap<>() {{
             put(carbonaraCheap, 1);
@@ -785,12 +792,12 @@ public class CollectionUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,           expectedResult
-                Arguments.of( null,                       Map.of() ),
-                Arguments.of( List.of(),                  Map.of() ),
-                Arguments.of( allPizzasSet,               resultNotRepeated ),
-                Arguments.of( allPizzasListNotRepeated,   resultNotRepeated ),
-                Arguments.of( allPizzasListRepeated,      resultRepeated )
+                //            sourceCollection,         expectedResult
+                Arguments.of( null,                     Map.of() ),
+                Arguments.of( List.of(),                Map.of() ),
+                Arguments.of( allPizzasSet,             resultSet ),
+                Arguments.of( allPizzasListWithNulls,   resultWithNulls ),
+                Arguments.of( allPizzasListRepeated,    resultRepeated )
         ); //@formatter:on
     }
 
@@ -810,22 +817,23 @@ public class CollectionUtilTest {
         PizzaDto margherita = new PizzaDto("Margherita", 7.5d);
         PizzaDto notIncluded = new PizzaDto("Not found", 9d);
 
-        Set<PizzaDto> allPizzasSet = Set.of(carbonaraCheap, carbonaraExpensive, margherita);
-        List<PizzaDto> allPizzasListNotRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita);
+        Set<PizzaDto> allPizzasSet = new HashSet<>(asList(carbonaraCheap, carbonaraExpensive, margherita, null));
+        List<PizzaDto> allPizzasListWithNulls = asList(carbonaraCheap, carbonaraExpensive, margherita, null, null);
         List<PizzaDto> allPizzasListRepeated = List.of(carbonaraCheap, carbonaraExpensive, margherita, margherita, carbonaraExpensive, margherita);
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,           objectToSearch,       expectedResult
-                Arguments.of( null,                       null,                 0 ),
-                Arguments.of( null,                       carbonaraCheap,       0 ),
-                Arguments.of( List.of(),                  null,                 0 ),
-                Arguments.of( List.of(),                  carbonaraCheap,       0 ),
-                Arguments.of( allPizzasSet,               null,                 0 ),
-                Arguments.of( allPizzasSet,               notIncluded,          0 ),
-                Arguments.of( allPizzasSet,               carbonaraCheap,       1 ),
-                Arguments.of( allPizzasListNotRepeated,   notIncluded,          0 ),
-                Arguments.of( allPizzasListNotRepeated,   carbonaraCheap,       1 ),
-                Arguments.of( allPizzasListRepeated,      carbonaraExpensive,   2 )
+                //            sourceCollection,         objectToSearch,       expectedResult
+                Arguments.of( null,                     null,                 0 ),
+                Arguments.of( null,                     carbonaraCheap,       0 ),
+                Arguments.of( List.of(),                null,                 0 ),
+                Arguments.of( List.of(),                carbonaraCheap,       0 ),
+                Arguments.of( allPizzasSet,             null,                 1 ),
+                Arguments.of( allPizzasSet,             notIncluded,          0 ),
+                Arguments.of( allPizzasSet,             carbonaraCheap,       1 ),
+                Arguments.of( allPizzasListWithNulls,   null,                 2 ),
+                Arguments.of( allPizzasListWithNulls,   notIncluded,          0 ),
+                Arguments.of( allPizzasListWithNulls,   carbonaraCheap,       1 ),
+                Arguments.of( allPizzasListRepeated,    carbonaraExpensive,   2 )
         ); //@formatter:on
     }
 
