@@ -325,7 +325,7 @@ public class CollectionUtilTest {
     @DisplayName("collectProperty: without collection factory test cases")
     public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> sourceCollection,
                                                              Function<PizzaDto, String> keyExtractor,
-                                                             Collection<String> expectedResult) {
+                                                             List<String> expectedResult) {
         assertEquals(expectedResult, collectProperty(sourceCollection, keyExtractor));
     }
 
@@ -681,6 +681,70 @@ public class CollectionUtilTest {
                                        Predicate<? super T> filterPredicate,
                                        Optional<T> expectedResult) {
         assertEquals(expectedResult, findLast(sourceCollection, filterPredicate));
+    }
+
+
+    static Stream<Arguments> flattenNoCollectionFactoryTestCases() {
+        List<Integer> ints = List.of(1, 2, 3, 1, 21);
+        Set<List<String>> strings = new LinkedHashSet<>(asList(null, List.of("a", "b"), null, List.of("5", "6")));
+        List<Object> longs = asList(3L, List.of(6L, 8L), List.of(List.of(11L, 21L)), null);
+
+        List<String> setListResult = asList(null, "a", "b", "5", "6");
+        List<Long> listObjectResult = asList(3L, 6L, 8L, 11L, 21L, null);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   expectedResult
+                Arguments.of( null,               List.of() ),
+                Arguments.of( List.of(),          List.of() ),
+                Arguments.of( ints,               ints ),
+                Arguments.of( strings,            setListResult ),
+                Arguments.of( longs,              listObjectResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("flattenNoCollectionFactoryTestCases")
+    @DisplayName("flatten: without collection factory test cases")
+    public <T> void flattenNoCollectionFactory_testCases(Collection<Object> sourceCollection,
+                                                         List<T> expectedResult) {
+        assertEquals(expectedResult, flatten(sourceCollection));
+    }
+
+
+    static Stream<Arguments> flattenAllParametersTestCases() {
+        List<Integer> ints = List.of(1, 2, 3, 1, 21);
+        Set<List<String>> strings = new LinkedHashSet<>(asList(null, List.of("a", "b"), null, List.of("5", "6")));
+        List<Object> longs = asList(3L, List.of(6L, 8L), List.of(List.of(11L, 21L)), null);
+
+        Supplier<Collection<Integer>> setIntegerSupplier = LinkedHashSet::new;
+        Supplier<Collection<String>> setStringSupplier = LinkedHashSet::new;
+        Supplier<Collection<Long>> setLongSupplier = LinkedHashSet::new;
+
+        List<String> setListResult = asList(null, "a", "b", "5", "6");
+        List<Long> listObjectResult = asList(3L, 6L, 8L, 11L, 21L, null);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   collectionFactory,    expectedResult
+                Arguments.of( null,               null,                 List.of() ),
+                Arguments.of( null,               setIntegerSupplier,   Set.of() ),
+                Arguments.of( List.of(),          null,                 List.of() ),
+                Arguments.of( List.of(),          setIntegerSupplier,   Set.of() ),
+                Arguments.of( ints,               null,                 ints ),
+                Arguments.of( ints,               setIntegerSupplier,   new LinkedHashSet<>(ints) ),
+                Arguments.of( strings,            null,                 setListResult ),
+                Arguments.of( strings,            setStringSupplier,    new LinkedHashSet<>(setListResult) ),
+                Arguments.of( longs,              null,                 listObjectResult ),
+                Arguments.of( longs,              setLongSupplier,      new LinkedHashSet<>(listObjectResult) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("flattenAllParametersTestCases")
+    @DisplayName("flatten: with all parameters test cases")
+    public <T> void flattenAllParameters_testCases(Collection<Object> sourceCollection,
+                                                   Supplier<Collection<T>> collectionFactory,
+                                                   Collection<T> expectedResult) {
+        assertEquals(expectedResult, flatten(sourceCollection, collectionFactory));
     }
 
 

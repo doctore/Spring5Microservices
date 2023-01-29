@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.MapUtil.applyOrElse;
@@ -29,6 +30,7 @@ import static com.spring5microservices.common.util.MapUtil.collect;
 import static com.spring5microservices.common.util.MapUtil.count;
 import static com.spring5microservices.common.util.MapUtil.dropWhile;
 import static com.spring5microservices.common.util.MapUtil.find;
+import static com.spring5microservices.common.util.MapUtil.flatten;
 import static com.spring5microservices.common.util.MapUtil.foldLeft;
 import static com.spring5microservices.common.util.MapUtil.getOrElse;
 import static com.spring5microservices.common.util.MapUtil.groupBy;
@@ -458,6 +460,110 @@ public class MapUtilTest {
     }
 
 
+    static Stream<Arguments> flattenNoCollectionFactoryTestCases() {
+        Map<Integer, String> intsAndStringsRaw = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        Map<Integer, List<String>> intsAndStringsList = new LinkedHashMap<>() {{
+            put(1, List.of("A"));
+            put(8, List.of("E", "H"));
+        }};
+
+        BiFunction<Integer, String, Tuple2<Integer, String>> flattenerRaw =
+                Tuple2::of;
+
+        BiFunction<Integer, List<String>, List<Tuple2<Integer, String>>> flattenerList =
+                (i, l) ->
+                        l.stream()
+                                .map(elto -> Tuple2.of(i, elto))
+                                .collect(Collectors.toList());
+
+        List<Tuple2<Integer, String>> resultRaw = List.of(Tuple2.of(1, "A"), Tuple2.of(2, "B"), Tuple2.of(4, "o"));
+        List<Tuple2<Integer, String>> resultList = List.of(Tuple2.of(1, "A"), Tuple2.of(8, "E"), Tuple2.of(8, "H"));
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,            flattener,       expectedException,                expectedResult
+                Arguments.of( intsAndStringsRaw,    null,            IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,            null,                             List.of() ),
+                Arguments.of( Map.of(),             null,            null,                             List.of() ),
+                Arguments.of( intsAndStringsRaw,    flattenerRaw,    null,                             resultRaw ),
+                Arguments.of( intsAndStringsList,   flattenerList,   null,                             resultList )
+
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("flattenNoCollectionFactoryTestCases")
+    @DisplayName("flatten: without collection factory test cases")
+    public <T, E, R, U> void flattenNoCollectionFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                  BiFunction<? super T, ? super E, ? extends R> flattener,
+                                                                  Class<? extends Exception> expectedException,
+                                                                  List<U> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> flatten(sourceMap, flattener));
+        } else {
+            assertEquals(expectedResult, flatten(sourceMap, flattener));
+        }
+    }
+
+
+    static Stream<Arguments> flattenAllParametersTestCases() {
+        Map<Integer, String> intsAndStringsRaw = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        Map<Integer, List<String>> intsAndStringsList = new LinkedHashMap<>() {{
+            put(1, List.of("A"));
+            put(8, List.of("E", "H"));
+        }};
+        Supplier<Set<Tuple2<Integer, String>>> setSupplier = LinkedHashSet::new;
+
+        BiFunction<Integer, String, Tuple2<Integer, String>> flattenerRaw =
+                Tuple2::of;
+
+        BiFunction<Integer, List<String>, List<Tuple2<Integer, String>>> flattenerList =
+                (i, l) ->
+                        l.stream()
+                                .map(elto -> Tuple2.of(i, elto))
+                                .collect(Collectors.toList());
+
+        List<Tuple2<Integer, String>> resultRaw = List.of(Tuple2.of(1, "A"), Tuple2.of(2, "B"), Tuple2.of(4, "o"));
+        List<Tuple2<Integer, String>> resultList = List.of(Tuple2.of(1, "A"), Tuple2.of(8, "E"), Tuple2.of(8, "H"));
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,            flattener,       collectionFactory,   expectedException,                expectedResult
+                Arguments.of( intsAndStringsRaw,    null,            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStringsRaw,    null,            setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,            null,                null,                             List.of() ),
+                Arguments.of( null,                 null,            setSupplier,         null,                             Set.of() ),
+                Arguments.of( Map.of(),             null,            null,                null,                             List.of() ),
+                Arguments.of( Map.of(),             null,            setSupplier,         null,                             Set.of() ),
+                Arguments.of( intsAndStringsRaw,    flattenerRaw,    null,                null,                             resultRaw ),
+                Arguments.of( intsAndStringsRaw,    flattenerRaw,    setSupplier,         null,                             new LinkedHashSet<>(resultRaw) ),
+                Arguments.of( intsAndStringsList,   flattenerList,   null,                null,                             resultList ),
+                Arguments.of( intsAndStringsList,   flattenerList,   setSupplier,         null,                             new LinkedHashSet<>(resultList) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("flattenAllParametersTestCases")
+    @DisplayName("flatten: with call parameters test cases")
+    public <T, E, R, U> void flattenAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                            BiFunction<? super T, ? super E, ? extends R> flattener,
+                                                            Supplier<Collection<U>> collectionFactory,
+                                                            Class<? extends Exception> expectedException,
+                                                            Collection<U> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> flatten(sourceMap, flattener, collectionFactory));
+        } else {
+            assertEquals(expectedResult, flatten(sourceMap, flattener, collectionFactory));
+        }
+    }
+
+
     static Stream<Arguments> foldLeftTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
@@ -823,8 +929,9 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         mapFunction,                          expectedException,                expectedResult
-                Arguments.of( null,              null,                                 IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),          null,                                 IllegalArgumentException.class,   null ),
+                Arguments.of( integersMap,       null,                                 IllegalArgumentException.class,   null ),
+                Arguments.of( null,              null,                                 null,                             Map.of() ),
+                Arguments.of( Map.of(),          null,                                 null,                             Map.of() ),
                 Arguments.of( null,              add1AndMultiply2AndConvertToString,   null,                             Map.of() ),
                 Arguments.of( Map.of(),          add1AndMultiply2AndConvertToString,   null,                             Map.of() ),
                 Arguments.of( integersMap,       add1AndMultiply2AndConvertToString,   null,                             stringsMapResult )
@@ -865,8 +972,9 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         mapFunction,                          mapFactory,          expectedException,                expectedResult
-                Arguments.of( null,              null,                                 null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),          null,                                 null,                IllegalArgumentException.class,   null ),
+                Arguments.of( integersMap,       null,                                 null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,              null,                                 null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),          null,                                 null,                null,                             Map.of() ),
                 Arguments.of( null,              add1AndMultiply2AndConvertToString,   null,                null,                             Map.of() ),
                 Arguments.of( Map.of(),          add1AndMultiply2AndConvertToString,   null,                null,                             Map.of() ),
                 Arguments.of( integersMap,       add1AndMultiply2AndConvertToString,   null,                null,                             stringsMapResult ),
@@ -906,8 +1014,9 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         mapFunction,                     expectedException,                expectedResult
-                Arguments.of( null,              null,                            IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),          null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( integersMap,       null,                            IllegalArgumentException.class,   null ),
+                Arguments.of( null,              null,                            null,                             Map.of() ),
+                Arguments.of( Map.of(),          null,                            null,                             Map.of() ),
                 Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                             Map.of() ),
                 Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                             integersMapResult )
         ); //@formatter:on
@@ -946,8 +1055,9 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         mapFunction,                     mapFactory,          expectedException,                expectedResult
-                Arguments.of( null,              null,                            null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),          null,                            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( integersMap,       null,                            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,              null,                            null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),          null,                            null,                null,                             Map.of() ),
                 Arguments.of( Map.of(),          add1ToValueAndConvertToString,   null,                null,                             Map.of() ),
                 Arguments.of( integersMap,       add1ToValueAndConvertToString,   null,                null,                             integersMapResult ),
                 Arguments.of( integersMap,       add1ToValueAndConvertToString,   linkedMapSupplier,   null,                             integersLinkedMapResult )

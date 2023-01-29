@@ -658,6 +658,74 @@ public class CollectionUtil {
 
 
     /**
+     * Converts given {@code sourceCollection} into a {@link List} formed by the elements of these iterable collections.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [5, [3, 2], 9]           [5, 3, 2, 9]
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} of {@link Object} to concat
+     *
+     * @return {@link List} resulting from concatenating all element of {@code sourceCollection}
+     */
+    public static <T> List<T> flatten(final Collection<Object> sourceCollection) {
+        return (List<T>) flatten(
+                sourceCollection,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     * Converts given {@code sourceCollection} into a {@link List} formed by the elements of these iterable collections.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [5, [3, 2], 9]           [5, 3, 2, 9]
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} of {@link Object} to concat
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link List} resulting from concatenating all element of {@code sourceCollection}
+     */
+    public static <T> Collection<T> flatten(final Collection<Object> sourceCollection,
+                                            final Supplier<Collection<T>> collectionFactory) {
+        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Collection<T> result = finalCollectionFactory.get();
+        for (Object elto: sourceCollection) {
+            if (elto instanceof Collection) {
+                result.addAll(
+                        flatten(
+                                (Collection<Object>) elto,
+                                collectionFactory
+                        )
+                );
+            } else {
+                result.add((T) elto);
+            }
+        }
+        return result;
+    }
+
+
+    /**
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
      * elements of {@code sourceCollection}, going left to right.
      *
@@ -680,11 +748,11 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    {@link Collection} with elements to combine.
+     *    {@link Collection} with elements to combine
      * @param initialValue
-     *    The initial value to start with.
+     *    The initial value to start with
      * @param accumulator
-     *    A {@link BiFunction} which combines elements.
+     *    A {@link BiFunction} which combines elements
      *
      * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
      *         left to right with the start value {@code initialValue} on the left.

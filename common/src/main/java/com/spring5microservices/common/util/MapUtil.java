@@ -173,11 +173,11 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to filter and transform.
+     *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}.
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
      * @param mapFunction
-     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}.
+     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}
      *
      * @return {@link Map}
      *
@@ -411,6 +411,91 @@ public class MapUtil {
 
 
     /**
+     * Converts given {@code sourceMap} into a {@link List} formed by the elements of these iterable collections.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                        Result:
+     *     [(1, ["Hi"]), (2, ["Hello", "World"])]            [(1, "Hi"), (2, "Hello"), (2, "World")]
+     *     (i, l) -> l.stream()
+     *                .map(elto -> Tuple2.of(i, elto))
+     *                .collect(toList())
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} of elements to concat
+     * @param flattener
+     *    {@link BiFunction} to transform elements of {@code sourceMap}
+     *
+     * @return {@link List} resulting from concatenating all element of {@code sourceMap}
+     *
+     * @throws IllegalArgumentException if {@code flattener} is {@code null} and {@code sourceMap} is not empty.
+     */
+    public static <T, E, R, U> List<U> flatten(final Map<? extends T, ? extends E> sourceMap,
+                                               final BiFunction<? super T, ? super E, ? extends R> flattener) {
+        return (List<U>) flatten(
+                sourceMap,
+                flattener,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     * Converts given {@code sourceMap} into a {@link List} formed by the elements of these iterable collections.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                        Result:
+     *     [(1, ["Hi"]), (2, ["Hello", "World"])]            [(1, "Hi"), (2, "Hello"), (2, "World")]
+     *     (i, l) -> l.stream()
+     *                .map(elto -> Tuple2.of(i, elto))
+     *                .collect(toList())
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} of elements to concat
+     * @param flattener
+     *    {@link BiFunction} to transform elements of {@code sourceMap}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link List} resulting from concatenating all element of {@code sourceMap}
+     *
+     * @throws IllegalArgumentException if {@code flattener} is {@code null} and {@code sourceMap} is not empty.
+     */
+    public static <T, E, R, U> Collection<U> flatten(final Map<? extends T, ? extends E> sourceMap,
+                                                     final BiFunction<? super T, ? super E, ? extends R> flattener,
+                                                     final Supplier<Collection<U>> collectionFactory) {
+        final Supplier<Collection<U>> finalCollectionFactory = ObjectsUtil.getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(flattener, "flattener must be not null");
+        List<R> result = sourceMap.entrySet()
+                .stream()
+                .map(entry ->
+                        flattener.apply(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
+                .collect(toList());
+
+        return CollectionUtil.flatten(
+                (Collection<Object>)result,
+                collectionFactory
+        );
+    }
+
+
+    /**
      *    Folds given {@link Map} values from the left, starting with {@code initialValue} and successively
      * calling {@code accumulator}.
      *
@@ -476,12 +561,12 @@ public class MapUtil {
                                      final T key,
                                      final Supplier<E> defaultValue) {
         Assert.notNull(defaultValue, "defaultValue must be not null");
-        final Map<? extends T, ? extends E> finalMapToSearch = ObjectsUtil.getOrElse(
+        final Map<? extends T, ? extends E> finalSourceMap = ObjectsUtil.getOrElse(
                 sourceMap,
                 Map.of()
         );
         return ofNullable(key)
-                .map(k -> (E) finalMapToSearch.get(k))
+                .map(k -> (E) finalSourceMap.get(k))
                 .orElseGet(defaultValue);
     }
 
@@ -784,12 +869,11 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceMap} is not empty.
      */
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
                                              final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
                                              final Supplier<Map<R, V>> mapFactory) {
-        Assert.notNull(mapFunction, "mapFunction must be not null");
         final Supplier<Map<R, V>> finalMapFactory = ObjectsUtil.getOrElse(
                 mapFactory,
                 HashMap::new
@@ -797,6 +881,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
+        Assert.notNull(mapFunction, "mapFunction must be not null");
         return sourceMap.entrySet()
                 .stream()
                 .map(entry ->
@@ -868,12 +953,11 @@ public class MapUtil {
      *
      * @return updated {@link Map}
      *
-     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceMap} is not empty.
      */
     public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                                 final Supplier<Map<T, R>> mapFactory) {
-        Assert.notNull(mapFunction, "mapFunction must be not null");
         final Supplier<Map<T, R>> finalMapFactory = ObjectsUtil.getOrElse(
                 mapFactory,
                 HashMap::new
@@ -881,6 +965,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
+        Assert.notNull(mapFunction, "mapFunction must be not null");
         return sourceMap.entrySet()
                 .stream()
                 .collect(
