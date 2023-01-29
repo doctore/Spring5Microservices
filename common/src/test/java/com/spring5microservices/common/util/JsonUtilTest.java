@@ -119,6 +119,53 @@ public class JsonUtilTest {
     }
 
 
+    static Stream<Arguments> fromJsonCollectionDefaultMapperAndCollectionTestCases() {
+        String notValidJson = "{$}";
+        String jsonDoesNotMatch = "{\"id\":null}";
+        String jsonOfNotCollectionInstance = "{\"name\":\"Carbonara\",\"cost\":5.0}";
+        String jsonOfEmptyInstance = "[{\"name\":null,\"cost\":null}]";
+        String jsonOfNotEmptyInstance = "[{\"name\":\"Carbonara\",\"cost\":5.0}]";
+        String jsonOfNotEmptyInstances = "[{\"name\":\"Carbonara\",\"cost\":5.0},{\"name\":\"Margherita\",\"cost\":6.0}]";
+
+        List<PizzaDto> expectedResultEmptyInstance = List.of(new PizzaDto());
+        List<PizzaDto> expectedResultNotEmptyInstance = List.of(new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D));
+        List<PizzaDto> expectedResultNotEmptyInstances = List.of(
+                new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D),
+                new PizzaDto(MARGUERITA.getInternalPropertyValue(), 6D)
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceJson,                    clazzOfElements,   expectedException,     expectedResult
+                Arguments.of( notValidJson,                  null,              JsonException.class,   null ),
+                Arguments.of( jsonOfEmptyInstance,           null,              JsonException.class,   null ),
+                Arguments.of( notValidJson,                  PizzaDto.class,    JsonException.class,   null ),
+                Arguments.of( jsonDoesNotMatch,              PizzaDto.class,    JsonException.class,   null ),
+                Arguments.of( jsonOfNotCollectionInstance,   PizzaDto.class,    JsonException.class,   null ),
+                Arguments.of( null,                          null,              null,                  List.of() ),
+                Arguments.of( null,                          PizzaDto.class,    null,                  List.of() ),
+                Arguments.of( "  ",                          null,              null,                  List.of() ),
+                Arguments.of( "  ",                          PizzaDto.class,    null,                  List.of() ),
+                Arguments.of( jsonOfEmptyInstance,           PizzaDto.class,    null,                  expectedResultEmptyInstance ),
+                Arguments.of( jsonOfNotEmptyInstance,        PizzaDto.class,    null,                  expectedResultNotEmptyInstance ),
+                Arguments.of( jsonOfNotEmptyInstances,       PizzaDto.class,    null,                  expectedResultNotEmptyInstances )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromJsonCollectionDefaultMapperAndCollectionTestCases")
+    @DisplayName("fromJsonCollection: with default mapper and collection class test cases")
+    public <T> void fromJsonCollectionDefaultMapperAndCollection_testCases(String sourceJson,
+                                                                           Class<? extends T> clazzOfElements,
+                                                                           Class<? extends Exception> expectedException,
+                                                                           Collection<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> fromJsonCollection(sourceJson, clazzOfElements));
+        } else {
+            assertEquals(expectedResult, fromJsonCollection(sourceJson, clazzOfElements));
+        }
+    }
+
+
     static Stream<Arguments> fromJsonCollectionDefaultMapperTestCases() {
         String notValidJson = "{$}";
         String jsonDoesNotMatch = "{\"id\":null}";

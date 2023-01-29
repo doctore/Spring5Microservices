@@ -547,6 +547,7 @@ public class CollectionUtil {
      *
      * @return {@link List}
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> dropWhile(final Collection<? extends T> sourceCollection,
                                         final Predicate<? super T> filterPredicate) {
         return (List<T>) dropWhile(
@@ -699,6 +700,7 @@ public class CollectionUtil {
      *
      * @return {@link List} resulting from concatenating all element of {@code sourceCollection}
      */
+    @SuppressWarnings("unchecked")
     public static <T> Collection<T> flatten(final Collection<Object> sourceCollection,
                                             final Supplier<Collection<T>> collectionFactory) {
         final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
@@ -1374,6 +1376,7 @@ public class CollectionUtil {
      *
      * @return {@link List}
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> takeWhile(final Collection<? extends T> sourceCollection,
                                         final Predicate<? super T> filterPredicate) {
         return (List<T>) takeWhile(

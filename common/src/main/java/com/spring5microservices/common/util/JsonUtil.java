@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
@@ -91,6 +92,32 @@ public class JsonUtil {
                         );
                     }
                 });
+    }
+
+
+    /**
+     *    Transforms the given JSON-formatted {@link String} that contains an array of elements into a {@link List}
+     * of instances of a given {@code clazzOfElements}.
+     *
+     * @param sourceJson
+     *    JSON-formatted {@link String} to transform
+     * @param clazzOfElements
+     *    {@link Class} of the elements included in the returned {@link List}
+     *
+     * @return {@link List} of {@code clazzOfElements} instances
+     *
+     * @throws JsonException if there was a problem trying to generate the result object or
+     *                       given {@code sourceJson} has no text and there was an error creating an empty {@link List}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> fromJsonCollection(final String sourceJson,
+                                                 final Class<? extends T> clazzOfElements) {
+        return (List<T>) fromJsonCollection(
+                sourceJson,
+                clazzOfElements,
+                ArrayList.class,
+                DEFAULT_OBJECT_MAPPER
+        );
     }
 
 

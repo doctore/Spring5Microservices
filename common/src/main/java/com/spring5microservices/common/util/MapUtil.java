@@ -453,6 +453,7 @@ public class MapUtil {
      *     (i, l) -> l.stream()
      *                .map(elto -> Tuple2.of(i, elto))
      *                .collect(toList())
+     *     ArrayList::new
      * </pre>
      *
      * @param sourceMap
@@ -467,6 +468,7 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code flattener} is {@code null} and {@code sourceMap} is not empty.
      */
+    @SuppressWarnings("unchecked")
     public static <T, E, R, U> Collection<U> flatten(final Map<? extends T, ? extends E> sourceMap,
                                                      final BiFunction<? super T, ? super E, ? extends R> flattener,
                                                      final Supplier<Collection<U>> collectionFactory) {
