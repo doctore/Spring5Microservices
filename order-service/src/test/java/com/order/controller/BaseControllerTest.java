@@ -23,17 +23,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public abstract class BaseControllerTest {
 
-    // To avoid an error when creating the bean
+    // To avoid an error when creating WebSecurityConfiguration instance
     @MockBean
     private SecurityManager mockSecurityManager;
 
-    // To avoid an error when creating the bean
+    // To avoid an error when creating WebSecurityConfiguration instance
     @MockBean
-    private DocumentationConfiguration documentationConfiguration;
+    private DocumentationConfiguration mockDocumentationConfiguration;
 
     // To avoid gRPC client initialization
     @MockBean
-    private GrpcClientRunner grpcClientRunner;
+    private GrpcClientRunner mockGrpcClientRunner;
 
 
     /**

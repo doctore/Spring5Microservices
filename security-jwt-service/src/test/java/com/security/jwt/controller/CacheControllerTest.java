@@ -10,12 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -30,18 +26,10 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 @SpringBootTest(classes = SecurityJwtServiceApplication.class)
-public class CacheControllerTest {
-
-    @Autowired
-    ApplicationContext context;
+public class CacheControllerTest extends BaseControllerTest {
 
     @MockBean
     private JwtClientDetailsCacheService mockJwtClientDetailsCacheService;
-
-    // To avoid Hazelcast instance creation
-    @MockBean
-    @Qualifier("cacheManager")
-    private CacheManager mockCacheManager;
 
     private WebTestClient webTestClient;
 

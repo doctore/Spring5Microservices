@@ -14,12 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -39,7 +35,6 @@ import static com.spring5microservices.common.enums.RestApiErrorCode.VALIDATION;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
-import static java.util.Arrays.asList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -49,20 +44,13 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @SpringBootTest(classes = SecurityJwtServiceApplication.class)
-public class SecurityControllerTest {
-
-    @Autowired
-    ApplicationContext context;
+public class SecurityControllerTest extends BaseControllerTest {
 
     @MockBean
     private SecurityService mockSecurityService;
 
-    // To avoid Hazelcast instance creation
-    @MockBean
-    @Qualifier("cacheManager")
-    private CacheManager mockCacheManager;
-
     private WebTestClient webTestClient;
+
 
     @BeforeEach
     public void init() {
