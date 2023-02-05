@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.exception.JsonException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.ExceptionUtil.getRootCause;
 import static com.spring5microservices.common.util.ExceptionUtil.getThrowableList;
+import static com.spring5microservices.common.util.ExceptionUtil.throwableOfType;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,8 +26,8 @@ public class ExceptionUtilTest {
         SecurityException securityException = new SecurityException("Operation not allowed", illegalArgumentException);
 
         // Recursive cause hierarchy use case
-        final ExceptionWithCause exception1 = new ExceptionWithCause(null);
-        final ExceptionWithCause exception2 = new ExceptionWithCause(exception1);
+        ExceptionWithCause exception1 = new ExceptionWithCause(null);
+        ExceptionWithCause exception2 = new ExceptionWithCause(exception1);
         exception1.setCause(exception2);
         ExceptionWithCause cyclicExceptionHierarchy = new ExceptionWithCause(exception1);
         return Stream.of(
@@ -54,8 +56,8 @@ public class ExceptionUtilTest {
         SecurityException securityException = new SecurityException("Operation not allowed", illegalArgumentException);
 
         // Recursive cause hierarchy use case
-        final ExceptionWithCause exception1 = new ExceptionWithCause(null);
-        final ExceptionWithCause exception2 = new ExceptionWithCause(exception1);
+        ExceptionWithCause exception1 = new ExceptionWithCause(null);
+        ExceptionWithCause exception2 = new ExceptionWithCause(exception1);
         exception1.setCause(exception2);
         ExceptionWithCause cyclicExceptionHierarchy = new ExceptionWithCause(exception1);
         return Stream.of(
@@ -77,6 +79,84 @@ public class ExceptionUtilTest {
         assertEquals(expectedResult, getThrowableList(sourceThrowable));
     }
 
+
+    static Stream<Arguments> throwableOfTypeWithoutSubclassTestCases() {
+        ConnectException connectException = new ConnectException("Connection refused");
+        IllegalArgumentException illegalArgumentException1 = new IllegalArgumentException("Argument not valid 1", connectException);
+        IllegalArgumentException illegalArgumentException2 = new IllegalArgumentException("Argument not valid 2", illegalArgumentException1);
+        SecurityException securityException = new SecurityException("Operation not allowed", illegalArgumentException2);
+
+        // Recursive cause hierarchy use case
+        ExceptionWithCause exception1 = new ExceptionWithCause(null);
+        ExceptionWithCause exception2 = new ExceptionWithCause(exception1);
+        exception1.setCause(exception2);
+        JsonException cyclicExceptionHierarchy = new JsonException(exception1);
+        return Stream.of(
+                //@formatter:off
+                //            sourceThrowable,             type,                             expectedResult
+                Arguments.of( null,                        null,                             empty() ),
+                Arguments.of( null,                        IllegalArgumentException.class,   empty() ),
+                Arguments.of( connectException,            null,                             empty() ),
+                Arguments.of( illegalArgumentException2,   InterruptedException.class,       empty() ),
+                Arguments.of( connectException,            ConnectException.class,           of(connectException) ),
+                Arguments.of( illegalArgumentException2,   ConnectException.class,           of(connectException) ),
+                Arguments.of( securityException,           IllegalArgumentException.class,   of(illegalArgumentException2) ),
+                Arguments.of( cyclicExceptionHierarchy,    ExceptionWithCause.class,         of(exception1) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("throwableOfTypeWithoutSubclassTestCases")
+    @DisplayName("throwableOfType: without subclass parameter test cases")
+    public <T extends Throwable> void throwableOfTypeWithoutSubclass_testCases(Throwable sourceThrowable,
+                                                                               Class<T> type,
+                                                                               Optional<T> expectedResult) {
+        assertEquals(expectedResult, throwableOfType(sourceThrowable, type));
+    }
+
+
+    static Stream<Arguments> throwableOfTypeAllParametersTestCases() {
+        NumberFormatException numberFormatException = new NumberFormatException("Number not valid");
+        RuntimeException runtimeException = new RuntimeException("Severe error");
+        IllegalArgumentException illegalArgumentException1 = new IllegalArgumentException("Argument not valid 1", runtimeException);
+        IllegalArgumentException illegalArgumentException2 = new IllegalArgumentException("Argument not valid 2", illegalArgumentException1);
+
+        // Recursive cause hierarchy use case
+        ExceptionWithCause exception1 = new ExceptionWithCause(null);
+        ExceptionWithCause exception2 = new ExceptionWithCause(exception1);
+        exception1.setCause(exception2);
+        JsonException cyclicExceptionHierarchy = new JsonException(exception1);
+        return Stream.of(
+                //@formatter:off
+                //            sourceThrowable,             type,                             subclass,   expectedResult
+                Arguments.of( null,                        null,                             true,       empty() ),
+                Arguments.of( null,                        null,                             false,      empty() ),
+                Arguments.of( null,                        IllegalArgumentException.class,   true,       empty() ),
+                Arguments.of( null,                        IllegalArgumentException.class,   false,      empty() ),
+                Arguments.of( numberFormatException,       null,                             true,       empty() ),
+                Arguments.of( numberFormatException,       null,                             false,      empty() ),
+                Arguments.of( illegalArgumentException2,   InterruptedException.class,       true,       empty() ),
+                Arguments.of( illegalArgumentException2,   InterruptedException.class,       false,      empty() ),
+                Arguments.of( numberFormatException,       NumberFormatException.class,      true,       of(numberFormatException) ),
+                Arguments.of( numberFormatException,       NumberFormatException.class,      false,      of(numberFormatException) ),
+                Arguments.of( illegalArgumentException2,   IllegalArgumentException.class,   true,       of(illegalArgumentException2) ),
+                Arguments.of( illegalArgumentException2,   IllegalArgumentException.class,   false,      of(illegalArgumentException2) ),
+                Arguments.of( illegalArgumentException2,   RuntimeException.class,           true,       of(illegalArgumentException2) ),
+                Arguments.of( illegalArgumentException2,   RuntimeException.class,           false,      of(runtimeException) ),
+                Arguments.of( cyclicExceptionHierarchy,    ExceptionWithCause.class,         true,       of(exception1) ),
+                Arguments.of( cyclicExceptionHierarchy,    ExceptionWithCause.class,         false,      of(exception1) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("throwableOfTypeAllParametersTestCases")
+    @DisplayName("throwableOfType: with all parameters test cases")
+    public <T extends Throwable> void throwableOfTypeAllParameters_testCases(Throwable sourceThrowable,
+                                                                             Class<T> type,
+                                                                             boolean subclass,
+                                                                             Optional<T> expectedResult) {
+        assertEquals(expectedResult, throwableOfType(sourceThrowable, type, subclass));
+    }
 
 
     /**

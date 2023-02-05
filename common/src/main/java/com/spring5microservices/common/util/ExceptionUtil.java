@@ -5,10 +5,12 @@ import lombok.experimental.UtilityClass;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -24,7 +26,7 @@ public class ExceptionUtil {
      * @param sourceThrowable
      *    {@link Throwable} to get the root cause for
      *
-     * @return {@link Optional} containing the root cause of the provided {@link Throwable} or {@code sourceThrowable} if has no cause,
+     * @return {@link Optional} containing the root cause of the provided {@link Throwable} or {@code sourceThrowable} if it has no cause,
      *         {@link Optional#empty()} if {@code sourceThrowable} is {@code null}.
      */
     public static Optional<Throwable> getRootCause(final Throwable sourceThrowable) {
@@ -57,6 +59,60 @@ public class ExceptionUtil {
                     return new ArrayList<>(throwables);
                 })
                 .orElseGet(ArrayList::new);
+    }
+
+
+    /**
+     * Returns the first {@link Throwable} that matches the specified {@code type} in the exception chain.
+     *
+     * @param sourceThrowable
+     *    {@link Throwable} to inspect
+     * @param type
+     *    {@link Class} to search in the exception chain included in provided {@code sourceThrowable}
+     *
+     * @return {@link Optional} containing the {@link Throwable} of the {@code type} within throwables nested in the specified {@code sourceThrowable},
+     *         {@link Optional#empty()} if {@code sourceThrowable} is {@code null}.
+     */
+    public static <T extends Throwable> Optional<T> throwableOfType(final Throwable sourceThrowable,
+                                                                    final Class<T> type) {
+        return throwableOfType(
+                sourceThrowable,
+                type,
+                false
+        );
+    }
+
+
+    /**
+     *    Returns the first {@link Throwable} that matches the specified {@code type} in the exception chain. If {@code subclass}
+     * is {@code true}, compares with {@link Class#isAssignableFrom(Class)}, otherwise compares using references.
+     *
+     * @param sourceThrowable
+     *    {@link Throwable} to inspect
+     * @param type
+     *    {@link Class} to search in the exception chain included in provided {@code sourceThrowable}
+     * @param subclass
+     *    If {@code true}, compares with {@link Class#isAssignableFrom(Class)}, otherwise compares using references
+     *
+     * @return {@link Optional} containing the {@link Throwable} of the {@code type} within throwables nested in the specified {@code sourceThrowable},
+     *         {@link Optional#empty()} if {@code sourceThrowable} is {@code null}.
+     */
+    public static <T extends Throwable> Optional<T> throwableOfType(final Throwable sourceThrowable,
+                                                                    final Class<T> type,
+                                                                    final boolean subclass) {
+        if (Objects.isNull(type)) {
+            return empty();
+        }
+        return getThrowableList(sourceThrowable)
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(t ->
+                        subclass
+                                ? type.isAssignableFrom(t.getClass())
+                                : type.equals(t.getClass())
+                )
+                .map(type::cast)
+                .findFirst();
     }
 
 }
