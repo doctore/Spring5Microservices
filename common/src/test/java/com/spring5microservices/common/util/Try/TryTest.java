@@ -32,7 +32,7 @@ public class TryTest {
         Supplier<Long> supplierSuccess = () -> 23L;
         Supplier<Long> supplierDivisionByZero = () -> 12L / 0;
 
-        Try<Long> expectedFailureNullSupplier = Try.failure(new NullPointerException());
+        Try<Long> expectedFailureNullSupplier = Try.failure(new NullPointerException("Cannot invoke \"java.util.function.Supplier.get()\" because \"supplier\" is null"));
         Try<Long> expectedFailureDivisionByZero = Try.failure(new ArithmeticException("/ by zero"));
         return Stream.of(
                 //@formatter:off

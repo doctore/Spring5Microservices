@@ -16,10 +16,10 @@
     <description>Common functionality included in several microservices</description>
 
     <properties>
-        <java.version>1.14</java.version>
+        <java.version>1.17</java.version>
         <mapstruct-processor.version>1.5.3.Final</mapstruct-processor.version>
-        <maven.compiler.target>14</maven.compiler.target>
-        <maven.compiler.release>14</maven.compiler.release>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
         <springdoc.version>1.6.12</springdoc.version>
     </properties>
 
