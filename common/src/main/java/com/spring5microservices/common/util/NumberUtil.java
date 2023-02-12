@@ -169,4 +169,226 @@ public class NumberUtil {
         }
     }
 
+
+    /**
+     * Converts a {@link String} to an {@link Byte}, returning {@code zero} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Byte} instance
+     *
+     * @return {@link Byte} by the {@link String}, or {@code zero} if conversion fails.
+     */
+    public static Byte toByte(final String potentialNumber) {
+        return toByte(
+                potentialNumber,
+                (byte) 0
+        );
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Byte}, returning {@code defaultValue} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Byte} instance
+     * @param defaultValue
+     *    {@code byte} with the value to return if {@code potentialNumber} cannot be converted
+     *
+     * @return {@link Byte} by the {@link String}, or {@code defaultValue} if conversion fails.
+     */
+    public static Byte toByte(final String potentialNumber,
+                              final byte defaultValue) {
+        return fromString(
+                potentialNumber,
+                Byte.class
+        )
+        .map(opt -> opt.orElse(defaultValue))
+        .getOrElse(defaultValue);
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Double}, returning {@code zero} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Double} instance
+     *
+     * @return {@link Double} by the {@link String}, or {@code zero} if conversion fails.
+     */
+    public static Double toDouble(final String potentialNumber) {
+        return toDouble(
+                potentialNumber,
+                0.0d
+        );
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Double}, returning {@code defaultValue} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Double} instance
+     * @param defaultValue
+     *    {@code double} with the value to return if {@code potentialNumber} cannot be converted
+     *
+     * @return {@link Double} by the {@link String}, or {@code defaultValue} if conversion fails.
+     */
+    public static Double toDouble(final String potentialNumber,
+                                  final double defaultValue) {
+        return fromString(
+                potentialNumber,
+                Double.class
+        )
+        .map(opt -> opt.orElse(defaultValue))
+        .getOrElse(defaultValue);
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Float}, returning {@code zero} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Float} instance
+     *
+     * @return {@link Float} by the {@link String}, or {@code zero} if conversion fails.
+     */
+    public static Float toFloat(final String potentialNumber) {
+        return toFloat(
+                potentialNumber,
+                0.0f
+        );
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Float}, returning {@code defaultValue} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Float} instance
+     * @param defaultValue
+     *    {@code float} with the value to return if {@code potentialNumber} cannot be converted
+     *
+     * @return {@link Float} by the {@link String}, or {@code defaultValue} if conversion fails.
+     */
+    public static Float toFloat(final String potentialNumber,
+                                  final float defaultValue) {
+        return fromString(
+                potentialNumber,
+                Float.class
+        )
+        .map(opt -> opt.orElse(defaultValue))
+        .getOrElse(defaultValue);
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Integer}, returning {@code zero} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Integer} instance
+     *
+     * @return {@link Integer} by the {@link String}, or {@code zero} if conversion fails.
+     */
+    public static Integer toInteger(final String potentialNumber) {
+        return toInteger(
+                potentialNumber,
+                0
+        );
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Integer}, returning {@code defaultValue} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Integer} instance
+     * @param defaultValue
+     *    {@code int} with the value to return if {@code potentialNumber} cannot be converted
+     *
+     * @return {@link Integer} by the {@link String}, or {@code defaultValue} if conversion fails.
+     */
+    public static Integer toInteger(final String potentialNumber,
+                                    final int defaultValue) {
+        return fromString(
+                potentialNumber,
+                Integer.class
+        )
+        .map(opt -> opt.orElse(defaultValue))
+        .getOrElse(defaultValue);
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Long}, returning {@code zero} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Long} instance
+     *
+     * @return {@link Long} by the {@link String}, or {@code zero} if conversion fails.
+     */
+    public static Long toLong(final String potentialNumber) {
+        return toLong(
+                potentialNumber,
+                0
+        );
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Long}, returning {@code defaultValue} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Long} instance
+     * @param defaultValue
+     *    {@code long} with the value to return if {@code potentialNumber} cannot be converted
+     *
+     * @return {@link Long} by the {@link String}, or {@code defaultValue} if conversion fails.
+     */
+    public static Long toLong(final String potentialNumber,
+                              final long defaultValue) {
+        return fromString(
+                potentialNumber,
+                Long.class
+        )
+        .map(opt -> opt.orElse(defaultValue))
+        .getOrElse(defaultValue);
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Short}, returning {@code zero} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Short} instance
+     *
+     * @return {@link Short} by the {@link String}, or {@code zero} if conversion fails.
+     */
+    public static Short toShort(final String potentialNumber) {
+        return toShort(
+                potentialNumber,
+                (short) 0
+        );
+    }
+
+
+    /**
+     * Converts a {@link String} to an {@link Short}, returning {@code defaultValue} if the conversion fails.
+     *
+     * @param potentialNumber
+     *    {@link String} to convert into a {@link Short} instance
+     * @param defaultValue
+     *    {@code short} with the value to return if {@code potentialNumber} cannot be converted
+     *
+     * @return {@link Short} by the {@link String}, or {@code defaultValue} if conversion fails.
+     */
+    public static Short toShort(final String potentialNumber,
+                                final short defaultValue) {
+        return fromString(
+                potentialNumber,
+                Short.class
+        )
+        .map(opt -> opt.orElse(defaultValue))
+        .getOrElse(defaultValue);
+    }
+
 }

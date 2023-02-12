@@ -12,6 +12,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.NumberUtil.fromString;
+import static com.spring5microservices.common.util.NumberUtil.toByte;
+import static com.spring5microservices.common.util.NumberUtil.toDouble;
+import static com.spring5microservices.common.util.NumberUtil.toFloat;
+import static com.spring5microservices.common.util.NumberUtil.toInteger;
+import static com.spring5microservices.common.util.NumberUtil.toLong;
+import static com.spring5microservices.common.util.NumberUtil.toShort;
 import static com.spring5microservices.common.util.either.Either.left;
 import static com.spring5microservices.common.util.either.Either.right;
 import static java.util.Optional.empty;
@@ -117,7 +123,7 @@ public class NumberUtilTest {
     }
 
 
-    static Stream<Arguments> fromStringTestCases() {
+    static Stream<Arguments> fromStringWithoutClassInstanceTestCases() {
         String errorMessageNoNumber = "There was an error trying to convert the string: aa to an instance of: java.lang.Integer. "
                 + "The cause was: java.lang.NumberFormatException with message: For input string: \"aa\"";
         String errorMessageNoInteger = "There was an error trying to convert the string: 12.1 to an instance of: java.lang.Integer. "
@@ -133,15 +139,15 @@ public class NumberUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("fromStringTestCases")
-    @DisplayName("fromString: test cases")
-    public void fromString_testCases(String potentialNumber,
-                                     Either<String, Optional<Integer>> expectedResult) {
+    @MethodSource("fromStringWithoutClassInstanceTestCases")
+    @DisplayName("fromString: without class instance test cases")
+    public void fromStringWithoutClassInstanceToReturn_testCases(String potentialNumber,
+                                                                 Either<String, Optional<Integer>> expectedResult) {
         assertEquals(expectedResult, fromString(potentialNumber));
     }
 
 
-    static Stream<Arguments> fromStringWithClazzTestCases() {
+    static Stream<Arguments> fromStringAllParametersTestCases() {
         String errorMessageNoNumber = "There was an error trying to convert the string: aa to an instance of: java.lang.Integer. "
                 + "The cause was: java.lang.NumberFormatException with message: For input string: \"aa\"";
         String errorMessageNoInteger = "There was an error trying to convert the string: 12.1 to an instance of: java.lang.Integer. "
@@ -162,12 +168,258 @@ public class NumberUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("fromStringWithClazzTestCases")
-    @DisplayName("fromString: providing a result class test cases")
-    public <T extends Number> void fromStringWithClazz_testCases(String potentialNumber,
-                                                                 Class<T> clazzReturnedInstance,
-                                                                 Either<String, Optional<Integer>> expectedResult) {
+    @MethodSource("fromStringAllParametersTestCases")
+    @DisplayName("fromString: with all parameters test cases")
+    public <T extends Number> void fromStringAllParameters_testCases(String potentialNumber,
+                                                                     Class<T> clazzReturnedInstance,
+                                                                     Either<String, Optional<Integer>> expectedResult) {
         assertEquals(expectedResult, fromString(potentialNumber, clazzReturnedInstance));
+    }
+
+
+    static Stream<Arguments> toByteWithoutDefaultValueTestCases() {
+        Byte expectedIfError = (byte) 0;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              expectedIfError ),
+                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( "21",              (byte) 21 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toByteWithoutDefaultValueTestCases")
+    @DisplayName("toByte: without default value test cases")
+    public void toByteWithoutDefaultValue_testCases(String potentialNumber,
+                                                    Byte expectedResult) {
+        assertEquals(expectedResult, toByte(potentialNumber));
+    }
+
+
+    static Stream<Arguments> toByteAllParametersTestCases() {
+        byte defaultValue = (byte) 11;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   defaultValue,   expectedResult
+                Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "aa",              defaultValue,   defaultValue ),
+                Arguments.of( "50",              defaultValue,   (byte) 50 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toByteAllParametersTestCases")
+    @DisplayName("toByte: with all parameters test cases")
+    public void toByteAllParameters_testCases(String potentialNumber,
+                                              byte defaultValue,
+                                              Byte expectedResult) {
+        assertEquals(expectedResult, toByte(potentialNumber, defaultValue));
+    }
+
+
+    static Stream<Arguments> toDoubleWithoutDefaultValueTestCases() {
+        Double expectedIfError = 0.0d;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              expectedIfError ),
+                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( "321.3",           321.3d )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toDoubleWithoutDefaultValueTestCases")
+    @DisplayName("toDouble: without default value test cases")
+    public void toDoubleWithoutDefaultValue_testCases(String potentialNumber,
+                                                      Double expectedResult) {
+        assertEquals(expectedResult, toDouble(potentialNumber));
+    }
+
+
+    static Stream<Arguments> toDoubleAllParametersTestCases() {
+        double defaultValue = 11.1d;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   defaultValue,   expectedResult
+                Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "aa",              defaultValue,   defaultValue ),
+                Arguments.of( "50.2",            defaultValue,   50.2d )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toDoubleAllParametersTestCases")
+    @DisplayName("toDouble: with all parameters test cases")
+    public void toDoubleAllParameters_testCases(String potentialNumber,
+                                                double defaultValue,
+                                                Double expectedResult) {
+        assertEquals(expectedResult, toDouble(potentialNumber, defaultValue));
+    }
+
+
+    static Stream<Arguments> toFloatWithoutDefaultValueTestCases() {
+        Float expectedIfError = 0.0f;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              expectedIfError ),
+                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( "321.9",           321.9f )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toFloatWithoutDefaultValueTestCases")
+    @DisplayName("toFloat: without default value test cases")
+    public void toFloatWithoutDefaultValue_testCases(String potentialNumber,
+                                                     Float expectedResult) {
+        assertEquals(expectedResult, toFloat(potentialNumber));
+    }
+
+
+    static Stream<Arguments> toFloatAllParametersTestCases() {
+        float defaultValue = 11.1f;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   defaultValue,   expectedResult
+                Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "aa",              defaultValue,   defaultValue ),
+                Arguments.of( "50.4",            defaultValue,   50.4f )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toFloatAllParametersTestCases")
+    @DisplayName("toFloat: with all parameters test cases")
+    public void toFloatAllParameters_testCases(String potentialNumber,
+                                                float defaultValue,
+                                                Float expectedResult) {
+        assertEquals(expectedResult, toFloat(potentialNumber, defaultValue));
+    }
+
+
+    static Stream<Arguments> toIntegerWithoutDefaultValueTestCases() {
+        Integer expectedIfError = 0;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              expectedIfError ),
+                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( "321",             321 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toIntegerWithoutDefaultValueTestCases")
+    @DisplayName("toInteger: without default value test cases")
+    public void toIntegerWithoutDefaultValue_testCases(String potentialNumber,
+                                                       Integer expectedResult) {
+        assertEquals(expectedResult, toInteger(potentialNumber));
+    }
+
+
+    static Stream<Arguments> toIntegerAllParametersTestCases() {
+        int defaultValue = 11;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   defaultValue,   expectedResult
+                Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "aa",              defaultValue,   defaultValue ),
+                Arguments.of( "50",              defaultValue,   50 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toIntegerAllParametersTestCases")
+    @DisplayName("toInteger: with all parameters test cases")
+    public void toIntegerAllParameters_testCases(String potentialNumber,
+                                                 int defaultValue,
+                                                 Integer expectedResult) {
+        assertEquals(expectedResult, toInteger(potentialNumber, defaultValue));
+    }
+
+
+    static Stream<Arguments> toLongWithoutDefaultValueTestCases() {
+        Long expectedIfError = 0L;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              expectedIfError ),
+                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( "321",             321L )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toLongWithoutDefaultValueTestCases")
+    @DisplayName("toLong: without default value test cases")
+    public void toLongWithoutDefaultValue_testCases(String potentialNumber,
+                                                    Long expectedResult) {
+        assertEquals(expectedResult, toLong(potentialNumber));
+    }
+
+
+    static Stream<Arguments> toLongAllParametersTestCases() {
+        long defaultValue = 11;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   defaultValue,   expectedResult
+                Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "aa",              defaultValue,   defaultValue ),
+                Arguments.of( "50",              defaultValue,   50L )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toLongAllParametersTestCases")
+    @DisplayName("toLong: with all parameters test cases")
+    public void toLongAllParameters_testCases(String potentialNumber,
+                                              long defaultValue,
+                                              Long expectedResult) {
+        assertEquals(expectedResult, toLong(potentialNumber, defaultValue));
+    }
+
+
+    static Stream<Arguments> toShortWithoutDefaultValueTestCases() {
+        Short expectedIfError = (short) 0;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   expectedResult
+                Arguments.of( null,              expectedIfError ),
+                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( "88",              (short) 88 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toShortWithoutDefaultValueTestCases")
+    @DisplayName("toShort: without default value test cases")
+    public void toShortWithoutDefaultValue_testCases(String potentialNumber,
+                                                     Short expectedResult) {
+        assertEquals(expectedResult, toShort(potentialNumber));
+    }
+
+
+    static Stream<Arguments> toShortAllParametersTestCases() {
+        short defaultValue = (short) 11;
+        return Stream.of(
+                //@formatter:off
+                //            potentialNumber,   defaultValue,   expectedResult
+                Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "aa",              defaultValue,   defaultValue ),
+                Arguments.of( "50",              defaultValue,   (short) 50 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toShortAllParametersTestCases")
+    @DisplayName("toShort: with all parameters test cases")
+    public void toShortAllParameters_testCases(String potentialNumber,
+                                               short defaultValue,
+                                               Short expectedResult) {
+        assertEquals(expectedResult, toShort(potentialNumber, defaultValue));
     }
 
 
