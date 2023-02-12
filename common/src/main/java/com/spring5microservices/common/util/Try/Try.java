@@ -833,6 +833,7 @@ public abstract class Try<T> implements Serializable {
      *
      * @return @return {@link Try}
      */
+    @SuppressWarnings("unchecked")
     private Try<T> recoverWithTry(final Function<? super Throwable, ? extends Try<? extends T>> mapperFailure) {
         try {
             return (Try<T>) mapperFailure.apply(
@@ -852,6 +853,7 @@ public abstract class Try<T> implements Serializable {
      *
      * @return {@link Try}
      */
+    @SuppressWarnings("unchecked")
     private Try<T> getWithSupplierTry(final Supplier<Try<? extends T>> supplier) {
         try {
             return (Try<T>) supplier.get();

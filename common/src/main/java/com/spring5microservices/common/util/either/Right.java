@@ -28,7 +28,7 @@ public final class Right<L, R> extends Either<L, R> implements Serializable {
      * @param value
      *    The value of this success.
      */
-    private Right(R value) {
+    private Right(final R value) {
         super();
         this.value = value;
     }

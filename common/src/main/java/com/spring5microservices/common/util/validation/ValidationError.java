@@ -21,8 +21,8 @@ public class ValidationError implements Comparable<ValidationError> {
      * @param errorMessage
      *    Error message
      */
-    private ValidationError(int priority,
-                            String errorMessage) {
+    private ValidationError(final int priority,
+                            final String errorMessage) {
         this.priority = priority;
         this.errorMessage = errorMessage;
     }
@@ -40,7 +40,10 @@ public class ValidationError implements Comparable<ValidationError> {
      */
     public static ValidationError of(final int priority,
                                      final String errorMessage) {
-        return new ValidationError(priority, errorMessage);
+        return new ValidationError(
+                priority,
+                errorMessage
+        );
     }
 
 

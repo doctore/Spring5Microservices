@@ -11,6 +11,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.Objects;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 @AllArgsConstructor
 @Builder
 @Data
@@ -18,23 +20,23 @@ import java.util.Objects;
 @Schema(description = "Information related with the lines of an order")
 public class OrderLineDto {
 
-    @Schema(description = "Internal unique identifier", required = true)
+    @Schema(description = "Internal unique identifier", requiredMode = RequiredMode.REQUIRED)
     private Integer id;
 
-    @Schema(description = "Order related", required = true)
+    @Schema(description = "Order related", requiredMode = RequiredMode.REQUIRED)
     private Integer orderId;
 
-    @Schema(description = "Pizza included in this line", required = true)
+    @Schema(description = "Pizza included in this line", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Valid
     private PizzaDto pizza;
 
-    @Schema(description = "Number of pizzas", required = true)
+    @Schema(description = "Number of pizzas", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Positive
     private Short amount;
 
-    @Schema(description = "Cost", required = true)
+    @Schema(description = "Cost", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Positive
     private Double cost;

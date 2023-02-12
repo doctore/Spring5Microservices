@@ -13,21 +13,23 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.Set;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 @AllArgsConstructor
 @EqualsAndHashCode(of = { "name" })
 @Data
 @NoArgsConstructor
 public class PizzaDto {
 
-    @Schema(description = "Internal unique identifier", required = true)
+    @Schema(description = "Internal unique identifier", requiredMode = RequiredMode.REQUIRED)
     private Integer id;
 
-    @Schema(description = "Name", required = true)
+    @Schema(description = "Name", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @EnumHasInternalStringValue(enumClass=PizzaEnum.class)
     private String name;
 
-    @Schema(description = "Cost", required = true)
+    @Schema(description = "Cost", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Positive
     private Double cost;

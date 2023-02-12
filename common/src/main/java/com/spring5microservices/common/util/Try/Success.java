@@ -26,7 +26,7 @@ public final class Success<T> extends Try<T> implements Serializable {
      * @param value
      *    The value of this success.
      */
-    private Success(T value) {
+    private Success(final T value) {
         super();
         this.value = value;
     }

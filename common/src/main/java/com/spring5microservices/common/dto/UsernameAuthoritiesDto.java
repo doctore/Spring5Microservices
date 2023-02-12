@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.util.Objects.isNull;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
 @Builder
 @Data
@@ -21,13 +22,13 @@ import static java.util.Objects.isNull;
 @Schema(description = "Authorization information about an specific user")
 public class UsernameAuthoritiesDto {
 
-    @Schema(required = true, description = "Identifier of the logged user")
+    @Schema(description = "Identifier of the logged user", requiredMode = RequiredMode.REQUIRED)
     private String username;
 
-    @Schema(required = true, description = "Roles and/or permissions of the logged user")
+    @Schema(description = "Roles and/or permissions of the logged user", requiredMode = RequiredMode.REQUIRED)
     private Set<String> authorities;
 
-    @Schema(description = "Extra data returned by security service")
+    @Schema(description = "Extra data returned by security service", requiredMode = RequiredMode.REQUIRED)
     private Map<String, Object> additionalInfo;
 
     public UsernameAuthoritiesDto(final String username,

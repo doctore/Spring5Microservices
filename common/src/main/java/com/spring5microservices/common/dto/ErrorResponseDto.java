@@ -9,13 +9,15 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Information included in an API error response")
 public class ErrorResponseDto {
 
-    @Schema(required = true, description = "Code with the root cause of the error")
+    @Schema(description = "Code with the root cause of the error", requiredMode = RequiredMode.REQUIRED)
     private RestApiErrorCode code;
 
     @Schema(description = "Details about the error")

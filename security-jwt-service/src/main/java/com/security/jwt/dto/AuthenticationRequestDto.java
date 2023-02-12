@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 @AllArgsConstructor
 @Data
 @EqualsAndHashCode(of = { "username" })
@@ -16,12 +18,12 @@ import javax.validation.constraints.Size;
 @Schema(description = "Required data to authenticate a user")
 public class AuthenticationRequestDto {
 
-    @Schema(required = true)
+    @Schema(requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Size(min = 1, max = 64)
     private String username;
 
-    @Schema(required = true)
+    @Schema(requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Size(min = 1, max = 128)
     private String password;

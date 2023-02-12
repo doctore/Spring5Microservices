@@ -18,7 +18,7 @@ public class CacheService {
     private final CacheManager cacheManager;
 
     @Autowired
-    public CacheService(@Lazy CacheManager cacheManager) {
+    public CacheService(@Lazy final CacheManager cacheManager) {
         this.cacheManager = cacheManager;
     }
 

@@ -30,7 +30,7 @@ public final class Invalid<E, T> extends Validation<E, T> implements Serializabl
      * @param errors
      *    The value of this error.
      */
-    private Invalid(Collection<E> errors) {
+    private Invalid(final Collection<E> errors) {
         super();
         this.errors = errors;
     }

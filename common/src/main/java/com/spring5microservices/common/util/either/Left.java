@@ -29,7 +29,7 @@ public final class Left<L, R> extends Either<L, R> implements Serializable {
      * @param value
      *    The value of this failure.
      */
-    private Left(L value) {
+    private Left(final L value) {
         super();
         this.value = value;
     }

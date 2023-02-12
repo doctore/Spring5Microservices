@@ -25,7 +25,7 @@ public final class Failure<T> extends Try<T> implements Serializable {
      *
      * @throws Throwable if the given {@code exception} is fatal, i.e. non-recoverable
      */
-    private Failure(Throwable exception) {
+    private Failure(final Throwable exception) {
         if (isFatal(exception)) {
             sneakyThrow(exception);
         }

@@ -14,6 +14,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
 import static java.util.Optional.ofNullable;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
 @AllArgsConstructor
 @EqualsAndHashCode(of = { "ingredient", "pizza" })
@@ -39,17 +40,17 @@ public class IngredientPizzaSummaryDto {
                 .orElse(null);
     }
 
-    @Schema(description = "Ingredient name", required = true)
+    @Schema(description = "Ingredient name", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Size(min = 1, max = 64)
     private String ingredient;
 
-    @Schema(description = "Pizza name", required = true)
+    @Schema(description = "Pizza name", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @EnumHasInternalStringValue(enumClass = PizzaEnum.class)
     private String pizza;
 
-    @Schema(description = "Cost of the pizza", required = true)
+    @Schema(description = "Cost of the pizza", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Positive
     private Double cost;

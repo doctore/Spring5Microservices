@@ -477,7 +477,7 @@ public abstract class Either<L, R> implements Serializable {
      * @param mapper
      *    The mapping {@link Function} to apply to the current {@link Either}
      *
-     * @return the result of applying the right {@link Function}
+     * @return the result of applying provided {@link Function}
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null}
      */

@@ -13,6 +13,8 @@ import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(of = { "code" })
@@ -21,19 +23,19 @@ import java.util.List;
 @Schema(description = "Information related with an order")
 public class OrderDto {
 
-    @Schema(description = "Internal unique identifier", required = true)
+    @Schema(description = "Internal unique identifier", requiredMode = RequiredMode.REQUIRED)
     private Integer id;
 
-    @Schema(description = "Unique identifier of the order", required = true)
+    @Schema(description = "Unique identifier of the order", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     @Size(min = 1, max = 64)
     private String code;
 
-    @Schema(description = "When the order was created", required = true)
+    @Schema(description = "When the order was created", requiredMode = RequiredMode.REQUIRED)
     @NotNull
     private Date created;
 
-    @Schema(description = "List of order lines", required = true)
+    @Schema(description = "List of order lines", requiredMode = RequiredMode.REQUIRED)
     @Valid
     List<OrderLineDto> orderLines;
 

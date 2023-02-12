@@ -29,7 +29,7 @@ public final class Valid<E, T> extends Validation<E, T> implements Serializable 
      * @param value
      *    The value of this success.
      */
-    private Valid(T value) {
+    private Valid(final T value) {
         super();
         this.value = value;
     }

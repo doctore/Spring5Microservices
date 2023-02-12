@@ -271,7 +271,7 @@ public class NumberUtil {
      * @return {@link Float} by the {@link String}, or {@code defaultValue} if conversion fails.
      */
     public static Float toFloat(final String potentialNumber,
-                                  final float defaultValue) {
+                                final float defaultValue) {
         return fromString(
                 potentialNumber,
                 Float.class
