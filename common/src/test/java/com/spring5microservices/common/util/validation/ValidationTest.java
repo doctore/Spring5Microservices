@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -421,7 +422,43 @@ public class ValidationTest {
     }
 
 
-    static Stream<Arguments> foldTestCases() {
+    static Stream<Arguments> foldOneMapperTestCases() {
+        Integer defaultValue = 11;
+        Validation<String, Integer> validWithNoValue = Validation.valid(null);
+        Validation<String, Integer> valid = Validation.valid(1);
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem", "problem2"));
+        Function<Validation<String, Integer>, Integer> mapper = v ->
+                v.isValid()
+                        ? ofNullable(v.get()).orElse(defaultValue)
+                        : v.getErrors().size();
+        return Stream.of(
+                //@formatter:off
+                //            validation,         mapper,   expectedException,                expectedResult
+                Arguments.of( valid,              null,     IllegalArgumentException.class,   null ),
+                Arguments.of( invalid,            null,     IllegalArgumentException.class,   null ),
+                Arguments.of( validWithNoValue,   mapper,   null,                             defaultValue ),
+                Arguments.of( valid,              mapper,   null,                             valid.get() ),
+                Arguments.of( invalid,            mapper,   null,                             invalid.getErrors().size() )
+
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldOneMapperTestCases")
+    @DisplayName("fold: with one mapper test cases")
+    public <E, T, U> void foldOneMapper_testCases(Validation<E, T> validation,
+                                                  Function<? super Validation<E, T>, ? extends U> mapper,
+                                                  Class<? extends Exception> expectedException,
+                                                  U expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> validation.fold(mapper));
+        } else {
+            assertEquals(expectedResult, validation.fold(mapper));
+        }
+    }
+
+
+    static Stream<Arguments> foldTwoMappersTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(List.of("problem", "problem2"));
         Function<Integer, String> integerToString = Object::toString;
@@ -441,13 +478,13 @@ public class ValidationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("foldTestCases")
-    @DisplayName("fold: test cases")
-    public <E, T, U> void fold_testCases(Validation<E, T> validation,
-                                         Function<Collection<? super E>, U> mapperInvalid,
-                                         Function<? super T, ? extends U> mapperValid,
-                                         Class<? extends Exception> expectedException,
-                                         U expectedResult) {
+    @MethodSource("foldTwoMappersTestCases")
+    @DisplayName("fold: with two mappers test cases")
+    public <E, T, U> void foldTwoMappers_testCases(Validation<E, T> validation,
+                                                   Function<Collection<? super E>, U> mapperInvalid,
+                                                   Function<? super T, ? extends U> mapperValid,
+                                                   Class<? extends Exception> expectedException,
+                                                   U expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.fold(mapperInvalid, mapperValid));
         } else {

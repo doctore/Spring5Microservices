@@ -460,6 +460,34 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
+     * Applies {@code mapper} to the current {@link Either}, transforming internal values into another one.
+     *
+     * <pre>
+     * Example:
+     *
+     *    Either<String, Integer> either = ...
+     *    int i = either.fold(
+     *               e ->
+     *                  e.isRight()
+     *                     ? ofNullable(e.get()).orElse(defaultValue)
+     *                     : e.getLeft().length()
+     *            );
+     * </pre>
+     *
+     * @param mapper
+     *    The mapping {@link Function} to apply to the current {@link Either}
+     *
+     * @return the result of applying the right {@link Function}
+     *
+     * @throws IllegalArgumentException if {@code mapper} is {@code null}
+     */
+    public final <U> U fold(final Function<? super Either<L, R>, ? extends U> mapper) {
+        Assert.notNull(mapper, "mapper must be not null");
+        return mapper.apply(this);
+    }
+
+
+    /**
      *    Applies {@code mapperRight} if current {@link Either} is a {@link Right} instance, {@code mapperLeft}
      * if it is an {@link Left}, transforming internal values into another one.
      *
@@ -467,7 +495,10 @@ public abstract class Either<L, R> implements Serializable {
      * Example:
      *
      *   Either<String, Integer> either = ...
-     *   int i = either.fold(String::length, Function.identity());
+     *   int i = either.fold(
+     *              String::length,
+     *              Function.identity()
+     *           );
      * </pre>
      *
      * @param mapperLeft

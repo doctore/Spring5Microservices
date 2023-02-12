@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -419,7 +420,42 @@ public class EitherTest {
     }
 
 
-    static Stream<Arguments> foldTestCases() {
+    static Stream<Arguments> foldOneMapperTestCases() {
+        Integer defaultValue = 11;
+        Either<String, Integer> rightWithNoValue = Either.right(null);
+        Either<String, Integer> right = Either.right(99);
+        Either<String, Integer> left = Either.left("There was a problem");
+        Function<Either<String, Integer>, Integer> mapper = e ->
+                e.isRight()
+                        ? ofNullable(e.get()).orElse(defaultValue)
+                        : e.getLeft().length();
+        return Stream.of(
+                //@formatter:off
+                //            either,             mapper,   expectedException,                expectedResult
+                Arguments.of( right,              null,     IllegalArgumentException.class,   null ),
+                Arguments.of( left,               null,     IllegalArgumentException.class,   null ),
+                Arguments.of( rightWithNoValue,   mapper,   null,                             defaultValue ),
+                Arguments.of( right,              mapper,   null,                             right.get() ),
+                Arguments.of( left,               mapper,   null,                             left.getLeft().length() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldOneMapperTestCases")
+    @DisplayName("fold: with one mapper test cases")
+    public <L, R, U> void foldOneMapper_testCases(Either<L, R> either,
+                                                  Function<? super Either<L, R>, ? extends U> mapper,
+                                                  Class<? extends Exception> expectedException,
+                                                  U expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> either.fold(mapper));
+        } else {
+            assertEquals(expectedResult, either.fold(mapper));
+        }
+    }
+
+
+    static Stream<Arguments> foldTwoMappersTestCases() {
         Either<String, Integer> right = Either.right(99);
         Either<String, Integer> left = Either.left("There was a problem");
         Function<Integer, String> integerToString = Object::toString;
@@ -439,13 +475,13 @@ public class EitherTest {
     }
 
     @ParameterizedTest
-    @MethodSource("foldTestCases")
-    @DisplayName("fold: test cases")
-    public <L, R, U> void fold_testCases(Either<L, R> either,
-                                         Function<? super L, ? extends U> mapperLeft,
-                                         Function<? super R, ? extends U> mapperRight,
-                                         Class<? extends Exception> expectedException,
-                                         U expectedResult) {
+    @MethodSource("foldTwoMappersTestCases")
+    @DisplayName("fold: with two mappers test cases")
+    public <L, R, U> void foldTwoMappers_testCases(Either<L, R> either,
+                                                   Function<? super L, ? extends U> mapperLeft,
+                                                   Function<? super R, ? extends U> mapperRight,
+                                                   Class<? extends Exception> expectedException,
+                                                   U expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.fold(mapperLeft, mapperRight));
         } else {

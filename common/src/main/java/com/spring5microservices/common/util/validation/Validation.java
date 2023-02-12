@@ -434,6 +434,34 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
+     * Applies {@code mapper} to the current {@link Validation}, transforming internal values into another one.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Validation<String, String> valid = ...
+     *   int i = valid.fold(
+     *              v ->
+     *                 v.isValid()
+     *                         ? ofNullable(v.get()).orElse(defaultValue)
+     *                         : v.getErrors().size()
+     *           );
+     * </pre>
+     *
+     * @param mapper
+     *    The mapping {@link Function} to apply to the current {@link Validation}
+     *
+     * @return the result of applying the right {@link Function}
+     *
+     * @throws IllegalArgumentException if {@code mapper} is {@code null}
+     */
+    public final <U> U fold(final Function<? super Validation<E, T>, ? extends U> mapper) {
+        Assert.notNull(mapper, "mapper must be not null");
+        return mapper.apply(this);
+    }
+
+
+    /**
      *    Applies {@code mapperValid} if current {@link Validation} is a {@link Valid} instance, {@code mapperInvalid}
      * if it is an {@link Invalid}, transforming internal values into another one.
      *
@@ -441,7 +469,10 @@ public abstract class Validation<E, T> implements Serializable {
      * Example:
      *
      *   Validation<String, String> valid = ...
-     *   int i = valid.fold(String::length, List::length);
+     *   int i = valid.fold(
+     *              String::length,
+     *              List::length
+     *           );
      * </pre>
      *
      * @param mapperInvalid
