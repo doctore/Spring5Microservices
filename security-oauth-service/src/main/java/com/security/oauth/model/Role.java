@@ -31,7 +31,6 @@ public class Role implements Serializable {
     private static final long serialVersionUID = 4833183317359581882L;
 
     @Id
-    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".role_id_seq")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Constants.DATABASE_SCHEMA.EAT + ".role_generator")
     @SequenceGenerator(name = Constants.DATABASE_SCHEMA.EAT + ".role_generator", sequenceName = Constants.DATABASE_SCHEMA.EAT + ".role_id_seq", allocationSize = 1)
     private Integer id;
