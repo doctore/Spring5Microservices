@@ -155,10 +155,6 @@ public class NumberUtil {
                     potentialNumber,
                     finalClazzReturnedInstance.getName()
             );
-            log.warn(
-                    mainErrorMessage,
-                    e
-            );
             Throwable rootCauseOrProvided = getRootCause(e).orElse(e);
             return left(
                     format(mainErrorMessage + ". The cause was: %s with message: %s",
@@ -202,6 +198,7 @@ public class NumberUtil {
                 potentialNumber,
                 Byte.class
         )
+        .peekLeft(log::warn)
         .map(opt -> opt.orElse(defaultValue))
         .getOrElse(defaultValue);
     }
@@ -239,6 +236,7 @@ public class NumberUtil {
                 potentialNumber,
                 Double.class
         )
+        .peekLeft(log::warn)
         .map(opt -> opt.orElse(defaultValue))
         .getOrElse(defaultValue);
     }
@@ -276,6 +274,7 @@ public class NumberUtil {
                 potentialNumber,
                 Float.class
         )
+        .peekLeft(log::warn)
         .map(opt -> opt.orElse(defaultValue))
         .getOrElse(defaultValue);
     }
@@ -313,6 +312,7 @@ public class NumberUtil {
                 potentialNumber,
                 Integer.class
         )
+        .peekLeft(log::warn)
         .map(opt -> opt.orElse(defaultValue))
         .getOrElse(defaultValue);
     }
@@ -350,6 +350,7 @@ public class NumberUtil {
                 potentialNumber,
                 Long.class
         )
+        .peekLeft(log::warn)
         .map(opt -> opt.orElse(defaultValue))
         .getOrElse(defaultValue);
     }
@@ -387,6 +388,7 @@ public class NumberUtil {
                 potentialNumber,
                 Short.class
         )
+        .peekLeft(log::warn)
         .map(opt -> opt.orElse(defaultValue))
         .getOrElse(defaultValue);
     }
