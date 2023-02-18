@@ -16,6 +16,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -97,6 +98,7 @@ public class SecurityController extends BaseController {
             }
     )
     @PostMapping(value = RestRoutes.SECURITY.LOGIN)
+    @Transactional(readOnly = true)
     public Mono<ResponseEntity<AuthenticationInformationDto>> login(@RequestBody @Valid final AuthenticationRequestDto authenticationRequestDto) {
         log.info(
                 format("Requesting login with: %s",
@@ -179,6 +181,7 @@ public class SecurityController extends BaseController {
             }
     )
     @PostMapping(value = RestRoutes.SECURITY.REFRESH)
+    @Transactional(readOnly = true)
     public Mono<ResponseEntity<AuthenticationInformationDto>> refresh(@RequestBody @Size(min = 1) final String refreshToken) {
         log.info(
                 format("Requesting refresh action using the provided token: %s",
@@ -250,6 +253,7 @@ public class SecurityController extends BaseController {
             }
     )
     @PostMapping(RestRoutes.SECURITY.AUTHORIZATION_INFO)
+    @Transactional(readOnly = true)
     public Mono<ResponseEntity<UsernameAuthoritiesDto>> authorizationInformation(@RequestBody @Size(min = 1) final String accessToken) {
         log.info(
                 format("Extracting authorization information of the token: %s",

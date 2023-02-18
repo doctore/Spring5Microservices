@@ -180,6 +180,7 @@ public class OrderController {
             }
     )
     @GetMapping("/{id}" + RestRoutes.ORDER.WITH_ORDERLINES)
+    @Transactional(readOnly = true)
     @RoleAdminOrUser
     public ResponseEntity<OrderDto> findByIdWithOrderLines(@PathVariable @Positive final Integer id) {
         log.info(

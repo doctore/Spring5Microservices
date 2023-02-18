@@ -17,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -96,6 +97,7 @@ public class IngredientController {
             }
     )
     @GetMapping(RestRoutes.INGREDIENT.ROOT + RestRoutes.INGREDIENT.SUMMARY)
+    @Transactional(readOnly = true)
     @RoleAdminOrUser
     public ResponseEntity<Set<IngredientAmountDto>> getSummaryByOrderId(@PathVariable @Positive final Integer orderId) {
         log.info(

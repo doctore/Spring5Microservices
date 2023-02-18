@@ -196,6 +196,7 @@ public class PizzaController {
             }
     )
     @GetMapping("/{name}")
+    @Transactional(readOnly = true)
     @RoleAdminOrUser
     public Mono<ResponseEntity<PizzaDto>> findByName(@PathVariable @Size(min=1, max=64) final String name) {
         log.info(
@@ -269,6 +270,7 @@ public class PizzaController {
             }
     )
     @GetMapping(RestRoutes.PIZZA.PAGE_WITH_INGREDIENTS)
+    @Transactional(readOnly = true)
     @RoleAdminOrUser
     public Mono<Page<PizzaDto>> findPageWithIngredients(@RequestParam(value = "page") @PositiveOrZero final int page,
                                                         @RequestParam(value = "size") @Positive final int size) {
