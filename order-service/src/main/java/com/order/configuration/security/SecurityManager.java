@@ -1,20 +1,15 @@
 package com.order.configuration.security;
 
+import com.order.configuration.security.client.SecurityServerClientRest;
 import com.order.dto.UsernameAuthoritiesDto;
-import com.spring5microservices.common.util.HttpUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +34,7 @@ public class SecurityManager {
     private final SecurityConfiguration securityConfiguration;
 
     @Lazy
-    private final RestTemplate restTemplate;
+    private final SecurityServerClientRest securityServerClientRest;
 
 
     public Optional<Authentication> authenticate(final String authToken) {
@@ -64,21 +59,9 @@ public class SecurityManager {
     private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(final String authenticationInformationWebService,
                                                                           final String token) {
         try {
-            HttpEntity<String> request = new HttpEntity<>(
-                    createHeaders(
-                            securityConfiguration.getClientId(),
-                            securityConfiguration.getClientPassword()
-                    )
+            return of(
+                    securityServerClientRest.checkToken(token)
             );
-            ResponseEntity<UsernameAuthoritiesDto> restResponse = restTemplate.exchange(
-                    authenticationInformationWebService,
-                    HttpMethod.POST,
-                    request,
-                    UsernameAuthoritiesDto.class,
-                    token
-            );
-            return of(restResponse)
-                    .map(ResponseEntity::getBody);
         } catch (Exception ex) {
             log.error("There was an error trying to validate the authentication token", ex);
             return empty();
@@ -108,27 +91,6 @@ public class SecurityManager {
                 null,
                 authorities
         );
-    }
-
-    /**
-     * Build the required Basic Authentication to send requests to the Oauth 2.0 security server
-     *
-     * @param username
-     *    Oauth 2.0 server client identifier
-     * @param password
-     *    Oauth 2.0 server client password
-     *
-     * @return {@link HttpHeaders}
-     */
-    private HttpHeaders createHeaders(final String username,
-                                      final String password) {
-        return new HttpHeaders() {{
-            String authHeader = HttpUtil.encodeBasicAuthentication(
-                    username,
-                    password
-            );
-            set(HttpHeaders.AUTHORIZATION, authHeader);
-        }};
     }
 
 }

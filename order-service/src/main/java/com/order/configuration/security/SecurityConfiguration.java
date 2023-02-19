@@ -1,7 +1,9 @@
 package com.order.configuration.security;
 
+import feign.auth.BasicAuthRequestInterceptor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -21,5 +23,11 @@ public class SecurityConfiguration {
 
     @Value("${security.restApi.clientPassword}")
     private String clientPassword;
+
+
+    @Bean
+    public BasicAuthRequestInterceptor basicAuthRequestInterceptor() {
+        return new BasicAuthRequestInterceptor(clientId, clientPassword);
+    }
 
 }

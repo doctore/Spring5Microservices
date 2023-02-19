@@ -23,12 +23,6 @@ security:
     clientId: TestClient
     clientPassword: TestPassword
 
-rest:
-  connect:
-    timeoutInMilliseconds: 5000
-  read:
-    timeoutInMilliseconds: 5000
-
 springdoc:
   api-docs:
     path: onlyForTests
