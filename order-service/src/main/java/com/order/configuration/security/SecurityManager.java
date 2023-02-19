@@ -1,6 +1,6 @@
 package com.order.configuration.security;
 
-import com.order.configuration.security.client.SecurityServerClientRest;
+import com.order.configuration.security.client.SecurityServerRestClient;
 import com.order.dto.UsernameAuthoritiesDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -34,7 +34,7 @@ public class SecurityManager {
     private final SecurityConfiguration securityConfiguration;
 
     @Lazy
-    private final SecurityServerClientRest securityServerClientRest;
+    private final SecurityServerRestClient securityServerRestClient;
 
 
     public Optional<Authentication> authenticate(final String authToken) {
@@ -60,7 +60,7 @@ public class SecurityManager {
                                                                           final String token) {
         try {
             return of(
-                    securityServerClientRest.checkToken(token)
+                    securityServerRestClient.checkToken(token)
             );
         } catch (Exception ex) {
             log.error("There was an error trying to validate the authentication token", ex);

@@ -11,7 +11,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * REST endpoint definitions used to connect to the security microservice.
  */
 @FeignClient(value = "securityServer", url = "${security.restApi.authenticationInformation}")
-public interface SecurityServerClientRest {
+public interface SecurityServerRestClient {
 
     @PostMapping(value = "/check_token", produces = APPLICATION_JSON_VALUE)
     UsernameAuthoritiesDto checkToken(@RequestParam(value="token") String token);
