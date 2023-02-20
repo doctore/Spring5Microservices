@@ -191,7 +191,9 @@ I am using the following technologies:
 * **[Lombok](https://projectlombok.org/features)** to reduce the code development in models and DTOs.
 * **[MapStruct](https://mapstruct.org)** used to conversion between Models <--> DTOs in an easy way.
 * **[SimpleFlatMapper](https://simpleflatmapper.org)** due to its integration with jOOQ, used to convert some custom query results into a known Java object.
+* **[OpenFeign](https://docs.spring.io/spring-cloud-openfeign/docs/current/reference/html/)** integrated with Spring Cloud to communicate this microservice and [security-oauth-service](#security-oauth-service). 
 * **[MVC](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html)** a traditional Spring MVC Rest API to manage the included requests.
+
 
 In this microservice, the layer's division is:
 
