@@ -17,7 +17,7 @@
     <properties>
         <hamcrest.version>2.2</hamcrest.version>
         <hazelcast.version>5.2.1</hazelcast.version>
-        <java.version>1.17</java.version>
+        <java.version>17</java.version>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <nimbus-jose-jwt.version>9.30.1</nimbus-jose-jwt.version>

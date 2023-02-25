@@ -13,7 +13,7 @@
 
     <properties>
         <lombok.version>1.18.26</lombok.version>
-        <java.version>1.17</java.version>
+        <java.version>17</java.version>
         <javax-annotation.version>1.3.2</javax-annotation.version>
         <junit.version>5.9.2</junit.version>
         <maven.compiler.source>17</maven.compiler.source>

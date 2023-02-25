@@ -15,7 +15,7 @@
     <description>Configuration server for Spring 5 with microservices</description>
 
     <properties>
-        <java.version>1.17</java.version>
+        <java.version>17</java.version>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <spring-cloud.version>2021.0.5</spring-cloud.version>

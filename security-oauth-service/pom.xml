@@ -17,7 +17,7 @@
     <properties>
         <cache2k.version>2.6.1.Final</cache2k.version>
         <hamcrest.version>2.2</hamcrest.version>
-        <java.version>1.17</java.version>
+        <java.version>17</java.version>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <spring-cloud.version>2020.0.6</spring-cloud.version>
