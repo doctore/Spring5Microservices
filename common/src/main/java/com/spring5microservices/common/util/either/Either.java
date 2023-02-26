@@ -1,8 +1,8 @@
 package com.spring5microservices.common.util.either;
 
+import com.spring5microservices.common.util.ObjectUtil;
 import com.spring5microservices.common.util.validation.Validation;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -132,7 +132,7 @@ public abstract class Either<L, R> implements Serializable {
     public static <L, R> Either<L, R> combine(final BiFunction<? super L, ? super L, ? extends L> mapperLeft,
                                               final BiFunction<? super R, ? super R, ? extends R> mapperRight,
                                               final Either<L, R>... eithers) {
-        if (ObjectUtils.isEmpty(eithers)) {
+        if (ObjectUtil.isEmpty(eithers)) {
             return Right.empty();
         }
         Assert.notNull(mapperLeft, "mapperLeft must be not null");
@@ -175,7 +175,7 @@ public abstract class Either<L, R> implements Serializable {
     @SafeVarargs
     public static  <L, R> Either<L, R> combineGetFirstLeft(final BiFunction<? super R, ? super R, ? extends R> mapperRight,
                                                            final Supplier<Either<L, R>>... suppliers) {
-        if (ObjectUtils.isEmpty(suppliers)) {
+        if (ObjectUtil.isEmpty(suppliers)) {
             return Right.empty();
         }
         Assert.notNull(mapperRight, "mapperRight must be not null");

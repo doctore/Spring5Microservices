@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 

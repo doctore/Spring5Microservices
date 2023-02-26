@@ -5,13 +5,13 @@ import com.spring5microservices.grpc.IngredientServiceGrpc;
 import com.spring5microservices.grpc.PizzaRequest;
 import com.pizza.grpc.converter.IngredientGrpcConverter;
 import com.pizza.service.IngredientService;
-import com.spring5microservices.common.util.ObjectsUtil;
 import io.grpc.stub.StreamObserver;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
@@ -32,7 +32,7 @@ public class IngredientServiceGrpcImpl extends IngredientServiceGrpc.IngredientS
                                final StreamObserver<IngredientResponse> responseObserver) {
         log.info(
                 format("Getting ingredients contained in the pizza's identifier: %s",
-                        ObjectsUtil.getOrElse(
+                        getOrElse(
                                 pizzaRequest,
                                 PizzaRequest::getId,
                                 "null"

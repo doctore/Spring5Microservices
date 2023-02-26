@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
 
-import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static java.lang.Math.abs;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;

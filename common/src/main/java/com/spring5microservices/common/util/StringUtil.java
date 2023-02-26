@@ -251,7 +251,7 @@ public class StringUtil {
     public static String getOrElse(final String sourceString,
                                    final Predicate<String> predicateToMatch,
                                    final String defaultValue) {
-        final Predicate<String> finalPredicateToMatch = ObjectsUtil.getOrElse(
+        final Predicate<String> finalPredicateToMatch = ObjectUtil.getOrElse(
                 predicateToMatch,
                 alwaysTrue()
         );
@@ -486,7 +486,7 @@ public class StringUtil {
                                           final int chunkLimit,
                                           final Function<String, ? extends T> valueExtractor,
                                           final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory = ObjectsUtil.getOrElse(
+        final Supplier<Collection<T>> finalCollectionFactory = ObjectUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
         );
@@ -593,7 +593,7 @@ public class StringUtil {
     public static Collection<String> splitMultilevel(final String source,
                                                      final Supplier<Collection<String>> collectionFactory,
                                                      final String ...separators) {
-        final Supplier<Collection<String>> finalCollectionFactory = ObjectsUtil.getOrElse(
+        final Supplier<Collection<String>> finalCollectionFactory = ObjectUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
         );

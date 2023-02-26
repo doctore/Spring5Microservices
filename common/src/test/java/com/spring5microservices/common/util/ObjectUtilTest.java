@@ -13,10 +13,32 @@ import java.util.stream.Stream;
 
 import static com.spring5microservices.common.PizzaEnum.CARBONARA;
 import static com.spring5microservices.common.PizzaEnum.MARGUERITA;
-import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
+import static com.spring5microservices.common.util.ObjectUtil.isEmpty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ObjectsUtilTest {
+public class ObjectUtilTest {
+
+    static Stream<Arguments> isEmpty_ArrayAsParameterTestCases() {
+        Object[] emptyArray = {};
+        Integer[] notEmptyArray = { 1 };
+        return Stream.of(
+                //@formatter:off
+                //            sourceArray,     expectedResult
+                Arguments.of( null,            true ),
+                Arguments.of( emptyArray,      true ),
+                Arguments.of( notEmptyArray,   false )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("isEmpty_ArrayAsParameterTestCases")
+    @DisplayName("isEmpty: with array as parameter test cases")
+    public void isEmpty_ArrayAsParameter_testCases(Object[] array,
+                                                   boolean expectedResult) {
+        assertEquals(expectedResult, isEmpty(array));
+    }
+
 
     static Stream<Arguments> getOrElse_GenericDefaultValue_SourceDefaultParametersTestCases() {
         PizzaDto pizza = new PizzaDto(CARBONARA.getInternalPropertyValue(), null);

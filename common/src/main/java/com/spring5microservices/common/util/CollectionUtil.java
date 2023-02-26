@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -31,7 +32,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -472,25 +473,66 @@ public class CollectionUtil {
 
 
     /**
-     * Returns the unique elements of the given {@link Collection}s.
+     * Returns a new {@link List} containing the elements of provided {@link Collection}s {@code collections}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2]                  [1, 2, 1, 4]
+     *    [1, 4]
+     * </pre>
      *
      * @param collections
      *    {@link Collection}s to concat
      *
-     * @return {@link LinkedHashSet}
+     * @return {@link List}
      */
     @SafeVarargs
-    public static <T> Set<T> concatUniqueElements(final Collection<T> ...collections) {
+    public static <T> List<T> concat(final Collection<? extends T> ...collections) {
+        return (List<T>) concat(
+                ArrayList::new,
+                collections
+        );
+    }
+
+
+    /**
+     * Returns a new {@link Collection} containing the elements of provided {@link Collection}s {@code collections}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    ArrayList::new          [1, 2, 1, 4]
+     *    [1, 2]
+     *    [1, 4]
+     * </pre>
+     *
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     * @param collections
+     *    {@link Collection}s to concat
+     *
+     * @return {@link Collection}
+     */
+    @SafeVarargs
+    public static <T> Collection<T> concat(final Supplier<Collection<T>> collectionFactory,
+                                           final Collection<? extends T> ...collections) {
+        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
         return ofNullable(collections)
                 .map(c ->
                         Stream.of(c)
                                 .filter(Objects::nonNull)
                                 .flatMap(Collection::stream)
                                 .collect(
-                                        toCollection(LinkedHashSet::new)
+                                        toCollection(finalCollectionFactory)
                                 )
                 )
-                .orElseGet(LinkedHashSet::new);
+                .orElseGet(finalCollectionFactory);
     }
 
 
@@ -1291,6 +1333,106 @@ public class CollectionUtil {
 
 
     /**
+     *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link List} such that the natural
+     * ordering ({@code null} values first) of the elements is retained.
+     *
+     * @param collections
+     *    {@link Collection} to merge
+     *
+     * @return new sorted {@link List}, containing the elements of {@code collections}
+     */
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> List<T> sort(final Collection<? extends T> ...collections) {
+        return (List<T>) sort(
+                nullSafeNaturalOrder(),
+                ArrayList::new,
+                collections
+        );
+    }
+
+
+    /**
+     *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link Collection} such that the
+     * natural ordering ({@code null} values first) of the elements is retained.
+     *
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     * @param collections
+     *    {@link Collection} to merge
+     *
+     * @return new sorted {@link Collection}, containing the elements of {@code collections}
+     */
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> Collection<T> sort(final Supplier<Collection<T>> collectionFactory,
+                                                                       final Collection<? extends T> ...collections) {
+        return sort(
+                nullSafeNaturalOrder(),
+                collectionFactory,
+                collections
+        );
+    }
+
+
+    /**
+     *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link List} such that the ordering
+     * of the elements according to {@link Comparator} {@code comparator} is retained.
+     *
+     * @param comparator
+     *    {@link Comparator} to use for the merge
+     * @param collections
+     *    {@link Collection} to merge
+     *
+     * @return new sorted {@link List}, containing the elements of {@code collections}
+     */
+    @SafeVarargs
+    public static <T> List<T> sort(final Comparator<? super T> comparator,
+                                   final Collection<? extends T> ...collections) {
+        return (List<T>) sort(
+                comparator,
+                ArrayList::new,
+                collections
+        );
+    }
+
+
+    /**
+     *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link Collection} such that the
+     * ordering of the elements according to {@link Comparator} {@code comparator} is retained.
+     *
+     * @param comparator
+     *    {@link Comparator} to use for the merge
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     * @param collections
+     *    {@link Collection} to merge
+     *
+     * @return new sorted {@link Collection}, containing the elements of {@code collections}
+     */
+    @SafeVarargs
+    public static <T> Collection<T> sort(final Comparator<? super T> comparator,
+                                         final Supplier<Collection<T>> collectionFactory,
+                                         final Collection<? extends T> ...collections) {
+        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (ObjectUtil.isEmpty(collections)) {
+            return finalCollectionFactory.get();
+        }
+        final Comparator<? super T> finalComparator = getOrElse(
+                comparator,
+                (Comparator<? super T>) nullSafeNaturalOrder()
+        );
+        return concat(collections)
+                .stream()
+                .sorted(finalComparator)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
      * Splits the given {@link Collection} in sublists with a size equal to the given {@code size}
      *
      * <pre>
@@ -1715,6 +1857,16 @@ public class CollectionUtil {
         } else {
             return sourceCollection;
         }
+    }
+
+
+    /**
+     * Returns {@link Comparator} keeping natural order but managing {@code null} values
+     *
+     * @return null safe {@link Comparator}
+     */
+    private static <T extends Comparable<? super T>> Comparator<T> nullSafeNaturalOrder() {
+        return Comparator.nullsFirst(Comparator.naturalOrder());
     }
 
 }

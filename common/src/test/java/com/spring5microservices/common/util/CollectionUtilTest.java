@@ -164,14 +164,18 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> asSetNoSetFactoryTestCases() {
         List<Integer> intsList = List.of(1, 2, 3, 6, 6, 2);
+        List<Integer> intsWithNullList = asList(1, null, 3, 6, null, 3);
+
         Set<Integer> emptySet = new LinkedHashSet<>();
-        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(intsList);
+        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(List.of(1, 2, 3, 6));
+        Set<Integer> expectedAllIntsWithNullResultSet = new LinkedHashSet<>(asList(1, null, 3, 6));
         return Stream.of(
                 //@formatter:off
-                //            elements,    expectedResult
-                Arguments.of( null,        emptySet ),
-                Arguments.of( List.of(),   emptySet ),
-                Arguments.of( intsList,    expectedAllIntsResultSet )
+                //            elements,           expectedResult
+                Arguments.of( null,               emptySet ),
+                Arguments.of( List.of(),          emptySet ),
+                Arguments.of( intsList,           expectedAllIntsResultSet ),
+                Arguments.of( intsWithNullList,   expectedAllIntsWithNullResultSet )
         ); //@formatter:on
     }
 
@@ -179,12 +183,12 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("asSetNoSetFactoryTestCases")
     @DisplayName("asSet: without set factory test cases")
-    public void asSetNoSetFactory_testCases(List<Integer> elements,
-                                            Set<Integer> expectedResult) {
-        Integer[] finalElements =
+    public void asSetNoSetFactory_testCases(List<Object> elements,
+                                            Set<Object> expectedResult) {
+        Object[] finalElements =
                 null == elements
                         ? null
-                        : elements.toArray(new Integer[0]);
+                        : elements.toArray(new Object[0]);
 
         assertEquals(expectedResult, asSet(finalElements));
     }
@@ -192,17 +196,20 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> asSetAllParametersTestCases() {
         List<String> stringList = List.of("A", "A", "B", "C", "D", "C");
+        List<String> stringWithNullsList = asList("A", "A", null, "B", null);
         Supplier<Set<String>> setSupplier = HashSet::new;
 
         Set<String> emptySet = new HashSet<>();
-        Set<String> expectedAllStringResultSet = new LinkedHashSet<>(stringList);
+        Set<String> expectedAllStringResultSet = new LinkedHashSet<>(List.of("A", "B", "C", "D"));
+        Set<String> expectedAllStringWithNullResultSet = new LinkedHashSet<>(asList("A", null, "B"));
         return Stream.of(
                 //@formatter:off
-                //            setFactory,    elements,     expectedResult
-                Arguments.of( null,          null,         emptySet ),
-                Arguments.of( setSupplier,   null,         emptySet ),
-                Arguments.of( null,         List.of(),     emptySet ),
-                Arguments.of( setSupplier,   stringList,   expectedAllStringResultSet )
+                //            setFactory,    elements,              expectedResult
+                Arguments.of( null,          null,                  emptySet ),
+                Arguments.of( setSupplier,   null,                  emptySet ),
+                Arguments.of( null,         List.of(),              emptySet ),
+                Arguments.of( setSupplier,   stringList,            expectedAllStringResultSet ),
+                Arguments.of( setSupplier,   stringWithNullsList,   expectedAllStringWithNullResultSet )
         ); //@formatter:on
     }
 
@@ -210,13 +217,13 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("asSetAllParametersTestCases")
     @DisplayName("asSet: with all parameters test cases")
-    public void asSetAllParameters_testCases(Supplier<Set<String>> setFactory,
-                                             List<String> elements,
-                                             Set<String> expectedResult) {
-        String[] finalElements =
+    public void asSetAllParameters_testCases(Supplier<Set<Object>> setFactory,
+                                             List<Object> elements,
+                                             Set<Object> expectedResult) {
+        Object[] finalElements =
                 null == elements
                         ? null
-                        : elements.toArray(new String[0]);
+                        : elements.toArray(new Object[0]);
 
         assertEquals(expectedResult, asSet(setFactory, finalElements));
     }
@@ -501,25 +508,81 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> concatUniqueElementsTestCases() {
+    static Stream<Arguments> concatNoCollectionFactoryTestCases() {
+        List<Integer> ints1 = List.of(1, 2, 3);
+        List<Integer> ints2 = List.of(4, 5);
+        List<Integer> ints3 = List.of(6);
+        List<Integer> intsWithNulls = asList(6, null, 7, null);
+
+        List<Integer> expectedResultInts123 = List.of(1, 2, 3, 4, 5, 6);
+        List<Integer> expectedResultInts2AndWithNulls = asList(4, 5, 6, null, 7, null);
         return Stream.of(
                 //@formatter:off
-                //            collection1ToConcat,   collection2ToConcat,   collection3ToConcat,   expectedResult
-                Arguments.of( null,                  null,                  null,                  new LinkedHashSet<>() ),
-                Arguments.of( null,                  List.of(),             List.of(),             new LinkedHashSet<>() ),
-                Arguments.of( List.of(1, 2),         null,                  List.of(2, 3),         new LinkedHashSet<>(List.of(1, 2, 3)) ),
-                Arguments.of( List.of(5, 6),         List.of(),             List.of(6, 7),         new LinkedHashSet<>(List.of(5, 6, 7)) )
+                //            collectionToConcat1,   collectionToConcat2,   collectionToConcat3,   expectedResult
+                Arguments.of( null,                  null,                  null,                  List.of() ),
+                Arguments.of( List.of(),             null,                  null,                  List.of() ),
+                Arguments.of( List.of(),             List.of(),             null,                  List.of() ),
+                Arguments.of( List.of(),             List.of(),             List.of(),             List.of() ),
+                Arguments.of( ints1,                 null,                  List.of(),             ints1 ),
+                Arguments.of( ints1,                 ints2,                 ints3,                 expectedResultInts123 ),
+                Arguments.of( ints2,                 null,                  intsWithNulls,         expectedResultInts2AndWithNulls )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("concatUniqueElementsTestCases")
-    @DisplayName("concatUniqueElements: test cases")
-    public void concatUniqueElements_testCases(List<Integer> collection1ToConcat,
-                                               List<Integer> collection2ToConcat,
-                                               List<Integer> collection3ToConcat,
-                                               LinkedHashSet<Integer> expectedResult) {
-        assertEquals(expectedResult, concatUniqueElements(collection1ToConcat, collection2ToConcat, collection3ToConcat));
+    @MethodSource("concatNoCollectionFactoryTestCases")
+    @DisplayName("concat: without collection factory test cases")
+    public <T> void concatNoCollectionFactory_testCases(Collection<? extends T> collectionToConcat1,
+                                                        Collection<? extends T> collectionToConcat2,
+                                                        Collection<? extends T> collectionToConcat3,
+                                                        List<T> expectedResult) {
+        assertEquals(expectedResult, concat(collectionToConcat1, collectionToConcat2, collectionToConcat3));
+    }
+
+
+    static Stream<Arguments> concatAllParametersTestCases() {
+        List<String> strings1 = List.of("1", "2", "3");
+        List<String> strings2 = List.of("4", "5", "4");
+        List<String> strings3 = List.of("6", "7", "7");
+        List<String> stringsWithNulls = asList("6", null, "7", null);
+
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        List<String> expectedResultStrings2DefaultSupplier = List.of("4", "5", "4");
+        Set<String> expectedResultStrings2SetSupplier = Set.of("4", "5");
+        List<String> expectedResultStrings123DefaultSupplier = List.of("1", "2", "3", "4", "5", "4", "6", "7", "7");
+        Set<String> expectedResultStrings123SetSupplier = Set.of("1", "2", "3", "4", "5", "6", "7");
+        List<String> expectedResultStrings2AndWithNullsDefaultSupplier = asList("4", "5", "4", "6", null, "7", null);
+        Set<String> expectedResultStrings2AndWithNullsSetSupplier = new LinkedHashSet<>(asList("4", "5", "6", null, "7"));
+        return Stream.of(
+                //@formatter:off
+                //            collectionToConcat1,   collectionToConcat2,   collectionToConcat3,   collectionFactory,   expectedResult
+                Arguments.of( null,                  null,                  null,                  null,                List.of() ),
+                Arguments.of( null,                  null,                  null,                  setSupplier,         Set.of() ),
+                Arguments.of( List.of(),             null,                  null,                  null,                List.of() ),
+                Arguments.of( List.of(),             null,                  null,                  setSupplier,         Set.of() ),
+                Arguments.of( List.of(),             Set.of(),              null,                  null,                List.of() ),
+                Arguments.of( List.of(),             Set.of(),              null,                  setSupplier,         Set.of() ),
+                Arguments.of( List.of(),             Set.of(),              List.of(),             null,                List.of() ),
+                Arguments.of( List.of(),             Set.of(),              List.of(),             setSupplier,         Set.of() ),
+                Arguments.of( strings2,              Set.of(),              List.of(),             null,                expectedResultStrings2DefaultSupplier ),
+                Arguments.of( strings2,              Set.of(),              null,                  setSupplier,         expectedResultStrings2SetSupplier ),
+                Arguments.of( strings1,              strings2,              strings3,              null,                expectedResultStrings123DefaultSupplier ),
+                Arguments.of( strings1,              strings2,              strings3,              setSupplier,         expectedResultStrings123SetSupplier ),
+                Arguments.of( strings2,              null,                  stringsWithNulls,      null,                expectedResultStrings2AndWithNullsDefaultSupplier ),
+                Arguments.of( strings2,              null,                  stringsWithNulls,      setSupplier,         expectedResultStrings2AndWithNullsSetSupplier )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatAllParametersTestCases")
+    @DisplayName("concat: with all parameters test cases")
+    public <T> void concatAllParameters_testCases(Collection<? extends T> collectionToConcat1,
+                                                  Collection<? extends T> collectionToConcat2,
+                                                  Collection<? extends T> collectionToConcat3,
+                                                  Supplier<Collection<T>> collectionFactory,
+                                                  Collection<T> expectedResult) {
+        assertEquals(expectedResult, concat(collectionFactory, collectionToConcat1, collectionToConcat2, collectionToConcat3));
     }
 
 
@@ -1232,6 +1295,201 @@ public class CollectionUtilTest {
         } else {
             assertEquals(expectedResult, sliding(sourceCollection, size));
         }
+    }
+
+
+    static Stream<Arguments> sortOnlyCollectionsParameterTestCases() {
+        List<Integer> ints1 = List.of(2, 1, 3);
+        List<Integer> ints2 = List.of(4, 5, 2);
+        List<Integer> ints3 = List.of(7, 6);
+        List<Integer> intsWithNulls = asList(6, null, 7, null);
+
+        List<Integer> expectedResultInts1 = List.of(1, 2, 3);
+        List<Integer> expectedResultInts123 = List.of(1, 2, 2, 3, 4, 5, 6, 7);
+        List<Integer> expectedResultInts2AndWithNulls = asList(null, null, 2, 4, 5, 6, 7);
+        return Stream.of(
+                //@formatter:off
+                //            collectionToSort1,   collectionToSort2,   collectionToSort3,   expectedResult
+                Arguments.of( null,                null,                null,                List.of() ),
+                Arguments.of( List.of(),           null,                null,                List.of() ),
+                Arguments.of( List.of(),           List.of(),           null,                List.of() ),
+                Arguments.of( List.of(),           List.of(),           List.of(),           List.of() ),
+                Arguments.of( ints1,               null,                Set.of(),            expectedResultInts1 ),
+                Arguments.of( ints1,               ints2,               ints3,               expectedResultInts123 ),
+                Arguments.of( ints2,               null,                intsWithNulls,       expectedResultInts2AndWithNulls )
+
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("sortOnlyCollectionsParameterTestCases")
+    @DisplayName("sort: with collections as parameter test cases")
+    public <T extends Comparable<? super T>> void sortOnlyCollectionsParameter_testCases(Collection<? extends T> collectionToSort1,
+                                                                                         Collection<? extends T> collectionToSort2,
+                                                                                         Collection<? extends T> collectionToSort3,
+                                                                                         List<Object> expectedResult) {
+        assertEquals(expectedResult, sort(collectionToSort1, collectionToSort2, collectionToSort3));
+    }
+
+
+    static Stream<Arguments> sortCollectionsAndCollectionFactoryParametersTestCases() {
+        List<String> strings1 = List.of("1", "2", "3");
+        List<String> strings2 = List.of("4", "5", "4");
+        List<String> strings3 = List.of("6", "7", "7");
+        List<String> stringsWithNulls = asList("6", null, "7", null);
+
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        List<String> expectedResultStrings2DefaultSupplier = List.of("4", "4", "5");
+        Set<String> expectedResultStrings2SetSupplier = Set.of("4", "5");
+        List<String> expectedResultStrings123DefaultSupplier = List.of("1", "2", "3", "4", "4", "5", "6", "7", "7");
+        Set<String> expectedResultStrings123SetSupplier = Set.of("1", "2", "3", "4", "5", "6", "7");
+        List<String> expectedResultStrings2AndWithNullsDefaultSupplier = asList(null, null, "4", "4", "5", "6", "7");
+        Set<String> expectedResultStrings2AndWithNullsSetSupplier = new LinkedHashSet<>(asList(null, "4", "5", "6", "7"));
+        return Stream.of(
+                //@formatter:off
+                //            colToConcat1,   colToConcat2,   colToConcat3,       collectionFactory,   expectedResult
+                Arguments.of( null,           null,           null,               null,                List.of() ),
+                Arguments.of( null,           null,           null,               setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      null,           null,               null,                List.of() ),
+                Arguments.of( List.of(),      null,           null,               setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          setSupplier,         Set.of() ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          null,                expectedResultStrings2DefaultSupplier ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          setSupplier,         expectedResultStrings2SetSupplier ),
+                Arguments.of( strings1,       strings2,       strings3,           null,                expectedResultStrings123DefaultSupplier ),
+                Arguments.of( strings1,       strings2,       strings3,           setSupplier,         expectedResultStrings123SetSupplier ),
+                Arguments.of( strings2,       null,           stringsWithNulls,   null,                expectedResultStrings2AndWithNullsDefaultSupplier ),
+                Arguments.of( strings2,       null,           stringsWithNulls,   setSupplier,         expectedResultStrings2AndWithNullsSetSupplier )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("sortCollectionsAndCollectionFactoryParametersTestCases")
+    @DisplayName("sort: with collections and collection factory parameters test cases")
+    public <T extends Comparable<? super T>> void sortCollectionsAndCollectionFactory_testCases(Collection<? extends T> collectionToSort1,
+                                                                                                Collection<? extends T> collectionToSort2,
+                                                                                                Collection<? extends T> collectionToSort3,
+                                                                                                Supplier<Collection<T>> collectionFactory,
+                                                                                                Collection<Object> expectedResult) {
+        assertEquals(expectedResult, sort(collectionFactory, collectionToSort1, collectionToSort2, collectionToSort3));
+    }
+
+
+    static Stream<Arguments> sortCollectionsAndComparatorParametersTestCases() {
+        List<Integer> ints1 = List.of(2, 1, 3);
+        List<Integer> ints2 = List.of(4, 5, 2);
+        List<Integer> ints3 = List.of(7, 6);
+        List<Integer> intsWithNulls = asList(6, null, 7, null);
+
+        Comparator<Integer> reverseComparator = Comparator.nullsLast(Comparator.reverseOrder());
+
+        List<Integer> expectedResultInts1DefaultComparator = List.of(1, 2, 3);
+        List<Integer> expectedResultInts1ReverseComparator = List.of(3, 2, 1);
+        List<Integer> expectedResultInts123DefaultComparator = List.of(1, 2, 2, 3, 4, 5, 6, 7);
+        List<Integer> expectedResultInts123ReverseComparator = List.of(7, 6, 5, 4, 3, 2, 2, 1);
+        List<Integer> expectedResultInts2AndWithNullsDefaultComparator = asList(null, null, 2, 4, 5, 6, 7);
+        List<Integer> expectedResultInts2AndWithNullsReverseComparator = asList(7, 6, 5, 4, 2, null, null);
+        return Stream.of(
+                //@formatter:off
+                //            colToConcat1,   colToConcat2,   colToConcat3,    comparator,          expectedResult
+                Arguments.of( null,           null,           null,            null,                List.of() ),
+                Arguments.of( null,           null,           null,            reverseComparator,   List.of() ),
+                Arguments.of( List.of(),      null,           null,            null,                List.of() ),
+                Arguments.of( List.of(),      null,           null,            reverseComparator,   List.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,            null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,            reverseComparator,   List.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),       null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),       reverseComparator,   List.of() ),
+                Arguments.of( ints1,          Set.of(),       List.of(),       null,                expectedResultInts1DefaultComparator ),
+                Arguments.of( ints1,          Set.of(),       List.of(),       reverseComparator,   expectedResultInts1ReverseComparator ),
+                Arguments.of( ints1,          ints2,          ints3,           null,                expectedResultInts123DefaultComparator ),
+                Arguments.of( ints1,          ints2,          ints3,           reverseComparator,   expectedResultInts123ReverseComparator ),
+                Arguments.of( ints2,          null,           intsWithNulls,   null,                expectedResultInts2AndWithNullsDefaultComparator ),
+                Arguments.of( ints2,          null,           intsWithNulls,   reverseComparator,   expectedResultInts2AndWithNullsReverseComparator )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("sortCollectionsAndComparatorParametersTestCases")
+    @DisplayName("sort: with collections and collection factory parameters test cases")
+    public <T> void sortCollectionsAndComparator_testCases(Collection<? extends T> collectionToSort1,
+                                                           Collection<? extends T> collectionToSort2,
+                                                           Collection<? extends T> collectionToSort3,
+                                                           Comparator<? super T> comparator,
+                                                           List<Object> expectedResult) {
+        assertEquals(expectedResult, sort(comparator, collectionToSort1, collectionToSort2, collectionToSort3));
+    }
+
+
+    static Stream<Arguments> sortAllParametersTestCases() {
+        List<String> strings1 = List.of("1", "2", "3");
+        List<String> strings2 = List.of("4", "5", "4");
+        List<String> strings3 = List.of("6", "7", "7");
+        List<String> stringsWithNulls = asList("6", null, "7", null);
+
+        Comparator<String> reverseComparator = Comparator.nullsLast(Comparator.reverseOrder());
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        List<String> expectedResultStrings2_DefaultSupplierDefaultComparator = List.of("4", "4", "5");
+        List<String> expectedResultStrings2_DefaultSupplierReverseComparator = List.of("5", "4", "4");
+        Set<String> expectedResultStrings2_SetSupplierDefaultComparator = Set.of("4", "5");
+        Set<String> expectedResultStrings2_SetSupplierReverseComparator = Set.of("5", "4");
+        List<String> expectedResultStrings123_DefaultSupplierDefaultComparator = List.of("1", "2", "3", "4", "4", "5", "6", "7", "7");
+        List<String> expectedResultStrings123_DefaultSupplierReverseComparator = List.of("7", "7", "6", "5", "4", "4", "3", "2", "1");
+        Set<String> expectedResultStrings123_SetSupplierDefaultComparator = Set.of("1", "2", "3", "4", "5", "6", "7");
+        Set<String> expectedResultStrings123_SetSupplierReverseComparator = Set.of("7", "6", "5", "4", "3", "2", "1");
+        List<String> expectedResultStringsStrings2AndWithNulls_DefaultSupplierDefaultComparator = asList(null, null, "4", "4", "5", "6", "7");
+        List<String> expectedResultStringsStrings2AndWithNulls_DefaultSupplierReverseComparator = asList("7", "6", "5", "4", "4", null, null);
+        Set<String> expectedResultStringsStrings2AndWithNulls_SetSupplierDefaultComparator = new LinkedHashSet<>(asList(null, "4", "5", "6", "7"));
+        Set<String> expectedResultStringsStrings2AndWithNulls_SetSupplierReverseComparator = new LinkedHashSet<>(asList("7", "6", "5", "4", null));
+        return Stream.of(
+                //@formatter:off
+                //            colToConcat1,   colToConcat2,   colToConcat3,       comparator,          collectionFactory,   expectedResult
+                Arguments.of( null,           null,           null,               null,                null,                List.of() ),
+                Arguments.of( null,           null,           null,               reverseComparator,   null,                List.of() ),
+                Arguments.of( null,           null,           null,               null,                setSupplier,         Set.of() ),
+                Arguments.of( null,           null,           null,               reverseComparator,   setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      null,           null,               null,                null,                List.of() ),
+                Arguments.of( List.of(),      null,           null,               reverseComparator,   null,                List.of() ),
+                Arguments.of( List.of(),      null,           null,               null,                setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      null,           null,               reverseComparator,   setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               null,                null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               reverseComparator,   null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               null,                setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               reverseComparator,   setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          null,                null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          reverseComparator,   null,                List.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          null,                setSupplier,         Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          reverseComparator,   setSupplier,         Set.of() ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          null,                null,                expectedResultStrings2_DefaultSupplierDefaultComparator ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          reverseComparator,   null,                expectedResultStrings2_DefaultSupplierReverseComparator ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          null,                setSupplier,         expectedResultStrings2_SetSupplierDefaultComparator ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          reverseComparator,   setSupplier,         expectedResultStrings2_SetSupplierReverseComparator ),
+                Arguments.of( strings1,       strings2,       strings3,           null,                null,                expectedResultStrings123_DefaultSupplierDefaultComparator ),
+                Arguments.of( strings1,       strings2,       strings3,           reverseComparator,   null,                expectedResultStrings123_DefaultSupplierReverseComparator ),
+                Arguments.of( strings1,       strings2,       strings3,           null,                setSupplier,         expectedResultStrings123_SetSupplierDefaultComparator ),
+                Arguments.of( strings1,       strings2,       strings3,           reverseComparator,   setSupplier,         expectedResultStrings123_SetSupplierReverseComparator ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       null,                null,                expectedResultStringsStrings2AndWithNulls_DefaultSupplierDefaultComparator ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       reverseComparator,   null,                expectedResultStringsStrings2AndWithNulls_DefaultSupplierReverseComparator ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       null,                setSupplier,         expectedResultStringsStrings2AndWithNulls_SetSupplierDefaultComparator ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       reverseComparator,   setSupplier,         expectedResultStringsStrings2AndWithNulls_SetSupplierReverseComparator )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("sortAllParametersTestCases")
+    @DisplayName("sort: with all parameters test cases")
+    public <T> void sortAllParameters_testCases(Collection<? extends T> collectionToSort1,
+                                                Collection<? extends T> collectionToSort2,
+                                                Collection<? extends T> collectionToSort3,
+                                                Comparator<? super T> comparator,
+                                                Supplier<Collection<T>> collectionFactory,
+                                                Collection<Object> expectedResult) {
+        assertEquals(expectedResult, sort(comparator, collectionFactory, collectionToSort1, collectionToSort2, collectionToSort3));
     }
 
 

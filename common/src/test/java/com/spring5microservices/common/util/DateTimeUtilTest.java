@@ -62,9 +62,9 @@ public class DateTimeUtilTest {
         } else {
             int result = DateTimeUtil.compare(one, two, epsilon, timeUnit);
             switch (expectedResult) {
-                case LESS_THAN_ZERO: assertTrue(0 > result); break;
-                case ZERO: assertEquals(0, result); break;
-                case GREATER_THAN_ZERO: assertTrue(0 < result); break;
+                case LESS_THAN_ZERO -> assertTrue(0 > result);
+                case ZERO -> assertEquals(0, result);
+                case GREATER_THAN_ZERO -> assertTrue(0 < result);
             }
         }
     }

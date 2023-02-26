@@ -13,7 +13,7 @@ import java.math.RoundingMode;
 import java.util.Optional;
 
 import static com.spring5microservices.common.util.ExceptionUtil.getRootCause;
-import static com.spring5microservices.common.util.ObjectsUtil.getOrElse;
+import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.either.Either.left;
 import static com.spring5microservices.common.util.either.Either.right;
 import static java.lang.String.format;

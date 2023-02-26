@@ -114,7 +114,7 @@ public class MapUtil {
                                                   final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
                                                   final BiFunction<? super T, ? super E, ? extends R> orElseFunction,
                                                   final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
                 HashMap::new
         );
@@ -123,7 +123,7 @@ public class MapUtil {
         }
         Assert.notNull(defaultFunction, "defaultFunction must be not null");
         Assert.notNull(orElseFunction, "orElseFunction must be not null");
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectsUtil.getOrElse(
+        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectUtil.getOrElse(
                 filterPredicate,
                 biAlwaysTrue()
         );
@@ -229,7 +229,7 @@ public class MapUtil {
                                               final BiPredicate<? super T, ? super E> filterPredicate,
                                               final BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                               final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
                 HashMap::new
         );
@@ -237,7 +237,7 @@ public class MapUtil {
             return finalMapFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectsUtil.getOrElse(
+        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectUtil.getOrElse(
                 filterPredicate,
                 biAlwaysTrue()
         );
@@ -472,7 +472,7 @@ public class MapUtil {
     public static <T, E, R, U> Collection<U> flatten(final Map<? extends T, ? extends E> sourceMap,
                                                      final BiFunction<? super T, ? super E, ? extends R> flattener,
                                                      final Supplier<Collection<U>> collectionFactory) {
-        final Supplier<Collection<U>> finalCollectionFactory = ObjectsUtil.getOrElse(
+        final Supplier<Collection<U>> finalCollectionFactory = ObjectUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
         );
@@ -563,7 +563,7 @@ public class MapUtil {
                                      final T key,
                                      final Supplier<E> defaultValue) {
         Assert.notNull(defaultValue, "defaultValue must be not null");
-        final Map<? extends T, ? extends E> finalSourceMap = ObjectsUtil.getOrElse(
+        final Map<? extends T, ? extends E> finalSourceMap = ObjectUtil.getOrElse(
                 sourceMap,
                 Map.of()
         );
@@ -632,11 +632,11 @@ public class MapUtil {
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator,
                                                       final Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                       final Supplier<Map<T, E>> mapValuesFactory) {
-        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = ObjectUtil.getOrElse(
                 mapResultFactory,
                 HashMap::new
         );
-        final Supplier<Map<T, E>> finalMapValuesFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<T, E>> finalMapValuesFactory = ObjectUtil.getOrElse(
                 mapValuesFactory,
                 HashMap::new
         );
@@ -746,7 +746,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        final Supplier<Collection<V>> finalCollectionFactory = ObjectsUtil.getOrElse(
+        final Supplier<Collection<V>> finalCollectionFactory = ObjectUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
         );
@@ -876,7 +876,7 @@ public class MapUtil {
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
                                              final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
                                              final Supplier<Map<R, V>> mapFactory) {
-        final Supplier<Map<R, V>> finalMapFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<R, V>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
                 HashMap::new
         );
@@ -960,7 +960,7 @@ public class MapUtil {
     public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                                 final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
                 HashMap::new
         );
@@ -1166,7 +1166,7 @@ public class MapUtil {
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator,
                                                            final Supplier<Map<T, E>> mapFactory) {
-        final Supplier<Map<T, E>> finalMapFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<T, E>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
                 HashMap::new
         );
@@ -1440,14 +1440,14 @@ public class MapUtil {
     public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate,
                                              final Supplier<Map<T, E>> mapFactory) {
-        final Supplier<Map<T, E>> finalMapFactory = ObjectsUtil.getOrElse(
+        final Supplier<Map<T, E>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
                 HashMap::new
         );
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectsUtil.getOrElse(
+        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectUtil.getOrElse(
                 filterPredicate,
                 biAlwaysTrue()
         );

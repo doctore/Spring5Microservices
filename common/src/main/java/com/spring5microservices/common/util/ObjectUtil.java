@@ -9,7 +9,22 @@ import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static java.util.Optional.ofNullable;
 
 @UtilityClass
-public class ObjectsUtil {
+public class ObjectUtil {
+
+    /**
+     * Determine whether the given {@code sourceArray} is empty: i.e. {@code null} or of zero length.
+     *
+     * @param sourceArray
+     *    The array to check
+     *
+     * @return {@code true} if given {@code sourceArray} is {@code null} or has no elements,
+     *         {@code false} otherwise.
+     */
+    public static boolean isEmpty(final Object[] sourceArray) {
+        return null == sourceArray ||
+                0 == sourceArray.length;
+    }
+
 
     /**
      * Return the given {@code sourceInstance} if is not {@code null}. Otherwise, returns {@code defaultValue}.

@@ -1,9 +1,9 @@
 package com.spring5microservices.common.util.Try;
 
+import com.spring5microservices.common.util.ObjectUtil;
 import com.spring5microservices.common.util.either.Either;
 import com.spring5microservices.common.util.validation.Validation;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -147,7 +147,7 @@ public abstract class Try<T> implements Serializable {
     public static <T> Try<T> combine(final BiFunction<? super Throwable, ? super Throwable, ? extends Throwable> mapperFailure,
                                      final BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
                                      final Try<T>... tries) {
-        if (ObjectUtils.isEmpty(tries)) {
+        if (ObjectUtil.isEmpty(tries)) {
             return Success.empty();
         }
         Assert.notNull(mapperFailure, "mapperFailure must be not null");
@@ -190,7 +190,7 @@ public abstract class Try<T> implements Serializable {
     @SafeVarargs
     public static  <T> Try<T> combineGetFirstFailure(final BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
                                                      final Supplier<Try<T>>... suppliers) {
-        if (ObjectUtils.isEmpty(suppliers)) {
+        if (ObjectUtil.isEmpty(suppliers)) {
             return Success.empty();
         }
         Assert.notNull(mapperSuccess, "mapperSuccess must be not null");
