@@ -297,7 +297,7 @@ public class ValidationTest {
     static Stream<Arguments> mapErrorTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
-        Function<List<String>, List<String>> addALetter = i -> i.stream().map(elto -> elto + "2").collect(toList());
+        Function<List<String>, List<String>> addALetter = i -> i.stream().map(elto -> elto + "2").toList();
         return Stream.of(
                 //@formatter:off
                 //            validation,   mapper,       expectedException,                expectedResult

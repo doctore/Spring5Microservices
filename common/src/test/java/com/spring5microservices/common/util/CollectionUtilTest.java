@@ -1333,6 +1333,7 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> transposeTestCases() {
         List<List<Integer>> emptyLists = List.of(List.of(), List.of());
+        List<List<Integer>> listsWithNulls = asList(asList(1, null), null, asList(4, null));
         List<List<Integer>> integers = List.of(List.of(1, 2, 3), List.of(4, 5, 6));
         Set<Set<String>> strings = new LinkedHashSet<>() {{
             add(new LinkedHashSet<>() {{
@@ -1350,6 +1351,10 @@ public class CollectionUtilTest {
         }};
         List<List<Integer>> differentInnerListSizes = List.of(List.of(1, 2), List.of(0), List.of(7, 8, 9));
 
+        List<List<Integer>> listsWithNullsResult = List.of(
+                List.of(1, 4),
+                asList(null, null)
+        );
         List<List<Integer>> integersResult = List.of(
                 List.of(1, 4),
                 List.of(2, 5),
@@ -1370,6 +1375,7 @@ public class CollectionUtilTest {
                 Arguments.of( null,                      List.of() ),
                 Arguments.of( List.of(),                 List.of() ),
                 Arguments.of( emptyLists,                List.of() ),
+                Arguments.of( listsWithNulls,            listsWithNullsResult ),
                 Arguments.of( integers,                  integersResult ),
                 Arguments.of( strings,                   stringsResult ),
                 Arguments.of( differentInnerListSizes,   differentInnerListSizesResult )

@@ -1465,16 +1465,19 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new ArrayList<>();
         }
-        int sizeOfLongestSubCollection = -1;
-        final List<Iterator<T>> iteratorList = new ArrayList<>(sourceCollection.size());
-        for (Collection<T> c: sourceCollection) {
-            if (sizeOfLongestSubCollection < c.size()) {
-                sizeOfLongestSubCollection = c.size();
-            }
-            iteratorList.add(c.iterator());
-        }
-        List<List<T>> result = new ArrayList<>(sizeOfLongestSubCollection);
-        for (int i = 0; i < sizeOfLongestSubCollection; i++) {
+        final int[] sizeOfLongestSubCollection = { -1 };
+        final List<Iterator<T>> iteratorList = sourceCollection.stream()
+                .filter(Objects::nonNull)
+                .map(c -> {
+                    if (sizeOfLongestSubCollection[0] < c.size()) {
+                        sizeOfLongestSubCollection[0] = c.size();
+                    }
+                    return c.iterator();
+                })
+                .toList();
+
+        List<List<T>> result = new ArrayList<>(sizeOfLongestSubCollection[0]);
+        for (int i = 0; i < sizeOfLongestSubCollection[0]; i++) {
             List<T> newRow = new ArrayList<>(sourceCollection.size());
             for (Iterator<T> iterator: iteratorList) {
                 if (iterator.hasNext()) {

@@ -20,7 +20,6 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
 import static org.springframework.util.StringUtils.hasLength;
 
 @UtilityClass
@@ -617,7 +616,7 @@ public class StringUtil {
                                                 )
                                         )
                                 )
-                                .collect(toList());
+                                .toList();
                     }
                     result.addAll(currentSplitValues);
                     return result;

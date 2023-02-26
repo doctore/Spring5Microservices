@@ -17,7 +17,6 @@ import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysFalse;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.distinctByKey;
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PredicateUtilTest {
@@ -130,7 +129,7 @@ public class PredicateUtilTest {
                                         List<PizzaDto> expectedResult) {
         List<PizzaDto> distinctCollection = initialCollection.stream()
                 .filter(distinctByKey(keyExtractor))
-                .collect(toList());
+                .toList();
         assertEquals(expectedResult, distinctCollection);
     }
 
