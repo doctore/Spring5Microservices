@@ -449,11 +449,11 @@ public class MapUtil {
      * Example:
      *
      *   Parameters:                                        Result:
-     *     [(1, ["Hi"]), (2, ["Hello", "World"])]            [(1, "Hi"), (2, "Hello"), (2, "World")]
+     *     [(1, ["Hi"]), (2, ["Hello", "Hello"])]            [(1, "Hi"), (2, "Hello")]
      *     (i, l) -> l.stream()
      *                .map(elto -> Tuple2.of(i, elto))
      *                .collect(toList())
-     *     ArrayList::new
+     *     HashSet::new
      * </pre>
      *
      * @param sourceMap
@@ -546,6 +546,24 @@ public class MapUtil {
     /**
      *    Returns the value associated with the given {@code key}, or the result of {@code defaultValue} if the {@code key}
      * is not contained in {@code sourceMap}.
+     *
+     * <pre>
+     * Example 1:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        "Hi"
+     *    1
+     *    "World"
+     * </pre>
+     *
+     * <pre>
+     * Example 2:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        "World"
+     *    5
+     *    "World"
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} to search {@code key}
@@ -988,6 +1006,14 @@ public class MapUtil {
     /**
      * Finds the first element of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                   Result:
+     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional((5, "World"))
+     *    (t1, t2) -> t1._1.compareTo(t2._1)
+     * </pre>
+     *
      * @param sourceMap
      *    {@link Map} used to find the largest element
      * @param comparator
@@ -1026,6 +1052,14 @@ public class MapUtil {
     /**
      * Finds the first value of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                   Result:
+     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("World")
+     *    String::compareTo
+     * </pre>
+     *
      * @param sourceMap
      *    {@link Map} used to find the largest value
      * @param comparator
@@ -1050,6 +1084,14 @@ public class MapUtil {
 
     /**
      * Finds the first element of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                   Result:
+     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional((1, "Hi"))
+     *    (t1, t2) -> t1._1.compareTo(t2._1)
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} used to find the smallest element
@@ -1088,6 +1130,14 @@ public class MapUtil {
 
     /**
      * Finds the first value of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                   Result:
+     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("Hello")
+     *    String::compareTo
+     * </pre>
      *
      * @param sourceMap
      *    {@link Map} used to find the smallest value

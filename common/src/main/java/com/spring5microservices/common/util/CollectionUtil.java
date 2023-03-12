@@ -730,8 +730,8 @@ public class CollectionUtil {
      * Example:
      *
      *   Parameters:              Result:
-     *    [5, [3, 2], 9]           [5, 3, 2, 9]
-     *    ArrayList::new
+     *    [5, [3, 2], 5]           [5, 3, 2]
+     *    HashSet::new
      * </pre>
      *
      * @param sourceCollection
@@ -870,6 +870,13 @@ public class CollectionUtil {
     /**
      * Returns the number of occurrences of each element contained in {@code sourceCollection}.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                Result:
+     *    ["a", "b", "c", "c"]       [("a", 1), ("b", 1), ("c", 2)]
+     * </pre>
+     *
      * @param sourceCollection
      *    {@link Collection} to search
      *
@@ -887,6 +894,14 @@ public class CollectionUtil {
 
     /**
      * Returns the number of occurrences of {@code objectToSearch} in {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                Result:
+     *    ["a", "b", "c", "c"]       2
+     *    "c"
+     * </pre>
      *
      * @param sourceCollection
      *    {@link Collection} to search
@@ -1336,6 +1351,14 @@ public class CollectionUtil {
      *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link List} such that the natural
      * ordering ({@code null} values first) of the elements is retained.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2]                  [1, 1, 2, 4]
+     *    [1, 4]
+     * </pre>
+     *
      * @param collections
      *    {@link Collection} to merge
      *
@@ -1354,6 +1377,15 @@ public class CollectionUtil {
     /**
      *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link Collection} such that the
      * natural ordering ({@code null} values first) of the elements is retained.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    HashSet::new            [1, 2, 4]
+     *    [1, 2]
+     *    [1, 4]
+     * </pre>
      *
      * @param collectionFactory
      *   {@link Supplier} of the {@link Collection} used to store the returned elements.
@@ -1377,6 +1409,15 @@ public class CollectionUtil {
      *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link List} such that the ordering
      * of the elements according to {@link Comparator} {@code comparator} is retained.
      *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    Comparator.reverseOrder()       [4, 2, 1, 1]
+     *    [1, 2]
+     *    [1, 4]
+     * </pre>
+     *
      * @param comparator
      *    {@link Comparator} to use for the merge
      * @param collections
@@ -1398,6 +1439,16 @@ public class CollectionUtil {
     /**
      *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link Collection} such that the
      * ordering of the elements according to {@link Comparator} {@code comparator} is retained.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    Comparator.reverseOrder()       [4, 2, 1]
+     *    HashSet::new
+     *    [1, 2]
+     *    [1, 4]
+     * </pre>
      *
      * @param comparator
      *    {@link Comparator} to use for the merge
