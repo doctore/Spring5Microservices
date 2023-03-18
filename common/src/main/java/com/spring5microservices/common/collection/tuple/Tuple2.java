@@ -47,6 +47,18 @@ public final class Tuple2<T1, T2> implements Tuple, Serializable {
     }
 
 
+    public static <T1, T2> Tuple2<T1, T2> of(Map.Entry<T1, T2> mapEntry) {
+        return ofNullable(mapEntry)
+                .map(e ->
+                        of(
+                                e.getKey(),
+                                e.getValue()
+                        )
+                )
+                .orElseGet(Tuple2::empty);
+    }
+
+
     public static <T1, T2> Tuple2<T1, T2> empty() {
         return new Tuple2<>(null, null);
     }
@@ -56,7 +68,7 @@ public final class Tuple2<T1, T2> implements Tuple, Serializable {
                                                                  final Comparator<? super T2> t2Comp) {
         return (t1, t2) -> {
             final int check1 = t1Comp.compare(t1._1, t2._1);
-            if (check1 != 0) {
+            if (0 != check1) {
                 return check1;
             }
             return t2Comp.compare(t1._2, t2._2);
@@ -71,7 +83,7 @@ public final class Tuple2<T1, T2> implements Tuple, Serializable {
         final Tuple2<U1, U2> t2 = (Tuple2<U1, U2>) o2;
 
         final int check1 = t1._1.compareTo(t2._1);
-        if (check1 != 0) {
+        if (0 != check1) {
             return check1;
         }
         return t1._2.compareTo(t2._2);

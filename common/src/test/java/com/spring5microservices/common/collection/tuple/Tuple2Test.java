@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class Tuple2Test {
 
-    static Stream<Arguments> ofTestCases() {
+    static Stream<Arguments> ofTwoValuesTestCases() {
         String stringValue = "ABC";
         Integer integerValue = 25;
         return Stream.of(
@@ -35,12 +35,38 @@ public class Tuple2Test {
     }
 
     @ParameterizedTest
-    @MethodSource("ofTestCases")
-    @DisplayName("of: test cases")
-    public <T1, T2> void of_testCases(T1 t1,
-                                      T2 t2,
-                                      Tuple2<T1, T2> expectedResult) {
+    @MethodSource("ofTwoValuesTestCases")
+    @DisplayName("of: with two values as parameters test cases")
+    public <T1, T2> void ofTwoValues_testCases(T1 t1,
+                                               T2 t2,
+                                               Tuple2<T1, T2> expectedResult) {
         assertEquals(expectedResult, Tuple2.of(t1, t2));
+    }
+
+
+    static Stream<Arguments> ofMapEntryTestCases() {
+        String stringValue = "AC";
+        Integer integerValue = 19;
+
+        Map.Entry<Integer, String> mapNullKeyEntry =  new AbstractMap.SimpleEntry<>(null, stringValue);
+        Map.Entry<Integer, String> mapNullValueEntry =  new AbstractMap.SimpleEntry<>(integerValue, null);
+        Map.Entry<Integer, String> mapEntry =  new AbstractMap.SimpleEntry<>(integerValue, stringValue);
+        return Stream.of(
+                //@formatter:off
+                //            mapEntry,            expectedResult
+                Arguments.of( null,                Tuple2.empty() ),
+                Arguments.of( mapNullKeyEntry,     Tuple2.of(null, stringValue) ),
+                Arguments.of( mapNullValueEntry,   Tuple2.of(integerValue, null) ),
+                Arguments.of( mapEntry,            Tuple2.of(integerValue, stringValue) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofMapEntryTestCases")
+    @DisplayName("of: with Map entry as parameter test cases")
+    public <T1, T2> void ofMapEntry_testCases(Map.Entry<T1, T2> mapEntry,
+                                              Tuple2<T1, T2> expectedResult) {
+        assertEquals(expectedResult, Tuple2.of(mapEntry));
     }
 
 

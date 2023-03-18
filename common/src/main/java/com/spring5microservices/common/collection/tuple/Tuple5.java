@@ -82,19 +82,19 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
                                                                                          final Comparator<? super T5> t5Comp) {
         return (t1, t2) -> {
             final int check1 = t1Comp.compare(t1._1, t2._1);
-            if (check1 != 0) {
+            if (0 != check1) {
                 return check1;
             }
             final int check2 = t2Comp.compare(t1._2, t2._2);
-            if (check2 != 0) {
+            if (0 != check2) {
                 return check2;
             }
             final int check3 = t3Comp.compare(t1._3, t2._3);
-            if (check3 != 0) {
+            if (0 != check3) {
                 return check3;
             }
             final int check4 = t4Comp.compare(t1._4, t2._4);
-            if (check4 != 0) {
+            if (0 != check4) {
                 return check4;
             }
             return t5Comp.compare(t1._5, t2._5);
@@ -113,19 +113,19 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
         final Tuple5<U1, U2, U3, U4, U5> t2 = (Tuple5<U1, U2, U3, U4, U5>) o2;
 
         final int check1 = t1._1.compareTo(t2._1);
-        if (check1 != 0) {
+        if (0 != check1) {
             return check1;
         }
         final int check2 = t1._2.compareTo(t2._2);
-        if (check2 != 0) {
+        if (0 != check2) {
             return check2;
         }
         final int check3 = t1._3.compareTo(t2._3);
-        if (check3 != 0) {
+        if (0 != check3) {
             return check3;
         }
         final int check4 = t1._4.compareTo(t2._4);
-        if (check4 != 0) {
+        if (0 != check4) {
             return check4;
         }
         return t1._5.compareTo(t2._5);
