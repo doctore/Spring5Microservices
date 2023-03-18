@@ -32,6 +32,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullFirst;
+import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullLast;
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static java.lang.String.format;
@@ -1191,6 +1193,160 @@ public class CollectionUtil {
 
 
     /**
+     *    Finds the largest element of the given {@code sourceCollection}. To avoid {@link NullPointerException},
+     * {@link Comparable} implementation required in the type T, will be overwritten by:
+     *
+     *       <pre>
+     *          Comparator.nullsFirst(
+     *             Comparator.naturalOrder()
+     *          )
+     *       </pre>
+     *
+     *    In that way, {@code null} values will be considered the smallest ones in the returned {@link Optional}·
+     * If you still want to avoid this default behaviour, you can use the alternative method:
+     *
+     *       <pre>
+     *          max(
+     *             sourceCollection,
+     *             comparator          // Comparator.naturalOrder() uses Comparable definition provided by T class
+     *          )
+     *       </pre>
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 4, null, 2]         Optional(4)
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} to get its largest element.
+     *
+     * @return {@link Optional} with largest value using developed {@link Comparable},
+     *         {@link Optional#empty()} if {@code sourceCollection} has no elements or its largest value is {@code null}.
+     */
+    public static <T extends Comparable<? super T>> Optional<T> max(final Collection<? extends T> sourceCollection) {
+        return max(
+                sourceCollection,
+                safeNaturalOrderNullFirst()
+        );
+    }
+
+
+    /**
+     * Finds the first element of the given {@code sourceCollection} which yields the largest value measured by {@code comparator}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    [1, 2, 1, 3]                    Optional(1)
+     *    Comparator.reverseOrder()
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} to get its largest element
+     * @param comparator
+     *    {@link Comparator} to be used for comparing values
+     *
+     * @return {@link Optional} with largest value using given {@link Comparator},
+     *         {@link Optional#empty()} if {@code sourceCollection} has no elements or its largest value is {@code null}.
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code sourceCollection} has elements
+     */
+    public static <T> Optional<T> max(final Collection<? extends T> sourceCollection,
+                                      final Comparator<? super T> comparator) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return empty();
+        }
+        Assert.notNull(comparator, "comparator must be not null");
+        return ofNullable(
+                Collections.max(
+                        sourceCollection,
+                        comparator
+                )
+        );
+    }
+
+
+    /**
+     *    Finds the smallest element of the given {@code sourceCollection}. To avoid {@link NullPointerException},
+     * {@link Comparable} implementation required in the type T, will be overwritten by:
+     *
+     *       <pre>
+     *          Comparator.nullsLast(
+     *             Comparator.naturalOrder()
+     *          )
+     *       </pre>
+     *
+     *    In that way, {@code null} values will be considered the smallest ones in the returned {@link Optional}·
+     * If you still want to avoid this default behaviour, you can use the alternative method:
+     *
+     *       <pre>
+     *          min(
+     *             sourceCollection,
+     *             comparator          // Comparator.naturalOrder() uses Comparable definition provided by T class
+     *          )
+     *       </pre>
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 4, null, 2]         Optional(1)
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} to get its smallest element.
+     *
+     * @return {@link Optional} with smallest value using developed {@link Comparable},
+     *         {@link Optional#empty()} if {@code sourceCollection} has no elements or its smallest value is {@code null}.
+     */
+    public static <T extends Comparable<? super T>> Optional<T> min(final Collection<? extends T> sourceCollection) {
+        return min(
+                sourceCollection,
+                safeNaturalOrderNullLast()
+        );
+    }
+
+
+    /**
+     * Finds the first element of the given {@code sourceCollection} which yields the smallest value measured by {@code comparator}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    [1, 2, 1, 3]                    Optional(3)
+     *    Comparator.reverseOrder()
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} to get its smallest element
+     * @param comparator
+     *    {@link Comparator} to be used for comparing values
+     *
+     * @return {@link Optional} with smallest value using provided {@link Comparator},
+     *         {@link Optional#empty()} if {@code sourceCollection} has no elements or its smallest value is {@code null}.
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code sourceCollection} has elements
+     */
+    public static <T> Optional<T> min(final Collection<? extends T> sourceCollection,
+                                      final Comparator<? super T> comparator) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return empty();
+        }
+        Assert.notNull(comparator, "comparator must be not null");
+        return ofNullable(
+                Collections.min(
+                        sourceCollection,
+                        comparator
+                )
+        );
+    }
+
+
+    /**
      *    Returns an {@link List} used to loop through given {@code sourceCollection} in reverse order. When provided
      * {@link Collection} does not provide any kind of internal ordination, the returned {@link List} could return
      * same values with but in different positions every time.
@@ -1350,13 +1506,40 @@ public class CollectionUtil {
     /**
      *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link List} such that the natural
      * ordering ({@code null} values first) of the elements is retained.
+     * <p>
+     *    To avoid {@link NullPointerException}, {@link Comparable} implementation required in the type T, will be overwritten
+     * by:
+     *
+     *       <pre>
+     *          Comparator.nullsFirst(
+     *             Comparator.naturalOrder()
+     *          )
+     *       </pre>
+     *
+     *    In that way, {@code null} values will be considered the smallest ones in the returned sorted {@link List}·
+     * If you still want to avoid this default behaviour, you can use the alternative method:
+     *
+     *       <pre>
+     *          sort(
+     *             Comparator.naturalOrder(),    // Uses Comparable definition provided by T class
+     *             collections
+     *          )
+     *       </pre>
      *
      * <pre>
-     * Example:
+     * Example 1:
      *
      *   Parameters:             Result:
      *    [1, 2]                  [1, 1, 2, 4]
      *    [1, 4]
+     * </pre>
+     *
+     * <pre>
+     * Example 2:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, null]            [null, null, 1, 1, 2]
+     *    [1, null]
      * </pre>
      *
      * @param collections
@@ -1367,7 +1550,7 @@ public class CollectionUtil {
     @SafeVarargs
     public static <T extends Comparable<? super T>> List<T> sort(final Collection<? extends T> ...collections) {
         return (List<T>) sort(
-                nullSafeNaturalOrder(),
+                safeNaturalOrderNullFirst(),
                 ArrayList::new,
                 collections
         );
@@ -1377,14 +1560,43 @@ public class CollectionUtil {
     /**
      *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link Collection} such that the
      * natural ordering ({@code null} values first) of the elements is retained.
+     * <p>
+     *    To avoid {@link NullPointerException}, {@link Comparable} implementation required in the type T, will be overwritten
+     * by:
+     *
+     *       <pre>
+     *          Comparator.nullsFirst(
+     *             Comparator.naturalOrder()
+     *          )
+     *       </pre>
+     *
+     *    In that way, {@code null} values will be considered the smallest ones in the returned sorted {@link List}·
+     * If you still want to avoid this default behaviour, you can use the alternative method:
+     *
+     *       <pre>
+     *          sort(
+     *             Comparator.naturalOrder(),    // Uses Comparable definition provided by T class
+     *             collectionFactory,
+     *             collections
+     *          )
+     *       </pre>
      *
      * <pre>
-     * Example:
+     * Example 1:
      *
      *   Parameters:             Result:
      *    HashSet::new            [1, 2, 4]
      *    [1, 2]
      *    [1, 4]
+     * </pre>
+     *
+     * <pre>
+     * Example 2:
+     *
+     *   Parameters:             Result:
+     *    HashSet::new            [null, 1, 2]
+     *    [1, 2, null]
+     *    [1, null]
      * </pre>
      *
      * @param collectionFactory
@@ -1398,7 +1610,7 @@ public class CollectionUtil {
     public static <T extends Comparable<? super T>> Collection<T> sort(final Supplier<Collection<T>> collectionFactory,
                                                                        final Collection<? extends T> ...collections) {
         return sort(
-                nullSafeNaturalOrder(),
+                safeNaturalOrderNullFirst(),
                 collectionFactory,
                 collections
         );
@@ -1424,6 +1636,8 @@ public class CollectionUtil {
      *    {@link Collection} to merge
      *
      * @return new sorted {@link List}, containing the elements of {@code collections}
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
     @SafeVarargs
     public static <T> List<T> sort(final Comparator<? super T> comparator,
@@ -1458,11 +1672,14 @@ public class CollectionUtil {
      *    {@link Collection} to merge
      *
      * @return new sorted {@link Collection}, containing the elements of {@code collections}
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
     @SafeVarargs
     public static <T> Collection<T> sort(final Comparator<? super T> comparator,
                                          final Supplier<Collection<T>> collectionFactory,
                                          final Collection<? extends T> ...collections) {
+        Assert.notNull(comparator, "comparator must be not null");
         final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
                 collectionFactory,
                 ArrayList::new
@@ -1470,13 +1687,9 @@ public class CollectionUtil {
         if (ObjectUtil.isEmpty(collections)) {
             return finalCollectionFactory.get();
         }
-        final Comparator<? super T> finalComparator = getOrElse(
-                comparator,
-                (Comparator<? super T>) nullSafeNaturalOrder()
-        );
         return concat(collections)
                 .stream()
-                .sorted(finalComparator)
+                .sorted(comparator)
                 .collect(
                         toCollection(finalCollectionFactory)
                 );
@@ -1908,16 +2121,6 @@ public class CollectionUtil {
         } else {
             return sourceCollection;
         }
-    }
-
-
-    /**
-     * Returns {@link Comparator} keeping natural order but managing {@code null} values
-     *
-     * @return null safe {@link Comparator}
-     */
-    private static <T extends Comparable<? super T>> Comparator<T> nullSafeNaturalOrder() {
-        return Comparator.nullsFirst(Comparator.naturalOrder());
     }
 
 }

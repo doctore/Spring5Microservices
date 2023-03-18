@@ -1180,6 +1180,122 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> maxNoComparatorTestCases() {
+        List<Integer> ints = List.of(1, 2, 3);
+        List<Integer> intsWithNulls = asList(6, null, 7, null);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   expectedResult
+                Arguments.of( null,               empty() ),
+                Arguments.of( List.of(),          empty() ),
+                Arguments.of( ints,               of(3) ),
+                Arguments.of( intsWithNulls,      of(7) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("maxNoComparatorTestCases")
+    @DisplayName("max: without comparator test cases")
+    public <T extends Comparable<? super T>> void maxNoComparator_testCases(Collection<? extends T> sourceCollection,
+                                                                            Optional<T> expectedResult) {
+        assertEquals(expectedResult, max(sourceCollection));
+    }
+
+
+    static Stream<Arguments> maxAllParametersTestCases() {
+        List<String> strings = List.of("1", "2", "3");
+        List<String> stringsWithNulls = asList("6", null, "7", null);
+
+        Comparator<String> naturalComparator = Comparator.nullsFirst(Comparator.naturalOrder());
+        Comparator<String> reverseComparator = Comparator.nullsLast(Comparator.reverseOrder());
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   comparator,          expectedException,                expectedResult
+                Arguments.of( null,               null,                null,                             empty() ),
+                Arguments.of( List.of(),          null,                null,                             empty() ),
+                Arguments.of( null,               naturalComparator,   null,                             empty() ),
+                Arguments.of( List.of(),          naturalComparator,   null,                             empty() ),
+                Arguments.of( strings,            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( strings,            naturalComparator,   null,                             of("3") ),
+                Arguments.of( strings,            reverseComparator,   null,                             of("1") ),
+                Arguments.of( stringsWithNulls,   naturalComparator,   null,                             of("7") ),
+                Arguments.of( stringsWithNulls,   reverseComparator,   null,                             empty() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("maxAllParametersTestCases")
+    @DisplayName("max: with all parameters test cases")
+    public <T> void maxAllParameters_testCases(Collection<? extends T> sourceCollection,
+                                               Comparator<? super T> comparator,
+                                               Class<? extends Exception> expectedException,
+                                               Optional<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> max(sourceCollection, comparator));
+        } else {
+            assertEquals(expectedResult, max(sourceCollection, comparator));
+        }
+    }
+
+
+    static Stream<Arguments> minNoComparatorTestCases() {
+        List<Integer> ints = List.of(1, 2, 3);
+        List<Integer> intsWithNulls = asList(6, null, 7, null);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   expectedResult
+                Arguments.of( null,               empty() ),
+                Arguments.of( List.of(),          empty() ),
+                Arguments.of( ints,               of(1) ),
+                Arguments.of( intsWithNulls,      of(6) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("minNoComparatorTestCases")
+    @DisplayName("min: without comparator test cases")
+    public <T extends Comparable<? super T>> void minNoComparator_testCases(Collection<? extends T> sourceCollection,
+                                                                            Optional<T> expectedResult) {
+        assertEquals(expectedResult, min(sourceCollection));
+    }
+
+
+    static Stream<Arguments> minAllParametersTestCases() {
+        List<String> strings = List.of("1", "2", "3");
+        List<String> stringsWithNulls = asList("6", null, "7", null);
+
+        Comparator<String> naturalComparator = Comparator.nullsFirst(Comparator.naturalOrder());
+        Comparator<String> reverseComparator = Comparator.nullsLast(Comparator.reverseOrder());
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   comparator,          expectedException,                expectedResult
+                Arguments.of( null,               null,                null,                             empty() ),
+                Arguments.of( List.of(),          null,                null,                             empty() ),
+                Arguments.of( null,               naturalComparator,   null,                             empty() ),
+                Arguments.of( List.of(),          naturalComparator,   null,                             empty() ),
+                Arguments.of( strings,            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( strings,            naturalComparator,   null,                             of("1") ),
+                Arguments.of( strings,            reverseComparator,   null,                             of("3") ),
+                Arguments.of( stringsWithNulls,   naturalComparator,   null,                             empty() ),
+                Arguments.of( stringsWithNulls,   reverseComparator,   null,                             of("7") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("minAllParametersTestCases")
+    @DisplayName("min: with all parameters test cases")
+    public <T> void minAllParameters_testCases(Collection<? extends T> sourceCollection,
+                                               Comparator<? super T> comparator,
+                                               Class<? extends Exception> expectedException,
+                                               Optional<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> min(sourceCollection, comparator));
+        } else {
+            assertEquals(expectedResult, min(sourceCollection, comparator));
+        }
+    }
+
+
     static Stream<Arguments> reverseListTestCases() {
         List<Integer> integersList = List.of(3, 7, 9, 11, 15);
         Set<String> stringsLinkedSet = new LinkedHashSet<>(List.of("A", "BT", "YTGH", "IOP"));
@@ -1387,29 +1503,26 @@ public class CollectionUtilTest {
 
         Comparator<Integer> reverseComparator = Comparator.nullsLast(Comparator.reverseOrder());
 
-        List<Integer> expectedResultInts1DefaultComparator = List.of(1, 2, 3);
         List<Integer> expectedResultInts1ReverseComparator = List.of(3, 2, 1);
-        List<Integer> expectedResultInts123DefaultComparator = List.of(1, 2, 2, 3, 4, 5, 6, 7);
         List<Integer> expectedResultInts123ReverseComparator = List.of(7, 6, 5, 4, 3, 2, 2, 1);
-        List<Integer> expectedResultInts2AndWithNullsDefaultComparator = asList(null, null, 2, 4, 5, 6, 7);
         List<Integer> expectedResultInts2AndWithNullsReverseComparator = asList(7, 6, 5, 4, 2, null, null);
         return Stream.of(
                 //@formatter:off
-                //            colToConcat1,   colToConcat2,   colToConcat3,    comparator,          expectedResult
-                Arguments.of( null,           null,           null,            null,                List.of() ),
-                Arguments.of( null,           null,           null,            reverseComparator,   List.of() ),
-                Arguments.of( List.of(),      null,           null,            null,                List.of() ),
-                Arguments.of( List.of(),      null,           null,            reverseComparator,   List.of() ),
-                Arguments.of( List.of(),      Set.of(),       null,            null,                List.of() ),
-                Arguments.of( List.of(),      Set.of(),       null,            reverseComparator,   List.of() ),
-                Arguments.of( List.of(),      Set.of(),       List.of(),       null,                List.of() ),
-                Arguments.of( List.of(),      Set.of(),       List.of(),       reverseComparator,   List.of() ),
-                Arguments.of( ints1,          Set.of(),       List.of(),       null,                expectedResultInts1DefaultComparator ),
-                Arguments.of( ints1,          Set.of(),       List.of(),       reverseComparator,   expectedResultInts1ReverseComparator ),
-                Arguments.of( ints1,          ints2,          ints3,           null,                expectedResultInts123DefaultComparator ),
-                Arguments.of( ints1,          ints2,          ints3,           reverseComparator,   expectedResultInts123ReverseComparator ),
-                Arguments.of( ints2,          null,           intsWithNulls,   null,                expectedResultInts2AndWithNullsDefaultComparator ),
-                Arguments.of( ints2,          null,           intsWithNulls,   reverseComparator,   expectedResultInts2AndWithNullsReverseComparator )
+                //            colToConcat1,   colToConcat2,   colToConcat3,    comparator,          expectedException,                expectedResult
+                Arguments.of( null,           null,           null,            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,           null,           null,            reverseComparator,   null,                             List.of() ),
+                Arguments.of( List.of(),      null,           null,            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      null,           null,            reverseComparator,   null,                             List.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,            null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      Set.of(),       null,            reverseComparator,   null,                             List.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),       null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),       reverseComparator,   null,                             List.of() ),
+                Arguments.of( ints1,          Set.of(),       List.of(),       null,                IllegalArgumentException.class,   null ),
+                Arguments.of( ints1,          Set.of(),       List.of(),       reverseComparator,   null,                             expectedResultInts1ReverseComparator ),
+                Arguments.of( ints1,          ints2,          ints3,           null,                IllegalArgumentException.class,   null ),
+                Arguments.of( ints1,          ints2,          ints3,           reverseComparator,   null,                             expectedResultInts123ReverseComparator ),
+                Arguments.of( ints2,          null,           intsWithNulls,   null,                IllegalArgumentException.class,   null ),
+                Arguments.of( ints2,          null,           intsWithNulls,   reverseComparator,   null,                             expectedResultInts2AndWithNullsReverseComparator )
         ); //@formatter:on
     }
 
@@ -1420,8 +1533,19 @@ public class CollectionUtilTest {
                                                            Collection<? extends T> collectionToSort2,
                                                            Collection<? extends T> collectionToSort3,
                                                            Comparator<? super T> comparator,
+                                                           Class<? extends Exception> expectedException,
                                                            List<Object> expectedResult) {
-        assertEquals(expectedResult, sort(comparator, collectionToSort1, collectionToSort2, collectionToSort3));
+        if (null != expectedException) {
+            assertThrows(
+                    expectedException,
+                    () -> sort(comparator, collectionToSort1, collectionToSort2, collectionToSort3)
+            );
+        } else {
+            assertEquals(
+                    expectedResult,
+                    sort(comparator, collectionToSort1, collectionToSort2, collectionToSort3)
+            );
+        }
     }
 
 
@@ -1434,49 +1558,43 @@ public class CollectionUtilTest {
         Comparator<String> reverseComparator = Comparator.nullsLast(Comparator.reverseOrder());
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
 
-        List<String> expectedResultStrings2_DefaultSupplierDefaultComparator = List.of("4", "4", "5");
         List<String> expectedResultStrings2_DefaultSupplierReverseComparator = List.of("5", "4", "4");
-        Set<String> expectedResultStrings2_SetSupplierDefaultComparator = Set.of("4", "5");
         Set<String> expectedResultStrings2_SetSupplierReverseComparator = Set.of("5", "4");
-        List<String> expectedResultStrings123_DefaultSupplierDefaultComparator = List.of("1", "2", "3", "4", "4", "5", "6", "7", "7");
         List<String> expectedResultStrings123_DefaultSupplierReverseComparator = List.of("7", "7", "6", "5", "4", "4", "3", "2", "1");
-        Set<String> expectedResultStrings123_SetSupplierDefaultComparator = Set.of("1", "2", "3", "4", "5", "6", "7");
         Set<String> expectedResultStrings123_SetSupplierReverseComparator = Set.of("7", "6", "5", "4", "3", "2", "1");
-        List<String> expectedResultStringsStrings2AndWithNulls_DefaultSupplierDefaultComparator = asList(null, null, "4", "4", "5", "6", "7");
         List<String> expectedResultStringsStrings2AndWithNulls_DefaultSupplierReverseComparator = asList("7", "6", "5", "4", "4", null, null);
-        Set<String> expectedResultStringsStrings2AndWithNulls_SetSupplierDefaultComparator = new LinkedHashSet<>(asList(null, "4", "5", "6", "7"));
         Set<String> expectedResultStringsStrings2AndWithNulls_SetSupplierReverseComparator = new LinkedHashSet<>(asList("7", "6", "5", "4", null));
         return Stream.of(
                 //@formatter:off
-                //            colToConcat1,   colToConcat2,   colToConcat3,       comparator,          collectionFactory,   expectedResult
-                Arguments.of( null,           null,           null,               null,                null,                List.of() ),
-                Arguments.of( null,           null,           null,               reverseComparator,   null,                List.of() ),
-                Arguments.of( null,           null,           null,               null,                setSupplier,         Set.of() ),
-                Arguments.of( null,           null,           null,               reverseComparator,   setSupplier,         Set.of() ),
-                Arguments.of( List.of(),      null,           null,               null,                null,                List.of() ),
-                Arguments.of( List.of(),      null,           null,               reverseComparator,   null,                List.of() ),
-                Arguments.of( List.of(),      null,           null,               null,                setSupplier,         Set.of() ),
-                Arguments.of( List.of(),      null,           null,               reverseComparator,   setSupplier,         Set.of() ),
-                Arguments.of( List.of(),      Set.of(),       null,               null,                null,                List.of() ),
-                Arguments.of( List.of(),      Set.of(),       null,               reverseComparator,   null,                List.of() ),
-                Arguments.of( List.of(),      Set.of(),       null,               null,                setSupplier,         Set.of() ),
-                Arguments.of( List.of(),      Set.of(),       null,               reverseComparator,   setSupplier,         Set.of() ),
-                Arguments.of( List.of(),      Set.of(),       List.of(),          null,                null,                List.of() ),
-                Arguments.of( List.of(),      Set.of(),       List.of(),          reverseComparator,   null,                List.of() ),
-                Arguments.of( List.of(),      Set.of(),       List.of(),          null,                setSupplier,         Set.of() ),
-                Arguments.of( List.of(),      Set.of(),       List.of(),          reverseComparator,   setSupplier,         Set.of() ),
-                Arguments.of( strings2,       Set.of(),       List.of(),          null,                null,                expectedResultStrings2_DefaultSupplierDefaultComparator ),
-                Arguments.of( strings2,       Set.of(),       List.of(),          reverseComparator,   null,                expectedResultStrings2_DefaultSupplierReverseComparator ),
-                Arguments.of( strings2,       Set.of(),       List.of(),          null,                setSupplier,         expectedResultStrings2_SetSupplierDefaultComparator ),
-                Arguments.of( strings2,       Set.of(),       List.of(),          reverseComparator,   setSupplier,         expectedResultStrings2_SetSupplierReverseComparator ),
-                Arguments.of( strings1,       strings2,       strings3,           null,                null,                expectedResultStrings123_DefaultSupplierDefaultComparator ),
-                Arguments.of( strings1,       strings2,       strings3,           reverseComparator,   null,                expectedResultStrings123_DefaultSupplierReverseComparator ),
-                Arguments.of( strings1,       strings2,       strings3,           null,                setSupplier,         expectedResultStrings123_SetSupplierDefaultComparator ),
-                Arguments.of( strings1,       strings2,       strings3,           reverseComparator,   setSupplier,         expectedResultStrings123_SetSupplierReverseComparator ),
-                Arguments.of( strings2,       null,       stringsWithNulls,       null,                null,                expectedResultStringsStrings2AndWithNulls_DefaultSupplierDefaultComparator ),
-                Arguments.of( strings2,       null,       stringsWithNulls,       reverseComparator,   null,                expectedResultStringsStrings2AndWithNulls_DefaultSupplierReverseComparator ),
-                Arguments.of( strings2,       null,       stringsWithNulls,       null,                setSupplier,         expectedResultStringsStrings2AndWithNulls_SetSupplierDefaultComparator ),
-                Arguments.of( strings2,       null,       stringsWithNulls,       reverseComparator,   setSupplier,         expectedResultStringsStrings2AndWithNulls_SetSupplierReverseComparator )
+                //            colToConcat1,   colToConcat2,   colToConcat3,       comparator,          collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,           null,           null,               null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,           null,           null,               reverseComparator,   null,                null,                             List.of() ),
+                Arguments.of( null,           null,           null,               null,                setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( null,           null,           null,               reverseComparator,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),      null,           null,               null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      null,           null,               reverseComparator,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),      null,           null,               null,                setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      null,           null,               reverseComparator,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      Set.of(),       null,               reverseComparator,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),      Set.of(),       null,               null,                setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      Set.of(),       null,               reverseComparator,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          reverseComparator,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          null,                setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),      Set.of(),       List.of(),          reverseComparator,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          reverseComparator,   null,                null,                             expectedResultStrings2_DefaultSupplierReverseComparator ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          null,                setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( strings2,       Set.of(),       List.of(),          reverseComparator,   setSupplier,         null,                             expectedResultStrings2_SetSupplierReverseComparator ),
+                Arguments.of( strings1,       strings2,       strings3,           null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( strings1,       strings2,       strings3,           reverseComparator,   null,                null,                             expectedResultStrings123_DefaultSupplierReverseComparator ),
+                Arguments.of( strings1,       strings2,       strings3,           null,                setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( strings1,       strings2,       strings3,           reverseComparator,   setSupplier,         null,                             expectedResultStrings123_SetSupplierReverseComparator ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       reverseComparator,   null,                null,                             expectedResultStringsStrings2AndWithNulls_DefaultSupplierReverseComparator ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       null,                setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( strings2,       null,       stringsWithNulls,       reverseComparator,   setSupplier,         null,                             expectedResultStringsStrings2AndWithNulls_SetSupplierReverseComparator )
         ); //@formatter:on
     }
 
@@ -1488,8 +1606,20 @@ public class CollectionUtilTest {
                                                 Collection<? extends T> collectionToSort3,
                                                 Comparator<? super T> comparator,
                                                 Supplier<Collection<T>> collectionFactory,
+                                                Class<? extends Exception> expectedException,
                                                 Collection<Object> expectedResult) {
-        assertEquals(expectedResult, sort(comparator, collectionFactory, collectionToSort1, collectionToSort2, collectionToSort3));
+        if (null != expectedException) {
+            assertThrows(
+                    expectedException,
+                    () -> sort(comparator, collectionFactory, collectionToSort1, collectionToSort2, collectionToSort3)
+            );
+
+        } else {
+            assertEquals(
+                    expectedResult,
+                    sort(comparator, collectionFactory, collectionToSort1, collectionToSort2, collectionToSort3)
+            );
+        }
     }
 
 
@@ -1781,7 +1911,8 @@ public class CollectionUtilTest {
                                         T defaultLeftElement,
                                         E defaultRightElement,
                                         List<Tuple2<T, E>> expectedResult) {
-        assertEquals(expectedResult,
+        assertEquals(
+                expectedResult,
                 zipAll(
                         sourceLeftCollection, sourceRightCollection, defaultLeftElement, defaultRightElement
                 )

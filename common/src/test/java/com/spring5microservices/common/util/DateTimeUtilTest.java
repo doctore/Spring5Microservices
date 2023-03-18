@@ -55,17 +55,17 @@ public class DateTimeUtilTest {
     @ParameterizedTest
     @MethodSource("compareLocalDateTimeTestCases")
     @DisplayName("compare: LocalDateTime test cases")
-    public void compareLocalDateTime_testCases(LocalDateTime one, LocalDateTime two, long epsilon, ChronoUnit timeUnit,
-                                               Class<? extends Exception> expectedException, CompareToResult expectedResult) {
+    public void compareLocalDateTime_testCases(LocalDateTime one,
+                                               LocalDateTime two,
+                                               long epsilon,
+                                               ChronoUnit timeUnit,
+                                               Class<? extends Exception> expectedException,
+                                               CompareToResult expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> DateTimeUtil.compare(one, two, epsilon, timeUnit));
         } else {
             int result = DateTimeUtil.compare(one, two, epsilon, timeUnit);
-            switch (expectedResult) {
-                case LESS_THAN_ZERO -> assertTrue(0 > result);
-                case ZERO -> assertEquals(0, result);
-                case GREATER_THAN_ZERO -> assertTrue(0 < result);
-            }
+            verifyCompareToResult(result, expectedResult);
         }
     }
 
@@ -91,7 +91,9 @@ public class DateTimeUtilTest {
     @ParameterizedTest
     @MethodSource("fromLocalDateTimeToDateTestCases")
     @DisplayName("fromLocalDateTimeToDate: test cases")
-    public void fromLocalDateTimeToDate_testCases(LocalDateTime localDateTime, ZoneId zoneId, Optional<Date> expectedResult) {
+    public void fromLocalDateTimeToDate_testCases(LocalDateTime localDateTime,
+                                                  ZoneId zoneId,
+                                                  Optional<Date> expectedResult) {
         assertEquals(expectedResult, fromLocalDateTimeToDate(localDateTime, zoneId));
     }
 
@@ -117,8 +119,20 @@ public class DateTimeUtilTest {
     @ParameterizedTest
     @MethodSource("fromDateToLocalDateTimeTestCases")
     @DisplayName("fromDateToLocalDateTime: test cases")
-    public void fromDateToLocalDateTime_testCases(Date date, ZoneId zoneId, Optional<LocalDateTime> expectedResult) {
+    public void fromDateToLocalDateTime_testCases(Date date,
+                                                  ZoneId zoneId,
+                                                  Optional<LocalDateTime> expectedResult) {
         assertEquals(expectedResult, fromDateToLocalDateTime(date, zoneId));
+    }
+
+
+    private void verifyCompareToResult(int actualResult,
+                                       CompareToResult expectedResult) {
+        switch (expectedResult) {
+            case LESS_THAN_ZERO -> assertTrue(0 > actualResult);
+            case ZERO -> assertEquals(0, actualResult);
+            case GREATER_THAN_ZERO -> assertTrue(0 < actualResult);
+        }
     }
 
 
