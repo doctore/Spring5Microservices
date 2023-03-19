@@ -44,7 +44,7 @@ public class ComparatorUtilTest {
     public <T extends Comparable<? super T>> void safeNaturalOrderNullFirst_testCases(T element1,
                                                                                       T element2,
                                                                                       CompareToResult expectedResult) {
-        // Required because the sometimes stupid Java compiler
+        // Required because sometimes the Java compiler is stupid
         Comparator<T> comparator = safeNaturalOrderNullFirst();
 
         int result = comparator.compare(element1, element2);
@@ -81,7 +81,7 @@ public class ComparatorUtilTest {
     public <T extends Comparable<? super T>> void safeNaturalOrderNullLast_testCases(T element1,
                                                                                       T element2,
                                                                                       CompareToResult expectedResult) {
-        // Required because the sometimes stupid Java compiler
+        // Required because sometimes the Java compiler is stupid
         Comparator<T> comparator = safeNaturalOrderNullLast();
 
         int result = comparator.compare(element1, element2);

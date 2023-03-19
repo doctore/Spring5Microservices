@@ -488,7 +488,7 @@ public class CollectionUtil {
      * @param collections
      *    {@link Collection}s to concat
      *
-     * @return {@link List}
+     * @return {@link List} with the elements of {@code collections}
      */
     @SafeVarargs
     public static <T> List<T> concat(final Collection<? extends T> ...collections) {
@@ -516,7 +516,7 @@ public class CollectionUtil {
      * @param collections
      *    {@link Collection}s to concat
      *
-     * @return {@link Collection}
+     * @return {@link Collection} with the elements of {@code collections}
      */
     @SafeVarargs
     public static <T> Collection<T> concat(final Supplier<Collection<T>> collectionFactory,
