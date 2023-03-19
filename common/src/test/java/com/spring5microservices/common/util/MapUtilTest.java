@@ -25,8 +25,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullLast;
 import static com.spring5microservices.common.util.MapUtil.applyOrElse;
 import static com.spring5microservices.common.util.MapUtil.collect;
+import static com.spring5microservices.common.util.MapUtil.concat;
 import static com.spring5microservices.common.util.MapUtil.count;
 import static com.spring5microservices.common.util.MapUtil.dropWhile;
 import static com.spring5microservices.common.util.MapUtil.find;
@@ -45,6 +47,7 @@ import static com.spring5microservices.common.util.MapUtil.minValue;
 import static com.spring5microservices.common.util.MapUtil.partition;
 import static com.spring5microservices.common.util.MapUtil.slice;
 import static com.spring5microservices.common.util.MapUtil.sliding;
+import static com.spring5microservices.common.util.MapUtil.sort;
 import static com.spring5microservices.common.util.MapUtil.split;
 import static com.spring5microservices.common.util.MapUtil.takeWhile;
 import static java.util.Optional.empty;
@@ -128,23 +131,43 @@ public class MapUtilTest {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
-            put(3, "C");
+            put(3, null);
         }};
-        BiPredicate<Integer, String> isKeyOddAndValueVowel = (k, v) -> k % 2 == 1 && "AEIOUaeiou".contains(v);
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
-        BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
-
+        BiPredicate<Integer, String> isKeyOddAndValueVowel = (k, v) ->
+                k % 2 == 1 &&
+                (
+                    null != v &&
+                    "AEIOUaeiou".contains(v)
+                );
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) ->
+                (long) (
+                           k * 2 +
+                           (
+                               null == v
+                                  ? 0
+                                  : v.length()
+                           )
+                );
+        BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) ->
+                (long) (
+                           k +
+                           (
+                               null == v
+                                  ? 0
+                                  : v.length()
+                           )
+                );
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
 
         Map<Integer, Long> intsAndStringsNoFilterResult = new HashMap<>() {{
             put(1, 3L);
             put(2, 5L);
-            put(3, 7L);
+            put(3, 6L);
         }};
         Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
             put(1, 3L);
             put(2, 3L);
-            put(3, 4L);
+            put(3, 3L);
         }};
         LinkedHashMap<Integer, Long> intsAndStringsLinkedMapResult = new LinkedHashMap<>(intsAndStringsResult);
         return Stream.of(
@@ -250,17 +273,29 @@ public class MapUtilTest {
     static Stream<Arguments> collectAllParametersTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
-            put(2, "B");
+            put(2, null);
             put(4, "o");
         }};
-        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
-
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) ->
+                k % 2 == 0 &&
+                (
+                    null != v &&
+                    "AEIOUaeiou".contains(v)
+                );
+        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) ->
+                (long) (
+                           k * 2 +
+                           (
+                               null == v
+                                  ? 0
+                                  : v.length()
+                           )
+                );
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
 
         Map<Integer, Long> intsAndLongsNoFilterResult = new HashMap<>() {{
             put(1, 3L);
-            put(2, 5L);
+            put(2, 4L);
             put(4, 9L);
         }};
         Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
@@ -300,6 +335,205 @@ public class MapUtilTest {
         } else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction, mapFactory));
         }
+    }
+
+
+    static Stream<Arguments> concatOnlyMapsTestCases() {
+        Map<Integer, String> map1 = new HashMap<>() {{
+            put(1, "A");
+            put(4, "o");
+        }};
+        Map<Integer, String> map2 = new HashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+        }};
+        Map<Integer, String> map3 = new HashMap<>() {{
+            put(6, "w");
+        }};
+        Map<Integer, String> mapWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+
+        Map<Integer, String> expectedResultMaps123 = new LinkedHashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+            put(4, "o");
+            put(6, "w");
+        }};
+        Map<Integer, String> expectedResultMap2AndMapWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            mapToConcat1,   mapToConcat2,   mapToConcat3,        expectedResult
+                Arguments.of( null,           null,           null,                Map.of() ),
+                Arguments.of( Map.of(),       null,           null,                Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       null,                Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       Map.of(),            Map.of() ),
+                Arguments.of( map1,           null,           Map.of(),            map1 ),
+                Arguments.of( map1,           map2,           map3,                expectedResultMaps123 ),
+                Arguments.of( map2,           null,           mapWithNullValues,   expectedResultMap2AndMapWithNullValues )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatOnlyMapsTestCases")
+    @DisplayName("concat: only with the maps to concat test cases")
+    public <T, E> void concatOnlyMaps_testCases(Map<? extends T, ? extends E> mapToConcat1,
+                                                Map<? extends T, ? extends E> mapToConcat2,
+                                                Map<? extends T, ? extends E> mapToConcat3,
+                                                Map<T, E> expectedResult) {
+        assertEquals(expectedResult, concat(mapToConcat1, mapToConcat2, mapToConcat3));
+    }
+
+
+    static Stream<Arguments> concatMapsAndMapFactoryTestCases() {
+        Map<Integer, String> map1 = new HashMap<>() {{
+            put(1, "A");
+            put(4, "o");
+        }};
+        Map<Integer, String> map2 = new HashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+        }};
+        Map<Integer, String> map3 = new HashMap<>() {{
+            put(6, "w");
+        }};
+        Map<Integer, String> mapWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+
+        Map<Integer, String> expectedResultMaps123 = new LinkedHashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+            put(4, "o");
+            put(6, "w");
+        }};
+        Map<Integer, String> expectedResultMap2AndMapWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            mapToConcat1,   mapToConcat2,   mapToConcat3,        mapFactory,          expectedResult
+                Arguments.of( null,           null,           null,                null,                Map.of() ),
+                Arguments.of( null,           null,           null,                linkedMapSupplier,   Map.of() ),
+                Arguments.of( Map.of(),       null,           null,                null,                Map.of() ),
+                Arguments.of( Map.of(),       null,           null,                linkedMapSupplier,   Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       null,                null,                Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       null,                linkedMapSupplier,   Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       Map.of(),            null,                Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       Map.of(),            linkedMapSupplier,   Map.of() ),
+                Arguments.of( map1,           null,           Map.of(),            null,                map1 ),
+                Arguments.of( map1,           null,           Map.of(),            linkedMapSupplier,   map1 ),
+                Arguments.of( map1,           map2,           map3,                null,                expectedResultMaps123 ),
+                Arguments.of( map1,           map2,           map3,                linkedMapSupplier,   expectedResultMaps123 ),
+                Arguments.of( map2,           null,           mapWithNullValues,   null,                expectedResultMap2AndMapWithNullValues ),
+                Arguments.of( map2,           null,           mapWithNullValues,   linkedMapSupplier,   expectedResultMap2AndMapWithNullValues )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatMapsAndMapFactoryTestCases")
+    @DisplayName("concat: with map factory and maps to concat test cases")
+    public <T, E> void concatMapsAndMapFactory_testCases(Map<? extends T, ? extends E> mapToConcat1,
+                                                Map<? extends T, ? extends E> mapToConcat2,
+                                                Map<? extends T, ? extends E> mapToConcat3,
+                                                Supplier<Map<T, E>> mapFactory,
+                                                Map<T, E> expectedResult) {
+        assertEquals(expectedResult, concat(mapFactory, mapToConcat1, mapToConcat2, mapToConcat3));
+    }
+
+
+    static Stream<Arguments> concatAllParametersTestCases() {
+        Map<Integer, String> map1 = new HashMap<>() {{
+            put(1, "A");
+            put(4, "o");
+        }};
+        Map<Integer, String> map2 = new HashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+        }};
+        Map<Integer, String> map3 = new HashMap<>() {{
+            put(6, "w");
+        }};
+        Map<Integer, String> mapWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+
+        Supplier<Map<Integer, String>> linkedMapSupplier = LinkedHashMap::new;
+        BinaryOperator<String> keepsOldValue = (oldValue, newValue) -> oldValue;
+
+        Map<Integer, String> expectedResultMaps123DefaultMerge = new LinkedHashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+            put(4, "o");
+            put(6, "w");
+        }};
+        Map<Integer, String> expectedResultMaps123ProvidedMerge = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "y");
+            put(4, "o");
+            put(6, "w");
+        }};
+        Map<Integer, String> expectedResultMap2AndMapWithNullValuesDefaultMerge = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+        Map<Integer, String> expectedResultMap2AndMapWithNullValuesProvidedMerge = new LinkedHashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            mapToConcat1,   mapToConcat2,   mapToConcat3,        mapFactory,          mergeValueFunction,   expectedResult
+                Arguments.of( null,           null,           null,                null,                null,                 Map.of() ),
+                Arguments.of( null,           null,           null,                null,                keepsOldValue,        Map.of() ),
+                Arguments.of( null,           null,           null,                linkedMapSupplier,   null,                 Map.of() ),
+                Arguments.of( null,           null,           null,                linkedMapSupplier,   keepsOldValue,        Map.of() ),
+                Arguments.of( Map.of(),       null,           null,                null,                null,                 Map.of() ),
+                Arguments.of( Map.of(),       null,           null,                null,                keepsOldValue,        Map.of() ),
+                Arguments.of( Map.of(),       null,           null,                linkedMapSupplier,   null,                 Map.of() ),
+                Arguments.of( Map.of(),       null,           null,                linkedMapSupplier,   keepsOldValue,        Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       null,                null,                null,                 Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       null,                null,                keepsOldValue,        Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       null,                linkedMapSupplier,   null,                 Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       null,                linkedMapSupplier,   keepsOldValue,        Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       Map.of(),            null,                null,                 Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       Map.of(),            null,                keepsOldValue,        Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       Map.of(),            linkedMapSupplier,   null,                 Map.of() ),
+                Arguments.of( Map.of(),       Map.of(),       Map.of(),            linkedMapSupplier,   keepsOldValue,        Map.of() ),
+                Arguments.of( map1,           null,           Map.of(),            null,                null,                 map1 ),
+                Arguments.of( map1,           null,           Map.of(),            null,                keepsOldValue,        map1 ),
+                Arguments.of( map1,           null,           Map.of(),            linkedMapSupplier,   null,                 map1 ),
+                Arguments.of( map1,           null,           Map.of(),            linkedMapSupplier,   keepsOldValue,        map1 ),
+                Arguments.of( map1,           map2,           map3,                null,                null,                 expectedResultMaps123DefaultMerge ),
+                Arguments.of( map1,           map2,           map3,                null,                keepsOldValue,        expectedResultMaps123ProvidedMerge ),
+                Arguments.of( map1,           map2,           map3,                linkedMapSupplier,   null,                 expectedResultMaps123DefaultMerge ),
+                Arguments.of( map1,           map2,           map3,                linkedMapSupplier,   keepsOldValue,        expectedResultMaps123ProvidedMerge ),
+                Arguments.of( map2,           null,           mapWithNullValues,   null,                null,                 expectedResultMap2AndMapWithNullValuesDefaultMerge ),
+                Arguments.of( map2,           null,           mapWithNullValues,   null,                keepsOldValue,        expectedResultMap2AndMapWithNullValuesProvidedMerge ),
+                Arguments.of( map2,           null,           mapWithNullValues,   linkedMapSupplier,   null,                 expectedResultMap2AndMapWithNullValuesDefaultMerge ),
+                Arguments.of( map2,           null,           mapWithNullValues,   linkedMapSupplier,   keepsOldValue,        expectedResultMap2AndMapWithNullValuesProvidedMerge )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatAllParametersTestCases")
+    @DisplayName("concat: with all parameters test cases")
+    public <T, E> void concatAllParameters_testCases(Map<? extends T, ? extends E> mapToConcat1,
+                                                     Map<? extends T, ? extends E> mapToConcat2,
+                                                     Map<? extends T, ? extends E> mapToConcat3,
+                                                     Supplier<Map<T, E>> mapFactory,
+                                                     BinaryOperator<E> mergeValueFunction,
+                                                     Map<T, E> expectedResult) {
+        assertEquals(expectedResult, concat(mapFactory, mergeValueFunction, mapToConcat1, mapToConcat2, mapToConcat3));
     }
 
 
@@ -380,14 +614,19 @@ public class MapUtilTest {
     static Stream<Arguments> dropWhileAllParametersTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
-            put(2, "B");
+            put(2, null);
             put(4, "o");
         }};
-        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) ->
+                k % 2 == 0 &&
+                (
+                    null != v &&
+                    "AEIOUaeiou".contains(v)
+                );
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
         Map<Integer, String> intsAndStringsResult = new LinkedHashMap<>() {{
             put(1, "A");
-            put(2, "B");
+            put(2, null);
         }};
         return Stream.of(
                 //@formatter:off
@@ -550,7 +789,7 @@ public class MapUtilTest {
 
     @ParameterizedTest
     @MethodSource("flattenAllParametersTestCases")
-    @DisplayName("flatten: with call parameters test cases")
+    @DisplayName("flatten: with all parameters test cases")
     public <T, E, R, U> void flattenAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
                                                             BiFunction<? super T, ? super E, ? extends R> flattener,
                                                             Supplier<Collection<U>> collectionFactory,
@@ -601,6 +840,43 @@ public class MapUtilTest {
             assertThrows(expectedException, () -> foldLeft(sourceMap, initialValue, accumulator));
         } else {
             assertEquals(expectedResult, foldLeft(sourceMap, initialValue, accumulator));
+        }
+    }
+
+
+    static Stream<Arguments> getOrElseTestCases() {
+        Map<Integer, Integer> integersMap = new HashMap<>() {{
+            put(1, 21);
+            put(4, 43);
+            put(9, 101);
+        }};
+        Supplier<Integer> always25 = () -> 25;
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,     key,    defaultValue,   expectedException,                expectedResult
+                Arguments.of( null,          null,   null,           IllegalArgumentException.class,   null ),
+                Arguments.of( null,          2,      null,           IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),      2,      null,           IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),      null,   always25,       null,                             always25.get() ),
+                Arguments.of( Map.of(),      1,      always25,       null,                             always25.get() ),
+                Arguments.of( integersMap,   1,      always25,       null,                             21 ),
+                Arguments.of( integersMap,   null,   always25,       null,                             always25.get() ),
+                Arguments.of( integersMap,   2,      always25,       null,                             always25.get() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElseTestCases")
+    @DisplayName("getOrElse: test cases")
+    public <T, E> void getOrElse_testCases(Map<? extends T, ? extends E> sourceMap,
+                                           T key,
+                                           Supplier<E> defaultValue,
+                                           Class<? extends Exception> expectedException,
+                                           E expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> getOrElse(sourceMap, key, defaultValue));
+        } else {
+            assertEquals(expectedResult, getOrElse(sourceMap, key, defaultValue));
         }
     }
 
@@ -723,44 +999,6 @@ public class MapUtilTest {
                 Arguments.of( intsAndStrings,    keyMod2,          linkedMapSupplier,   linkedMapSupplier,   intsAndStringsLinkedMapResult )
         ); //@formatter:on
     }
-
-
-    static Stream<Arguments> getOrElseTestCases() {
-        Map<Integer, Integer> integersMap = new HashMap<>() {{
-            put(1, 21);
-            put(4, 43);
-            put(9, 101);
-        }};
-        Supplier<Integer> always25 = () -> 25;
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,     key,    defaultValue,   expectedException,                expectedResult
-                Arguments.of( null,          null,   null,           IllegalArgumentException.class,   null ),
-                Arguments.of( null,          2,      null,           IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),      2,      null,           IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),      null,   always25,       null,                             always25.get() ),
-                Arguments.of( Map.of(),      1,      always25,       null,                             always25.get() ),
-                Arguments.of( integersMap,   1,      always25,       null,                             21 ),
-                Arguments.of( integersMap,   null,   always25,       null,                             always25.get() ),
-                Arguments.of( integersMap,   2,      always25,       null,                             always25.get() )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("getOrElseTestCases")
-    @DisplayName("getOrElse: test cases")
-    public <T, E> void getOrElse_testCases(Map<? extends T, ? extends E> sourceMap,
-                                           T key,
-                                           Supplier<E> defaultValue,
-                                           Class<? extends Exception> expectedException,
-                                           E expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> getOrElse(sourceMap, key, defaultValue));
-        } else {
-            assertEquals(expectedResult, getOrElse(sourceMap, key, defaultValue));
-        }
-    }
-
 
     @ParameterizedTest
     @MethodSource("groupByAllParametersTestCases")
@@ -958,15 +1196,22 @@ public class MapUtilTest {
             put(1, 21);
             put(4, 43);
             put(9, 101);
+            put(11, null);
         }};
         BiFunction<Integer, Integer, Tuple2<String, String>> add1AndMultiply2AndConvertToString =
-                (k, v) -> Tuple.of(String.valueOf(k + 1), String.valueOf(v * 2));
-
+                (k, v) ->
+                        Tuple.of(
+                                String.valueOf(k + 1),
+                                null == v
+                                   ? null
+                                   : String.valueOf(v * 2)
+                        );
         Supplier<Map<String, String>> linkedMapSupplier = LinkedHashMap::new;
         Map<String, String> stringsMapResult = new HashMap<>() {{
             put("2", "42");
             put("5", "86");
             put("10", "202");
+            put("12", null);
         }};
         LinkedHashMap<String, String> stringsLinkedMapResult = new LinkedHashMap<>(stringsMapResult);
         return Stream.of(
@@ -1042,14 +1287,19 @@ public class MapUtilTest {
             put(1, 21);
             put(4, 43);
             put(9, 101);
+            put(12, null);
         }};
-        BiFunction<Integer, Integer, String> add1ToValueAndConvertToString = (k, v) -> String.valueOf(v + 1);
+        BiFunction<Integer, Integer, String> add1ToValueAndConvertToString = (k, v) ->
+                null == v
+                   ? null
+                   : String.valueOf(v + 1);
 
         Supplier<Map<Integer, String>> linkedMapSupplier = LinkedHashMap::new;
         Map<Integer, String> integersMapResult = new HashMap<>() {{
             put(1, "22");
             put(4, "44");
             put(9, "102");
+            put(12, null);
         }};
         LinkedHashMap<Integer, String> integersLinkedMapResult = new LinkedHashMap<>(integersMapResult);
         return Stream.of(
@@ -1087,13 +1337,14 @@ public class MapUtilTest {
             put(3, "AB");
             put(4, "UTf");
         }};
-        Comparator<Tuple2<Integer, String>> comparatorOnlyKeys = Comparator.comparing(t -> t._1);
-        Comparator<Tuple2<Integer, String>> comparatorOnlyValues = Comparator.comparing(t -> t._2);
-        Comparator<Tuple2<Integer, String>> comparatorBoth = (t1, t2) -> {
-            int valueComparison = t1._2.compareTo(t2._2);
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyKeys = Map.Entry.comparingByKey();
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyValues = Map.Entry.comparingByValue();
+        Comparator<Map.Entry<Integer, String>> comparatorBoth = (e1, e2) -> {
+            Comparator<String> valueComparator = safeNaturalOrderNullLast();   // Required because sometimes the Java compiler is stupid
+            int valueComparison = valueComparator.compare(e1.getValue(), e2.getValue());
             return 0 != valueComparison
-                   ? t1._1.compareTo(t2._1)
-                   : valueComparison;
+                    ? e1.getKey().compareTo(e2.getKey())
+                    : valueComparison;
         };
         return Stream.of(
                 //@formatter:off
@@ -1112,7 +1363,7 @@ public class MapUtilTest {
     @MethodSource("maxTestCases")
     @DisplayName("max: test cases")
     public <T, E> void max_testCases(Map<? extends T, ? extends E> sourceMap,
-                                     Comparator<Tuple2<? extends T, ? extends E>> comparator,
+                                     Comparator<Map.Entry<? extends T, ? extends E>> comparator,
                                      Class<? extends Exception> expectedException,
                                      Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
@@ -1123,7 +1374,37 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> maxValueTestCases() {
+    static Stream<Arguments> maxValueNoComparatorTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, "Z3");
+            put(3, "AB");
+        }};
+        Map<Integer, String> intsAndStringsWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+            put(3, "AB");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   expectedResult
+                Arguments.of( null,                           empty() ),
+                Arguments.of( new HashMap<>(),                empty() ),
+                Arguments.of( intsAndStrings,                 of("Z3") ),
+                Arguments.of( intsAndStringsWithNullValues,   of("AB") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("maxValueNoComparatorTestCases")
+    @DisplayName("maxValue: without comparator test cases")
+    public <T, E extends Comparable<? super E>> void maxValueNoComparator_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                                    Optional<E> expectedResult) {
+        assertEquals(expectedResult, maxValue(sourceMap));
+    }
+
+
+    static Stream<Arguments> maxValueAllParametersTestCases() {
         Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
             put(1, "AB");
             put(2, "Z3");
@@ -1145,12 +1426,12 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("maxValueTestCases")
-    @DisplayName("maxValue: test cases")
-    public <T, E> void maxValue_testCases(Map<? extends T, ? extends E> sourceMap,
-                                          Comparator<? super E> comparator,
-                                          Class<? extends Exception> expectedException,
-                                          Optional<Tuple2<T, E>> expectedResult) {
+    @MethodSource("maxValueAllParametersTestCases")
+    @DisplayName("maxValue: with all parameters test cases")
+    public <T, E> void maxValueAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                       Comparator<? super E> comparator,
+                                                       Class<? extends Exception> expectedException,
+                                                       Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> maxValue(sourceMap, comparator));
         } else {
@@ -1166,14 +1447,16 @@ public class MapUtilTest {
             put(3, "Urf");
             put(4, "BA");
         }};
-        Comparator<Tuple2<Integer, String>> comparatorOnlyKeys = Comparator.comparing(t -> t._1);
-        Comparator<Tuple2<Integer, String>> comparatorOnlyValues = Comparator.comparing(t -> t._2);
-        Comparator<Tuple2<Integer, String>> comparatorBoth = (t1, t2) -> {
-            int valueComparison = t1._2.compareTo(t2._2);
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyKeys = Map.Entry.comparingByKey();
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyValues = Map.Entry.comparingByValue();
+        Comparator<Map.Entry<Integer, String>> comparatorBoth = (e1, e2) -> {
+            Comparator<String> valueComparator = safeNaturalOrderNullLast();   // Required because sometimes the Java compiler is stupid
+            int valueComparison = valueComparator.compare(e1.getValue(), e2.getValue());
             return 0 != valueComparison
-                    ? t1._1.compareTo(t2._1)
+                    ? e1.getKey().compareTo(e2.getKey())
                     : valueComparison;
         };
+
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         comparator,             expectedException,                expectedResult
@@ -1191,7 +1474,7 @@ public class MapUtilTest {
     @MethodSource("minTestCases")
     @DisplayName("min: test cases")
     public <T, E> void min_testCases(Map<? extends T, ? extends E> sourceMap,
-                                     Comparator<Tuple2<? extends T, ? extends E>> comparator,
+                                     Comparator<Map.Entry<? extends T, ? extends E>> comparator,
                                      Class<? extends Exception> expectedException,
                                      Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
@@ -1202,7 +1485,37 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> minValueTestCases() {
+    static Stream<Arguments> minValueNoComparatorTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, "Z3");
+            put(3, "AB");
+        }};
+        Map<Integer, String> intsAndStringsWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+            put(3, "CD");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   expectedResult
+                Arguments.of( null,                           empty() ),
+                Arguments.of( new HashMap<>(),                empty() ),
+                Arguments.of( intsAndStrings,                 of("AB") ),
+                Arguments.of( intsAndStringsWithNullValues,   of("AB") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("minValueNoComparatorTestCases")
+    @DisplayName("minValue: without comparator test cases")
+    public <T, E extends Comparable<? super E>> void minValueNoComparator_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                                    Optional<E> expectedResult) {
+        assertEquals(expectedResult, minValue(sourceMap));
+    }
+
+
+    static Stream<Arguments> minValueAllParametersTestCases() {
         Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
             put(1, "AB");
             put(2, "Z3");
@@ -1224,12 +1537,12 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("minValueTestCases")
-    @DisplayName("mainValue: test cases")
-    public <T, E> void minValue_testCases(Map<? extends T, ? extends E> sourceMap,
-                                          Comparator<? super E> comparator,
-                                          Class<? extends Exception> expectedException,
-                                          Optional<Tuple2<T, E>> expectedResult) {
+    @MethodSource("minValueAllParametersTestCases")
+    @DisplayName("minValue: with all parameters test cases")
+    public <T, E> void minValueAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                       Comparator<? super E> comparator,
+                                                       Class<? extends Exception> expectedException,
+                                                       Optional<Tuple2<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> minValue(sourceMap, comparator));
         } else {
@@ -1507,6 +1820,191 @@ public class MapUtilTest {
     }
 
 
+    static Stream<Arguments> sortWithComparatorAndMapsTestCases() {
+        Map<Integer, String> map1 = new HashMap<>() {{
+            put(1, "A");
+            put(4, "o");
+        }};
+        Map<Integer, String> map2 = new HashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+        }};
+        Map<Integer, String> map3 = new HashMap<>() {{
+            put(6, "w");
+        }};
+        Map<Integer, String> mapWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyKeys = Map.Entry.comparingByKey();
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyValues = Map.Entry.comparingByValue();
+        Comparator<Map.Entry<Integer, String>> comparatorBoth = (e1, e2) -> {
+            Comparator<String> valueComparator = safeNaturalOrderNullLast();   // Required because sometimes the Java compiler is stupid
+            int valueComparison = valueComparator.compare(e1.getValue(), e2.getValue());
+            return 0 != valueComparison
+                    ? e1.getKey().compareTo(e2.getKey())
+                    : valueComparison;
+        };
+
+        Map<Integer, String> expectedResultMaps123OnlyKeysComparator = new LinkedHashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+            put(4, "o");
+            put(6, "w");
+        }};
+        Map<Integer, String> expectedResultMaps123OnlyValuesComparator = new LinkedHashMap<>() {{
+            put(4, "o");
+            put(1, "t");
+            put(6, "w");
+            put(2, "y");
+        }};
+        Map<Integer, String> expectedResultMap2AndMapWithNullValuesBothComparator = new LinkedHashMap<>() {{
+            put(2, null);
+            put(1, "AB");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            mapToSort1,   mapToSort2,          mapToSort3,   comparator,             expectedException,                expectedResult
+                Arguments.of( null,         null,                null,         null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( map1,         null,                null,         null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( map1,         map2,                null,         null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( map1,         map2,                map3,         null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),     null,                null,         comparatorOnlyKeys,     null,                             Map.of() ),
+                Arguments.of( Map.of(),     Map.of(),            null,         comparatorOnlyKeys,     null,                             Map.of() ),
+                Arguments.of( Map.of(),     Map.of(),            Map.of(),     comparatorOnlyKeys,     null,                             Map.of() ),
+                Arguments.of( map1,         null,                null,         comparatorOnlyKeys,     null,                             map1 ),
+                Arguments.of( map1,         null,                null,         comparatorOnlyValues,   null,                             map1 ),
+                Arguments.of( map1,         map2,                map3,         comparatorOnlyKeys,     null,                             expectedResultMaps123OnlyKeysComparator ),
+                Arguments.of( map1,         map2,                map3,         comparatorOnlyValues,   null,                             expectedResultMaps123OnlyValuesComparator ),
+                Arguments.of( map2,         mapWithNullValues,   null,         comparatorBoth,         null,                             expectedResultMap2AndMapWithNullValuesBothComparator )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("sortWithComparatorAndMapsTestCases")
+    @DisplayName("sort: with comparator and maps test cases")
+    public <T, E> void sortWithComparatorAndMaps_testCases(Map<? extends T, ? extends E> mapToSort1,
+                                                           Map<? extends T, ? extends E> mapToSort2,
+                                                           Map<? extends T, ? extends E> mapToSort3,
+                                                           Comparator<Map.Entry<? extends T, ? extends E>> comparator,
+                                                           Class<? extends Exception> expectedException,
+                                                           Map<T, E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> sort(comparator, mapToSort1, mapToSort2, mapToSort3));
+        }
+        else {
+            assertEquals(expectedResult, sort(comparator, mapToSort1, mapToSort2, mapToSort3));
+        }
+    }
+
+
+    static Stream<Arguments> sortAllParametersTestCases() {
+        Map<Integer, String> map1 = new HashMap<>() {{
+            put(1, "A");
+            put(4, "o");
+        }};
+        Map<Integer, String> map2 = new HashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+        }};
+        Map<Integer, String> map3 = new HashMap<>() {{
+            put(6, "w");
+        }};
+        Map<Integer, String> mapWithNullValues = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyKeys = Map.Entry.comparingByKey();
+        Comparator<Map.Entry<Integer, String>> comparatorOnlyValues = Map.Entry.comparingByValue();
+        Comparator<Map.Entry<Integer, String>> comparatorBoth = (e1, e2) -> {
+            Comparator<String> valueComparator = safeNaturalOrderNullLast();   // Required because sometimes the Java compiler is stupid
+            int valueComparison = valueComparator.compare(e1.getValue(), e2.getValue());
+            return 0 != valueComparison
+                    ? e1.getKey().compareTo(e2.getKey())
+                    : valueComparison;
+        };
+        BinaryOperator<String> keepsOldValue = (oldValue, newValue) -> oldValue;
+
+        Map<Integer, String> expectedResultMaps123OnlyKeysComparatorDefaultMerge = new LinkedHashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+            put(4, "o");
+            put(6, "w");
+        }};
+        Map<Integer, String> expectedResultMaps123OnlyKeysComparatorProvidedMerge = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(2, "y");
+            put(4, "o");
+            put(6, "w");
+        }};
+        Map<Integer, String> expectedResultMaps123OnlyValuesComparatorDefaultMerge = new LinkedHashMap<>() {{
+            put(4, "o");
+            put(1, "t");
+            put(6, "w");
+            put(2, "y");
+        }};
+        Map<Integer, String> expectedResultMaps123OnlyValuesComparatorProvidedMerge = new LinkedHashMap<>() {{
+            put(1, "A");
+            put(4, "o");
+            put(6, "w");
+            put(2, "y");
+        }};
+        Map<Integer, String> expectedResultMap2AndMapWithNullValuesBothComparatorDefaultMerge = new LinkedHashMap<>() {{
+            put(1, "AB");
+            put(2, null);
+        }};
+        Map<Integer, String> expectedResultMap2AndMapWithNullValuesBothComparatorProvidedMerge = new LinkedHashMap<>() {{
+            put(1, "t");
+            put(2, "y");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            mapToSort1,   mapToSort2,          mapToSort3,   comparator,             mergeValueFunction,   expectedException,                expectedResult
+                Arguments.of( null,         null,                null,         null,                   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( map1,         null,                null,         null,                   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( map1,         map2,                null,         null,                   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( map1,         map2,                map3,         null,                   null,                 IllegalArgumentException.class,   null ),
+                Arguments.of( map1,         map2,                map3,         null,                   keepsOldValue,        IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),     null,                null,         comparatorOnlyKeys,     null,                 null,                             Map.of() ),
+                Arguments.of( Map.of(),     null,                null,         comparatorOnlyKeys,     keepsOldValue,        null,                             Map.of() ),
+                Arguments.of( Map.of(),     Map.of(),            null,         comparatorOnlyKeys,     null,                 null,                             Map.of() ),
+                Arguments.of( Map.of(),     Map.of(),            null,         comparatorOnlyKeys,     keepsOldValue,        null,                             Map.of() ),
+                Arguments.of( Map.of(),     Map.of(),            Map.of(),     comparatorOnlyKeys,     null,                 null,                             Map.of() ),
+                Arguments.of( Map.of(),     Map.of(),            Map.of(),     comparatorOnlyKeys,     keepsOldValue,        null,                             Map.of() ),
+                Arguments.of( map1,         null,                null,         comparatorOnlyKeys,     null,                 null,                             map1 ),
+                Arguments.of( map1,         null,                null,         comparatorOnlyKeys,     keepsOldValue,        null,                             map1 ),
+                Arguments.of( map1,         null,                null,         comparatorOnlyValues,   null,                 null,                             map1 ),
+                Arguments.of( map1,         null,                null,         comparatorOnlyValues,   keepsOldValue,        null,                             map1 ),
+                Arguments.of( map1,         map2,                map3,         comparatorOnlyKeys,     null,                 null,                             expectedResultMaps123OnlyKeysComparatorDefaultMerge ),
+                Arguments.of( map1,         map2,                map3,         comparatorOnlyKeys,     keepsOldValue,        null,                             expectedResultMaps123OnlyKeysComparatorProvidedMerge ),
+                Arguments.of( map1,         map2,                map3,         comparatorOnlyValues,   null,                 null,                             expectedResultMaps123OnlyValuesComparatorDefaultMerge ),
+                Arguments.of( map1,         map2,                map3,         comparatorOnlyValues,   keepsOldValue,        null,                             expectedResultMaps123OnlyValuesComparatorProvidedMerge ),
+                Arguments.of( map2,         mapWithNullValues,   null,         comparatorBoth,         null,                 null,                             expectedResultMap2AndMapWithNullValuesBothComparatorDefaultMerge ),
+                Arguments.of( map2,         mapWithNullValues,   null,         comparatorBoth,         keepsOldValue,        null,                             expectedResultMap2AndMapWithNullValuesBothComparatorProvidedMerge )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("sortAllParametersTestCases")
+    @DisplayName("sort: with all parameters test cases")
+    public <T, E> void sortAllParameters_testCases(Map<? extends T, ? extends E> mapToSort1,
+                                                   Map<? extends T, ? extends E> mapToSort2,
+                                                   Map<? extends T, ? extends E> mapToSort3,
+                                                   Comparator<Map.Entry<? extends T, ? extends E>> comparator,
+                                                   BinaryOperator<E> mergeValueFunction,
+                                                   Class<? extends Exception> expectedException,
+                                                   Map<T, E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> sort(comparator, mergeValueFunction, mapToSort1, mapToSort2, mapToSort3));
+        }
+        else {
+            assertEquals(expectedResult, sort(comparator, mergeValueFunction, mapToSort1, mapToSort2, mapToSort3));
+        }
+    }
+
+
     static Stream<Arguments> splitTestCases() {
         Map<String, Integer> sourceMap = new LinkedHashMap<>() {{
             put("A", 1);
@@ -1599,11 +2097,18 @@ public class MapUtilTest {
             put(1, "A");
             put(2, "B");
             put(4, "o");
+            put(6, null);
         }};
-        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) ->
+                k % 2 == 0 &&
+                (
+                    null == v ||
+                    "AEIOUaeiou".contains(v)
+                );
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
         Map<Integer, String> intsAndStringsResult = new LinkedHashMap<>() {{
             put(4, "o");
+            put(6, null);
         }};
         return Stream.of(
                 //@formatter:off

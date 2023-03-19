@@ -1637,7 +1637,7 @@ public class CollectionUtil {
      *
      * @return new sorted {@link List}, containing the elements of {@code collections}
      *
-     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code collections} has elements
      */
     @SafeVarargs
     public static <T> List<T> sort(final Comparator<? super T> comparator,
@@ -1673,13 +1673,12 @@ public class CollectionUtil {
      *
      * @return new sorted {@link Collection}, containing the elements of {@code collections}
      *
-     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code collections} has elements
      */
     @SafeVarargs
     public static <T> Collection<T> sort(final Comparator<? super T> comparator,
                                          final Supplier<Collection<T>> collectionFactory,
                                          final Collection<? extends T> ...collections) {
-        Assert.notNull(comparator, "comparator must be not null");
         final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
                 collectionFactory,
                 ArrayList::new
@@ -1687,6 +1686,7 @@ public class CollectionUtil {
         if (ObjectUtil.isEmpty(collections)) {
             return finalCollectionFactory.get();
         }
+        Assert.notNull(comparator, "comparator must be not null");
         return concat(collections)
                 .stream()
                 .sorted(comparator)

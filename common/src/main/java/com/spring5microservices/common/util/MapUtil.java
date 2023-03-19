@@ -14,14 +14,18 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import static com.spring5microservices.common.util.CollectorsUtil.toMapNullableValues;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -30,7 +34,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 @UtilityClass
 public class MapUtil {
@@ -147,13 +150,126 @@ public class MapUtil {
                                 )
                 )
                 .collect(
-                        toMap(
+                        toMapNullableValues(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
                                 overwriteWithNew(),
                                 finalMapFactory
                         )
                 );
+    }
+
+
+    /**
+     *    Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}. By default, merging
+     * the maps if the key exists its value will be updated with the latest one.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *    [(2, "Dear"), (5, "World")]
+     * </pre>
+     *
+     * @param maps
+     *    {@link Map}s to concat
+     *
+     * @return {@link Map} with the elements of {@code maps}
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> concat(final Map<? extends T, ? extends E> ...maps) {
+        return concat(
+                LinkedHashMap::new,
+                overwriteWithNew(),
+                maps
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}. By default, merging
+     * the maps, if the key exists its value will be updated with the latest one.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    HashMap::new                    [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *    [(1, "Hi"), (2, "Hello")]
+     *    [(2, "Dear"), (5, "World")]
+     * </pre>
+     *
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     * @param maps
+     *    {@link Map}s to concat
+     *
+     * @return {@link Map} with the elements of {@code maps}
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> concat(final Supplier<Map<T, E>> mapFactory,
+                                          final Map<? extends T, ? extends E> ...maps) {
+        return concat(
+                mapFactory,
+                overwriteWithNew(),
+                maps
+        );
+    }
+
+
+    /**
+     * Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    HashMap::new                    [(1, "Hi"), (2, "Hello"), (5, "World")]
+     *    (oldV, newV) -> oldV
+     *    [(1, "Hi"), (2, "Hello")]
+     *    [(2, "Dear"), (5, "World")]
+     * </pre>
+     *
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     * @param mergeValueFunction
+     *    {@link BinaryOperator} used to resolve collisions between values associated with the same key. If no one is
+     *    provided, by default last value will be used
+     * @param maps
+     *    {@link Map}s to concat
+     *
+     * @return {@link Map} with the elements of {@code maps}
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> concat(final Supplier<Map<T, E>> mapFactory,
+                                          final BinaryOperator<E> mergeValueFunction,
+                                          final Map<? extends T, ? extends E> ...maps) {
+        final Supplier<Map<T, E>> finalMapFactory = ObjectUtil.getOrElse(
+                mapFactory,
+                LinkedHashMap::new
+        );
+        final BinaryOperator<E> finalMergeValueFunction = ObjectUtil.getOrElse(
+                mergeValueFunction,
+                overwriteWithNew()
+        );
+        return ofNullable(maps)
+                .map(m ->
+                        Stream.of(m)
+                                .filter(Objects::nonNull)
+                                .flatMap(notNullMap -> notNullMap.entrySet().stream())
+                                .collect(
+                                        toMapNullableValues(
+                                                Map.Entry::getKey,
+                                                Map.Entry::getValue,
+                                                finalMergeValueFunction,
+                                                finalMapFactory
+                                        )
+                                )
+                )
+                .orElseGet(finalMapFactory);
     }
 
 
@@ -250,7 +366,7 @@ public class MapUtil {
                         )
                 )
                 .collect(
-                        toMap(
+                        toMapNullableValues(
                                 Map.Entry::getKey,
                                 entry ->
                                         mapFunction.apply(
@@ -911,7 +1027,7 @@ public class MapUtil {
                         )
                 )
                 .collect(
-                        toMap(
+                        toMapNullableValues(
                                 t -> t._1,
                                 t -> t._2,
                                 overwriteWithNew(),
@@ -989,7 +1105,7 @@ public class MapUtil {
         return sourceMap.entrySet()
                 .stream()
                 .collect(
-                        toMap(
+                        toMapNullableValues(
                                 Map.Entry::getKey,
                                 entry ->
                                         mapFunction.apply(
@@ -1011,7 +1127,7 @@ public class MapUtil {
      *
      *   Parameters:                                   Result:
      *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional((5, "World"))
-     *    (t1, t2) -> t1._1.compareTo(t2._1)
+     *    Map.Entry.comparingByKey();
      * </pre>
      *
      * @param sourceMap
@@ -1025,16 +1141,13 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
     public static <T, E> Optional<Tuple2<T, E>> max(final Map<? extends T, ? extends E> sourceMap,
-                                                    final Comparator<Tuple2<? extends T, ? extends E>> comparator) {
+                                                    final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
         Assert.notNull(comparator, "comparator must be not null");
         return ofNullable(sourceMap)
                 .map(m -> {
-                    Tuple2<T, E> largestElement = null;
-                    for (var entry : m.entrySet()) {
-                        Tuple2<T, E> currentElement = Tuple.of(
-                                entry.getKey(),
-                                entry.getValue()
-                        );
+                    Map.Entry<T, E> largestElement = null;
+                    for (var entry: m.entrySet()) {
+                        Map.Entry<T, E> currentElement = (Map.Entry<T, E>) entry;
                         if (isNull(largestElement)) {
                             largestElement = currentElement;
                         } else {
@@ -1044,8 +1157,56 @@ public class MapUtil {
                                             : largestElement;
                         }
                     }
-                    return largestElement;
+                    return isNull(largestElement)
+                            ? null
+                            : Tuple2.of(
+                                    largestElement.getKey(),
+                                    largestElement.getValue()
+                              );
                 });
+    }
+
+
+    /**
+     *    Finds the largest element of provided {@link Map}. To avoid {@link NullPointerException}, {@link Comparable}
+     * implementation required in the type E, will be overwritten by:
+     *
+     *       <pre>
+     *          Comparator.nullsFirst(
+     *             Comparator.naturalOrder()
+     *          )
+     *       </pre>
+     *
+     *    In that way, {@code null} values will be considered the smallest ones in the returned {@link Optional}·
+     * If you still want to avoid this default behaviour, you can use the alternative method:
+     *
+     *       <pre>
+     *          maxValue(
+     *             sourceMap,
+     *             comparator          // Comparator.naturalOrder() uses Comparable definition provided by E class
+     *          )
+     *       </pre>
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                   Result:
+     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("World")
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} used to find the largest value
+     *
+     * @return {@link Optional} with largest value using developed {@link Comparable} in the class of value's instances,
+     *         {@link Optional#empty()} if {@code sourceMap} has no elements or its largest value is {@code null}.
+     */
+    public static <T, E extends Comparable<? super E>> Optional<E> maxValue(final Map<? extends T, ? extends E> sourceMap) {
+        return ofNullable(sourceMap)
+                .flatMap(m ->
+                        CollectionUtil.max(
+                                m.values()
+                        )
+                );
     }
 
 
@@ -1104,16 +1265,13 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
     public static <T, E> Optional<Tuple2<T, E>> min(final Map<? extends T, ? extends E> sourceMap,
-                                                    final Comparator<Tuple2<? extends T, ? extends E>> comparator) {
+                                                    final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
         Assert.notNull(comparator, "comparator must be not null");
         return ofNullable(sourceMap)
                 .map(m -> {
-                    Tuple2<T, E> smallestElement = null;
-                    for (var entry : m.entrySet()) {
-                        Tuple2<T, E> currentElement = Tuple.of(
-                                entry.getKey(),
-                                entry.getValue()
-                        );
+                    Map.Entry<T, E> smallestElement = null;
+                    for (var entry: m.entrySet()) {
+                        Map.Entry<T, E> currentElement = (Map.Entry<T, E>) entry;
                         if (isNull(smallestElement)) {
                             smallestElement = currentElement;
                         } else {
@@ -1123,8 +1281,56 @@ public class MapUtil {
                                             : smallestElement;
                         }
                     }
-                    return smallestElement;
+                    return isNull(smallestElement)
+                            ? null
+                            : Tuple2.of(
+                                    smallestElement.getKey(),
+                                    smallestElement.getValue()
+                              );
                 });
+    }
+
+
+    /**
+     *    Finds the smallest element of provided {@link Map}. To avoid {@link NullPointerException}, {@link Comparable}
+     * implementation required in the type E, will be overwritten by:
+     *
+     *       <pre>
+     *          Comparator.nullsLast(
+     *             Comparator.naturalOrder()
+     *          )
+     *       </pre>
+     *
+     *    In that way, {@code null} values will be considered the largest ones in the returned {@link Optional}·
+     * If you still want to avoid this default behaviour, you can use the alternative method:
+     *
+     *       <pre>
+     *          minValue(
+     *             sourceMap,
+     *             comparator          // Comparator.naturalOrder() uses Comparable definition provided by E class
+     *          )
+     *       </pre>
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                   Result:
+     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("World")
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} used to find the smallest value
+     *
+     * @return {@link Optional} with smallest value using developed {@link Comparable} in the class of value's instances,
+     *         {@link Optional#empty()} if {@code sourceMap} has no elements or its largest value is {@code null}.
+     */
+    public static <T, E extends Comparable<? super E>> Optional<E> minValue(final Map<? extends T, ? extends E> sourceMap) {
+        return ofNullable(sourceMap)
+                .flatMap(m ->
+                        CollectionUtil.min(
+                                m.values()
+                        )
+                );
     }
 
 
@@ -1380,6 +1586,100 @@ public class MapUtil {
 
 
     /**
+     *    Sorts a {@link Map} based on provided {@link Comparator} {@code comparator}. Using {@link SortedMap} implementations
+     * you will be able to provide a {@link Comparator} to sort only the keys, that is not the case in this method, it allows
+     * to deal with a key/value {@link Comparator}, returning a sorted {@link Map} based on it.
+     * <p>
+     *    By default, ordering  the maps, if the key exists its value will be updated with the latest one.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                            Result:
+     *    Map.Entry.comparingByKey();            [(1, "Yes"), (2, "No"), (3, "Hello")]
+     *    [(1, "Hi"), (3, "Hello")]
+     *    [(1, "Yes"), (2, "No")]
+     * </pre>
+     *
+     * @param comparator
+     *    {@link Comparator} to be used for comparing elements (both keys and values)
+     * @param maps
+     *    {@link Map}s to sort
+     *
+     * @return sorted {@link Map} with the elements of {@code maps}
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code maps} has elements
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> sort(final Comparator<Map.Entry<? extends T, ? extends E>> comparator,
+                                        final Map<? extends T, ? extends E> ...maps) {
+        return sort(
+                comparator,
+                overwriteWithNew(),
+                maps
+        );
+    }
+
+
+    /**
+     *    Sorts a {@link Map} based on provided {@link Comparator} {@code comparator}. Using {@link SortedMap} implementations
+     * you will be able to provide a {@link Comparator} to sort only the keys, that is not the case in this method, it allows
+     * to deal with a key/value {@link Comparator}, returning a sorted {@link Map} based on it.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                            Result:
+     *    Map.Entry.comparingByKey();            [(1, "Hi"), (2, "No"), (3, "Hello")]
+     *    (oldV, newV) -> oldV
+     *    [(1, "Hi"), (3, "Hello")]
+     *    [(1, "Yes"), (2, "No")]
+     * </pre>
+     *
+     * @param comparator
+     *    {@link Comparator} to be used for comparing elements (both keys and values)
+     * @param mergeValueFunction
+     *    {@link BinaryOperator} used to resolve collisions between values associated with the same key. If no one is
+     *    provided, by default last value will be used
+     * @param maps
+     *    {@link Map}s to sort
+     *
+     * @return sorted {@link Map} with the elements of {@code maps}
+     *
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code maps} has elements
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> sort(final Comparator<Map.Entry<? extends T, ? extends E>> comparator,
+                                        final BinaryOperator<E> mergeValueFunction,
+                                        final Map<? extends T, ? extends E> ...maps) {
+        if (ObjectUtil.isEmpty(maps)) {
+            return new LinkedHashMap<>();
+        }
+        Assert.notNull(comparator, "comparator must be not null");
+        final BinaryOperator<E> finalMergeValueFunction = ObjectUtil.getOrElse(
+                mergeValueFunction,
+                overwriteWithNew()
+        );
+        return concat(
+                  HashMap::new,
+                  finalMergeValueFunction,
+                  maps
+               )
+               .entrySet()
+               .stream()
+               .sorted(comparator)
+               .collect(
+                       toMapNullableValues(
+                               Map.Entry::getKey,
+                               Map.Entry::getValue,
+                               finalMergeValueFunction,
+                               LinkedHashMap::new
+                        )
+                );
+    }
+
+
+    /**
      * Splits the given {@link Map} in sublists with a size equal to the given {@code size}
      *
      * <pre>
@@ -1510,7 +1810,7 @@ public class MapUtil {
                         )
                 )
                 .collect(
-                        toMap(
+                        toMapNullableValues(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
                                 overwriteWithNew(),
@@ -1520,6 +1820,20 @@ public class MapUtil {
     }
 
 
+    /**
+     *    Helper method used in conflict resolution on {@link Map}'s creation, when the new instance already contains
+     * an entry with the same key but different value than the new one to add. In this case, the new value will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   toMap(
+     *      Map.Entry::getKey,
+     *      Map.Entry::getValue,
+     *      overwriteWithNew()
+     *   )
+     * </pre>
+     */
     private static <T> BinaryOperator<T> overwriteWithNew() {
         return (oldValue, newValue) -> newValue;
     }
