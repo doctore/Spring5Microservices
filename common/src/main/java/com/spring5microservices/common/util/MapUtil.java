@@ -1661,7 +1661,7 @@ public class MapUtil {
                 overwriteWithNew()
         );
         return concat(
-                  HashMap::new,
+                  LinkedHashMap::new,
                   finalMergeValueFunction,
                   maps
                )
