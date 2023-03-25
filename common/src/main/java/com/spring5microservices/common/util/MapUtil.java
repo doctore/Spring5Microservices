@@ -153,7 +153,6 @@ public class MapUtil {
                         toMapNullableValues(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
-                                overwriteWithNew(),
                                 finalMapFactory
                         )
                 );
@@ -373,7 +372,6 @@ public class MapUtil {
                                                 entry.getKey(),
                                                 entry.getValue()
                                         ),
-                                overwriteWithNew(),
                                 finalMapFactory
                         )
                 );
@@ -1030,7 +1028,6 @@ public class MapUtil {
                         toMapNullableValues(
                                 t -> t._1,
                                 t -> t._2,
-                                overwriteWithNew(),
                                 finalMapFactory
                         )
                 );
@@ -1112,7 +1109,6 @@ public class MapUtil {
                                                 entry.getKey(),
                                                 entry.getValue()
                                         ),
-                                overwriteWithNew(),
                                 finalMapFactory
                         )
                 );
@@ -1813,7 +1809,6 @@ public class MapUtil {
                         toMapNullableValues(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
-                                overwriteWithNew(),
                                 finalMapFactory
                         )
                 );

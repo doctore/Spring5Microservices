@@ -13,7 +13,9 @@ public class ComparatorUtil {
      * @return null safe {@link Comparator} that considers the {@code null}s the smallest values
      */
     public static <T extends Comparable<? super T>> Comparator<T> safeNaturalOrderNullFirst() {
-        return Comparator.nullsFirst(Comparator.naturalOrder());
+        return Comparator.nullsFirst(
+                Comparator.naturalOrder()
+        );
     }
 
 
@@ -23,7 +25,9 @@ public class ComparatorUtil {
      * @return null safe {@link Comparator} that considers the {@code null}s the largest values
      */
     public static <T extends Comparable<? super T>> Comparator<T> safeNaturalOrderNullLast() {
-        return Comparator.nullsLast(Comparator.naturalOrder());
+        return Comparator.nullsLast(
+                Comparator.naturalOrder()
+        );
     }
 
 }

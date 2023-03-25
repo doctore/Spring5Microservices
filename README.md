@@ -235,6 +235,8 @@ More information about how gRPC server and client uses it in [gRPC communication
 Maven project that includes common code used in several microservices, with several useful helper classes like:
 
 * [CollectionUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/CollectionUtil.java)
+* [CollectorsUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/CollectorsUtil.java)
+* [ComparatorUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/ComparatorUtil.java) 
 * [DateTimeUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/DateTimeUtil.java)
 * [ExceptionUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/ExceptionUtil.java) 
 * [JsonUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/JsonUtil.java) 

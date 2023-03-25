@@ -97,6 +97,45 @@ public class CollectorsUtil {
      * of applying the provided mapping functions to the input elements.
      * <p>
      *    If the mapped keys contain duplicates (according to {@link Object#equals(Object)}), the value mapping function
+     * is applied to each equal element, and the results are merged keeping the last value. The {@link Map} returned will
+     * be an instance of {@link HashMap}.
+     * <p>
+     *    This function overwrites existing {@link Collectors#toMap(Function, Function)} because it does not allow
+     * {@code null} values and throwing {@link NullPointerException} when happens. There is an open bug related with:
+     * <p>
+     *     <a href="https://bugs.openjdk.org/browse/JDK-8148463">Null values not allowed</a>
+     *
+     * @param keyMapper
+     *    Mapping {@link Function} to produce keys
+     * @param valueMapper
+     *    Mapping {@link Function} to produce values
+     * @param mapFactory
+     *    {@link Supplier} providing a new empty {@link Map} into which the results will be inserted. If no one was given,
+     *    {@link HashMap} will be used by default
+     *
+     * @return {@link Collector} which collects elements into a {@link Map} whose keys are the result of applying
+     *         {@code keyMapper} to the input elements, and whose values are the result of applying {@code valueMapper}
+     *         to all input elements equal to the key.
+     *
+     * @throws IllegalArgumentException if {@code keyMapper} or {@code valueMapper} are {@code null}
+     */
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toMapNullableValues(final Function<? super T, ? extends K> keyMapper,
+                                                                           final Function<? super T, ? extends U> valueMapper,
+                                                                           final Supplier<Map<K, U>> mapFactory) {
+        return toMapNullableValues(
+                keyMapper,
+                valueMapper,
+                overwriteWithNew(),
+                mapFactory
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Collector} that accumulates elements into a {@link Map} whose keys and values are the result
+     * of applying the provided mapping functions to the input elements.
+     * <p>
+     *    If the mapped keys contain duplicates (according to {@link Object#equals(Object)}), the value mapping function
      * is applied to each equal element, and the results are merged using the provided {@code mergeFunction}. The
      * {@link Map} is created by a provided {@code mapFactory}.
      * <p>
@@ -158,7 +197,18 @@ public class CollectorsUtil {
 
 
     /**
-     * Helper method used in conflict resolutions, returning new value when new and old ones were provided.
+     *    Helper method used in conflict resolution on {@link Map}'s creation, when the new instance already contains
+     * an entry with the same key but different value than the new one to add. In this case, the new value will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   toMapNullableValues(
+     *      Map.Entry::getKey,
+     *      Map.Entry::getValue,
+     *      overwriteWithNew()
+     *   )
+     * </pre>
      */
     private static <T> BinaryOperator<T> overwriteWithNew() {
         return (oldValue, newValue) -> newValue;
