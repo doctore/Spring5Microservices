@@ -199,16 +199,6 @@ public class CollectorsUtil {
     /**
      *    Helper method used in conflict resolution on {@link Map}'s creation, when the new instance already contains
      * an entry with the same key but different value than the new one to add. In this case, the new value will be returned.
-     *
-     * <pre>
-     * Example:
-     *
-     *   toMapNullableValues(
-     *      Map.Entry::getKey,
-     *      Map.Entry::getValue,
-     *      overwriteWithNew()
-     *   )
-     * </pre>
      */
     private static <T> BinaryOperator<T> overwriteWithNew() {
         return (oldValue, newValue) -> newValue;
