@@ -1,12 +1,11 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.collection.tuple.Tuple;
-import com.spring5microservices.common.collection.tuple.Tuple2;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -20,7 +19,6 @@ import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -42,7 +40,7 @@ public class MapUtil {
 
     /**
      *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the compose
-     * {@link Function} {@code secondMapper}({@code firstMapper}(x))
+     * {@link BiFunction} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
      * Example:
@@ -56,9 +54,9 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to transform
      * @param firstMapper
-     *    {@link Function} with the first modification to apply
+     *    {@link BiFunction} with the first modification to apply
      * @param secondMapper
-     *    {@link Function} with the second modification to apply
+     *    {@link BiFunction} with the second modification to apply
      *
      * @return {@link Map} applying {@code firstMapper} and {@code secondMapper} to the provided {@code sourceMap}
      *
@@ -79,7 +77,7 @@ public class MapUtil {
 
     /**
      *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the compose
-     * {@link Function} {@code secondMapper}({@code firstMapper}(x))
+     * {@link BiFunction} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
      * Example:
@@ -94,9 +92,9 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to transform
      * @param firstMapper
-     *    {@link Function} with the first modification to apply
+     *    {@link BiFunction} with the first modification to apply
      * @param secondMapper
-     *    {@link Function} with the second modification to apply
+     *    {@link BiFunction} with the second modification to apply
      * @param mapFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
      *    If {@code null} then {@link HashMap}
@@ -586,7 +584,7 @@ public class MapUtil {
      * Example:
      *
      *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      Optional(Tuple2.of(2, "Hello"))
+     *    [(1, "Hi"), (2, "Hello")]      Optional((2, "Hello"))
      *    (k, v) -> k % 2 == 0
      * </pre>
      *
@@ -595,11 +593,11 @@ public class MapUtil {
      * @param filterPredicate
      *    {@link BiPredicate} used to filter elements of {@code sourceMap}
      *
-     * @return {@link Optional} of {@link Tuple2} containing the first element that satisfies {@code filterPredicate},
+     * @return {@link Optional} of {@link Map.Entry} containing the first element that satisfies {@code filterPredicate},
      *         {@link Optional#empty()} otherwise.
      */
-    public static <T, E> Optional<Tuple2<T, E>> find(final Map<? extends T, ? extends E> sourceMap,
-                                                     final BiPredicate<? super T, ? super E> filterPredicate) {
+    public static <T, E> Optional<Map.Entry<T, E>> find(final Map<? extends T, ? extends E> sourceMap,
+                                                        final BiPredicate<? super T, ? super E> filterPredicate) {
         if (CollectionUtils.isEmpty(sourceMap) || isNull(filterPredicate)) {
             return empty();
         }
@@ -613,7 +611,7 @@ public class MapUtil {
                 )
                 .findFirst()
                 .map(entry ->
-                        Tuple.of(
+                        new AbstractMap.SimpleEntry<>(
                                 entry.getKey(),
                                 entry.getValue()
                         )
@@ -1271,13 +1269,13 @@ public class MapUtil {
      * @param comparator
      *    {@link Comparator} to be used for comparing elements
      *
-     * @return {@link Optional} of {@link Tuple2} containing the largest element using {@code comparator},
+     * @return {@link Optional} of {@link Map.Entry} containing the largest element using {@code comparator},
      *         {@link Optional#empty()} if {@code sourceMap} has no elements.
      *
      * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
-    public static <T, E> Optional<Tuple2<T, E>> max(final Map<? extends T, ? extends E> sourceMap,
-                                                    final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
+    public static <T, E> Optional<Map.Entry<T, E>> max(final Map<? extends T, ? extends E> sourceMap,
+                                                       final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
         Assert.notNull(comparator, "comparator must be not null");
         return ofNullable(sourceMap)
                 .map(m -> {
@@ -1293,12 +1291,7 @@ public class MapUtil {
                                             : largestElement;
                         }
                     }
-                    return isNull(largestElement)
-                            ? null
-                            : Tuple2.of(
-                                    largestElement.getKey(),
-                                    largestElement.getValue()
-                              );
+                    return largestElement;
                 });
     }
 
@@ -1395,13 +1388,13 @@ public class MapUtil {
      * @param comparator
      *    {@link Comparator} to be used for comparing elements
      *
-     * @return {@link Optional} of {@link Tuple2} containing the smallest value using {@code comparator},
+     * @return {@link Optional} of {@link Map.Entry} containing the smallest value using {@code comparator},
      *         {@link Optional#empty()} if {@code sourceMap} has no elements.
      *
      * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
-    public static <T, E> Optional<Tuple2<T, E>> min(final Map<? extends T, ? extends E> sourceMap,
-                                                    final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
+    public static <T, E> Optional<Map.Entry<T, E>> min(final Map<? extends T, ? extends E> sourceMap,
+                                                       final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
         Assert.notNull(comparator, "comparator must be not null");
         return ofNullable(sourceMap)
                 .map(m -> {
@@ -1417,12 +1410,7 @@ public class MapUtil {
                                             : smallestElement;
                         }
                     }
-                    return isNull(smallestElement)
-                            ? null
-                            : Tuple2.of(
-                                    smallestElement.getKey(),
-                                    smallestElement.getValue()
-                              );
+                    return smallestElement;
                 });
     }
 

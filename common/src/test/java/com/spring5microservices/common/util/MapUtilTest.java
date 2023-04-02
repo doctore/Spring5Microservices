@@ -1,6 +1,5 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.collection.tuple.Tuple;
 import com.spring5microservices.common.collection.tuple.Tuple2;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import org.junit.jupiter.api.DisplayName;
@@ -860,8 +859,8 @@ public class MapUtilTest {
                 Arguments.of( null,              isKeyEvenAndValueVowel,        empty() ),
                 Arguments.of( Map.of(),          isKeyEvenAndValueVowel,        empty() ),
                 Arguments.of( intsAndStrings,    isValueContainsZ,              empty() ),
-                Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        of(Tuple.of(4, "o")) ),
-                Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   of(Tuple.of("TZ", 69L)) )
+                Arguments.of( intsAndStrings,    isKeyEvenAndValueVowel,        of(Map.entry(4, "o")) ),
+                Arguments.of( stringsAndLongs,   isKeyContainsZAndValueIsOdd,   of(Map.entry("TZ", 69L)) )
         ); //@formatter:on
     }
 
@@ -870,7 +869,7 @@ public class MapUtilTest {
     @DisplayName("find: test cases")
     public <T, E> void find_testCases(Map<? extends T, ? extends E> sourceMap,
                                       BiPredicate<? super T, ? super E> filterPredicate,
-                                      Optional<Tuple2<T, E>> expectedResult) {
+                                      Optional<Map.Entry<T, E>> expectedResult) {
         assertEquals(expectedResult, find(sourceMap, filterPredicate));
     }
 
@@ -1568,9 +1567,9 @@ public class MapUtilTest {
                 Arguments.of( intsAndStrings,    null,                   IllegalArgumentException.class,   null ),
                 Arguments.of( null,              comparatorOnlyKeys,     null,                             empty() ),
                 Arguments.of( new HashMap<>(),   comparatorOnlyKeys,     null,                             empty() ),
-                Arguments.of( intsAndStrings,    comparatorOnlyKeys,     null,                             of(Tuple2.of(4, "UTf")) ),
-                Arguments.of( intsAndStrings,    comparatorOnlyValues,   null,                             of(Tuple2.of(2, "Z3")) ),
-                Arguments.of( intsAndStrings,    comparatorBoth,         null,                             of(Tuple2.of(4, "UTf")) )
+                Arguments.of( intsAndStrings,    comparatorOnlyKeys,     null,                             of(Map.entry(4, "UTf")) ),
+                Arguments.of( intsAndStrings,    comparatorOnlyValues,   null,                             of(Map.entry(2, "Z3")) ),
+                Arguments.of( intsAndStrings,    comparatorBoth,         null,                             of(Map.entry(4, "UTf")) )
         ); //@formatter:on
     }
 
@@ -1580,7 +1579,7 @@ public class MapUtilTest {
     public <T, E> void max_testCases(Map<? extends T, ? extends E> sourceMap,
                                      Comparator<Map.Entry<? extends T, ? extends E>> comparator,
                                      Class<? extends Exception> expectedException,
-                                     Optional<Tuple2<T, E>> expectedResult) {
+                                     Optional<Map.Entry<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> max(sourceMap, comparator));
         } else {
@@ -1671,7 +1670,6 @@ public class MapUtilTest {
                     ? e1.getKey().compareTo(e2.getKey())
                     : valueComparison;
         };
-
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         comparator,             expectedException,                expectedResult
@@ -1679,9 +1677,9 @@ public class MapUtilTest {
                 Arguments.of( intsAndStrings,    null,                   IllegalArgumentException.class,   null ),
                 Arguments.of( null,              comparatorOnlyKeys,     null,                             empty() ),
                 Arguments.of( new HashMap<>(),   comparatorOnlyKeys,     null,                             empty() ),
-                Arguments.of( intsAndStrings,    comparatorOnlyKeys,     null,                             of(Tuple2.of(1, "TT")) ),
-                Arguments.of( intsAndStrings,    comparatorOnlyValues,   null,                             of(Tuple2.of(2, "BA")) ),
-                Arguments.of( intsAndStrings,    comparatorBoth,         null,                             of(Tuple2.of(1, "TT")) )
+                Arguments.of( intsAndStrings,    comparatorOnlyKeys,     null,                             of(Map.entry(1, "TT")) ),
+                Arguments.of( intsAndStrings,    comparatorOnlyValues,   null,                             of(Map.entry(2, "BA")) ),
+                Arguments.of( intsAndStrings,    comparatorBoth,         null,                             of(Map.entry(1, "TT")) )
         ); //@formatter:on
     }
 
@@ -1691,7 +1689,7 @@ public class MapUtilTest {
     public <T, E> void min_testCases(Map<? extends T, ? extends E> sourceMap,
                                      Comparator<Map.Entry<? extends T, ? extends E>> comparator,
                                      Class<? extends Exception> expectedException,
-                                     Optional<Tuple2<T, E>> expectedResult) {
+                                     Optional<Map.Entry<T, E>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> min(sourceMap, comparator));
         } else {
