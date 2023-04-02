@@ -232,7 +232,7 @@ More information about how gRPC server and client uses it in [gRPC communication
 
 ### common
 
-Maven project that includes common code used in several microservices, with several useful helper classes like:
+Maven project that includes common code used in several microservices, with different useful helper classes like:
 
 * [CollectionUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/CollectionUtil.java)
 * [CollectorsUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/CollectorsUtil.java)
@@ -242,7 +242,7 @@ Maven project that includes common code used in several microservices, with seve
 * [JsonUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/JsonUtil.java) 
 * [MapUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/MapUtil.java)
 * [NumberUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/NumberUtil.java)
-* [ObjectsUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/ObjectsUtil.java)
+* [ObjectUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/ObjectUtil.java)
 * [StringUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/StringUtil.java) 
 
 Generic interfaces used to provide common conversion functionality using [MapStruct](https://mapstruct.org): 
