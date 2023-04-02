@@ -48,9 +48,99 @@ import static java.util.stream.Collectors.toList;
 @UtilityClass
 public class CollectionUtil {
 
+
     /**
-     *    In the given {@code sourceCollection}, applies {@code defaultFunction} if the current element verifies
-     * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
+     *    Returns a new {@link List} using the given {@code sourceCollection}, applying to its elements the compose
+     * {@link Function} {@code secondMapper}({@code firstMapper}(x))
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            ["2", "3", "4", "7"]
+     *    i -> i + 1
+     *    Object::toString
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param firstMapper
+     *    {@link Function} with the first modification to apply
+     * @param secondMapper
+     *    {@link Function} with the second modification to apply
+     *
+     * @return {@link List} applying {@code firstMapper} and {@code secondMapper} to the provided {@code sourceCollection}
+     *
+     * @throws IllegalArgumentException if {@code firstMapper} or {@code secondMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    public static <T, E, R> List<R> andThen(final Collection<? extends T> sourceCollection,
+                                            final Function<? super T, ? extends E> firstMapper,
+                                            final Function<? super E, ? extends R> secondMapper) {
+        return (List<R>) andThen(
+                sourceCollection,
+                firstMapper,
+                secondMapper,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying to its elements the
+     * compose {@link Function} {@code secondMapper}({@code firstMapper}(x))
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            ["2", "3", "4", "7"]
+     *    i -> i + 1
+     *    Object::toString
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param firstMapper
+     *    {@link Function} with the first modification to apply
+     * @param secondMapper
+     *    {@link Function} with the second modification to apply
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link List} applying {@code firstMapper} and {@code secondMapper} to the provided {@code sourceCollection}
+     *
+     * @throws IllegalArgumentException if {@code firstMapper} or {@code secondMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    public static <T, E, R> Collection<R> andThen(final Collection<? extends T> sourceCollection,
+                                                  final Function<? super T, ? extends E> firstMapper,
+                                                  final Function<? super E, ? extends R> secondMapper,
+                                                  final Supplier<Collection<R>> collectionFactory) {
+        final Supplier<Collection<R>> finalCollectionFactory = getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(firstMapper, "firstMapper must be not null");
+        Assert.notNull(secondMapper, "secondMapper must be not null");
+        final Function<? super T, ? extends R> finalMapper = firstMapper.andThen(secondMapper);
+
+        return sourceCollection.stream()
+                .map(finalMapper)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
+     *    Returns a new {@link List} using the given {@code sourceCollection}, applying {@code defaultMapper} if the
+     *  current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -66,33 +156,33 @@ public class CollectionUtil {
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
-     * @param defaultFunction
+     * @param defaultMapper
      *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}
-     * @param orElseFunction
+     * @param orElseMapper
      *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      *
      * @return {@link List}
      *
-     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
      */
     public static <T, E> List<E> applyOrElse(final Collection<? extends T> sourceCollection,
                                              final Predicate<? super T> filterPredicate,
-                                             final Function<? super T, ? extends E> defaultFunction,
-                                             final Function<? super T, ? extends E> orElseFunction) {
+                                             final Function<? super T, ? extends E> defaultMapper,
+                                             final Function<? super T, ? extends E> orElseMapper) {
         return (List<E>) applyOrElse(
                 sourceCollection,
                 filterPredicate,
-                defaultFunction,
-                orElseFunction,
+                defaultMapper,
+                orElseMapper,
                 ArrayList::new
         );
     }
 
 
     /**
-     *    In the given {@code sourceCollection}, applies {@code defaultFunction} if the current element verifies
-     * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
+     *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying {@code defaultMapper} if
+     *  the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -109,9 +199,9 @@ public class CollectionUtil {
      *    Source {@link Collection} with the elements to filter and transform
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
-     * @param defaultFunction
+     * @param defaultMapper
      *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}
-     * @param orElseFunction
+     * @param orElseMapper
      *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
@@ -119,13 +209,13 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      *
-     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
      */
     public static <T, E> Collection<E> applyOrElse(final Collection<? extends T> sourceCollection,
                                                    final Predicate<? super T> filterPredicate,
-                                                   final Function<? super T, ? extends E> defaultFunction,
-                                                   final Function<? super T, ? extends E> orElseFunction,
+                                                   final Function<? super T, ? extends E> defaultMapper,
+                                                   final Function<? super T, ? extends E> orElseMapper,
                                                    final Supplier<Collection<E>> collectionFactory) {
         final Supplier<Collection<E>> finalCollectionFactory = getOrElse(
                 collectionFactory,
@@ -134,8 +224,8 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
-        Assert.notNull(defaultFunction, "defaultFunction must be not null");
-        Assert.notNull(orElseFunction, "orElseFunction must be not null");
+        Assert.notNull(defaultMapper, "defaultMapper must be not null");
+        Assert.notNull(orElseMapper, "orElseMapper must be not null");
         final Predicate<? super T> finalFilterPredicate = getOrElse(
                 filterPredicate,
                 alwaysTrue()
@@ -143,8 +233,8 @@ public class CollectionUtil {
         return sourceCollection.stream()
                 .map(elto ->
                         finalFilterPredicate.test(elto)
-                                ? defaultFunction.apply(elto)
-                                : orElseFunction.apply(elto)
+                                ? defaultMapper.apply(elto)
+                                : orElseMapper.apply(elto)
                 )
                 .collect(
                         toCollection(finalCollectionFactory)

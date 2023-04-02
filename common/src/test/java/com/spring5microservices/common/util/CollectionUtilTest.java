@@ -45,6 +45,156 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CollectionUtilTest {
 
+    static Stream<Arguments> andThenNoCollectionFactoryTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, null, 6));
+
+        Function<Integer, Integer> plus1 =
+                i -> null == i
+                        ? null
+                        : i + 1;
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? null
+                        : String.valueOf(i * 2);
+        Function<String, Integer> safeLength =
+                s -> null == s
+                        ? null
+                        : s.length();
+        Function<Integer, Integer> integerIdentity = Function.identity();
+
+        List<Integer> expectedApplyPlus1AndIdentityResult = asList(2, 3, null, 7);
+        List<String> expectedApplyPlus1AndMultiply2StringResult = asList("4", "6", null, "14");
+        List<Integer> expectedApplyMultiply2StringAndLengthResult = asList(1, 1, null, 2);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   firstMapper,       secondMapper,      expectedException,                expectedResult
+                Arguments.of( null,               null,              null,              null,                             List.of() ),
+                Arguments.of( null,               plus1,             null,              null,                             List.of() ),
+                Arguments.of( null,               null,              multiply2String,   null,                             List.of() ),
+                Arguments.of( null,               plus1,             multiply2String,   null,                             List.of() ),
+                Arguments.of( List.of(),          null,              null,              null,                             List.of() ),
+                Arguments.of( List.of(),          plus1,             null,              null,                             List.of() ),
+                Arguments.of( List.of(),          null,              multiply2String,   null,                             List.of() ),
+                Arguments.of( List.of(),          plus1,             multiply2String,   null,                             List.of() ),
+                Arguments.of( ints,               null,              null,              IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               plus1,             null,              IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              multiply2String,   IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               plus1,             integerIdentity,   null,                             expectedApplyPlus1AndIdentityResult ),
+                Arguments.of( ints,               plus1,             multiply2String,   null,                             expectedApplyPlus1AndMultiply2StringResult ),
+                Arguments.of( ints,               multiply2String,   safeLength,        null,                             expectedApplyMultiply2StringAndLengthResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("andThenNoCollectionFactoryTestCases")
+    @DisplayName("andThen: without collection factory test cases")
+    public <T, E, R> void andThenNoCollectionFactory_testCases(Collection<T> sourceCollection,
+                                                               Function<? super T, ? extends E> firstMapper,
+                                                               Function<? super E, ? extends R> secondMapper,
+                                                               Class<? extends Exception> expectedException,
+                                                               List<R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () ->
+                            andThen(
+                                    sourceCollection, firstMapper, secondMapper
+                            )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    andThen(
+                            sourceCollection, firstMapper, secondMapper
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> andThenAllParametersTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(1, 2, null, 6));
+
+        Function<Integer, Integer> plus1 =
+                i -> null == i
+                        ? null
+                        : i + 1;
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? null
+                        : String.valueOf(i * 2);
+        Function<String, Integer> safeLength =
+                s -> null == s
+                        ? null
+                        : s.length();
+        Function<Integer, Integer> integerIdentity = Function.identity();
+
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        List<Integer> expectedApplyPlus1AndIdentityResult = asList(2, 3, null, 7);
+        Set<Integer> expectedApplyPlus1AndIdentityResultSet = new LinkedHashSet<>(expectedApplyPlus1AndIdentityResult);
+        List<String> expectedApplyPlus1AndMultiply2StringResult = asList("4", "6", null, "14");
+        Set<String> expectedApplyPlus1AndMultiply2StringResultSet = new LinkedHashSet<>(expectedApplyPlus1AndMultiply2StringResult);
+        List<Integer> expectedApplyMultiply2StringAndLengthResult = asList(1, 1, null, 2);
+        Set<Integer> expectedApplyMultiply2StringAndLengthResultSet = new LinkedHashSet<>(expectedApplyMultiply2StringAndLengthResult);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   firstMapper,       secondMapper,      collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,              null,                null,                             List.of() ),
+                Arguments.of( null,               null,              null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( null,               plus1,             null,              null,                null,                             List.of() ),
+                Arguments.of( null,               plus1,             null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( null,               null,              multiply2String,   null,                null,                             List.of() ),
+                Arguments.of( null,               null,              multiply2String,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( null,               plus1,             multiply2String,   null,                null,                             List.of() ),
+                Arguments.of( null,               plus1,             multiply2String,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          null,              null,              null,                null,                             List.of() ),
+                Arguments.of( List.of(),          null,              null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          plus1,             null,              null,                null,                             List.of() ),
+                Arguments.of( List.of(),          plus1,             null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          null,              multiply2String,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),          null,              multiply2String,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          plus1,             multiply2String,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),          plus1,             multiply2String,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( ints,               null,              null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               plus1,             null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               plus1,             null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              multiply2String,   null,                IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              multiply2String,   setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               plus1,             integerIdentity,   null,                null,                             expectedApplyPlus1AndIdentityResult ),
+                Arguments.of( ints,               plus1,             integerIdentity,   setSupplier,         null,                             expectedApplyPlus1AndIdentityResultSet ),
+                Arguments.of( ints,               plus1,             multiply2String,   null,                null,                             expectedApplyPlus1AndMultiply2StringResult ),
+                Arguments.of( ints,               plus1,             multiply2String,   setSupplier,         null,                             expectedApplyPlus1AndMultiply2StringResultSet ),
+                Arguments.of( ints,               multiply2String,   safeLength,        null,                null,                             expectedApplyMultiply2StringAndLengthResult ),
+                Arguments.of( ints,               multiply2String,   safeLength,        setSupplier,         null,                             expectedApplyMultiply2StringAndLengthResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("andThenAllParametersTestCases")
+    @DisplayName("andThen: with all parameters test cases")
+    public <T, E, R> void andThenAllParameters_testCases(Collection<T> sourceCollection,
+                                                         Function<? super T, ? extends E> firstMapper,
+                                                         Function<? super E, ? extends R> secondMapper,
+                                                         Supplier<Collection<R>> collectionFactory,
+                                                         Class<? extends Exception> expectedException,
+                                                         Collection<R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () ->
+                            andThen(
+                                    sourceCollection, firstMapper, secondMapper, collectionFactory
+                            )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    andThen(
+                            sourceCollection, firstMapper, secondMapper, collectionFactory
+                    )
+            );
+        }
+    }
+
+
     static Stream<Arguments> applyOrElseNoCollectionFactoryTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
@@ -56,7 +206,7 @@ public class CollectionUtilTest {
         List<String> expectedIntsResult = List.of("2", "3", "6", "7");
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    expectedException,                expectedResult
+                //            sourceCollection,   filterPredicate,   defaultMapper,     orElseMapper,      expectedException,                expectedResult
                 Arguments.of( null,               null,              null,              null,              null,                             List.of() ),
                 Arguments.of( null,               isEven,            null,              null,              null,                             List.of() ),
                 Arguments.of( null,               null,              plus1String,       null,              null,                             List.of() ),
@@ -81,20 +231,21 @@ public class CollectionUtilTest {
     @DisplayName("applyOrElse: without collection factory test cases")
     public <T, E> void applyOrElseNoCollectionFactory_testCases(Collection<T> sourceCollection,
                                                                 Predicate<? super T> filterPredicate,
-                                                                Function<? super T, ? extends E> defaultFunction,
-                                                                Function<? super T, ? extends E> orElseFunction,
+                                                                Function<? super T, ? extends E> defaultMapper,
+                                                                Function<? super T, ? extends E> orElseMapper,
                                                                 Class<? extends Exception> expectedException,
                                                                 List<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
-                    () -> applyOrElse(
-                            sourceCollection, filterPredicate, defaultFunction, orElseFunction
-                    )
+                    () ->
+                            applyOrElse(
+                                    sourceCollection, filterPredicate, defaultMapper, orElseMapper
+                            )
             );
         } else {
             assertEquals(expectedResult,
                     applyOrElse(
-                            sourceCollection, filterPredicate, defaultFunction, orElseFunction
+                            sourceCollection, filterPredicate, defaultMapper, orElseMapper
                     )
             );
         }
@@ -115,17 +266,27 @@ public class CollectionUtilTest {
         Set<String> expectedIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   filterPredicate,   defaultFunction,   orElseFunction,    collectionFactory,  expectedException,                expectedResult
+                //            sourceCollection,   filterPredicate,   defaultMapper,     orElseMapper,      collectionFactory,  expectedException,                expectedResult
                 Arguments.of( null,               null,              null,              null,              null,               null,                             List.of() ),
+                Arguments.of( null,               null,              null,              null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( null,               isOdd,             null,              null,              null,               null,                             List.of() ),
+                Arguments.of( null,               isOdd,             null,              null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( null,               null,              plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( null,               null,              plus1String,       null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( null,               isOdd,             plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( null,               isOdd,             plus1String,       null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( null,               isOdd,             plus1String,       multiply2String,   null,               null,                             List.of() ),
+                Arguments.of( null,               isOdd,             plus1String,       multiply2String,   setSupplier,        null,                             Set.of() ),
                 Arguments.of( List.of(),          null,              null,              null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          null,              null,              null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( List.of(),          isOdd,             null,              null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             null,              null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( List.of(),          null,              plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          null,              plus1String,       null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( List.of(),          isOdd,             plus1String,       null,              null,               null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             plus1String,       null,              setSupplier,        null,                             Set.of() ),
                 Arguments.of( List.of(),          isOdd,             plus1String,       multiply2String,   null,               null,                             List.of() ),
+                Arguments.of( List.of(),          isOdd,             plus1String,       multiply2String,   setSupplier,        null,                             Set.of() ),
                 Arguments.of( List.of(1),         null,              null,              null,              null,               IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isOdd,             null,              null,              null,               IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         isOdd,             plus1String,       null,              null,               IllegalArgumentException.class,   null ),
@@ -141,21 +302,21 @@ public class CollectionUtilTest {
     @DisplayName("applyOrElse: with all parameters test cases")
     public <T, E> void applyOrElseAllParameters_testCases(Collection<T> sourceCollection,
                                                           Predicate<? super T> filterPredicate,
-                                                          Function<? super T, ? extends E> defaultFunction,
-                                                          Function<? super T, ? extends E> orElseFunction,
+                                                          Function<? super T, ? extends E> defaultMapper,
+                                                          Function<? super T, ? extends E> orElseMapper,
                                                           Supplier<Collection<E>> collectionFactory,
                                                           Class<? extends Exception> expectedException,
                                                           Collection<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
                     () -> applyOrElse(
-                            sourceCollection, filterPredicate, defaultFunction, orElseFunction, collectionFactory
+                            sourceCollection, filterPredicate, defaultMapper, orElseMapper, collectionFactory
                     )
             );
         } else {
             assertEquals(expectedResult,
                     applyOrElse(
-                            sourceCollection, filterPredicate, defaultFunction, orElseFunction, collectionFactory
+                            sourceCollection, filterPredicate, defaultMapper, orElseMapper, collectionFactory
                     )
             );
         }

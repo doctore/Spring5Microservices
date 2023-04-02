@@ -20,6 +20,7 @@ import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -38,9 +39,105 @@ import static java.util.stream.Collectors.toList;
 @UtilityClass
 public class MapUtil {
 
+
     /**
-     *    In the given {@code sourceMap}, applies {@code defaultFunction} if the current element verifies
-     * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
+     *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the compose
+     * {@link Function} {@code secondMapper}({@code firstMapper}(x))
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                      Result:
+     *    [(1, "AGTF"), (3, "CD")]                                         [(2, "4"), (4, "2")]
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.toString())
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform
+     * @param firstMapper
+     *    {@link Function} with the first modification to apply
+     * @param secondMapper
+     *    {@link Function} with the second modification to apply
+     *
+     * @return {@link Map} applying {@code firstMapper} and {@code secondMapper} to the provided {@code sourceMap}
+     *
+     * @throws IllegalArgumentException if {@code firstMapper} or {@code secondMapper} is {@code null}
+     *                                  with a not empty {@code sourceMap}
+     */
+    public static <K1, V1, K2, V2, T, R> Map<T, R> andThen(final Map<? extends K1, ? extends V1> sourceMap,
+                                                           final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> firstMapper,
+                                                           final BiFunction<? super K2, ? super V2, Map.Entry<? extends T, ? extends R>> secondMapper) {
+        return andThen(
+                sourceMap,
+                firstMapper,
+                secondMapper,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the compose
+     * {@link Function} {@code secondMapper}({@code firstMapper}(x))
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                      Result:
+     *    [(1, "AGTF"), (3, "CD")]                                         [(2, "4"), (4, "2")]
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.toString())
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform
+     * @param firstMapper
+     *    {@link Function} with the first modification to apply
+     * @param secondMapper
+     *    {@link Function} with the second modification to apply
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map} applying {@code firstMapper} and {@code secondMapper} to the provided {@code sourceMap}
+     *
+     * @throws IllegalArgumentException if {@code firstMapper} or {@code secondMapper} is {@code null}
+     *                                  with a not empty {@code sourceMap}
+     */
+    public static <K1, V1, K2, V2, T, R> Map<T, R> andThen(final Map<? extends K1, ? extends V1> sourceMap,
+                                                           final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> firstMapper,
+                                                           final BiFunction<? super K2, ? super V2, Map.Entry<? extends T, ? extends R>> secondMapper,
+                                                           final Supplier<Map<T, R>> mapFactory) {
+        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
+                mapFactory,
+                HashMap::new
+        );
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalMapFactory.get();
+        }
+        Assert.notNull(firstMapper, "firstMapper must be not null");
+        Assert.notNull(secondMapper, "secondMapper must be not null");
+        final BiFunction<? super K1, ? super V1, Map.Entry<? extends T, ? extends R>> finalMapper =
+                (k1, v1) -> {
+                    Map.Entry<? extends K2, ? extends V2> firstMapperResult = firstMapper.apply(k1, v1);
+                    return secondMapper.apply(
+                            firstMapperResult.getKey(),
+                            firstMapperResult.getValue()
+                    );
+                };
+        return map(
+                sourceMap,
+                finalMapper,
+                mapFactory
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link HashMap} using the given {@code sourceMap}, applying {@code defaultMapper} if
+     *  the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -56,33 +153,33 @@ public class MapUtil {
      *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
      *    {@link BiPredicate} to filter elements from {@code sourceMap}
-     * @param defaultFunction
+     * @param defaultMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}
-     * @param orElseFunction
+     * @param orElseMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
      */
     public static <T, E, R> Map<T, R> applyOrElse(final Map<? extends T, ? extends E> sourceMap,
                                                   final BiPredicate<? super T, ? super E> filterPredicate,
-                                                  final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
-                                                  final BiFunction<? super T, ? super E, ? extends R> orElseFunction) {
+                                                  final BiFunction<? super T, ? super E, ? extends R> defaultMapper,
+                                                  final BiFunction<? super T, ? super E, ? extends R> orElseMapper) {
         return applyOrElse(
                 sourceMap,
                 filterPredicate,
-                defaultFunction,
-                orElseFunction,
+                defaultMapper,
+                orElseMapper,
                 HashMap::new
         );
     }
 
 
     /**
-     *    In the given {@code sourceMap}, applies {@code defaultFunction} if the current element verifies
-     * {@code filterPredicate}, otherwise applies {@code orElseFunction}.
+     *    Returns a new {@link Map} using the given {@code sourceMap}, applying {@code defaultMapper} if
+     *  the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -99,9 +196,9 @@ public class MapUtil {
      *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
      *    {@link BiPredicate} to filter elements from {@code sourceMap}
-     * @param defaultFunction
+     * @param defaultMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}
-     * @param orElseFunction
+     * @param orElseMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
      * @param mapFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
@@ -109,13 +206,13 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code defaultFunction} or {@code orElseFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
      */
     public static <T, E, R> Map<T, R> applyOrElse(final Map<? extends T, ? extends E> sourceMap,
                                                   final BiPredicate<? super T, ? super E> filterPredicate,
-                                                  final BiFunction<? super T, ? super E, ? extends R> defaultFunction,
-                                                  final BiFunction<? super T, ? super E, ? extends R> orElseFunction,
+                                                  final BiFunction<? super T, ? super E, ? extends R> defaultMapper,
+                                                  final BiFunction<? super T, ? super E, ? extends R> orElseMapper,
                                                   final Supplier<Map<T, R>> mapFactory) {
         final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
@@ -124,8 +221,8 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
-        Assert.notNull(defaultFunction, "defaultFunction must be not null");
-        Assert.notNull(orElseFunction, "orElseFunction must be not null");
+        Assert.notNull(defaultMapper, "defaultMapper must be not null");
+        Assert.notNull(orElseMapper, "orElseMapper must be not null");
         final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectUtil.getOrElse(
                 filterPredicate,
                 biAlwaysTrue()
@@ -136,14 +233,14 @@ public class MapUtil {
                         finalFilterPredicate.test(entry.getKey(), entry.getValue())
                                 ? Map.entry(
                                         entry.getKey(),
-                                        defaultFunction.apply(
+                                        defaultMapper.apply(
                                                 entry.getKey(),
                                                 entry.getValue()
                                         )
                                 )
                                 : Map.entry(
                                         entry.getKey(),
-                                        orElseFunction.apply(
+                                        orElseMapper.apply(
                                                 entry.getKey(),
                                                 entry.getValue()
                                         )
@@ -688,6 +785,49 @@ public class MapUtil {
      *
      * @return value related with given {@code key} is exists,
      *         {@code defaultValue} otherwise.
+     */
+    public static <T, E> E getOrElse(final Map<? extends T, ? extends E> sourceMap,
+                                     final T key,
+                                     final E defaultValue) {
+        return getOrElse(
+                sourceMap,
+                key,
+                () -> defaultValue
+        );
+    }
+
+
+    /**
+     *    Returns the value associated with the given {@code key}, or the result of {@code defaultValue} if the {@code key}
+     * is not contained in {@code sourceMap}.
+     *
+     * <pre>
+     * Example 1:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        "Hi"
+     *    1
+     *    () -> "World"
+     * </pre>
+     *
+     * <pre>
+     * Example 2:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        "World"
+     *    5
+     *    () -> "World"
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} to search {@code key}
+     * @param key
+     *    Key to search in {@code sourceMap}
+     * @param defaultValue
+     *    {@link Supplier} that yields a default value in case no binding for {@code key} is found in {@code sourceMap}
+     *
+     * @return value related with given {@code key} is exists,
+     *         {@code defaultValue} otherwise.
      *
      * @throws IllegalArgumentException if {@code defaultValue} is {@code null}
      */
@@ -957,9 +1097,9 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                             Result:
-     *    [(1, "AGTF"), (3, "CD")]                [(1, 4), (3, 2)]
-     *    (k, v) -> Tuple.of(k, v.length())
+     *   Parameters:                                                 Result:
+     *    [(1, "AGTF"), (3, "CD")]                                    [(1, 4), (3, 2)]
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
      * </pre>
      *
      * @param sourceMap
@@ -969,10 +1109,10 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceMap} is not empty.
      */
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
-                                             final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction) {
+                                             final BiFunction<? super T, ? super E, Map.Entry<? extends R, ? extends V>> mapFunction) {
         return map(
                 sourceMap,
                 mapFunction,
@@ -987,9 +1127,9 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                             Result:
-     *    [(1, "AGTF"), (3, "CD")]                [(1, 4), (3, 2)]
-     *    (k, v) -> Tuple.of(k, v.length())
+     *   Parameters:                                                 Result:
+     *    [(1, "AGTF"), (3, "CD")]                                    [(1, 4), (3, 2)]
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
      *    HashMap::new
      * </pre>
      *
@@ -1006,7 +1146,7 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceMap} is not empty.
      */
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
-                                             final BiFunction<? super T, ? super E, Tuple2<? extends R, ? extends V>> mapFunction,
+                                             final BiFunction<? super T, ? super E, Map.Entry<? extends R, ? extends V>> mapFunction,
                                              final Supplier<Map<R, V>> mapFactory) {
         final Supplier<Map<R, V>> finalMapFactory = ObjectUtil.getOrElse(
                 mapFactory,
@@ -1026,8 +1166,8 @@ public class MapUtil {
                 )
                 .collect(
                         toMapNullableValues(
-                                t -> t._1,
-                                t -> t._2,
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
                                 finalMapFactory
                         )
                 );
