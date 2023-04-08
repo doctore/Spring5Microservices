@@ -1,6 +1,7 @@
 package com.spring5microservices.common.util;
 
 import com.spring5microservices.common.collection.tuple.Tuple2;
+import com.spring5microservices.common.interfaces.functional.PartialFunction;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -394,15 +395,21 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> collectNoMapFactoryTestCases() {
+    static Stream<Arguments> collectWithBiPredicateAndBiFunctionTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
             put(4, "o");
         }};
         BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
-
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                null == v
+                                        ? 0L
+                                        : (long) (k * 2 + v.length())
+                        );
         Map<Integer, Long> intsAndLongsNoFilterResult = new HashMap<>() {{
             put(1, 3L);
             put(2, 5L);
@@ -430,13 +437,13 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("collectNoMapFactoryTestCases")
-    @DisplayName("collect: without map factory test cases")
-    public <T, E, R> void collectNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                        BiPredicate<? super T, ? super E> filterPredicate,
-                                                        BiFunction<? super T, ? super E, ? extends R> mapFunction,
-                                                        Class<? extends Exception> expectedException,
-                                                        Map<T, R> expectedResult) {
+    @MethodSource("collectWithBiPredicateAndBiFunctionTestCases")
+    @DisplayName("collect: with BiPredicate and BiFunction test cases")
+    public <K1, K2, V1, V2> void collectWithBiPredicateAndBiFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                               BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                               BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                                               Class<? extends Exception> expectedException,
+                                                                               Map<K2, V2> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceMap, filterPredicate, mapFunction));
         } else {
@@ -445,7 +452,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> collectAllParametersTestCases() {
+    static Stream<Arguments> collectWithBiPredicateBiFunctionAndSupplierTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, null);
@@ -457,15 +464,19 @@ public class MapUtilTest {
                     null != v &&
                     "AEIOUaeiou".contains(v)
                 );
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) ->
-                (long) (
-                           k * 2 +
-                           (
-                               null == v
-                                  ? 0
-                                  : v.length()
-                           )
-                );
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                (long) (
+                                        k * 2 +
+                                                (
+                                                        null == v
+                                                                ? 0
+                                                                : v.length()
+                                                )
+                                )
+                        );
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
 
         Map<Integer, Long> intsAndLongsNoFilterResult = new HashMap<>() {{
@@ -497,18 +508,142 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("collectAllParametersTestCases")
-    @DisplayName("collect: with all parameters test cases")
-    public <T, E, R> void collectAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                         BiPredicate<? super T, ? super E> filterPredicate,
-                                                         BiFunction<? super T, ? super E, ? extends R> mapFunction,
-                                                         Supplier<Map<T, R>> mapFactory,
-                                                         Class<? extends Exception> expectedException,
-                                                         Map<T, R> expectedResult) {
+    @MethodSource("collectWithBiPredicateBiFunctionAndSupplierTestCases")
+    @DisplayName("collect: with BiPredicate, BiFunction and Supplier test cases")
+    public <K1, K2, V1, V2> void collectBiPredicateBiFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                   BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                                   BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                                                   Supplier<Map<K2, V2>> mapFactory,
+                                                                                   Class<? extends Exception> expectedException,
+                                                                                   Map<K2, V2> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceMap, filterPredicate, mapFunction, mapFactory));
         } else {
             assertEquals(expectedResult, collect(sourceMap, filterPredicate, mapFunction, mapFactory));
+        }
+    }
+
+
+    static Stream<Arguments> collectWithPartialFunctionTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, null);
+            put(4, "o");
+        }};
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
+                return null == entry
+                        ? null
+                        : new AbstractMap.SimpleEntry<>(
+                                entry.getKey(),
+                                null == entry.getValue()
+                                        ? 0L
+                                        : (long) (entry.getKey() * 2 + entry.getValue().length())
+                          );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+                return null != entry &&
+                        null != entry.getValue() &&
+                        0 == entry.getKey() % 2 &&
+                        "AEIOUaeiou".contains(entry.getValue());
+            }
+        };
+        Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
+            put(4, 9L);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        partialFunction,               expectedException,                expectedResult
+                Arguments.of( null,             null,                          null,                             Map.of() ),
+                Arguments.of( null,             multiply2KeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          null,                             Map.of() ),
+                Arguments.of( Map.of(),         multiply2KeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   null,                             intsAndLongsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectWithPartialFunctionTestCases")
+    @DisplayName("collect: with PartialFunction test cases")
+    public <K1, K2, V1, V2> void collectWithPartialFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                      PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction,
+                                                                      Class<? extends Exception> expectedException,
+                                                                      Map<K2, V2> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collect(sourceMap, partialFunction));
+        } else {
+            assertEquals(expectedResult, collect(sourceMap, partialFunction));
+        }
+    }
+
+
+    static Stream<Arguments> collectWithPartialFunctionAndSupplierTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, null);
+            put(4, "o");
+        }};
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
+                return null == entry
+                        ? null
+                        : new AbstractMap.SimpleEntry<>(
+                                entry.getKey() + 1,
+                                null == entry.getValue()
+                                        ? 0L
+                                        : (long) (entry.getKey() * 2 + entry.getValue().length())
+                          );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+                return null != entry &&
+                        0 == entry.getKey() % 2;
+            }
+        };
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
+            put(3, 0L);
+            put(5, 9L);
+        }};
+        LinkedHashMap<Integer, Long> intsAndLongsLinkedMapResult = new LinkedHashMap<>(intsAndLongsResult);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        partialFunction,               mapFactory,          expectedException,                expectedResult
+                Arguments.of( null,             null,                          null,                null,                             Map.of() ),
+                Arguments.of( null,             null,                          linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( null,             multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( null,             multiply2KeyPlusValueLength,   linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         multiply2KeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         multiply2KeyPlusValueLength,   linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                          linkedMapSupplier,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   null,                null,                             intsAndLongsResult ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   linkedMapSupplier,   null,                             intsAndLongsLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectWithPartialFunctionAndSupplierTestCases")
+    @DisplayName("collect: with PartialFunction and Supplier test cases")
+    public <K1, K2, V1, V2> void collectWithPartialFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                 PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction,
+                                                                                 Supplier<Map<K2, V2>> mapFactory,
+                                                                                 Class<? extends Exception> expectedException,
+                                                                                 Map<K2, V2> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collect(sourceMap, partialFunction, mapFactory));
+        } else {
+            assertEquals(expectedResult, collect(sourceMap, partialFunction, mapFactory));
         }
     }
 
