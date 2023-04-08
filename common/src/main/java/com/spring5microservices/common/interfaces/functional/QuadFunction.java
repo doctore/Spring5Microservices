@@ -5,22 +5,22 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Represents a function that accepts four arguments and produces a result.
- * This is the four-arity specialization of {@link Function}.
+ *    Represents a {@link Function} that accepts four arguments and produces a result. This is the four-arity specialization
+ * of {@link Function}.
  *
  * <p>This is a <a href="package-summary.html">functional interface</a>
  * whose functional method is {@link #apply(Object, Object, Object, Object)}.
  *
  * @param <T>
- *    The type of the first argument to the function
+ *    The type of the first argument to the {@link QuadFunction}
  * @param <U>
- *    The type of the second argument to the function
+ *    The type of the second argument to the {@link QuadFunction}
  * @param <V>
- *    The type of the third argument to the function
+ *    The type of the third argument to the {@link QuadFunction}
  * @param <W>
- *    The type of the fourth argument to the function
+ *    The type of the fourth argument to the {@link QuadFunction}
  * @param <R>
- *    The type of the result of the function
+ *    The type of the result of the {@link QuadFunction}
  *
  * @see {@link Function} and {@link BiFunction}
  */
@@ -28,18 +28,18 @@ import java.util.function.Function;
 public interface QuadFunction<T, U, V, W, R> {
 
     /**
-     * Applies this function to the given arguments.
+     * Applies this {@link QuadFunction} to the given arguments.
      *
      * @param t
-     *    The first function argument
+     *    The first {@link QuadFunction} argument
      * @param u
-     *    The second function argument
+     *    The second {@link QuadFunction} argument
      * @param v
-     *    The third function argument
+     *    The third {@link QuadFunction} argument
      * @param w
-     *    The fourth function argument
+     *    The fourth {@link QuadFunction} argument
      *
-     * @return the function result
+     * @return the {@link QuadFunction} result
      */
     R apply(final T t,
             final U u,
@@ -48,16 +48,17 @@ public interface QuadFunction<T, U, V, W, R> {
 
 
     /**
-     *    Returns a composed function that first applies this function to its input, and then applies the after function
-     * to the result. If evaluation of either function throws an exception, it is relayed to the caller of the composed
-     * function.
+     *    Returns a composed {@link QuadFunction} that first applies this {@link QuadFunction} to its input, and then
+     * applies the after {@link Function} to the result. If evaluation of either function throws an exception, it is relayed
+     * to the caller of the composed {@link QuadFunction}.
      *
      * @param after
-     *    The {@link Function} to apply after this function is applied
+     *    The {@link Function} to apply after this {@link QuadFunction} is applied
      * @param <Z>
-     *    The type of the output of the {@code after} function, and of the composed function
+     *    The type of the output of the {@code after} {@link Function}, and of the composed {@link QuadFunction}
      *
-     * @return a composed function that first applies this function and then applies the {@code after} function.
+     * @return a composed {@link QuadFunction} that first applies this {@link QuadFunction} and then applies the
+     *         {@code after} {@link Function}.
      *
      * @throws NullPointerException if {@code after} is {@code null}
      */

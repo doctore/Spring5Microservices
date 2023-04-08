@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.interfaces.functional.PartialFunction;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
@@ -108,10 +109,7 @@ public class MapUtil {
                                                            final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> firstMapper,
                                                            final BiFunction<? super K2, ? super V2, Map.Entry<? extends T, ? extends R>> secondMapper,
                                                            final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                HashMap::new
-        );
+        final Supplier<Map<T, R>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
@@ -212,10 +210,7 @@ public class MapUtil {
                                                   final BiFunction<? super T, ? super E, ? extends R> defaultMapper,
                                                   final BiFunction<? super T, ? super E, ? extends R> orElseMapper,
                                                   final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                HashMap::new
-        );
+        final Supplier<Map<T, R>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
@@ -341,10 +336,7 @@ public class MapUtil {
     public static <T, E> Map<T, E> concat(final Supplier<Map<T, E>> mapFactory,
                                           final BinaryOperator<E> mergeValueFunction,
                                           final Map<? extends T, ? extends E> ...maps) {
-        final Supplier<Map<T, E>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                LinkedHashMap::new
-        );
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
         final BinaryOperator<E> finalMergeValueFunction = ObjectUtil.getOrElse(
                 mergeValueFunction,
                 overwriteWithNew()
@@ -376,10 +368,10 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(2, 7)]
+     *   Parameters:                                                     Result:
+     *    [(1, "Hi"), (2, "Hello")]                                       [(3, 4)]
      *    (k, v) -> k % 2 == 0
-     *    (k, v) -> k + v.length()
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.length())
      * </pre>
      *
      * @param sourceMap
@@ -393,9 +385,9 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
-                                              final BiPredicate<? super T, ? super E> filterPredicate,
-                                              final BiFunction<? super T, ? super E, ? extends R> mapFunction) {
+    public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
+                                                       final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                       final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction) {
         return collect(
                 sourceMap,
                 filterPredicate,
@@ -414,10 +406,10 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(2, 7)]
+     *   Parameters:                                                     Result:
+     *    [(1, "Hi"), (2, "Hello")]                                       [(3, 4)]
      *    (k, v) -> k % 2 == 0
-     *    (k, v) -> k + v.length()
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.length())
      *    HashMap::new
      * </pre>
      *
@@ -435,19 +427,16 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<T, R> collect(final Map<? extends T, ? extends E> sourceMap,
-                                              final BiPredicate<? super T, ? super E> filterPredicate,
-                                              final BiFunction<? super T, ? super E, ? extends R> mapFunction,
-                                              final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                HashMap::new
-        );
+    public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
+                                                       final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                       final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                       final Supplier<Map<K2, V2>> mapFactory) {
+        final Supplier<Map<K2, V2>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectUtil.getOrElse(
+        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = ObjectUtil.getOrElse(
                 filterPredicate,
                 biAlwaysTrue()
         );
@@ -459,14 +448,131 @@ public class MapUtil {
                                 entry.getValue()
                         )
                 )
+                .map(entry ->
+                        mapFunction.apply(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
                 .collect(
                         toMapNullableValues(
                                 Map.Entry::getKey,
-                                entry ->
-                                        mapFunction.apply(
-                                                entry.getKey(),
-                                                entry.getValue()
-                                        ),
+                                Map.Entry::getValue,
+                                finalMapFactory
+                        )
+                );
+    }
+
+
+    /**
+     * Returns a {@link Map} after:
+     * <p>
+     *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
+     *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                                 Result:
+     *    [(1, "Hi"), (2, "Hello")]                                                                   [(1, 2)]
+     *    new PartialFunction<>() {
+     *
+     *      public Map.Entry<Integer, Integer> apply(final Map.Entry<Integer, String> entry) {
+     *        return null == entry
+     *                 ? null
+     *                 : new AbstractMap.SimpleEntry<>(
+     *                      entry.getKey(),
+     *                      null == entry.getValue()
+     *                         ? 0
+     *                         : entry.getValue().length()
+     *                   );
+     *      }
+     *
+     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+     *        return null != entry &&
+     *               1 == entry.getKey() % 2;
+     *      }
+     *    }
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
+     */
+    public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
+                                                       final PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction) {
+        return collect(
+                sourceMap,
+                partialFunction,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     * Returns a {@link Map} after:
+     * <p>
+     *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
+     *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                                 Result:
+     *    [(1, "Hi"), (2, "Hello")]                                                                   [(1, 2)]
+     *    new PartialFunction<>() {
+     *
+     *      public Map.Entry<Integer, Integer> apply(final Map.Entry<Integer, String> entry) {
+     *        return null == entry
+     *                 ? null
+     *                 : new AbstractMap.SimpleEntry<>(
+     *                      entry.getKey(),
+     *                      null == entry.getValue()
+     *                         ? 0
+     *                         : entry.getValue().length()
+     *                   );
+     *      }
+     *
+     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+     *        return null != entry &&
+     *               1 == entry.getKey() % 2;
+     *      }
+     *    }
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceMap}
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
+     */
+    public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
+                                                       final PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction,
+                                                       final Supplier<Map<K2, V2>> mapFactory) {
+        final Supplier<Map<K2, V2>> finalMapFactory = getFinalMapFactory(mapFactory);
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalMapFactory.get();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        return sourceMap.entrySet()
+                .stream()
+                .filter(partialFunction::isDefinedAt)
+                .map(partialFunction::apply)
+                .collect(
+                        toMapNullableValues(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
                                 finalMapFactory
                         )
                 );
@@ -902,15 +1008,10 @@ public class MapUtil {
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator,
                                                       final Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                       final Supplier<Map<T, E>> mapValuesFactory) {
-        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = ObjectUtil.getOrElse(
-                mapResultFactory,
-                HashMap::new
-        );
-        final Supplier<Map<T, E>> finalMapValuesFactory = ObjectUtil.getOrElse(
-                mapValuesFactory,
-                HashMap::new
-        );
+        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
+        final Supplier<Map<T, E>> finalMapValuesFactory = getFinalMapFactory(mapValuesFactory);
         Map<R, Map<T, E>> result = finalMapResultFactory.get();
+
         if (!CollectionUtils.isEmpty(sourceMap) && nonNull(discriminator)) {
             sourceMap.forEach(
                     (k, v) -> {
@@ -1146,10 +1247,7 @@ public class MapUtil {
     public static <T, E, R, V> Map<R, V> map(final Map<? extends T, ? extends E> sourceMap,
                                              final BiFunction<? super T, ? super E, Map.Entry<? extends R, ? extends V>> mapFunction,
                                              final Supplier<Map<R, V>> mapFactory) {
-        final Supplier<Map<R, V>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                HashMap::new
-        );
+        final Supplier<Map<R, V>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
@@ -1229,10 +1327,7 @@ public class MapUtil {
     public static <T, E, R> Map<T, R> mapValues(final Map<? extends T, ? extends E> sourceMap,
                                                 final BiFunction<? super T, ? super E, ? extends R> mapFunction,
                                                 final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                HashMap::new
-        );
+        final Supplier<Map<T, R>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
@@ -1546,10 +1641,7 @@ public class MapUtil {
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator,
                                                            final Supplier<Map<T, E>> mapFactory) {
-        final Supplier<Map<T, E>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                HashMap::new
-        );
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
         Map<Boolean, Map<T, E>> result = new HashMap<>() {{
             put(Boolean.TRUE, finalMapFactory.get());
             put(Boolean.FALSE, finalMapFactory.get());
@@ -1914,10 +2006,7 @@ public class MapUtil {
     public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate,
                                              final Supplier<Map<T, E>> mapFactory) {
-        final Supplier<Map<T, E>> finalMapFactory = ObjectUtil.getOrElse(
-                mapFactory,
-                HashMap::new
-        );
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
@@ -1940,6 +2029,23 @@ public class MapUtil {
                                 finalMapFactory
                         )
                 );
+    }
+
+
+    /**
+     *    Returns provided {@link Supplier} of {@link Map} {@code mapFactory} if not {@code null},
+     * {@link Supplier} of {@link HashMap} otherwise.
+     *
+     * @param mapFactory
+     *    {@link Supplier} of {@link Map}
+     *
+     * @return {@link Supplier} of {@link Map}
+     */
+    private static <T, E> Supplier<Map<T, E>> getFinalMapFactory(final Supplier<Map<T, E>> mapFactory) {
+        return ObjectUtil.getOrElse(
+                mapFactory,
+                HashMap::new
+        );
     }
 
 

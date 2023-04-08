@@ -2,6 +2,7 @@ package com.spring5microservices.common.util;
 
 import com.spring5microservices.common.collection.tuple.Tuple;
 import com.spring5microservices.common.collection.tuple.Tuple2;
+import com.spring5microservices.common.interfaces.functional.PartialFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -119,10 +120,7 @@ public class CollectionUtil {
                                                   final Function<? super T, ? extends E> firstMapper,
                                                   final Function<? super E, ? extends R> secondMapper,
                                                   final Supplier<Collection<R>> collectionFactory) {
-        final Supplier<Collection<R>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<R>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
@@ -217,10 +215,7 @@ public class CollectionUtil {
                                                    final Function<? super T, ? extends E> defaultMapper,
                                                    final Function<? super T, ? extends E> orElseMapper,
                                                    final Supplier<Collection<E>> collectionFactory) {
-        final Supplier<Collection<E>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
@@ -308,7 +303,7 @@ public class CollectionUtil {
      *
      *   Parameters:              Result:
      *    [1, 2, 3, 6]             ["1", "3"]
-     *    i -> i % 2 == 1
+     *    i -> 1 == i % 2
      *    i -> i.toString()
      * </pre>
      *
@@ -347,7 +342,7 @@ public class CollectionUtil {
      *
      *   Parameters:              Result:
      *    [1, 2, 3, 6]             ["1", "3"]
-     *    i -> i % 2 == 1
+     *    i -> 1 == i % 2
      *    i -> i.toString()
      *    ArrayList::new
      * </pre>
@@ -370,10 +365,7 @@ public class CollectionUtil {
                                                final Predicate<? super T> filterPredicate,
                                                final Function<? super T, ? extends E> mapFunction,
                                                final Supplier<Collection<E>> collectionFactory) {
-        final Supplier<Collection<E>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
@@ -382,10 +374,115 @@ public class CollectionUtil {
                 filterPredicate,
                 alwaysTrue()
         );
+        final PartialFunction<T, E> joinFilterAndMap = PartialFunction.of(
+                finalFilterPredicate,
+                mapFunction
+        );
+        return collect(
+                sourceCollection,
+                joinFilterAndMap,
+                collectionFactory
+        );
+    }
+
+
+    /**
+     * Returns a {@link Collection} after:
+     * <p>
+     *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
+     *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                           Result:
+     *    [1, 2, 3, 6]                                          ["1", "3"]
+     *    new PartialFunction<>() {
+     *
+     *      public String apply(final Integer i) {
+     *        return null == i
+     *                 ? null
+     *                 : i.toString();
+     *      }
+     *
+     *      public boolean isDefinedAt(final Integer i) {
+     *        return null != i &&
+     *                 1 == i % 2;
+     *      }
+     *    }
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, E> List<E> collect(final Collection<? extends T> sourceCollection,
+                                         final PartialFunction<? super T, ? extends E> partialFunction) {
+        return (List<E>) collect(
+                sourceCollection,
+                partialFunction,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     * Returns a {@link Collection} after:
+     * <p>
+     *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
+     *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                           Result:
+     *    [1, 2, 3, 6]                                          ["1", "3"]
+     *    new PartialFunction<>() {
+     *
+     *      public String apply(final Integer i) {
+     *        return null == i
+     *                 ? null
+     *                 : i.toString();
+     *      }
+     *
+     *      public boolean isDefinedAt(final Integer i) {
+     *        return null != i &&
+     *                 1 == i % 2;
+     *      }
+     *    },
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Collection}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
+     */
+    public static <T, E> Collection<E> collect(final Collection<? extends T> sourceCollection,
+                                               final PartialFunction<? super T, ? extends E> partialFunction,
+                                               final Supplier<Collection<E>> collectionFactory) {
+        final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
         return sourceCollection
                 .stream()
-                .filter(finalFilterPredicate)
-                .map(mapFunction)
+                .filter(partialFunction::isDefinedAt)
+                .map(partialFunction)
                 .collect(
                         toCollection(finalCollectionFactory)
                 );
@@ -448,10 +545,7 @@ public class CollectionUtil {
     public static <T, E> Collection<E> collectProperty(final Collection<? extends T> sourceCollection,
                                                        final Function<? super T, ? extends E> propertyExtractor,
                                                        final Supplier<Collection<E>> collectionFactory) {
-        final Supplier<Collection<E>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         return ofNullable(sourceCollection)
                 .map(c -> {
                     if (isNull(propertyExtractor)) {
@@ -530,10 +624,7 @@ public class CollectionUtil {
     public static <T> Collection<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
                                                           final Supplier<Collection<Tuple>> collectionFactory,
                                                           final Function<? super T, ?> ...propertyExtractors) {
-        final Supplier<Collection<Tuple>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<Tuple>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (nonNull(propertyExtractors)) {
             Assert.isTrue(
                     Tuple.MAX_ALLOWED_TUPLE_ARITY >= propertyExtractors.length,
@@ -611,10 +702,7 @@ public class CollectionUtil {
     @SafeVarargs
     public static <T> Collection<T> concat(final Supplier<Collection<T>> collectionFactory,
                                            final Collection<? extends T> ...collections) {
-        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         return ofNullable(collections)
                 .map(c ->
                         Stream.of(c)
@@ -837,10 +925,7 @@ public class CollectionUtil {
     @SuppressWarnings("unchecked")
     public static <T> Collection<T> flatten(final Collection<Object> sourceCollection,
                                             final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
@@ -1051,10 +1136,7 @@ public class CollectionUtil {
      */
     public static <T> Collection<T> fromIterator(final Iterator<? extends T> sourceIterator,
                                                  final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (isNull(sourceIterator) || !sourceIterator.hasNext()) {
             return finalCollectionFactory.get();
         }
@@ -1155,10 +1237,7 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new HashMap<>();
         }
-        final Supplier<Collection<V>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         Map<K, Collection<V>> result = new HashMap<>();
         sourceCollection.forEach(
                 e -> {
@@ -1769,10 +1848,7 @@ public class CollectionUtil {
     public static <T> Collection<T> sort(final Comparator<? super T> comparator,
                                          final Supplier<Collection<T>> collectionFactory,
                                          final Collection<? extends T> ...collections) {
-        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (ObjectUtil.isEmpty(collections)) {
             return finalCollectionFactory.get();
         }
@@ -1908,10 +1984,7 @@ public class CollectionUtil {
     public static <T> Collection<T> takeWhile(final Collection<? extends T> sourceCollection,
                                               final Predicate<? super T> filterPredicate,
                                               final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory = getOrElse(
-                collectionFactory,
-                ArrayList::new
-        );
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
@@ -2211,6 +2284,23 @@ public class CollectionUtil {
         } else {
             return sourceCollection;
         }
+    }
+
+
+    /**
+     *    Returns provided {@link Supplier} of {@link Collection} {@code collectionFactory} if not {@code null},
+     * {@link Supplier} of {@link ArrayList} otherwise.
+     *
+     * @param collectionFactory
+     *    {@link Supplier} of {@link Collection}
+     *
+     * @return {@link Supplier} of {@link Collection}
+     */
+    private static <T> Supplier<Collection<T>> getFinalCollectionFactory(final Supplier<Collection<T>> collectionFactory) {
+        return getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
     }
 
 }

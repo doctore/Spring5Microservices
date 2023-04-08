@@ -8,6 +8,7 @@ import com.spring5microservices.common.collection.tuple.Tuple2;
 import com.spring5microservices.common.collection.tuple.Tuple3;
 import com.spring5microservices.common.collection.tuple.Tuple4;
 import com.spring5microservices.common.collection.tuple.Tuple5;
+import com.spring5microservices.common.interfaces.functional.PartialFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -390,7 +391,7 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> collectNoCollectionFactoryTestCases() {
+    static Stream<Arguments> collectWithPredicateAndFunctionTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
         Function<Integer, String> fromIntegerToString = Objects::toString;
@@ -413,13 +414,13 @@ public class CollectionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("collectNoCollectionFactoryTestCases")
-    @DisplayName("collect: without collection factory test cases")
-    public <T, E> void collectNoCollectionFactory_testCases(Collection<T> sourceCollection,
-                                                            Predicate<? super T> filterPredicate,
-                                                            Function<? super T, ? extends E> mapFunction,
-                                                            Class<? extends Exception> expectedException,
-                                                            List<E> expectedResult) {
+    @MethodSource("collectWithPredicateAndFunctionTestCases")
+    @DisplayName("collect: with Predicate and Function test cases")
+    public <T, E> void collectWithPredicateAndFunction_testCases(Collection<T> sourceCollection,
+                                                                 Predicate<? super T> filterPredicate,
+                                                                 Function<? super T, ? extends E> mapFunction,
+                                                                 Class<? extends Exception> expectedException,
+                                                                 List<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceCollection, filterPredicate, mapFunction));
         } else {
@@ -428,7 +429,7 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> collectAllParametersTestCases() {
+    static Stream<Arguments> collectWithPredicateFunctionAndSupplierTestCases() {
         List<Integer> ints = List.of(1, 2, 3, 6);
         Set<String> collectedInts = new LinkedHashSet<>(List.of("1", "3"));
 
@@ -455,18 +456,114 @@ public class CollectionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("collectAllParametersTestCases")
-    @DisplayName("collect: with all parameters test cases")
-    public <T, E> void collectAllParameters_testCases(Collection<T> sourceCollection,
-                                                      Predicate<? super T> filterPredicate,
-                                                      Function<? super T, ? extends E> mapFunction,
-                                                      Supplier<Collection<E>> collectionFactory,
-                                                      Class<? extends Exception> expectedException,
-                                                      Collection<E> expectedResult) {
+    @MethodSource("collectWithPredicateFunctionAndSupplierTestCases")
+    @DisplayName("collect: with Predicate, Function and Supplier test cases")
+    public <T, E> void collectWithPredicateFunctionAndSupplier_testCases(Collection<T> sourceCollection,
+                                                                         Predicate<? super T> filterPredicate,
+                                                                         Function<? super T, ? extends E> mapFunction,
+                                                                         Supplier<Collection<E>> collectionFactory,
+                                                                         Class<? extends Exception> expectedException,
+                                                                         Collection<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> collect(sourceCollection, filterPredicate, mapFunction, collectionFactory));
         } else {
             assertEquals(expectedResult, collect(sourceCollection, filterPredicate, mapFunction, collectionFactory));
+        }
+    }
+
+
+    static Stream<Arguments> collectWithPartialFunctionTestCases() {
+        List<Integer> ints = asList(1, null, 12, 33, 45, 6);
+        PartialFunction<Integer, String> toStringIfLowerThan20 = new PartialFunction<>() {
+
+            @Override
+            public String apply(final Integer i) {
+                return null == i
+                        ? null
+                        : i.toString();
+            }
+
+            @Override
+            public boolean isDefinedAt(final Integer i) {
+                return null != i &&
+                        0 > i.compareTo(20);
+            }
+        };
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,         expectedException,                expectedResult
+                Arguments.of( null,               null,                    null,                             List.of() ),
+                Arguments.of( null,               toStringIfLowerThan20,   null,                             List.of() ),
+                Arguments.of( List.of(),          null,                    null,                             List.of() ),
+                Arguments.of( List.of(),          toStringIfLowerThan20,   null,                             List.of() ),
+                Arguments.of( List.of(1),         null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               toStringIfLowerThan20,   null,                             List.of("1", "12", "6") )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectWithPartialFunctionTestCases")
+    @DisplayName("collect: with PartialFunction test cases")
+    public <T, E> void collectWithPartialFunction_testCases(Collection<T> sourceCollection,
+                                                            PartialFunction<? super T, ? extends E> partialFunction,
+                                                            Class<? extends Exception> expectedException,
+                                                            List<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collect(sourceCollection, partialFunction));
+        } else {
+            assertEquals(expectedResult, collect(sourceCollection, partialFunction));
+        }
+    }
+
+
+    static Stream<Arguments> collectWithPartialFunctionAndSupplierTestCases() {
+        List<String> strings = asList("A", "AB", null, "ABC", "T");
+        PartialFunction<String, Integer> lengthIfSizeGreaterThan1 = new PartialFunction<>() {
+
+            @Override
+            public Integer apply(final String i) {
+                return null == i
+                        ? null
+                        : i.length();
+            }
+
+            @Override
+            public boolean isDefinedAt(final String s) {
+                return null != s &&
+                        1 < s.length();
+            }
+        };
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,            collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,                       null,                null,                             List.of() ),
+                Arguments.of( null,               null,                       setSupplier,         null,                             Set.of() ),
+                Arguments.of( null,               lengthIfSizeGreaterThan1,   null,                null,                             List.of() ),
+                Arguments.of( null,               lengthIfSizeGreaterThan1,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          null,                       null,                null,                             List.of() ),
+                Arguments.of( List.of(),          null,                       setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          lengthIfSizeGreaterThan1,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),          lengthIfSizeGreaterThan1,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of("1"),       null,                       null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of("1"),       null,                       setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( strings,            lengthIfSizeGreaterThan1,   null,                null,                             List.of(2, 3) ),
+                Arguments.of( strings,            lengthIfSizeGreaterThan1,   setSupplier,         null,                             Set.of(2, 3) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectWithPartialFunctionAndSupplierTestCases")
+    @DisplayName("collect: with PartialFunction and Supplier test cases")
+    public <T, E> void collectWithPartialFunctionAndSupplier_testCases(Collection<T> sourceCollection,
+                                                                       PartialFunction<? super T, ? extends E> partialFunction,
+                                                                       Supplier<Collection<E>> collectionFactory,
+                                                                       Class<? extends Exception> expectedException,
+                                                                       Collection<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collect(sourceCollection, partialFunction, collectionFactory));
+        } else {
+            assertEquals(expectedResult, collect(sourceCollection, partialFunction, collectionFactory));
         }
     }
 
