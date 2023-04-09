@@ -5,6 +5,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -14,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PartialFunctionTest {
 
-    static Stream<Arguments> ofTestCases() {
+    static Stream<Arguments> ofWithPredicateAndFunctionTestCases() {
         Predicate<Integer> isOdd = i -> 1 == i % 2;
         Predicate<String> lengthLongerThan5 = s -> 5 < s.length();
         return Stream.of(
@@ -30,20 +34,79 @@ public class PartialFunctionTest {
     }
 
     @ParameterizedTest
-    @MethodSource("ofTestCases")
-    @DisplayName("of: test cases")
-    public <T, R> void of_testCases(T t,
-                                    Predicate<? super T> filterPredicate,
-                                    Function<? super T, ? extends R> mapFunction,
-                                    Class<? extends Exception> expectedException,
-                                    R expectedApplyResult,
-                                    Boolean expectedIsDefinedAtResult) {
+    @MethodSource("ofWithPredicateAndFunctionTestCases")
+    @DisplayName("of: with Predicate and Function parameters test cases")
+    public <T, R> void ofWithPredicateAndFunction_testCases(T t,
+                                                            Predicate<? super T> filterPredicate,
+                                                            Function<? super T, ? extends R> mapFunction,
+                                                            Class<? extends Exception> expectedException,
+                                                            R expectedApplyResult,
+                                                            Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, mapFunction));
         } else {
             PartialFunction<T, R> ofResult = PartialFunction.of(filterPredicate, mapFunction);
             assertEquals(expectedApplyResult, ofResult.apply(t));
             assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(t));
+        }
+    }
+
+
+    static Stream<Arguments> ofWithBiPredicateAndBiFunctionTestCases() {
+        Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<>(
+                1,
+                null
+        );
+        Map.Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<>(
+                3,
+                "ABC"
+        );
+        Map.Entry<Integer, String> entry3 = new AbstractMap.SimpleEntry<>(
+                5,
+                "E"
+        );
+        BiPredicate<Integer, String> isKeyOddAndValueLengthLowerThan2 =
+                (k, v) ->
+                        1 == k % 2 &&
+                        (
+                                null != v &&
+                                2 > v.length()
+                        );
+        BiFunction<Integer, String, Map.Entry<String, Integer>> keyToStringAndValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k.toString(),
+                                null == v
+                                        ? 0
+                                        : v.length()
+                        );
+        return Stream.of(
+                //@formatter:off
+                //            entry,    filterPredicate,                    mapFunction,                 expectedException,            expectedApplyResult,   expectedIsDefinedAtResult
+                Arguments.of( entry1,   null,                               null,                        NullPointerException.class,   null,                  null ),
+                Arguments.of( entry1,   isKeyOddAndValueLengthLowerThan2,   null,                        NullPointerException.class,   null,                  null ),
+                Arguments.of( entry1,   isKeyOddAndValueLengthLowerThan2,   keyToStringAndValueLength,   null,                         Map.entry("1", 0),     false ),
+                Arguments.of( entry2,   isKeyOddAndValueLengthLowerThan2,   keyToStringAndValueLength,   null,                         Map.entry("3", 3),     false ),
+                Arguments.of( entry3,   isKeyOddAndValueLengthLowerThan2,   keyToStringAndValueLength,   null,                         Map.entry("5", 1),     true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofWithBiPredicateAndBiFunctionTestCases")
+    @DisplayName("of: with BiPredicate and BiFunction parameters test cases")
+    public <K1, K2, V1, V2> void ofWithBiPredicateAndBiFunction_testCases(Map.Entry<? extends K1, ? extends V1> entry,
+                                                                          BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                          BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                                          Class<? extends Exception> expectedException,
+                                                                          Map.Entry<? extends K2, ? extends V2> expectedApplyResult,
+                                                                          Boolean expectedIsDefinedAtResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, mapFunction));
+        } else {
+            PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> ofResult =
+                    PartialFunction.of(filterPredicate, mapFunction);
+            assertEquals(expectedApplyResult, ofResult.apply(entry));
+            assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(entry));
         }
     }
 

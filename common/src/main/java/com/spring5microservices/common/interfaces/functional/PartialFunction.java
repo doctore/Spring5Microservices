@@ -1,11 +1,15 @@
 package com.spring5microservices.common.interfaces.functional;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
+import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static java.util.Objects.isNull;
 
 /**
@@ -84,7 +88,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      *
      * @return {@link PartialFunction}
      *
-     * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
+     * @throws NullPointerException if {@code mapFunction} is {@code null}
      */
     static <T,R> PartialFunction<T, R> of(final Predicate<? super T> filterPredicate,
                                           final Function<? super T, ? extends R> mapFunction) {
@@ -103,6 +107,47 @@ public interface PartialFunction<T, R> extends Function<T, R> {
             @Override
             public boolean isDefinedAt(final T t) {
                 return finalFilterPredicate.test(t);
+            }
+        };
+    }
+
+
+    /**
+     *    Returns a new {@link PartialFunction} based on provided {@link BiPredicate} {@code filterPredicate} and
+     * {@link BiFunction} {@code mapFunction}
+     *
+     * @param filterPredicate
+     *    {@link BiPredicate} used to know new {@link PartialFunction}'s domain
+     * @param mapFunction
+     *    {@link BiFunction} required for {@link PartialFunction#apply(Object)}
+     *
+     * @return {@link PartialFunction}
+     *
+     * @throws NullPointerException if {@code mapFunction} is {@code null}
+     */
+    static <K1, K2, V1, V2> PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> of(final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                                                                             final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction) {
+        Objects.requireNonNull(mapFunction, "mapFunction must be not null");
+        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = getOrElse(
+                filterPredicate,
+                biAlwaysTrue()
+        );
+        return new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<? extends K2, ? extends V2> apply(final Map.Entry<? extends K1, ? extends V1> entry) {
+                return mapFunction.apply(
+                        entry.getKey(),
+                        entry.getValue()
+                );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<? extends K1, ? extends V1> entry) {
+                return finalFilterPredicate.test(
+                        entry.getKey(),
+                        entry.getValue()
+                );
             }
         };
     }

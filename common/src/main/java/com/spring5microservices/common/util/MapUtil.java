@@ -250,116 +250,6 @@ public class MapUtil {
 
 
     /**
-     *    Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}. By default, merging
-     * the maps if the key exists its value will be updated with the latest one.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi"), (2, "Dear"), (5, "World")]
-     *    [(2, "Dear"), (5, "World")]
-     * </pre>
-     *
-     * @param maps
-     *    {@link Map}s to concat
-     *
-     * @return {@link Map} with the elements of {@code maps}
-     */
-    @SafeVarargs
-    public static <T, E> Map<T, E> concat(final Map<? extends T, ? extends E> ...maps) {
-        return concat(
-                LinkedHashMap::new,
-                overwriteWithNew(),
-                maps
-        );
-    }
-
-
-    /**
-     *    Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}. By default, merging
-     * the maps, if the key exists its value will be updated with the latest one.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    HashMap::new                    [(1, "Hi"), (2, "Dear"), (5, "World")]
-     *    [(1, "Hi"), (2, "Hello")]
-     *    [(2, "Dear"), (5, "World")]
-     * </pre>
-     *
-     * @param mapFactory
-     *    {@link Supplier} of the {@link Map} used to store the returned elements
-     *    If {@code null} then {@link HashMap}
-     * @param maps
-     *    {@link Map}s to concat
-     *
-     * @return {@link Map} with the elements of {@code maps}
-     */
-    @SafeVarargs
-    public static <T, E> Map<T, E> concat(final Supplier<Map<T, E>> mapFactory,
-                                          final Map<? extends T, ? extends E> ...maps) {
-        return concat(
-                mapFactory,
-                overwriteWithNew(),
-                maps
-        );
-    }
-
-
-    /**
-     * Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    HashMap::new                    [(1, "Hi"), (2, "Hello"), (5, "World")]
-     *    (oldV, newV) -> oldV
-     *    [(1, "Hi"), (2, "Hello")]
-     *    [(2, "Dear"), (5, "World")]
-     * </pre>
-     *
-     * @param mapFactory
-     *    {@link Supplier} of the {@link Map} used to store the returned elements
-     *    If {@code null} then {@link HashMap}
-     * @param mergeValueFunction
-     *    {@link BinaryOperator} used to resolve collisions between values associated with the same key. If no one is
-     *    provided, by default last value will be used
-     * @param maps
-     *    {@link Map}s to concat
-     *
-     * @return {@link Map} with the elements of {@code maps}
-     */
-    @SafeVarargs
-    public static <T, E> Map<T, E> concat(final Supplier<Map<T, E>> mapFactory,
-                                          final BinaryOperator<E> mergeValueFunction,
-                                          final Map<? extends T, ? extends E> ...maps) {
-        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
-        final BinaryOperator<E> finalMergeValueFunction = ObjectUtil.getOrElse(
-                mergeValueFunction,
-                overwriteWithNew()
-        );
-        return ofNullable(maps)
-                .map(m ->
-                        Stream.of(m)
-                                .filter(Objects::nonNull)
-                                .flatMap(notNullMap -> notNullMap.entrySet().stream())
-                                .collect(
-                                        toMapNullableValues(
-                                                Map.Entry::getKey,
-                                                Map.Entry::getValue,
-                                                finalMergeValueFunction,
-                                                finalMapFactory
-                                        )
-                                )
-                )
-                .orElseGet(finalMapFactory);
-    }
-
-
-    /**
      * Returns a {@link Map} after:
      * <p>
      *  - Filter its elements using {@code filterPredicate}
@@ -440,27 +330,14 @@ public class MapUtil {
                 filterPredicate,
                 biAlwaysTrue()
         );
-        return sourceMap.entrySet()
-                .stream()
-                .filter(entry ->
-                        finalFilterPredicate.test(
-                                entry.getKey(),
-                                entry.getValue()
-                        )
-                )
-                .map(entry ->
-                        mapFunction.apply(
-                                entry.getKey(),
-                                entry.getValue()
-                        )
-                )
-                .collect(
-                        toMapNullableValues(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                finalMapFactory
-                        )
-                );
+        return collect(
+                sourceMap,
+                PartialFunction.of(
+                        finalFilterPredicate,
+                        mapFunction
+                ),
+                mapFactory
+        );
     }
 
 
@@ -568,7 +445,7 @@ public class MapUtil {
         return sourceMap.entrySet()
                 .stream()
                 .filter(partialFunction::isDefinedAt)
-                .map(partialFunction::apply)
+                .map(partialFunction)
                 .collect(
                         toMapNullableValues(
                                 Map.Entry::getKey,
@@ -576,6 +453,116 @@ public class MapUtil {
                                 finalMapFactory
                         )
                 );
+    }
+
+
+    /**
+     *    Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}. By default, merging
+     * the maps if the key exists its value will be updated with the latest one.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *    [(2, "Dear"), (5, "World")]
+     * </pre>
+     *
+     * @param maps
+     *    {@link Map}s to concat
+     *
+     * @return {@link Map} with the elements of {@code maps}
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> concat(final Map<? extends T, ? extends E> ...maps) {
+        return concat(
+                LinkedHashMap::new,
+                overwriteWithNew(),
+                maps
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}. By default, merging
+     * the maps, if the key exists its value will be updated with the latest one.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    HashMap::new                    [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *    [(1, "Hi"), (2, "Hello")]
+     *    [(2, "Dear"), (5, "World")]
+     * </pre>
+     *
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     * @param maps
+     *    {@link Map}s to concat
+     *
+     * @return {@link Map} with the elements of {@code maps}
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> concat(final Supplier<Map<T, E>> mapFactory,
+                                          final Map<? extends T, ? extends E> ...maps) {
+        return concat(
+                mapFactory,
+                overwriteWithNew(),
+                maps
+        );
+    }
+
+
+    /**
+     * Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                     Result:
+     *    HashMap::new                    [(1, "Hi"), (2, "Hello"), (5, "World")]
+     *    (oldV, newV) -> oldV
+     *    [(1, "Hi"), (2, "Hello")]
+     *    [(2, "Dear"), (5, "World")]
+     * </pre>
+     *
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     * @param mergeValueFunction
+     *    {@link BinaryOperator} used to resolve collisions between values associated with the same key. If no one is
+     *    provided, by default last value will be used
+     * @param maps
+     *    {@link Map}s to concat
+     *
+     * @return {@link Map} with the elements of {@code maps}
+     */
+    @SafeVarargs
+    public static <T, E> Map<T, E> concat(final Supplier<Map<T, E>> mapFactory,
+                                          final BinaryOperator<E> mergeValueFunction,
+                                          final Map<? extends T, ? extends E> ...maps) {
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
+        final BinaryOperator<E> finalMergeValueFunction = ObjectUtil.getOrElse(
+                mergeValueFunction,
+                overwriteWithNew()
+        );
+        return ofNullable(maps)
+                .map(m ->
+                        Stream.of(m)
+                                .filter(Objects::nonNull)
+                                .flatMap(notNullMap -> notNullMap.entrySet().stream())
+                                .collect(
+                                        toMapNullableValues(
+                                                Map.Entry::getKey,
+                                                Map.Entry::getValue,
+                                                finalMergeValueFunction,
+                                                finalMapFactory
+                                        )
+                                )
+                )
+                .orElseGet(finalMapFactory);
     }
 
 

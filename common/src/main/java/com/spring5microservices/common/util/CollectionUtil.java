@@ -374,13 +374,12 @@ public class CollectionUtil {
                 filterPredicate,
                 alwaysTrue()
         );
-        final PartialFunction<T, E> joinFilterAndMap = PartialFunction.of(
-                finalFilterPredicate,
-                mapFunction
-        );
         return collect(
                 sourceCollection,
-                joinFilterAndMap,
+                PartialFunction.of(
+                        finalFilterPredicate,
+                        mapFunction
+                ),
                 collectionFactory
         );
     }
