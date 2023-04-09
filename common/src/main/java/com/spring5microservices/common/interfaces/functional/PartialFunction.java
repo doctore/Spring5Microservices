@@ -125,8 +125,8 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      *
      * @throws NullPointerException if {@code mapFunction} is {@code null}
      */
-    static <K1, K2, V1, V2> PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> of(final BiPredicate<? super K1, ? super V1> filterPredicate,
-                                                                                                                             final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction) {
+    static <K1, K2, V1, V2> PartialFunction<Map.Entry<K1, V1>, Map.Entry<K2, V2>> of(final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                                     final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> mapFunction) {
         Objects.requireNonNull(mapFunction, "mapFunction must be not null");
         final BiPredicate<? super K1, ? super V1> finalFilterPredicate = getOrElse(
                 filterPredicate,
@@ -135,7 +135,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
         return new PartialFunction<>() {
 
             @Override
-            public Map.Entry<? extends K2, ? extends V2> apply(final Map.Entry<? extends K1, ? extends V1> entry) {
+            public Map.Entry<K2, V2> apply(final Map.Entry<K1, V1> entry) {
                 return mapFunction.apply(
                         entry.getKey(),
                         entry.getValue()
@@ -143,7 +143,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
             }
 
             @Override
-            public boolean isDefinedAt(final Map.Entry<? extends K1, ? extends V1> entry) {
+            public boolean isDefinedAt(final Map.Entry<K1, V1> entry) {
                 return finalFilterPredicate.test(
                         entry.getKey(),
                         entry.getValue()

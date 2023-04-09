@@ -277,7 +277,7 @@ public class MapUtil {
      */
     public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
                                                        final BiPredicate<? super K1, ? super V1> filterPredicate,
-                                                       final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction) {
+                                                       final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> mapFunction) {
         return collect(
                 sourceMap,
                 filterPredicate,
@@ -319,7 +319,7 @@ public class MapUtil {
      */
     public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
                                                        final BiPredicate<? super K1, ? super V1> filterPredicate,
-                                                       final BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                       final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> mapFunction,
                                                        final Supplier<Map<K2, V2>> mapFactory) {
         final Supplier<Map<K2, V2>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
@@ -382,7 +382,7 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
     public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
-                                                       final PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction) {
+                                                       final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction) {
         return collect(
                 sourceMap,
                 partialFunction,
@@ -434,15 +434,19 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
+    @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, V2> collect(final Map<? extends K1, ? extends V1> sourceMap,
-                                                       final PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction,
+                                                       final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
                                                        final Supplier<Map<K2, V2>> mapFactory) {
         final Supplier<Map<K2, V2>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
         Assert.notNull(partialFunction, "partialFunction must be not null");
-        return sourceMap.entrySet()
+
+        // Allowed because immutable/read-only Maps are covariant.
+        Map<K1, V1> narrowedSourceMap = (Map<K1, V1>) sourceMap;
+        return narrowedSourceMap.entrySet()
                 .stream()
                 .filter(partialFunction::isDefinedAt)
                 .map(partialFunction)

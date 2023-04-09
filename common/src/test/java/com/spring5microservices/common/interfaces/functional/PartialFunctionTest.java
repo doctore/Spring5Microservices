@@ -94,17 +94,16 @@ public class PartialFunctionTest {
     @ParameterizedTest
     @MethodSource("ofWithBiPredicateAndBiFunctionTestCases")
     @DisplayName("of: with BiPredicate and BiFunction parameters test cases")
-    public <K1, K2, V1, V2> void ofWithBiPredicateAndBiFunction_testCases(Map.Entry<? extends K1, ? extends V1> entry,
+    public <K1, K2, V1, V2> void ofWithBiPredicateAndBiFunction_testCases(Map.Entry<K1, V1> entry,
                                                                           BiPredicate<? super K1, ? super V1> filterPredicate,
-                                                                          BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                                          BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> mapFunction,
                                                                           Class<? extends Exception> expectedException,
-                                                                          Map.Entry<? extends K2, ? extends V2> expectedApplyResult,
+                                                                          Map.Entry<K2, V2> expectedApplyResult,
                                                                           Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, mapFunction));
         } else {
-            PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> ofResult =
-                    PartialFunction.of(filterPredicate, mapFunction);
+            PartialFunction<Map.Entry<K1, V1>, Map.Entry<K2, V2>> ofResult = PartialFunction.of(filterPredicate, mapFunction);
             assertEquals(expectedApplyResult, ofResult.apply(entry));
             assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(entry));
         }

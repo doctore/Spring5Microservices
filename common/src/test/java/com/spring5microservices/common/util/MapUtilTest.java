@@ -441,7 +441,7 @@ public class MapUtilTest {
     @DisplayName("collect: with BiPredicate and BiFunction test cases")
     public <K1, K2, V1, V2> void collectWithBiPredicateAndBiFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
                                                                                BiPredicate<? super K1, ? super V1> filterPredicate,
-                                                                               BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                                               BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> mapFunction,
                                                                                Class<? extends Exception> expectedException,
                                                                                Map<K2, V2> expectedResult) {
         if (null != expectedException) {
@@ -512,7 +512,7 @@ public class MapUtilTest {
     @DisplayName("collect: with BiPredicate, BiFunction and Supplier test cases")
     public <K1, K2, V1, V2> void collectBiPredicateBiFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
                                                                                    BiPredicate<? super K1, ? super V1> filterPredicate,
-                                                                                   BiFunction<? super K1, ? super V1, Map.Entry<? extends K2, ? extends V2>> mapFunction,
+                                                                                   BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> mapFunction,
                                                                                    Supplier<Map<K2, V2>> mapFactory,
                                                                                    Class<? extends Exception> expectedException,
                                                                                    Map<K2, V2> expectedResult) {
@@ -571,7 +571,7 @@ public class MapUtilTest {
     @MethodSource("collectWithPartialFunctionTestCases")
     @DisplayName("collect: with PartialFunction test cases")
     public <K1, K2, V1, V2> void collectWithPartialFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
-                                                                      PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction,
+                                                                      PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
                                                                       Class<? extends Exception> expectedException,
                                                                       Map<K2, V2> expectedResult) {
         if (null != expectedException) {
@@ -636,7 +636,7 @@ public class MapUtilTest {
     @MethodSource("collectWithPartialFunctionAndSupplierTestCases")
     @DisplayName("collect: with PartialFunction and Supplier test cases")
     public <K1, K2, V1, V2> void collectWithPartialFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
-                                                                                 PartialFunction<Map.Entry<? extends K1, ? extends V1>, Map.Entry<? extends K2, ? extends V2>> partialFunction,
+                                                                                 PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
                                                                                  Supplier<Map<K2, V2>> mapFactory,
                                                                                  Class<? extends Exception> expectedException,
                                                                                  Map<K2, V2> expectedResult) {
