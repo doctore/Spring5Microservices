@@ -196,7 +196,7 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> applyOrElseNoCollectionFactoryTestCases() {
+    static Stream<Arguments> applyOrElseWithPredicateAndFunctionsTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
 
@@ -228,14 +228,14 @@ public class CollectionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("applyOrElseNoCollectionFactoryTestCases")
-    @DisplayName("applyOrElse: without collection factory test cases")
-    public <T, E> void applyOrElseNoCollectionFactory_testCases(Collection<T> sourceCollection,
-                                                                Predicate<? super T> filterPredicate,
-                                                                Function<? super T, ? extends E> defaultMapper,
-                                                                Function<? super T, ? extends E> orElseMapper,
-                                                                Class<? extends Exception> expectedException,
-                                                                List<E> expectedResult) {
+    @MethodSource("applyOrElseWithPredicateAndFunctionsTestCases")
+    @DisplayName("applyOrElse: with Predicate and Functions test cases")
+    public <T, E> void applyOrElseWithPredicateAndFunctions_testCases(Collection<T> sourceCollection,
+                                                                      Predicate<? super T> filterPredicate,
+                                                                      Function<? super T, ? extends E> defaultMapper,
+                                                                      Function<? super T, ? extends E> orElseMapper,
+                                                                      Class<? extends Exception> expectedException,
+                                                                      List<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
                     () ->
@@ -253,7 +253,7 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> applyOrElseAllParametersTestCases() {
+    static Stream<Arguments> applyOrElseWithPredicateFunctionsAndSupplierTestCases() {
         List<Integer> ints = List.of(1, 2, 3, 6);
         Predicate<Integer> isOdd = i -> i % 2 == 1;
 
@@ -299,15 +299,15 @@ public class CollectionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("applyOrElseAllParametersTestCases")
-    @DisplayName("applyOrElse: with all parameters test cases")
-    public <T, E> void applyOrElseAllParameters_testCases(Collection<T> sourceCollection,
-                                                          Predicate<? super T> filterPredicate,
-                                                          Function<? super T, ? extends E> defaultMapper,
-                                                          Function<? super T, ? extends E> orElseMapper,
-                                                          Supplier<Collection<E>> collectionFactory,
-                                                          Class<? extends Exception> expectedException,
-                                                          Collection<E> expectedResult) {
+    @MethodSource("applyOrElseWithPredicateFunctionsAndSupplierTestCases")
+    @DisplayName("applyOrElse: with Predicate, Functions and Supplier test cases")
+    public <T, E> void applyOrElseWithPredicateFunctionsAndSupplier_testCases(Collection<T> sourceCollection,
+                                                                              Predicate<? super T> filterPredicate,
+                                                                              Function<? super T, ? extends E> defaultMapper,
+                                                                              Function<? super T, ? extends E> orElseMapper,
+                                                                              Supplier<Collection<E>> collectionFactory,
+                                                                              Class<? extends Exception> expectedException,
+                                                                              Collection<E> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
                     () -> applyOrElse(
@@ -318,6 +318,148 @@ public class CollectionUtilTest {
             assertEquals(expectedResult,
                     applyOrElse(
                             sourceCollection, filterPredicate, defaultMapper, orElseMapper, collectionFactory
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> applyOrElseWithPartialFunctionAndFunctionTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(1, null, 3, 6));
+
+        PartialFunction<Integer, String> plus1StringIfEven = new PartialFunction<>() {
+
+            @Override
+            public String apply(final Integer i) {
+                return null == i
+                        ? null
+                        : String.valueOf(i + 1);
+            }
+
+            @Override
+            public boolean isDefinedAt(final Integer i) {
+                return null != i &&
+                        0 == i % 2;
+            }
+        };
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? null
+                        : String.valueOf(i * 2);
+
+        List<String> expectedIntsResult = asList("2", null, "6", "7");
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,     orElseMapper,      expectedException,                expectedResult
+                Arguments.of( null,               null,                null,              null,                             List.of() ),
+                Arguments.of( null,               plus1StringIfEven,   null,              null,                             List.of() ),
+                Arguments.of( null,               plus1StringIfEven,   multiply2String,   null,                             List.of() ),
+                Arguments.of( List.of(),          null,                null,              null,                             List.of() ),
+                Arguments.of( List.of(),          plus1StringIfEven,   null,              null,                             List.of() ),
+                Arguments.of( List.of(),          plus1StringIfEven,   multiply2String,   null,                             List.of() ),
+                Arguments.of( List.of(1),         null,                null,              IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         plus1StringIfEven,   null,              IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,                multiply2String,   IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               plus1StringIfEven,   multiply2String,   null,                             expectedIntsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseWithPartialFunctionAndFunctionTestCases")
+    @DisplayName("applyOrElse: with PartialFunction and Function test cases")
+    public <T, E> void applyOrElseWithPartialFunctionAndFunction_testCases(Collection<T> sourceCollection,
+                                                                           PartialFunction<? super T, ? extends E> partialFunction,
+                                                                           Function<? super T, ? extends E> orElseMapper,
+                                                                           Class<? extends Exception> expectedException,
+                                                                           List<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () ->
+                            applyOrElse(
+                                    sourceCollection, partialFunction, orElseMapper
+                            )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceCollection, partialFunction, orElseMapper
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> applyOrElseWithPartialFunctionFunctionAndSupplierTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(asList(1, null, 3, 6));
+
+        PartialFunction<Integer, String> plus1StringIfEven = new PartialFunction<>() {
+
+            @Override
+            public String apply(final Integer i) {
+                return null == i
+                        ? null
+                        : String.valueOf(i + 1);
+            }
+
+            @Override
+            public boolean isDefinedAt(final Integer i) {
+                return null != i &&
+                        0 == i % 2;
+            }
+        };
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? null
+                        : String.valueOf(i * 2);
+
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        List<String> expectedIntsResult = asList("2", null, "6", "7");
+        Set<String> expectedIntsResultSetSupplier = new LinkedHashSet<>(asList("2", null, "6", "7"));
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,     orElseMapper,      collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,                null,              null,                null,                             List.of() ),
+                Arguments.of( null,               null,                null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( null,               plus1StringIfEven,   null,              null,                null,                             List.of() ),
+                Arguments.of( null,               plus1StringIfEven,   null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( null,               plus1StringIfEven,   multiply2String,   null,                null,                             List.of() ),
+                Arguments.of( null,               plus1StringIfEven,   multiply2String,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          null,                null,              null,                null,                             List.of() ),
+                Arguments.of( List.of(),          null,                null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          plus1StringIfEven,   null,              null,                null,                             List.of() ),
+                Arguments.of( List.of(),          plus1StringIfEven,   null,              setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(),          plus1StringIfEven,   multiply2String,   null,                null,                             List.of() ),
+                Arguments.of( List.of(),          plus1StringIfEven,   multiply2String,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( List.of(1),         null,                null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,                null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         plus1StringIfEven,   null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         plus1StringIfEven,   null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               plus1StringIfEven,   multiply2String,   null,                null,                             expectedIntsResult ),
+                Arguments.of( ints,               plus1StringIfEven,   multiply2String,   setSupplier,         null,                             expectedIntsResultSetSupplier )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseWithPartialFunctionFunctionAndSupplierTestCases")
+    @DisplayName("applyOrElse: with PartialFunction, Function and Supplier test cases")
+    public <T, E> void applyOrElseWithPartialFunctionFunctionAndSupplier_testCases(Collection<T> sourceCollection,
+                                                                                   PartialFunction<? super T, ? extends E> partialFunction,
+                                                                                   Function<? super T, ? extends E> orElseMapper,
+                                                                                   Supplier<Collection<E>> collectionFactory,
+                                                                                   Class<? extends Exception> expectedException,
+                                                                                   Collection<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () ->
+                            applyOrElse(
+                                    sourceCollection, partialFunction, orElseMapper, collectionFactory
+                            )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceCollection, partialFunction, orElseMapper, collectionFactory
                     )
             );
         }
@@ -521,10 +663,10 @@ public class CollectionUtilTest {
         PartialFunction<String, Integer> lengthIfSizeGreaterThan1 = new PartialFunction<>() {
 
             @Override
-            public Integer apply(final String i) {
-                return null == i
+            public Integer apply(final String s) {
+                return null == s
                         ? null
-                        : i.length();
+                        : s.length();
             }
 
             @Override
@@ -1599,16 +1741,18 @@ public class CollectionUtilTest {
                 //@formatter:off
                 //            sourceCollection,   from,   to,   expectedException,                expectedResult
                 Arguments.of( null,               2,      1,    IllegalArgumentException.class,   null ),
+                Arguments.of( null,              -1,      1,    IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(),          3,      1,    IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),         -1,      1,    IllegalArgumentException.class,   null ),
+                Arguments.of( integers,           0,      0,    IllegalArgumentException.class,   null ),
                 Arguments.of( integers,           1,      0,    IllegalArgumentException.class,   null ),
                 Arguments.of( null,               0,      1,    null,                             List.of() ),
                 Arguments.of( List.of(),          0,      1,    null,                             List.of() ),
-                Arguments.of( integers,          -1,      0,    null,                             List.of() ),
-                Arguments.of( integers,          -1,      3,    null,                             List.of(11, 12, 13) ),
-                Arguments.of( integers,           1,      3,    null,                             List.of(12, 13) ),
+                Arguments.of( integers,           0,      1,    null,                             List.of(11) ),
+                Arguments.of( integers,           1,      2,    null,                             List.of(12) ),
                 Arguments.of( integers,           2,      5,    null,                             List.of(13, 14) ),
                 Arguments.of( integers,           6,      8,    null,                             List.of() ),
-                Arguments.of( strings,           -1,      1,    null,                             List.of("a") ),
+                Arguments.of( strings,            0,      1,    null,                             List.of("a") ),
                 Arguments.of( strings,            2,      3,    null,                             List.of("c") ),
                 Arguments.of( strings,            4,      9,    null,                             List.of("f") ),
                 Arguments.of( longs,              0,      1,    null,                             List.of(12L) ),

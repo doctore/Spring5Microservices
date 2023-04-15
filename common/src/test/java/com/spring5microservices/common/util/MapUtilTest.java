@@ -216,7 +216,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> applyOrElseNoMapFactoryTestCases() {
+    static Stream<Arguments> applyOrElseWithBiPredicateAndBiFunctionsTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -224,9 +224,31 @@ public class MapUtilTest {
             put(4, "o");
         }};
         BiPredicate<Integer, String> isKeyOddAndValueVowel = (k, v) -> k % 2 == 1 && "AEIOUaeiou".contains(v);
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) -> (long) (k * 2 + v.length());
-        BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) -> (long) (k + v.length());
-
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                (long) (
+                                        k * 2 +
+                                                (
+                                                        null == v
+                                                                ? 0
+                                                                : v.length()
+                                                )
+                                )
+                        );
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> sumKeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                (long) (k +
+                                          (
+                                                null == v
+                                                        ? 0
+                                                        : v.length()
+                                          )
+                                )
+                        );
         Map<Integer, Long> intsAndStringsNoFilterResult = new HashMap<>() {{
             put(1, 3L);
             put(2, 5L);
@@ -262,14 +284,14 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("applyOrElseNoMapFactoryTestCases")
-    @DisplayName("applyOrElse: without map factory test cases")
-    public <T, E, R> void applyOrElseNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                            BiPredicate<? super T, ? super E> filterPredicate,
-                                                            BiFunction<? super T, ? super E, ? extends R> defaultMapper,
-                                                            BiFunction<? super T, ? super E, ? extends R> orElseMapper,
-                                                            Class<? extends Exception> expectedException,
-                                                            Map<T, R> expectedResult) {
+    @MethodSource("applyOrElseWithBiPredicateAndBiFunctionsTestCases")
+    @DisplayName("applyOrElse: with BiPredicate and BiFunctions test cases")
+    public <K1, K2, V1, V2> void applyOrElseWithBiPredicateAndBiFunctions_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                    BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                                    BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> defaultMapper,
+                                                                                    BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper,
+                                                                                    Class<? extends Exception> expectedException,
+                                                                                    Map<K2, V2> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
                     () ->
@@ -287,7 +309,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> applyOrElseAllParametersTestCases() {
+    static Stream<Arguments> applyOrElseWithBiPredicateBiFunctionsAndSupplierTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -299,24 +321,31 @@ public class MapUtilTest {
                     null != v &&
                     "AEIOUaeiou".contains(v)
                 );
-        BiFunction<Integer, String, Long> multiply2KeyPlusValueLength = (k, v) ->
-                (long) (
-                           k * 2 +
-                           (
-                               null == v
-                                  ? 0
-                                  : v.length()
-                           )
-                );
-        BiFunction<Integer, String, Long> sumKeyPlusValueLength = (k, v) ->
-                (long) (
-                           k +
-                           (
-                               null == v
-                                  ? 0
-                                  : v.length()
-                           )
-                );
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                (long) (
+                                        k * 2 +
+                                                (
+                                                        null == v
+                                                                ? 0
+                                                                : v.length()
+                                                )
+                                )
+                        );
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> sumKeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                (long) (k +
+                                          (
+                                                null == v
+                                                        ? 0
+                                                        : v.length()
+                                          )
+                                )
+                        );
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
 
         Map<Integer, Long> intsAndStringsNoFilterResult = new HashMap<>() {{
@@ -368,15 +397,15 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("applyOrElseAllParametersTestCases")
-    @DisplayName("applyOrElse: with all parameters test cases")
-    public <T, E, R> void applyOrElseAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                             BiPredicate<? super T, ? super E> filterPredicate,
-                                                             BiFunction<? super T, ? super E, ? extends R> defaultMapper,
-                                                             BiFunction<? super T, ? super E, ? extends R> orElseMapper,
-                                                             Supplier<Map<T, R>> mapFactory,
-                                                             Class<? extends Exception> expectedException,
-                                                             Map<T, R> expectedResult) {
+    @MethodSource("applyOrElseWithBiPredicateBiFunctionsAndSupplierTestCases")
+    @DisplayName("applyOrElse: with BiPredicate, BiFunctions and Supplier test cases")
+    public <K1, K2, V1, V2> void applyOrElseWithBiPredicateBiFunctionsAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                            BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                                            BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> defaultMapper,
+                                                                                            BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper,
+                                                                                            Supplier<Map<K2, V2>> mapFactory,
+                                                                                            Class<? extends Exception> expectedException,
+                                                                                            Map<K2, V2> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
                     () ->
@@ -389,6 +418,195 @@ public class MapUtilTest {
             assertEquals(expectedResult,
                     applyOrElse(
                             sourceMap, filterPredicate, defaultMapper, orElseMapper, mapFactory
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> applyOrElseWithPartialFunctionAndBiFunctionTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(3, null);
+            put(4, "o");
+        }};
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
+                return null == entry
+                        ? null
+                        : new AbstractMap.SimpleEntry<>(
+                                entry.getKey(),
+                                null == entry.getValue()
+                                        ? 0L
+                                        : (long) (entry.getKey() * 2 + entry.getValue().length())
+                );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+                return null != entry &&
+                        null != entry.getValue() &&
+                        1 == entry.getKey() % 2 &&
+                        "AEIOUaeiou".contains(entry.getValue());
+            }
+        };
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> sumKeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                (long) (k +
+                                          (
+                                                  null == v
+                                                          ? 0
+                                                          : v.length()
+                                          )
+                                )
+                        );
+        Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 3L);
+            put(3, 3L);
+            put(4, 5L);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        partialFunction,               orElseMapper,            expectedException,                expectedResult
+                Arguments.of( null,             null,                          null,                    null,                             Map.of() ),
+                Arguments.of( null,             null,                          sumKeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( null,             multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          null,                    null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          sumKeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                          null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                          sumKeyPlusValueLength,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                             intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseWithPartialFunctionAndBiFunctionTestCases")
+    @DisplayName("applyOrElse: with PartialFunction and BiFunction test cases")
+    public <K1, K2, V1, V2> void applyOrElseWithPartialFunctionAndBiFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                       PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                                       BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper,
+                                                                                       Class<? extends Exception> expectedException,
+                                                                                       Map<K2, V2> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () ->
+                            applyOrElse(
+                                    sourceMap, partialFunction, orElseMapper
+                            )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceMap, partialFunction, orElseMapper
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> applyOrElseWithPartialFunctionBiFunctionAndSupplierTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(3, null);
+            put(4, "o");
+        }};
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
+                return null == entry
+                        ? null
+                        : new AbstractMap.SimpleEntry<>(
+                        entry.getKey(),
+                        null == entry.getValue()
+                                ? 0L
+                                : (long) (entry.getKey() * 2 + entry.getValue().length())
+                );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+                return null != entry &&
+                        null != entry.getValue() &&
+                        1 == entry.getKey() % 2 &&
+                        "AEIOUaeiou".contains(entry.getValue());
+            }
+        };
+        BiFunction<Integer, String, Map.Entry<Integer, Long>> sumKeyPlusValueLength =
+                (k, v) ->
+                        new AbstractMap.SimpleEntry<>(
+                                k,
+                                (long) (k +
+                                        (
+                                                null == v
+                                                        ? 0
+                                                        : v.length()
+                                        )
+                                )
+                        );
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, Long> intsAndStringsResult = new HashMap<>() {{
+            put(1, 3L);
+            put(2, 3L);
+            put(3, 3L);
+            put(4, 5L);
+        }};
+        LinkedHashMap<Integer, Long> intsAndStringLinkedMapResult = new LinkedHashMap<>(intsAndStringsResult);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        partialFunction,               orElseMapper,            mapFactory,          expectedException,                expectedResult
+                Arguments.of( null,             null,                          null,                    null,                null,                             Map.of() ),
+                Arguments.of( null,             null,                          null,                    linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( null,             null,                          sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( null,             null,                          sumKeyPlusValueLength,   linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( null,             multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( null,             multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          null,                    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          null,                    linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,                          sumKeyPlusValueLength,   linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( Map.of(),         multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),         multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,                          null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                          null,                    linkedMapSupplier,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                          sumKeyPlusValueLength,   null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                          sumKeyPlusValueLength,   linkedMapSupplier,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   null,                    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   null,                    linkedMapSupplier,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   null,                null,                             intsAndStringsResult ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   sumKeyPlusValueLength,   linkedMapSupplier,   null,                             intsAndStringLinkedMapResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("applyOrElseWithPartialFunctionBiFunctionAndSupplierTestCases")
+    @DisplayName("applyOrElse: with PartialFunction, BiFunction and Supplier test cases")
+    public <K1, K2, V1, V2> void applyOrElseWithPartialFunctionBiFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                               PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                                               BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper,
+                                                                                               Supplier<Map<K2, V2>> mapFactory,
+                                                                                               Class<? extends Exception> expectedException,
+                                                                                               Map<K2, V2> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () ->
+                            applyOrElse(
+                                    sourceMap, partialFunction, orElseMapper, mapFactory
+                            )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    applyOrElse(
+                            sourceMap, partialFunction, orElseMapper, mapFactory
                     )
             );
         }
@@ -2045,13 +2263,15 @@ public class MapUtilTest {
                 //@formatter:off
                 //            sourceMap,   from,   to,                 expectedException,                expectedResult
                 Arguments.of( null,        2,      1,                  IllegalArgumentException.class,   null ),
+                Arguments.of( null,       -1,      1,                  IllegalArgumentException.class,   null ),
                 Arguments.of( Map.of(),    3,      1,                  IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),    0,     -1,                  IllegalArgumentException.class,   null ),
                 Arguments.of( sourceMap,   1,      0,                  IllegalArgumentException.class,   null ),
+                Arguments.of( sourceMap,  -1,      0,                  IllegalArgumentException.class,   null ),
                 Arguments.of( null,        0,      1,                  null,                             Map.of() ),
                 Arguments.of( Map.of(),    0,      1,                  null,                             Map.of() ),
-                Arguments.of( Map.of(),   -1,      0,                  null,                             Map.of() ),
                 Arguments.of( Map.of(),    3,      4,                  null,                             Map.of() ),
-                Arguments.of( sourceMap,  -1,      2,                  null,                             Map.of("A", 1, "B", 2) ),
+                Arguments.of( sourceMap,   0,      2,                  null,                             Map.of("A", 1, "B", 2) ),
                 Arguments.of( sourceMap,   1,      3,                  null,                             Map.of("B", 2, "C", 3) ),
                 Arguments.of( sourceMap,   0,      sourceMap.size(),   null,                             sourceMap )
         ); //@formatter:on

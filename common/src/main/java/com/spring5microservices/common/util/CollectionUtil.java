@@ -138,7 +138,7 @@ public class CollectionUtil {
 
     /**
      *    Returns a new {@link List} using the given {@code sourceCollection}, applying {@code defaultMapper} if the
-     *  current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
+     * current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -180,7 +180,7 @@ public class CollectionUtil {
 
     /**
      *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying {@code defaultMapper} if
-     *  the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
+     * the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -225,10 +225,122 @@ public class CollectionUtil {
                 filterPredicate,
                 alwaysTrue()
         );
+        return applyOrElse(
+                sourceCollection,
+                PartialFunction.of(
+                        finalFilterPredicate,
+                        defaultMapper
+                ),
+                orElseMapper,
+                collectionFactory
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link List} using the given {@code sourceCollection}, applying {@link PartialFunction#apply(Object)}
+     * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Result:
+     *    [1, 2, 3, 6]                                         [2, 4, 4, 12]
+     *    new PartialFunction<>() {
+     *
+     *      public Integer apply(final Integer i) {
+     *        return null == i
+     *                 ? null
+     *                 : i + 1;
+     *      }
+     *
+     *      public boolean isDefinedAt(final Integer i) {
+     *        return null != i &&
+     *                 1 == i % 2;
+     *      }
+     *    }
+     *    i -> i * 2
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter and transform.
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     * @param orElseMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    public static <T, E> List<E> applyOrElse(final Collection<? extends T> sourceCollection,
+                                             final PartialFunction<? super T, ? extends E> partialFunction,
+                                             final Function<? super T, ? extends E> orElseMapper) {
+        return (List<E>) applyOrElse(
+                sourceCollection,
+                partialFunction,
+                orElseMapper,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying {@link PartialFunction#apply(Object)}
+     * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Result:
+     *    [1, 2, 3, 6]                                         [2, 4, 4, 12]
+     *    new PartialFunction<>() {
+     *
+     *      public Integer apply(final Integer i) {
+     *        return null == i
+     *                 ? null
+     *                 : i + 1;
+     *      }
+     *
+     *      public boolean isDefinedAt(final Integer i) {
+     *        return null != i &&
+     *                 1 == i % 2;
+     *      }
+     *    }
+     *    i -> i * 2
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     * @param orElseMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Collection}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    public static <T, E> Collection<E> applyOrElse(final Collection<? extends T> sourceCollection,
+                                                   final PartialFunction<? super T, ? extends E> partialFunction,
+                                                   final Function<? super T, ? extends E> orElseMapper,
+                                                   final Supplier<Collection<E>> collectionFactory) {
+        final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        Assert.notNull(orElseMapper, "orElseMapper must be not null");
         return sourceCollection.stream()
                 .map(elto ->
-                        finalFilterPredicate.test(elto)
-                                ? defaultMapper.apply(elto)
+                        partialFunction.isDefinedAt(elto)
+                                ? partialFunction.apply(elto)
                                 : orElseMapper.apply(elto)
                 )
                 .collect(
@@ -1576,12 +1688,13 @@ public class CollectionUtil {
      *
      * @return {@link List}
      *
-     * @throws IllegalArgumentException if {@code from} is upper than {@code until}
+     * @throws IllegalArgumentException if {@code from} is greater than {@code until} or {@code zero}
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> slice(final Collection<? extends T> sourceCollection,
                                     final int from,
                                     final int until) {
+        Assert.isTrue(0 <= from, "from cannot be a negative value");
         Assert.isTrue(
                 from < until,
                 format("from: %d must be lower than to: %d",
@@ -1591,11 +1704,10 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection) || from > sourceCollection.size() - 1) {
             return new ArrayList<>();
         }
-        final int finalFrom = Math.max(0, from);
         final int finalUntil = Math.min(sourceCollection.size(), until);
         if (sourceCollection instanceof List) {
             return ((List<T>) sourceCollection).subList(
-                    finalFrom,
+                    from,
                     finalUntil
             );
         }
@@ -1603,15 +1715,15 @@ public class CollectionUtil {
         int i = 0;
         List<T> result = new ArrayList<>(
                 Math.max(
-                        finalUntil - finalFrom,
-                        finalUntil - finalFrom - 1
+                        finalUntil - from,
+                        finalUntil - from - 1
                 )
         );
         for (T element: getCollectionKeepingInternalOrdination(sourceCollection)) {
             if (i >= finalUntil) {
                 break;
             }
-            if (i >= finalFrom) {
+            if (i >= from) {
                 result.add(element);
             }
             i++;

@@ -133,7 +133,7 @@ public class MapUtil {
 
     /**
      *    Returns a new {@link HashMap} using the given {@code sourceMap}, applying {@code defaultMapper} if
-     *  the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
+     * the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -159,10 +159,10 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<T, R> applyOrElse(final Map<? extends T, ? extends E> sourceMap,
-                                                  final BiPredicate<? super T, ? super E> filterPredicate,
-                                                  final BiFunction<? super T, ? super E, ? extends R> defaultMapper,
-                                                  final BiFunction<? super T, ? super E, ? extends R> orElseMapper) {
+    public static <K1, K2, V1, V2> Map<K2, V2> applyOrElse(final Map<? extends K1, ? extends V1> sourceMap,
+                                                           final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                           final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> defaultMapper,
+                                                           final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper) {
         return applyOrElse(
                 sourceMap,
                 filterPredicate,
@@ -175,7 +175,7 @@ public class MapUtil {
 
     /**
      *    Returns a new {@link Map} using the given {@code sourceMap}, applying {@code defaultMapper} if
-     *  the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
+     * the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
      * <pre>
      * Example:
@@ -205,41 +205,156 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<T, R> applyOrElse(final Map<? extends T, ? extends E> sourceMap,
-                                                  final BiPredicate<? super T, ? super E> filterPredicate,
-                                                  final BiFunction<? super T, ? super E, ? extends R> defaultMapper,
-                                                  final BiFunction<? super T, ? super E, ? extends R> orElseMapper,
-                                                  final Supplier<Map<T, R>> mapFactory) {
-        final Supplier<Map<T, R>> finalMapFactory = getFinalMapFactory(mapFactory);
+    public static <K1, K2, V1, V2> Map<K2, V2> applyOrElse(final Map<? extends K1, ? extends V1> sourceMap,
+                                                           final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                           final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> defaultMapper,
+                                                           final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper,
+                                                           final Supplier<Map<K2, V2>> mapFactory) {
+        final Supplier<Map<K2, V2>> finalMapFactory = getFinalMapFactory(mapFactory);
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
         Assert.notNull(defaultMapper, "defaultMapper must be not null");
         Assert.notNull(orElseMapper, "orElseMapper must be not null");
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectUtil.getOrElse(
+        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = ObjectUtil.getOrElse(
                 filterPredicate,
                 biAlwaysTrue()
         );
-        return sourceMap.entrySet()
+        return applyOrElse(
+                sourceMap,
+                PartialFunction.of(
+                        finalFilterPredicate,
+                        defaultMapper
+                ),
+                orElseMapper,
+                mapFactory
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link HashMap} using the given {@code sourceMap}, applying applying {@link PartialFunction#apply(Object)}
+     * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                      Result:
+     *    [("A", 1), ("B", 2)]                              [("A", 2), ("B", 4)]
+     *    new PartialFunction<>() {
+     *
+     *      public Map.Entry<String, Integer> apply(final Map.Entry<String, Integer> entry) {
+     *        return null == entry
+     *                 ? null
+     *                 : new AbstractMap.SimpleEntry<>(
+     *                      entry.getKey(),
+     *                      null == entry.getValue()
+     *                         ? 0
+     *                         : entry.getValue() + 1
+     *                   );
+     *      }
+     *
+     *      public boolean isDefinedAt(final Map.Entry<String, Integer> entry) {
+     *        return null != entry &&
+     *               1 == entry.getValue() % 2;
+     *      }
+     *    }
+     *    (k, v) -> v * 2
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceMap}
+     * @param orElseMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
+     *                                  with a not empty {@code sourceMap}
+     */
+    public static <K1, K2, V1, V2> Map<K2, V2> applyOrElse(final Map<? extends K1, ? extends V1> sourceMap,
+                                                           final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                           final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper) {
+        return applyOrElse(
+                sourceMap,
+                partialFunction,
+                orElseMapper,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     *    Returns a new {@link HashMap} using the given {@code sourceMap}, applying applying {@link PartialFunction#apply(Object)}
+     * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                      Result:
+     *    [("A", 1), ("B", 2)]                              [("A", 2), ("B", 4)]
+     *    new PartialFunction<>() {
+     *
+     *      public Map.Entry<String, Integer> apply(final Map.Entry<String, Integer> entry) {
+     *        return null == entry
+     *                 ? null
+     *                 : new AbstractMap.SimpleEntry<>(
+     *                      entry.getKey(),
+     *                      null == entry.getValue()
+     *                         ? 0
+     *                         : entry.getValue() + 1
+     *                   );
+     *      }
+     *
+     *      public boolean isDefinedAt(final Map.Entry<String, Integer> entry) {
+     *        return null != entry &&
+     *               1 == entry.getValue() % 2;
+     *      }
+     *    }
+     *    (k, v) -> v * 2
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements from {@code sourceMap}
+     * @param orElseMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
+     *                                  with a not empty {@code sourceMap}
+     */
+    public static <K1, K2, V1, V2> Map<K2, V2> applyOrElse(final Map<? extends K1, ? extends V1> sourceMap,
+                                                           final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                           final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper,
+                                                           final Supplier<Map<K2, V2>> mapFactory) {
+        final Supplier<Map<K2, V2>> finalMapFactory = getFinalMapFactory(mapFactory);
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalMapFactory.get();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        Assert.notNull(orElseMapper, "orElseMapper must be not null");
+
+        // Allowed because immutable/read-only Maps are covariant.
+        Map<K1, V1> narrowedSourceMap = (Map<K1, V1>) sourceMap;
+        return narrowedSourceMap.entrySet()
                 .stream()
-                .map(entry ->
-                        finalFilterPredicate.test(entry.getKey(), entry.getValue())
-                                ? Map.entry(
-                                        entry.getKey(),
-                                        defaultMapper.apply(
-                                                entry.getKey(),
-                                                entry.getValue()
-                                        )
-                                )
-                                : Map.entry(
-                                        entry.getKey(),
-                                        orElseMapper.apply(
-                                                entry.getKey(),
-                                                entry.getValue()
-                                        )
-                                )
-                )
-                .collect(
+                .map(e ->
+                        partialFunction.isDefinedAt(e)
+                                ? partialFunction.apply(e)
+                                : orElseMapper.apply(
+                                        e.getKey(),
+                                        e.getValue()
+                                  )
+                ).collect(
                         toMapNullableValues(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
@@ -1688,11 +1803,12 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code from} is upper than {@code until}
+     * @throws IllegalArgumentException if {@code from} is greater than {@code until} or {@code zero}
      */
     public static <T, E> Map<T, E> slice(final Map<? extends T, ? extends E> sourceMap,
                                          final int from,
                                          final int until) {
+        Assert.isTrue(0 <= from, "from cannot be a negative value");
         Assert.isTrue(
                 from < until,
                 format("from: %d must be lower than to: %d",
@@ -1702,20 +1818,19 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap) || from > sourceMap.size() - 1) {
             return new HashMap<>();
         }
-        final int finalFrom = Math.max(0, from);
         final int finalUntil = Math.min(sourceMap.size(), until);
         int i = 0;
         Map<T, E> result = new LinkedHashMap<>(
                 Math.max(
-                        finalUntil - finalFrom,
-                        finalUntil - finalFrom - 1
+                        finalUntil - from,
+                        finalUntil - from - 1
                 )
         );
         for (var entry : sourceMap.entrySet()) {
             if (i >= finalUntil) {
                 break;
             }
-            if (i >= finalFrom) {
+            if (i >= from) {
                 result.put(
                         entry.getKey(),
                         entry.getValue()
