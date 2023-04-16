@@ -22,6 +22,9 @@ import static org.springframework.http.HttpMethod.GET;
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    private final String SPRING_ACTUATOR_PATH = "/actuator";
+    private final String ALLOW_ALL_ENDPOINTS = "/**";
+
     @Lazy
     private final UserService userService;
 
@@ -56,10 +59,18 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             // List of services do not require authentication
             .antMatchers(
                     GET,
-                    RestRoutes.SECURITY_OAUTH.ROOT + "/**"
+                    allowedGetEndpoints()
             ).permitAll()
             // Any other request must be authenticated
             .anyRequest().authenticated();
+    }
+
+
+    private String[] allowedGetEndpoints() {
+        return new String[] {
+                SPRING_ACTUATOR_PATH + ALLOW_ALL_ENDPOINTS,
+                RestRoutes.SECURITY_OAUTH.ROOT + ALLOW_ALL_ENDPOINTS
+        };
     }
 
 }

@@ -1,0 +1,175 @@
+services:
+
+  config-server:
+    build:
+      context: ./config
+      dockerfile: ./Dockerfile
+    container_name: config-server
+    depends_on:
+      registry-server:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider config-server:8888/actuator/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: config-server:latest
+    networks:
+      - Spring5Microservices
+    ports:
+      - 8888:8888
+
+
+  gateway-server:
+    build:
+      context: ./gateway-server
+      dockerfile: ./Dockerfile
+    container_name: gateway-server
+    depends_on:
+      config-server:
+        condition: service_healthy
+      registry-server:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider gateway-server:5555/actuator/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: gateway-server:latest
+    networks:
+      - Spring5Microservices
+    ports:
+      - 5555:5555
+
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: ./Dockerfile
+    container_name: order-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+      gateway-server:
+        condition: service_healthy
+      registry-server:
+        condition: service_healthy
+      security-oauth-service:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    image: order-service:latest
+    networks:
+      - Spring5Microservices
+    ports:
+      - 8081:8081
+
+
+  pizza-service:
+    build:
+      context: ./pizza-service
+      dockerfile: ./Dockerfile
+    container_name: pizza-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+      gateway-server:
+        condition: service_healthy
+      registry-server:
+        condition: service_healthy
+      security-jwt-service:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    image: pizza-service:latest
+    networks:
+      - Spring5Microservices
+    ports:
+      - 8080:8080
+
+
+  registry-server:
+    build:
+      context: ./registry-server
+      dockerfile: ./Dockerfile
+    container_name: registry-server
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider registry-server:8761/actuator/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: registry-server:latest
+    networks:
+      - Spring5Microservices
+    ports:
+      - 8761:8761
+
+
+  security-jwt-service:
+    build:
+      context: ./security-jwt-service
+      dockerfile: ./Dockerfile
+    container_name: security-jwt-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+      gateway-server:
+          condition: service_healthy
+      registry-server:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider security-jwt-service:8180/actuator/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    image: security-jwt-service:latest
+    networks:
+      - Spring5Microservices
+    ports:
+      - 8180:8180
+
+
+  security-oauth-service:
+    build:
+      context: ./security-oauth-service
+      dockerfile: ./Dockerfile
+    container_name: security-oauth-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+      gateway-server:
+        condition: service_healthy
+      registry-server:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider security-oauth-service:8181/actuator/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    image: security-oauth-service:latest
+    networks:
+      - Spring5Microservices
+    ports:
+      - 8181:8181
+
+
+networks:
+  Spring5Microservices:
+    external: true
+    name: Spring5Microservices
+
+
+# ------------------------------------------------------------------------------------------
+# COMMANDS:
+#
+# 1. Create and start containers:
+#
+#      docker compose -f compose.yml up
+#
+# 2. Stop and remove containers:
+#
+#      docker compose -f compose.yml down

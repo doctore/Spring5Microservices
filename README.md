@@ -24,6 +24,7 @@
   - [gRPC example request](#grpc-example-request)
 - [Rest API documentation](#rest-api-documentation)
 - [Docker](#docker)
+  - [Docker compose](#docker-compose) 
   - [PostgreSQL configuration in localhost](#postgresql-configuration-in-localhost)
 - [Previous versions of the project](#previous-versions-of-the-project)
 
@@ -567,6 +568,12 @@ Once you have created all the Docker images on your local, you should see someth
 ![Alt text](/documentation/DockerImages.png?raw=true "Docker images")
 
 
+### Docker compose
+
+To manage the Docker containers in an easier way, a [Docker compose](https://docs.docker.com/compose/compose-file) [file](https://github.com/doctore/Spring5Microservices/blob/master/compose.yml) 
+has been added. It includes the required commands to up and down the project's containers. 
+
+
 ### PostgreSQL configuration in localhost
 
 In this project, the PostgreSQL database has not been dockerized, feel free to do it if you prefer such option instead of using the local one. In this section, I will describe the
@@ -583,7 +590,8 @@ listen_addresses = '*'
 3. Edit `pg_hba.conf` to allow connections from Docker containers
 ```
 # # IPv4 local connections:
-# host    all             all             172.18.0.0/16           md5
+host    all             all             172.18.0.0/16           md5   # Docker
+host    all             all             172.21.0.0/16           md5   # Docker compose
 ```
 
 4. Restart PostgreSQL service (in my case `service postgresql restart`).
