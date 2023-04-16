@@ -2,7 +2,7 @@ services:
 
   config-server:
     build:
-      context: ./config
+      context: ./config-server
       dockerfile: ./Dockerfile
     container_name: config-server
     depends_on:
