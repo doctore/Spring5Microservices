@@ -579,13 +579,11 @@ OS should need similar ones).
 ```
 listen_addresses = '*'
 ```
-<br>
 3. Edit `pg_hba.conf` to allow connections from Docker containers
 ```
 # # IPv4 local connections:
 # host    all             all             172.18.0.0/16           md5
 ```
-<br>
 4. Restart PostgreSQL service (in my case `service postgresql restart`).
 
 
