@@ -574,16 +574,18 @@ required steps to allow the connections from Docker to the PostgreSQL database i
 OS should need similar ones).
 
 1. Go to the PostgreSQL's folder with configuration files (in my case `/etc/postgresql/12/main`)
-<br>
+<br><br>
 2. Edit `postgresql.conf` to listen connections outside `localhost`:
 ```
 listen_addresses = '*'
 ```
+
 3. Edit `pg_hba.conf` to allow connections from Docker containers
 ```
 # # IPv4 local connections:
 # host    all             all             172.18.0.0/16           md5
 ```
+
 4. Restart PostgreSQL service (in my case `service postgresql restart`).
 
 
