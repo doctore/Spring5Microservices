@@ -1,0 +1,6 @@
+server:
+  port: ${SERVER_PORT:8181}
+
+spring:
+  config:
+    import: configserver:${CONFIG_SERVER:http://config-server:8888}

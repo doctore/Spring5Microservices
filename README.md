@@ -23,6 +23,8 @@
   - [Request identifier in gRPC](#request-identifier-grpc)
   - [gRPC example request](#grpc-example-request)
 - [Rest API documentation](#rest-api-documentation)
+- [Docker](#docker)
+  - [PostgreSQL configuration in localhost](#postgresql-configuration-in-localhost)
 - [Previous versions of the project](#previous-versions-of-the-project)
 
 
@@ -535,6 +537,56 @@ to choose between all existing microservices.
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
 <br><br>
+
+
+
+## Docker
+
+In addition to launching all the microservices included in this project as *normal* Java applications locally, all of them have been [dockerized](https://www.docker.com/). Every one
+includes a `Dockerfile` inside with the required configuration and instructions to generate both Docker image and container. On the other hand, new application files with **docker**
+profile have been added to [Spring5Microservices_ConfigServerData](https://github.com/doctore/Spring5Microservices_ConfigServerData).
+
+There are 2 main types of `Dockerfile` based on the option to invoke `maven install` inside the Docker container, this is because some projects contain internal dependencies that
+have not been uploaded to a public repository like: [common](#common) or [grpc-api](#grpc-api).
+
+Projects with `maven install` in their `DockerFile` and which do not need to create the **jar** file previously:
+
+* [Registry server](https://github.com/doctore/Spring5Microservices/blob/master/registry-server/Dockerfile)
+* [Configuration server](https://github.com/doctore/Spring5Microservices/blob/master/config-server/Dockerfile)
+
+Projects that must create the **jar** file before creating the Docker image:
+
+* [Gateway server](https://github.com/doctore/Spring5Microservices/blob/master/gateway-server/Dockerfile)
+* [Order Service](https://github.com/doctore/Spring5Microservices/blob/master/order-service/Dockerfile)
+* [Pizza Service](https://github.com/doctore/Spring5Microservices/blob/master/pizza-service/Dockerfile)
+* [Security Jwt Service](https://github.com/doctore/Spring5Microservices/blob/master/security-jwt-service/Dockerfile)
+* [Security Oauth Service](https://github.com/doctore/Spring5Microservices/blob/master/security-oauth-service/Dockerfile)
+
+Once you have created all the Docker images on your local, you should see something similar to:
+
+![Alt text](/documentation/DockerImages.png?raw=true "Docker images")
+
+
+### PostgreSQL configuration in localhost
+
+In this project, the PostgreSQL database has not been dockerized, feel free to do it if you prefer such option instead of using the local one. In this section, I will describe the
+required steps to allow the connections from Docker to the PostgreSQL database installed in a local computer, in my case, PostgreSQL 12 over Ubuntu (other database versions and/or
+OS should need similar ones).
+
+1. Go to the PostgreSQL's folder with configuration files (in my case `/etc/postgresql/12/main`)
+<br>
+2. Edit `postgresql.conf` to listen connections outside `localhost`:
+```
+listen_addresses = '*'
+```
+<br>
+3. Edit `pg_hba.conf` to allow connections from Docker containers
+```
+# # IPv4 local connections:
+# host    all             all             172.18.0.0/16           md5
+```
+<br>
+4. Restart PostgreSQL service (in my case `service postgresql restart`).
 
 
 

@@ -1,0 +1,19 @@
+server:
+  port: ${SERVER_PORT:8761}
+
+eureka:
+  instance:
+    hostname: ${SERVER_HOSTNAME:localhost}
+  client:
+    # Do not cache registry information locally
+    fetchRegistry: false
+    # Do not register with Eureka service
+    registerWithEureka: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka
+  server:
+    # Only in NON PRODUCTION settings, preventing the deregistration of active services
+    # when network hiccup has stopped the renewal request from making its way to Eureka
+    enableSelfPreservation: false
+    # Initial time to wait before server takes requests
+    waitTimeInMsWhenSyncEmpty: 5

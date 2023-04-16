@@ -1,6 +1,4 @@
 server:
-  instance:
-    hostname: localhost
   port: 5555
 
 spring:

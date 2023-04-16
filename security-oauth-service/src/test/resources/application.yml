@@ -1,4 +1,3 @@
-# IMPORTANT: Stop config-server when you want to execute the tests
 spring:
   cloud:
     # Disable configuration server for testing

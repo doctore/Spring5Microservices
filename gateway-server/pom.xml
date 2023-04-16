@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.gatewayserver</groupId>
     <artifactId>gateway-server</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>gateway-server</name>
     <description>Gateway server for Spring 5 with microservices</description>
 
