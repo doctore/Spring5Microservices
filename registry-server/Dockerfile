@@ -32,7 +32,7 @@ COPY --from=builder ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=builder ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=builder ${DEPENDENCY}/BOOT-INF/classes /app
 
-# Launchs the application at Docker image
+# Use the Spring Boot main application class to run it
 ENTRYPOINT ["java", "-cp", "app:app/lib/*", "com.registryserver.RegistryServerApplication"]
 
 

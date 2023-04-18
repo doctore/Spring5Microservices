@@ -34,7 +34,7 @@ COPY --from=builder ${DEPENDENCY}/spring-boot-loader/ ./
 COPY --from=builder ${DEPENDENCY}/snapshot-dependencies/ ./
 COPY --from=builder ${DEPENDENCY}/application/ ./
 
-# Launchs the application at Docker image
+# Copy the Spring Boot fat JarLauncher into the image and use it to run the application
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
 
 
@@ -47,4 +47,4 @@ ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
 #
 # 2. Build and launch the container:
 #
-#      docker run -p 8180:8180 --rm --name security-jwt-service --add-host=host.docker.internal:172.17.0.1 --network Spring5Microservices security-jwt-service
+#      docker run -p 8180:8180 --rm --name security-jwt-service --add-host=host.docker.internal:host-gateway --network Spring5Microservices security-jwt-service

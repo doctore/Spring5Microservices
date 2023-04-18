@@ -34,7 +34,7 @@ COPY --from=builder ${DEPENDENCY}/spring-boot-loader/ ./
 COPY --from=builder ${DEPENDENCY}/snapshot-dependencies/ ./
 COPY --from=builder ${DEPENDENCY}/application/ ./
 
-# Launchs the application at Docker image
+# Copy the Spring Boot fat JarLauncher into the image and use it to run the application
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
 
 
