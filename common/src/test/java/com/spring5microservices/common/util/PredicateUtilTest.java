@@ -23,6 +23,7 @@ import static com.spring5microservices.common.util.PredicateUtil.biAlwaysFalse;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAnyOf;
 import static com.spring5microservices.common.util.PredicateUtil.distinctByKey;
+import static java.util.Objects.isNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PredicateUtilTest {
@@ -52,7 +53,11 @@ public class PredicateUtilTest {
                                     Predicate<? super T> predicate1,
                                     Predicate<? super T> predicate2,
                                     boolean expectedResult) {
-        Predicate<T> finalPredicate = allOf(predicate1, predicate2);
+        Predicate<T> finalPredicate =
+                isNull(predicate1) && isNull(predicate2)
+                        ? allOf()
+                        : allOf(predicate1, predicate2);
+
         assertEquals(expectedResult, finalPredicate.test(t));
     }
 
@@ -81,7 +86,11 @@ public class PredicateUtilTest {
                                     Predicate<? super T> predicate1,
                                     Predicate<? super T> predicate2,
                                     boolean expectedResult) {
-        Predicate<T> finalPredicate = anyOf(predicate1, predicate2);
+        Predicate<T> finalPredicate =
+                isNull(predicate1) && isNull(predicate2)
+                        ? anyOf()
+                        : anyOf(predicate1, predicate2);
+
         assertEquals(expectedResult, finalPredicate.test(t));
     }
 
@@ -149,7 +158,11 @@ public class PredicateUtilTest {
                                          BiPredicate<? super T, ? super E> predicate1,
                                          BiPredicate<? super T, ? super E> predicate2,
                                          boolean expectedResult) {
-        BiPredicate<? super T, ? super E> finalPredicate = biAllOf(predicate1, predicate2);
+        BiPredicate<? super T, ? super E> finalPredicate =
+                isNull(predicate1) && isNull(predicate2)
+                        ? biAllOf()
+                        : biAllOf(predicate1, predicate2);
+
         assertEquals(expectedResult, finalPredicate.test(t, e));
     }
 
@@ -177,7 +190,11 @@ public class PredicateUtilTest {
                                          BiPredicate<? super T, ? super E> predicate1,
                                          BiPredicate<? super T, ? super E> predicate2,
                                          boolean expectedResult) {
-        BiPredicate<? super T, ? super E> finalPredicate = biAnyOf(predicate1, predicate2);
+        BiPredicate<? super T, ? super E> finalPredicate =
+                isNull(predicate1) && isNull(predicate2)
+                        ? biAnyOf()
+                        : biAnyOf(predicate1, predicate2);
+
         assertEquals(expectedResult, finalPredicate.test(t, e));
     }
 
