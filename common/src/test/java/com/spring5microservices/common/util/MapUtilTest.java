@@ -1026,10 +1026,10 @@ public class MapUtilTest {
     @MethodSource("concatMapsAndMapFactoryTestCases")
     @DisplayName("concat: with map factory and maps to concat test cases")
     public <T, E> void concatMapsAndMapFactory_testCases(Map<? extends T, ? extends E> mapToConcat1,
-                                                Map<? extends T, ? extends E> mapToConcat2,
-                                                Map<? extends T, ? extends E> mapToConcat3,
-                                                Supplier<Map<T, E>> mapFactory,
-                                                Map<T, E> expectedResult) {
+                                                         Map<? extends T, ? extends E> mapToConcat2,
+                                                         Map<? extends T, ? extends E> mapToConcat3,
+                                                         Supplier<Map<T, E>> mapFactory,
+                                                         Map<T, E> expectedResult) {
         assertEquals(expectedResult, concat(mapFactory, mapToConcat1, mapToConcat2, mapToConcat3));
     }
 
