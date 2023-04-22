@@ -2,6 +2,7 @@ package com.spring5microservices.common.interfaces.functional;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -75,6 +76,29 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      *         {@code false} otherwise
      */
     boolean isDefinedAt(final T t);
+
+
+    /**
+     * Returns a {@link PartialFunction} with:
+     * <p>
+     *  - {@link PartialFunction#isDefinedAt(Object)} always returns {@code true}
+     *  - {@link PartialFunction#apply(Object)} always returns its input argument
+     *
+     * @return {@link PartialFunction} that always returns its input argument
+     */
+    static <T> PartialFunction<T, T> identity() {
+        return new PartialFunction<>() {
+            @Override
+            public T apply(final T t) {
+                return t;
+            }
+
+            @Override
+            public boolean isDefinedAt(final T t) {
+                return true;
+            }
+        };
+    }
 
 
     /**
@@ -331,6 +355,22 @@ public interface PartialFunction<T, R> extends Function<T, R> {
                         : false;
             }
         };
+    }
+
+
+    /**
+     * Turns this {@link PartialFunction} into a {@link Function} returning an {@link Optional} result.
+     *
+     * @return {@link Function} that takes an argument {@code x} to {@link Optional} of {@link PartialFunction#apply(Object)} if {@code x}
+     *         belongs to the {@link PartialFunction}'s domain, {@link Optional#empty()} otherwise.
+     */
+    default Function<T, Optional<R>> lift() {
+        return t ->
+                isDefinedAt(t)
+                        ? Optional.ofNullable(
+                                apply(t)
+                          )
+                        : Optional.empty();
     }
 
 

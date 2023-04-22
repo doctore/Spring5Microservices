@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -17,6 +18,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PartialFunctionTest {
+
+    static Stream<Arguments> identityTestCases() {
+        PartialFunction<Integer, Integer> integerIdentity = PartialFunction.identity();
+        PartialFunction<String, String> stringIdentity = PartialFunction.identity();
+        return Stream.of(
+                //@formatter:off
+                //            t,      partialFunction,   expectedResult
+                Arguments.of( null,   integerIdentity,   null ),
+                Arguments.of( null,   stringIdentity,    null ),
+                Arguments.of( 10,     integerIdentity,   10 ),
+                Arguments.of( "11",   stringIdentity,    "11" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("identityTestCases")
+    @DisplayName("identity: test cases")
+    public <T, R> void identity_testCases(T t,
+                                          PartialFunction<T, R> partialFunction,
+                                          R expectedResult) {
+        assertEquals(expectedResult, partialFunction.apply(t));
+    }
+
 
     static Stream<Arguments> ofWithPredicateAndFunctionTestCases() {
         Predicate<Integer> isOdd = i -> 1 == i % 2;
@@ -303,6 +327,31 @@ public class PartialFunctionTest {
             assertEquals(expectedApplyResult, composeResult.apply(v));
             assertEquals(expectedIsDefinedAtResult, composeResult.isDefinedAt(v));
         }
+    }
+
+
+    static Stream<Arguments> liftTestCases() {
+        PartialFunction<String, String> stringIdentity = PartialFunction.identity();
+        return Stream.of(
+                //@formatter:off
+                //            t,      partialFunction,         expectedResult
+                Arguments.of( null,   stringIdentity,          Optional.empty() ),
+                Arguments.of( null,   toStringIfLowerThan20,   Optional.empty() ),
+                Arguments.of( 21,     toStringIfLowerThan20,   Optional.empty() ),
+                Arguments.of( "11",   stringIdentity,          Optional.of("11") ),
+                Arguments.of( 11,     toStringIfLowerThan20,   Optional.of("11") )
+
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("liftTestCases")
+    @DisplayName("lift: test cases")
+    public <T, R> void lift_testCases(T t,
+                                      PartialFunction<T, R> partialFunction,
+                                      Optional<R> expectedResult) {
+        Function<T, Optional<R>> liftedPartialFunction = partialFunction.lift();
+        assertEquals(expectedResult, liftedPartialFunction.apply(t));
     }
 
 
