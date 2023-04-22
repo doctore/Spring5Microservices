@@ -246,6 +246,7 @@ Maven project that includes common code used in several microservices, with diff
 * [MapUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/MapUtil.java)
 * [NumberUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/NumberUtil.java)
 * [ObjectUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/ObjectUtil.java)
+* [PredicateUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/PredicateUtil.java)
 * [StringUtil](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/StringUtil.java) 
 
 Generic interfaces used to provide common conversion functionality using [MapStruct](https://mapstruct.org): 
