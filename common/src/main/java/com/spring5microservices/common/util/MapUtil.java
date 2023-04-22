@@ -148,7 +148,7 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *    {@link BiPredicate} to filter elements of {@code sourceMap}
      * @param defaultMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}
      * @param orElseMapper
@@ -191,7 +191,7 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *    {@link BiPredicate} to filter elements of {@code sourceMap}
      * @param defaultMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} that verify {@code filterPredicate}
      * @param orElseMapper
@@ -265,7 +265,7 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
      * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements from {@code sourceMap}
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      * @param orElseMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
      *
@@ -320,7 +320,7 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
      * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements from {@code sourceMap}
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      * @param orElseMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
      * @param mapFactory
@@ -354,7 +354,8 @@ public class MapUtil {
                                         e.getKey(),
                                         e.getValue()
                                   )
-                ).collect(
+                )
+                .collect(
                         toMapNullableValues(
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
@@ -382,9 +383,9 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *    {@link BiPredicate} to filter elements of {@code sourceMap}
      * @param mapFunction
-     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}
+     *    {@link BiFunction} to transform filtered elements of {@code sourceMap}
      *
      * @return {@link Map}
      *
@@ -421,9 +422,9 @@ public class MapUtil {
      * @param sourceMap
      *    Source {@link Map} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *    {@link BiPredicate} to filter elements of {@code sourceMap}
      * @param mapFunction
-     *    {@link BiFunction} to transform filtered elements from the source {@code sourceMap}
+     *    {@link BiFunction} to transform filtered elements of {@code sourceMap}
      * @param mapFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements
      *    If {@code null} then {@link HashMap}
@@ -534,7 +535,8 @@ public class MapUtil {
      *        return null != entry &&
      *               1 == entry.getKey() % 2;
      *      }
-     *    }
+     *    },
+     *    HashMap::new
      * </pre>
      *
      * @param sourceMap
@@ -572,6 +574,74 @@ public class MapUtil {
                                 finalMapFactory
                         )
                 );
+    }
+
+
+    /**
+     *    Finds the first element of the {@code sourceMap} for which the given {@link PartialFunction} is defined, and
+     * applies the {@link PartialFunction} to it.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                                 Result:
+     *    [(1, "Hi"), (2, "Hello")]                                                                   Optional[(2, 4)]
+     *    new PartialFunction<>() {
+     *
+     *      public Map.Entry<Integer, Integer> apply(final Map.Entry<Integer, String> entry) {
+     *        return null == entry
+     *                 ? null
+     *                 : new AbstractMap.SimpleEntry<>(
+     *                      entry.getKey(),
+     *                      null == entry.getValue()
+     *                         ? 0
+     *                         : entry.getValue().length()
+     *                   );
+     *      }
+     *
+     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+     *        return null != entry &&
+     *               0 == entry.getKey() % 2;
+     *      }
+     *    }
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter elements of {@code sourceMap} and transform the first one defined at function's domain
+     *
+     * @return {@link Optional} value containing {@code partialFunction} applied to the first value for which it is defined,
+     *         {@link Optional#empty()} if none exists.
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
+     */
+    public static <K1, K2, V1, V2> Optional<Map.Entry<K2, V2>> collectFirst(final Map<? extends K1, ? extends V1> sourceMap,
+                                                                            final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction) {
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return empty();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        final BiPredicate<? super K1, ? super V1> filterPredicate =
+                (k, v) ->
+                        partialFunction.isDefinedAt(
+                                new AbstractMap.SimpleEntry<>(
+                                        k,
+                                        v
+                                )
+                        );
+        return find(
+                sourceMap,
+                filterPredicate
+        )
+        .map(e ->
+                partialFunction.apply(
+                        new AbstractMap.SimpleEntry<>(
+                                e.getKey(),
+                                e.getValue()
+                        )
+                )
+        );
     }
 
 
@@ -671,7 +741,9 @@ public class MapUtil {
                 .map(m ->
                         Stream.of(m)
                                 .filter(Objects::nonNull)
-                                .flatMap(notNullMap -> notNullMap.entrySet().stream())
+                                .flatMap(notNullMap ->
+                                        notNullMap.entrySet().stream()
+                                )
                                 .collect(
                                         toMapNullableValues(
                                                 Map.Entry::getKey,

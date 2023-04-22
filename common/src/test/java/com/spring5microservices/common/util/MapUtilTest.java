@@ -866,6 +866,62 @@ public class MapUtilTest {
     }
 
 
+    static Stream<Arguments> collectFirstTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, null);
+            put(4, "o");
+        }};
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
+                return null == entry
+                        ? null
+                        : new AbstractMap.SimpleEntry<>(
+                        entry.getKey(),
+                        null == entry.getValue()
+                                ? 0L
+                                : (long) (entry.getKey() * 2 + entry.getValue().length())
+                );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+                return null != entry &&
+                        null != entry.getValue() &&
+                        0 == entry.getKey() % 2 &&
+                        "AEIOUaeiou".contains(entry.getValue());
+            }
+        };
+        Map.Entry<Integer, Long> intsAndLongsResult = new AbstractMap.SimpleEntry<>(4, 9L);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        partialFunction,               expectedException,                expectedResult
+                Arguments.of( null,             null,                          null,                             empty() ),
+                Arguments.of( null,             multiply2KeyPlusValueLength,   null,                             empty() ),
+                Arguments.of( Map.of(),         null,                          null,                             empty() ),
+                Arguments.of( Map.of(),         multiply2KeyPlusValueLength,   null,                             empty() ),
+                Arguments.of( intsAndStrings,   null,                          IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   multiply2KeyPlusValueLength,   null,                             of(intsAndLongsResult) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectFirstTestCases")
+    @DisplayName("collectFirst: test cases")
+    public <K1, K2, V1, V2> void collectFirst_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                      PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                      Class<? extends Exception> expectedException,
+                                                                      Optional<Map<K2, V2>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collectFirst(sourceMap, partialFunction));
+        } else {
+            assertEquals(expectedResult, collectFirst(sourceMap, partialFunction));
+        }
+    }
+
+
     static Stream<Arguments> concatOnlyMapsTestCases() {
         Map<Integer, String> map1 = new HashMap<>() {{
             put(1, "A");

@@ -153,7 +153,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *    {@link Predicate} to filter elements of {@code sourceCollection}
      * @param defaultMapper
      *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}
      * @param orElseMapper
@@ -196,7 +196,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *    {@link Predicate} to filter elements of {@code sourceCollection}
      * @param defaultMapper
      *    {@link Function} to transform elements of {@code sourceCollection} that verify {@code filterPredicate}
      * @param orElseMapper
@@ -265,7 +265,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform.
      * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      * @param orElseMapper
      *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      *
@@ -315,7 +315,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
      * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      * @param orElseMapper
      *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      * @param collectionFactory
@@ -422,9 +422,9 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
      * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *    {@link Predicate} to filter elements of {@code sourceCollection}
      * @param mapFunction
-     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}
+     *    {@link Function} to transform filtered elements of {@code sourceCollection}
      *
      * @return {@link List}
      *
@@ -464,7 +464,7 @@ public class CollectionUtil {
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param mapFunction
-     *    {@link Function} to transform filtered elements from the source {@code sourceCollection}
+     *    {@link Function} to transform filtered elements of the source {@code sourceCollection}
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
@@ -526,7 +526,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
      * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      *
      * @return {@link List}
      *
@@ -573,7 +573,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    Source {@link Collection} with the elements to filter and transform
      * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements from {@code sourceCollection}
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
@@ -597,6 +597,54 @@ public class CollectionUtil {
                 .collect(
                         toCollection(finalCollectionFactory)
                 );
+    }
+
+
+    /**
+     *    Finds the first element of the {@code sourceCollection} for which the given {@link PartialFunction} is defined,
+     * and applies the {@link PartialFunction} to it.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                           Result:
+     *    [1, 2, 3, 6]                                          Optional("2")
+     *    new PartialFunction<>() {
+     *
+     *      public String apply(final Integer i) {
+     *        return null == i
+     *                 ? null
+     *                 : i.toString();
+     *      }
+     *
+     *      public boolean isDefinedAt(final Integer i) {
+     *        return null != i &&
+     *                 0 == i % 2;
+     *      }
+     *    }
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter elements of {@code sourceCollection} and transform the first one defined at function's domain
+     *
+     * @return {@link Optional} value containing {@code partialFunction} applied to the first value for which it is defined,
+     *         {@link Optional#empty()} if none exists.
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
+     */
+    public static <T, E> Optional<E> collectFirst(final Collection<? extends T> sourceCollection,
+                                                  final PartialFunction<? super T, ? extends E> partialFunction) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return empty();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        return find(
+                sourceCollection,
+                partialFunction::isDefinedAt
+        )
+        .map(partialFunction);
     }
 
 

@@ -710,6 +710,50 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> collectFirstTestCases() {
+        List<String> strings = asList("A", "AB", null, "ABC", "T");
+        PartialFunction<String, Integer> lengthIfSizeGreaterThan1 = new PartialFunction<>() {
+
+            @Override
+            public Integer apply(final String s) {
+                return null == s
+                        ? null
+                        : s.length();
+            }
+
+            @Override
+            public boolean isDefinedAt(final String s) {
+                return null != s &&
+                        1 < s.length();
+            }
+        };
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,            expectedException,            expectedResult
+                Arguments.of( null,               null,                       null,                         empty() ),
+                Arguments.of( null,               lengthIfSizeGreaterThan1,   null,                         empty() ),
+                Arguments.of( List.of(),          null,                       null,                         empty() ),
+                Arguments.of( List.of(),          lengthIfSizeGreaterThan1,   null,                         empty() ),
+                Arguments.of( List.of("1"),       null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( strings,            lengthIfSizeGreaterThan1,   null,                             of(2) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectFirstTestCases")
+    @DisplayName("collectFirst: test cases")
+    public <T, E> void collectFirst_testCases(Collection<T> sourceCollection,
+                                              PartialFunction<? super T, ? extends E> partialFunction,
+                                              Class<? extends Exception> expectedException,
+                                              Optional<E> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collectFirst(sourceCollection, partialFunction));
+        } else {
+            assertEquals(expectedResult, collectFirst(sourceCollection, partialFunction));
+        }
+    }
+
+
     static Stream<Arguments> collectPropertyNoCollectionFactoryTestCases() {
         PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
         PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
