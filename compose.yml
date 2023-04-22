@@ -8,6 +8,9 @@ services:
     depends_on:
       registry-server:
         condition: service_healthy
+    environment:
+      EUREKA_SERVER: http://registry-server:8761/eureka/
+      SERVER_PORT: 8888
     healthcheck:
       test: wget --no-verbose --tries=1 --spider config-server:8888/actuator/health || exit 1
       interval: 10s
@@ -25,6 +28,9 @@ services:
       context: ./gateway-server
       dockerfile: ./Dockerfile
     container_name: gateway-server
+    environment:
+      CONFIG_SERVER: http://config-server:8888
+      SERVER_PORT: 5555
     depends_on:
       config-server:
         condition: service_healthy
@@ -47,6 +53,11 @@ services:
       context: ./order-service
       dockerfile: ./Dockerfile
     container_name: order-service
+    environment:
+      CONFIG_SERVER: http://config-server:8888
+      SERVER_PORT: 8081    
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       config-server:
         condition: service_healthy
@@ -56,8 +67,11 @@ services:
         condition: service_healthy
       security-oauth-service:
         condition: service_healthy
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider order-service:8081/actuator/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
     image: order-service:latest
     networks:
       - Spring5Microservices
@@ -69,7 +83,7 @@ services:
     build:
       context: ./pizza-service
       dockerfile: ./Dockerfile
-    container_name: pizza-service
+    container_name: pizza-service   
     depends_on:
       config-server:
         condition: service_healthy
@@ -79,8 +93,16 @@ services:
         condition: service_healthy
       security-jwt-service:
         condition: service_healthy
+    environment:
+      CONFIG_SERVER: http://config-server:8888
+      SERVER_PORT: 8080
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider pizza-service:8080/actuator/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10        
     image: pizza-service:latest
     networks:
       - Spring5Microservices
@@ -93,6 +115,9 @@ services:
       context: ./registry-server
       dockerfile: ./Dockerfile
     container_name: registry-server
+    environment:
+      SERVER_HOSTNAME: localhost
+      SERVER_PORT: 8761
     healthcheck:
       test: wget --no-verbose --tries=1 --spider registry-server:8761/actuator/health || exit 1
       interval: 10s
@@ -117,6 +142,9 @@ services:
           condition: service_healthy
       registry-server:
         condition: service_healthy
+    environment:
+      CONFIG_SERVER: http://config-server:8888
+      SERVER_PORT: 8180
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -143,6 +171,9 @@ services:
         condition: service_healthy
       registry-server:
         condition: service_healthy
+    environment:
+      CONFIG_SERVER: http://config-server:8888
+      SERVER_PORT: 8181        
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -169,6 +200,9 @@ networks:
 # 1. Create and start containers:
 #
 #      docker compose -f compose.yml up
+#
+#    1.1 If you want to create the Docker images use --build
+#
 #
 # 2. Stop and remove containers:
 #
