@@ -165,7 +165,7 @@ public class PredicateUtil {
     @SafeVarargs
     public static <T, E> BiPredicate<T, E> biAnyOf(BiPredicate<? super T, ? super E>... predicates) {
         if (ObjectUtil.isEmpty(predicates)) {
-            return biAlwaysTrue();
+            return biAlwaysFalse();
         }
         return (t, e) -> {
             for (BiPredicate<? super T, ? super E> predicate: predicates) {
