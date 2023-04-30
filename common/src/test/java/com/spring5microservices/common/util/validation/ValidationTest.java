@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.Optional.empty;
@@ -294,35 +295,6 @@ public class ValidationTest {
     }
 
 
-    static Stream<Arguments> mapErrorTestCases() {
-        Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
-        Function<List<String>, List<String>> addALetter = i -> i.stream().map(elto -> elto + "2").toList();
-        return Stream.of(
-                //@formatter:off
-                //            validation,   mapper,       expectedException,                expectedResult
-                Arguments.of( invalid,      null,         IllegalArgumentException.class,   null ),
-                Arguments.of( invalid,      addALetter,   null,                             Validation.invalid(List.of("problem2")) ),
-                Arguments.of( valid,        null,         null,                             valid ),
-                Arguments.of( valid,        addALetter,   null,                             valid )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("mapErrorTestCases")
-    @DisplayName("mapError: test cases")
-    public <E, T, U> void mapError_testCases(Validation<E, T> validation,
-                                             Function<Collection<? super E>, Collection<U>> mapper,
-                                             Class<? extends Exception> expectedException,
-                                             Validation<U, T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> validation.mapError(mapper));
-        } else {
-            assertEquals(expectedResult, validation.mapError(mapper));
-        }
-    }
-
-
     static Stream<Arguments> mapWithBothMappersTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
@@ -352,6 +324,35 @@ public class ValidationTest {
             assertThrows(expectedException, () -> validation.map(mapperInvalid, mapperValid));
         } else {
             assertEquals(expectedResult, validation.map(mapperInvalid, mapperValid));
+        }
+    }
+
+
+    static Stream<Arguments> mapInvalidTestCases() {
+        Validation<String, Integer> valid = Validation.valid(1);
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
+        Function<List<String>, List<String>> addALetter = i -> i.stream().map(elto -> elto + "2").toList();
+        return Stream.of(
+                //@formatter:off
+                //            validation,   mapper,       expectedException,                expectedResult
+                Arguments.of( invalid,      null,         IllegalArgumentException.class,   null ),
+                Arguments.of( invalid,      addALetter,   null,                             Validation.invalid(List.of("problem2")) ),
+                Arguments.of( valid,        null,         null,                             valid ),
+                Arguments.of( valid,        addALetter,   null,                             valid )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapInvalidTestCases")
+    @DisplayName("mapInvalid: test cases")
+    public <E, T, U> void mapInvalid_testCases(Validation<E, T> validation,
+                                               Function<Collection<? super E>, Collection<U>> mapper,
+                                               Class<? extends Exception> expectedException,
+                                               Validation<U, T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> validation.mapInvalid(mapper));
+        } else {
+            assertEquals(expectedResult, validation.mapInvalid(mapper));
         }
     }
 
@@ -517,30 +518,6 @@ public class ValidationTest {
     }
 
 
-    static Stream<Arguments> peekErrorTestCases() {
-        Validation<String, Integer> valid = Validation.valid(1);
-        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
-        Consumer<List<String>> action = System.out::println;
-        return Stream.of(
-                //@formatter:off
-                //            validation,   action,   expectedResult
-                Arguments.of( invalid,      null,     invalid ),
-                Arguments.of( invalid,      action,   invalid ),
-                Arguments.of( valid,        null,     valid ),
-                Arguments.of( valid,        action,   valid )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("peekErrorTestCases")
-    @DisplayName("peekError: test cases")
-    public <E, T> void peekError_testCases(Validation<E, T> validation,
-                                           Consumer<Collection<? super E>> action,
-                                           Validation<E, T> expectedResult) {
-        assertEquals(expectedResult, validation.peekError(action));
-    }
-
-
     static Stream<Arguments> peekWithBothConsumersTestCases() {
         Validation<String, Integer> valid = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
@@ -566,6 +543,30 @@ public class ValidationTest {
                                                        Consumer<? super T> actionValid,
                                                        Validation<E, T> expectedResult) {
         assertEquals(expectedResult, validation.peek(actionInvalid, actionValid));
+    }
+
+
+    static Stream<Arguments> peekInvalidTestCases() {
+        Validation<String, Integer> valid = Validation.valid(1);
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
+        Consumer<List<String>> action = System.out::println;
+        return Stream.of(
+                //@formatter:off
+                //            validation,   action,   expectedResult
+                Arguments.of( invalid,      null,     invalid ),
+                Arguments.of( invalid,      action,   invalid ),
+                Arguments.of( valid,        null,     valid ),
+                Arguments.of( valid,        action,   valid )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("peekInvalidTestCases")
+    @DisplayName("peekInvalid: test cases")
+    public <E, T> void peekInvalid_testCases(Validation<E, T> validation,
+                                             Consumer<Collection<? super E>> action,
+                                             Validation<E, T> expectedResult) {
+        assertEquals(expectedResult, validation.peekInvalid(action));
     }
 
 
@@ -596,7 +597,7 @@ public class ValidationTest {
     }
 
 
-    static Stream<Arguments> getOrElseThrowTestCases() {
+    static Stream<Arguments> getOrElseThrowWithSupplierTestCases() {
         Validation<String, Integer> validEmpty = Validation.valid(null);
         Validation<String, Integer> validNotEmpty = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
@@ -614,16 +615,57 @@ public class ValidationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getOrElseThrowTestCases")
-    @DisplayName("getOrElseThrow: test cases")
-    public <E, T, X extends Throwable> void getOrElseThrow_testCases(Validation<E, T> validation,
-                                                                     Supplier<X> exceptionSupplier,
-                                                                     Class<? extends Exception> expectedException,
-                                                                     T expectedResult) throws Throwable {
+    @MethodSource("getOrElseThrowWithSupplierTestCases")
+    @DisplayName("getOrElseThrow: with Supplier as parameter test cases")
+    public <E, T, X extends Throwable> void getOrElseThrowWithSupplier_testCases(Validation<E, T> validation,
+                                                                                 Supplier<X> exceptionSupplier,
+                                                                                 Class<? extends Exception> expectedException,
+                                                                                 T expectedResult) throws Throwable {
         if (null != expectedException) {
             assertThrows(expectedException, () -> validation.getOrElseThrow(exceptionSupplier));
         } else {
             assertEquals(expectedResult, validation.getOrElseThrow(exceptionSupplier));
+        }
+    }
+
+
+    static Stream<Arguments> getOrElseThrowWithFunctionTestCases() {
+        Validation<String, Integer> validEmpty = Validation.valid(null);
+        Validation<String, Integer> validNotEmpty = Validation.valid(1);
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
+
+        Function<Collection<Integer>, Exception> exceptionFunction =
+                (ints) ->
+                        new IllegalArgumentException(
+                                format("Something was wrong. Number of errors: %s",
+                                        null == ints
+                                                ? 0
+                                                : ints.size()
+                                )
+                        );
+        return Stream.of(
+                //@formatter:off
+                //            validation,      exceptionFunction,   expectedException,                expectedResult
+                Arguments.of( validEmpty,      null,                null,                             null ),
+                Arguments.of( validEmpty,      exceptionFunction,   null,                             null ),
+                Arguments.of( validNotEmpty,   null,                null,                             validNotEmpty.get() ),
+                Arguments.of( validNotEmpty,   exceptionFunction,   null,                             validNotEmpty.get() ),
+                Arguments.of( invalid,         null,                IllegalArgumentException.class,   null ),
+                Arguments.of( invalid,         exceptionFunction,   IllegalArgumentException.class,   null )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElseThrowWithFunctionTestCases")
+    @DisplayName("getOrElseThrow: with Function as parameter test cases")
+    public <E, T, X extends Throwable> void getOrElseThrowWithFunction_testCases(Validation<E, T> validation,
+                                                                                 Function<Collection<? super E>, X> exceptionFunction,
+                                                                                 Class<? extends Exception> expectedException,
+                                                                                 T expectedResult) throws Throwable {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> validation.getOrElseThrow(exceptionFunction));
+        } else {
+            assertEquals(expectedResult, validation.getOrElseThrow(exceptionFunction));
         }
     }
 
@@ -752,6 +794,55 @@ public class ValidationTest {
     public <E, T> void toEither_testCases(Validation<E, T> validation,
                                           Either<Collection<E>, T> expectedResult) {
         assertEquals(expectedResult, validation.toEither());
+    }
+
+
+    static Stream<Arguments> toTryTestCases() {
+        Validation<String, Integer> validEmpty = Validation.valid(null);
+        Validation<String, Integer> validNotEmpty = Validation.valid(1);
+        Validation<String, Integer> invalidEmpty = Invalid.empty();
+        Validation<String, Integer> invalidNotEmpty = Validation.invalid(List.of("problem", "problem2"));
+
+        NullPointerException nullPointerException = new NullPointerException("Something is missing");
+        IllegalArgumentException illegalArgumentException = new IllegalArgumentException("Something is not valid");
+
+        Try<Integer> tryFromEmptyValid = Try.success(null);
+        Try<Integer> tryFromValid = Try.success(1);
+        Try<Integer> tryFromEmptyInvalid = Try.failure(nullPointerException);
+        Try<Integer> tryFromInvalid = Try.failure(illegalArgumentException);
+
+        Function<Collection<String>, ? extends Throwable> mapperInvalid =
+                (c) ->
+                        null == c || c.isEmpty()
+                                ? nullPointerException
+                                : illegalArgumentException;
+        return Stream.of(
+                //@formatter:off
+                //            validation,        mapperInvalid,   expectedException,                expectedResult
+                Arguments.of( validEmpty,        null,            null,                             tryFromEmptyValid ),
+                Arguments.of( validEmpty,        mapperInvalid,   null,                             tryFromEmptyValid ),
+                Arguments.of( validNotEmpty,     null,            null,                             tryFromValid ),
+                Arguments.of( validNotEmpty,     mapperInvalid,   null,                             tryFromValid ),
+                Arguments.of( invalidEmpty,      null,            IllegalArgumentException.class,   null ),
+                Arguments.of( invalidEmpty,      mapperInvalid,   null,                             tryFromEmptyInvalid ),
+                Arguments.of( invalidNotEmpty,   null,            IllegalArgumentException.class,   null ),
+                Arguments.of( invalidNotEmpty,   mapperInvalid,   null,                            tryFromInvalid )
+
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toTryTestCases")
+    @DisplayName("toTry: test cases")
+    public <E, T> void toTry_testCases(Validation<E, T> validation,
+                                       Function<Collection<? super E>, ? extends Throwable> mapperInvalid,
+                                       Class<? extends Exception> expectedException,
+                                       Try<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> validation.toTry(mapperInvalid));
+        } else {
+            assertEquals(expectedResult, validation.toTry(mapperInvalid));
+        }
     }
 
 }

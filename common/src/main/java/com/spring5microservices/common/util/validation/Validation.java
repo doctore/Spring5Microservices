@@ -300,31 +300,6 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
-     *    Applies a {@link Function} {@code mapper} to the errors of this {@link Validation} if this is an {@link Invalid}.
-     *  Otherwise, does nothing if this is a {@link Valid}.
-     *
-     * @param mapper
-     *    A {@link Function} that maps the errors in this {@link Invalid}
-     *
-     * @return new {@link Validation}
-     *
-     * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Invalid} one
-     */
-    public final <U> Validation<U, T> mapError(final Function<Collection<? super E>, Collection<U>> mapper) {
-        if (!isValid()) {
-            Assert.notNull(mapper, "mapper must be not null");
-            return invalid(
-                    mapper.apply(
-                            getErrors()
-                    )
-            );
-        } else {
-            return valid(get());
-        }
-    }
-
-
-    /**
      *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Valid} {@link Validation},
      * and {@code mapError} performs a mapping on an {@link Invalid} {@link Validation}, {@code map} with two {@link Function}
      * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
@@ -361,6 +336,33 @@ public abstract class Validation<E, T> implements Serializable {
                     mapperInvalid.apply(
                             getErrors()
                     )
+            );
+        }
+    }
+
+
+    /**
+     *    Applies a {@link Function} {@code mapper} to the errors of this {@link Validation} if this is an {@link Invalid}.
+     *  Otherwise, does nothing if this is a {@link Valid}.
+     *
+     * @param mapper
+     *    A {@link Function} that maps the errors in this {@link Invalid}
+     *
+     * @return new {@link Validation}
+     *
+     * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Invalid} one
+     */
+    public final <U> Validation<U, T> mapInvalid(final Function<Collection<? super E>, Collection<U>> mapper) {
+        if (!isValid()) {
+            Assert.notNull(mapper, "mapper must be not null");
+            return invalid(
+                    mapper.apply(
+                            getErrors()
+                    )
+            );
+        } else {
+            return valid(
+                    get()
             );
         }
     }
@@ -489,10 +491,14 @@ public abstract class Validation<E, T> implements Serializable {
                             final Function<? super T, ? extends U> mapperValid) {
         if (isValid()) {
             Assert.notNull(mapperValid, "mapperValid must be not null");
-            return mapperValid.apply(get());
+            return mapperValid.apply(
+                    get()
+            );
         } else {
             Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
-            return mapperInvalid.apply(getErrors());
+            return mapperInvalid.apply(
+                    getErrors()
+            );
         }
     }
 
@@ -514,22 +520,6 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
-     * Performs the given {@code action} to the stored value if the current {@link Validation} is a {@link Invalid} one.
-     *
-     * @param action
-     *    {@link Consumer} invoked for the stored value of the current {@link Invalid} instance.
-     *
-     * @return {@link Validation}
-     */
-    public final Validation<E, T> peekError(final Consumer<Collection<? super E>> action) {
-        if (!isValid() && nonNull(action)) {
-            action.accept(getErrors());
-        }
-        return this;
-    }
-
-
-    /**
      *    Performs the given {@code actionValid} to the stored value if the current {@link Validation} is a {@link Valid}
      * one. If the current instance is a {@link Invalid}, performs {@code actionInvalid}.
      *
@@ -543,10 +533,32 @@ public abstract class Validation<E, T> implements Serializable {
     public final Validation<E, T> peek(final Consumer<Collection<? super E>> actionInvalid,
                                        final Consumer<? super T> actionValid) {
         if (isValid() && nonNull(actionValid)) {
-            actionValid.accept(get());
+            actionValid.accept(
+                    get()
+            );
         }
         if (!isValid() && nonNull(actionInvalid)) {
-            actionInvalid.accept(getErrors());
+            actionInvalid.accept(
+                    getErrors()
+            );
+        }
+        return this;
+    }
+
+
+    /**
+     * Performs the given {@code action} to the stored value if the current {@link Validation} is a {@link Invalid} one.
+     *
+     * @param action
+     *    {@link Consumer} invoked for the stored value of the current {@link Invalid} instance.
+     *
+     * @return {@link Validation}
+     */
+    public final Validation<E, T> peekInvalid(final Consumer<Collection<? super E>> action) {
+        if (!isValid() && nonNull(action)) {
+            action.accept(
+                    getErrors()
+            );
         }
         return this;
     }
@@ -561,18 +573,18 @@ public abstract class Validation<E, T> implements Serializable {
      * @return {@code T} value stored in {@link Valid} instance, {@code other} otherwise
      */
     public final T getOrElse(final T other) {
-        if (isValid()) {
-            return get();
-        }
-        return other;
+        return isValid()
+                ? get()
+                : other;
     }
 
 
     /**
-     * Returns the stored value if the underline instance is {@link Valid}, otherwise throws {@code exceptionSupplier.get()}.
+     *    Returns the stored value if the underline instance is {@link Valid}, otherwise throws an {@link Exception} using
+     * provided {@link Supplier}.
      *
      * @param exceptionSupplier
-     *    An exception supplier
+     *    An {@link Exception} {@link Supplier}
      *
      * @return {@code T} value stored in {@link Valid} instance, throws {@code X} otherwise
      *
@@ -585,6 +597,29 @@ public abstract class Validation<E, T> implements Serializable {
         }
         Assert.notNull(exceptionSupplier, "exceptionSupplier must be not null");
         throw exceptionSupplier.get();
+    }
+
+
+    /**
+     *    Returns the stored value if the underline instance is {@link Valid}, otherwise throws an {@link Exception} using
+     * provided {@link Function} with the current {@link Invalid} instance value as parameter.
+     *
+     * @param exceptionFunction
+     *    A {@link Function} which creates an {@link Exception} based on an {@link Invalid} value
+     *
+     * @return {@code T} value stored in {@link Valid} instance, throws {@code X} otherwise
+     *
+     * @throws IllegalArgumentException if {@code exceptionFunction} is {@code null} and the current instance is a {@link Invalid} one
+     * @throws X if is an {@link Invalid}
+     */
+    public final <X extends Throwable> T getOrElseThrow(final Function<Collection<? super E>, X> exceptionFunction) throws X {
+        if (isValid()) {
+            return get();
+        }
+        Assert.notNull(exceptionFunction, "exceptionFunction must be not null");
+        throw exceptionFunction.apply(
+                getErrors()
+        );
     }
 
 
@@ -676,6 +711,33 @@ public abstract class Validation<E, T> implements Serializable {
         return isValid()
                 ? Either.right(get())
                 : Either.left(getErrors());
+    }
+
+
+    /**
+     *    Transforms this {@link Validation} into a {@link Try} instance. If the current {@link Validation} is an instance
+     * of {@link Valid} wraps the stored value into a {@link Success} one, {@link Failure} otherwise.
+     *
+     * @param mapperInvalid
+     *   {@link Function} that maps the {@link Left} value to a {@link Throwable} instance
+     *
+     * @return {@link Try}
+     *
+     * @throws IllegalArgumentException if {@code mapperInvalid} is {@code null} and the current instance is an {@link Invalid} one
+     */
+    public final Try<T> toTry(final Function<Collection<? super E>, ? extends Throwable> mapperInvalid) {
+        if (!isValid()) {
+            Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
+            return Try.failure(
+                    mapperInvalid.apply(
+                            getErrors()
+                    )
+            );
+        } else {
+            return Try.success(
+                    get()
+            );
+        }
     }
 
 }

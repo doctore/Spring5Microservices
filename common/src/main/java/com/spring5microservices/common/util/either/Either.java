@@ -1,6 +1,11 @@
 package com.spring5microservices.common.util.either;
 
 import com.spring5microservices.common.util.ObjectUtil;
+import com.spring5microservices.common.util.Try.Failure;
+import com.spring5microservices.common.util.Try.Success;
+import com.spring5microservices.common.util.Try.Try;
+import com.spring5microservices.common.util.validation.Invalid;
+import com.spring5microservices.common.util.validation.Valid;
 import com.spring5microservices.common.util.validation.Validation;
 import org.springframework.util.Assert;
 
@@ -309,31 +314,6 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Either} if this is a {@link Left}.
-     * Otherwise, does nothing if this is a {@link Right}.
-     *
-     * @param mapper
-     *    The mapping function to apply to a value of a {@link Left} instance.
-     *
-     * @return new {@link Either}
-     *
-     * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Left} one
-     */
-    public final <U> Either<U, R> mapLeft(final Function<? super L, ? extends U> mapper) {
-        if (!isRight()) {
-            Assert.notNull(mapper, "mapper must be not null");
-            return left(
-                    mapper.apply(
-                            getLeft()
-                    )
-            );
-        } else {
-            return right(get());
-        }
-    }
-
-
-    /**
      *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Right} {@link Either},
      * and {@code mapLeft} performs a mapping on an {@link Left} {@link Either}, {@code map} with two {@link Function}
      * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
@@ -371,6 +351,31 @@ public abstract class Either<L, R> implements Serializable {
                             getLeft()
                     )
             );
+        }
+    }
+
+
+    /**
+     *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Either} if this is a {@link Left}.
+     * Otherwise, does nothing if this is a {@link Right}.
+     *
+     * @param mapper
+     *    The mapping function to apply to a value of a {@link Left} instance.
+     *
+     * @return new {@link Either}
+     *
+     * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Left} one
+     */
+    public final <U> Either<U, R> mapLeft(final Function<? super L, ? extends U> mapper) {
+        if (!isRight()) {
+            Assert.notNull(mapper, "mapper must be not null");
+            return left(
+                    mapper.apply(
+                            getLeft()
+                    )
+            );
+        } else {
+            return right(get());
         }
     }
 
@@ -515,10 +520,14 @@ public abstract class Either<L, R> implements Serializable {
                             final Function<? super R, ? extends U> mapperRight) {
         if (isRight()) {
             Assert.notNull(mapperRight, "mapperRight must be not null");
-            return mapperRight.apply(get());
+            return mapperRight.apply(
+                    get()
+            );
         } else {
             Assert.notNull(mapperLeft, "mapperLeft must be not null");
-            return mapperLeft.apply(getLeft());
+            return mapperLeft.apply(
+                    getLeft()
+            );
         }
     }
 
@@ -533,23 +542,9 @@ public abstract class Either<L, R> implements Serializable {
      */
     public final Either<L, R> peek(final Consumer<? super R> action) {
         if (isRight() && nonNull(action)) {
-            action.accept(get());
-        }
-        return this;
-    }
-
-
-    /**
-     * Performs the given {@code action} to the stored value if the current {@link Either} is a {@link Left} one.
-     *
-     * @param action
-     *    {@link Consumer} invoked for the stored value of the current {@link Left} instance.
-     *
-     * @return {@link Either}
-     */
-    public final Either<L, R> peekLeft(final Consumer<? super L> action) {
-        if (!isRight() && nonNull(action)) {
-            action.accept(getLeft());
+            action.accept(
+                    get()
+            );
         }
         return this;
     }
@@ -569,10 +564,32 @@ public abstract class Either<L, R> implements Serializable {
     public final Either<L, R> peek(final Consumer<? super L> actionLeft,
                                    final Consumer<? super R> actionRight) {
         if (isRight() && nonNull(actionRight)) {
-            actionRight.accept(get());
+            actionRight.accept(
+                    get()
+            );
         }
         if (!isRight() && nonNull(actionLeft)) {
-            actionLeft.accept(getLeft());
+            actionLeft.accept(
+                    getLeft()
+            );
+        }
+        return this;
+    }
+
+
+    /**
+     * Performs the given {@code action} to the stored value if the current {@link Either} is a {@link Left} one.
+     *
+     * @param action
+     *    {@link Consumer} invoked for the stored value of the current {@link Left} instance.
+     *
+     * @return {@link Either}
+     */
+    public final Either<L, R> peekLeft(final Consumer<? super L> action) {
+        if (!isRight() && nonNull(action)) {
+            action.accept(
+                    getLeft()
+            );
         }
         return this;
     }
@@ -595,10 +612,11 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Returns the stored value if the underline instance is {@link Right}, otherwise throws {@code exceptionSupplier.get()}.
+     *    Returns the stored value if the underline instance is {@link Right}, otherwise throws an {@link Exception} using
+     * provided {@link Supplier}.
      *
      * @param exceptionSupplier
-     *    An exception supplier
+     *    An {@link Exception} {@link Supplier}
      *
      * @return {@code R} value stored in {@link Right} instance, throws {@code X} otherwise
      *
@@ -611,6 +629,29 @@ public abstract class Either<L, R> implements Serializable {
         }
         Assert.notNull(exceptionSupplier, "exceptionSupplier must be not null");
         throw exceptionSupplier.get();
+    }
+
+
+    /**
+     *    Returns the stored value if the underline instance is {@link Right}, otherwise throws an {@link Exception} using
+     * provided {@link Function} with the current {@link Left} instance value as parameter.
+     *
+     * @param exceptionFunction
+     *    A {@link Function} which creates an {@link Exception} based on an {@link Left} value
+     *
+     * @return {@code T} value stored in {@link Right} instance, throws {@code X} otherwise
+     *
+     * @throws IllegalArgumentException if {@code exceptionFunction} is {@code null} and the current instance is a {@link Left} one
+     * @throws X if is an {@link Left}
+     */
+    public final <X extends Throwable> R getOrElseThrow(final Function<? super L, X> exceptionFunction) throws X {
+        if (isRight()) {
+            return get();
+        }
+        Assert.notNull(exceptionFunction, "exceptionFunction must be not null");
+        throw exceptionFunction.apply(
+                getLeft()
+        );
     }
 
 
@@ -656,11 +697,9 @@ public abstract class Either<L, R> implements Serializable {
      * @return new {@link Either}
      */
     public final Either<R, L> swap() {
-        if (isRight()) {
-            return left(get());
-        } else {
-            return right(getLeft());
-        }
+        return isRight()
+                ? left(get())
+                : right(getLeft());
     }
 
 
@@ -678,8 +717,8 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     *    If the current {@link Either} is an instance of {@link Right} wraps the stored value into an {@link Optional} object.
-     * Otherwise return {@link Optional#empty()}
+     *    Transforms this {@link Either} into a {@link Optional} instance. If the current {@link Either} is an instance
+     * of {@link Right} wraps the stored value into an {@link Optional} object, {@link Optional#empty()} otherwise.
      *
      * @return {@link Optional}
      */
@@ -691,10 +730,31 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Transforms current {@link Either} into a {@link Validation}.
+     *    Transforms this {@link Either} into a {@link Try} instance. If the current {@link Either} is an instance of
+     * {@link Right} wraps the stored value into a {@link Success} one, {@link Failure} otherwise.
      *
-     * @return {@code Validation.valid(get())} if this is {@link Right},
-     *         otherwise {@code Validation.invalid(getLeft())}.
+     * @param mapperLeft
+     *   {@link Function} that maps the {@link Left} value to a {@link Throwable} instance
+     *
+     * @return {@link Try}
+     *
+     * @throws IllegalArgumentException if {@code mapperLeft} is {@code null} and the current instance is a {@link Left} one
+     */
+    public final Try<R> toTry(final Function<? super L, ? extends Throwable> mapperLeft) {
+        return mapLeft(mapperLeft)
+                .fold(
+                        Try::failure,
+                        Try::success
+                );
+    }
+
+
+    /**
+     *    Transforms current {@link Either} into a {@link Validation}. If the current {@link Either} is an instance of
+     * {@link Right} wraps the stored value into a {@link Valid} one, {@link Invalid} otherwise.
+     *
+     * @return {@link Valid} instance if this is {@link Right},
+     *         otherwise {@link Invalid}.
      */
     public final Validation<L, R> toValidation() {
         return isRight()

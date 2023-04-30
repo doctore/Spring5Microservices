@@ -44,8 +44,7 @@ public class PredicateUtil {
                         asList(predicates),
                         true,
                         (previousBoolean, currentPred) -> {
-                            boolean currentPredResult = isNull(currentPred) ||
-                                                        currentPred.test(t);
+                            boolean currentPredResult = isNull(currentPred) || currentPred.test(t);
                             return previousBoolean && currentPredResult;
                         }
                 );
@@ -135,8 +134,7 @@ public class PredicateUtil {
                         asList(predicates),
                         true,
                         (previousBoolean, currentPred) -> {
-                            boolean currentPredResult = isNull(currentPred) ||
-                                                        currentPred.test(t, e);
+                            boolean currentPredResult = isNull(currentPred) || currentPred.test(t, e);
                             return previousBoolean && currentPredResult;
                         }
                 );

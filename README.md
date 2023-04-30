@@ -535,7 +535,7 @@ The following microservices have a well documented Rest API:
 * **[Springdoc-OpenApi](https://springdoc.org)** in every documented microservice.
 
 To facilitate access to this documentation, we can use the [gateway-server](#gateway-server) URL. On that way, using the upper selector, we will be able
-to choose between all existing microservices.
+to choose between all existing microservices. By default, the url to access them is `http://localhost:5555/swagger-ui/`
 
 ![Alt text](/documentation/Swagger.png?raw=true "Swagger documentation")
 <br><br>

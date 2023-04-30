@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util.either;
 
+import com.spring5microservices.common.util.Try.Try;
 import com.spring5microservices.common.util.validation.Validation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -283,35 +285,6 @@ public class EitherTest {
     }
 
 
-    static Stream<Arguments> mapLeftTestCases() {
-        Either<String, Integer> right = Either.right(12);
-        Either<String, Integer> left = Either.left("There was a problem");
-        Function<String, String> addALetter = s -> s + "2";
-        return Stream.of(
-                //@formatter:off
-                //            either,   mapper,       expectedException,                expectedResult
-                Arguments.of( left,     null,         IllegalArgumentException.class,   null ),
-                Arguments.of( left,     addALetter,   null,                             Either.left("There was a problem2") ),
-                Arguments.of( right,    null,         null,                             right ),
-                Arguments.of( right,    addALetter,   null,                             right )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("mapLeftTestCases")
-    @DisplayName("mapLeft: test cases")
-    public <L, R, U> void mapLeft_testCases(Either<L, R> either,
-                                            Function<? super L, ? extends U> mapper,
-                                            Class<? extends Exception> expectedException,
-                                            Either<U, R> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> either.mapLeft(mapper));
-        } else {
-            assertEquals(expectedResult, either.mapLeft(mapper));
-        }
-    }
-
-
     static Stream<Arguments> mapWithBothMappersTestCases() {
         Either<String, Integer> right = Either.right(33);
         Either<String, Integer> left = Either.left("There was a problem");
@@ -341,6 +314,35 @@ public class EitherTest {
             assertThrows(expectedException, () -> either.map(mapperLeft, mapperRight));
         } else {
             assertEquals(expectedResult, either.map(mapperLeft, mapperRight));
+        }
+    }
+
+
+    static Stream<Arguments> mapLeftTestCases() {
+        Either<String, Integer> right = Either.right(12);
+        Either<String, Integer> left = Either.left("There was a problem");
+        Function<String, String> addALetter = s -> s + "2";
+        return Stream.of(
+                //@formatter:off
+                //            either,   mapper,       expectedException,                expectedResult
+                Arguments.of( left,     null,         IllegalArgumentException.class,   null ),
+                Arguments.of( left,     addALetter,   null,                             Either.left("There was a problem2") ),
+                Arguments.of( right,    null,         null,                             right ),
+                Arguments.of( right,    addALetter,   null,                             right )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapLeftTestCases")
+    @DisplayName("mapLeft: test cases")
+    public <L, R, U> void mapLeft_testCases(Either<L, R> either,
+                                            Function<? super L, ? extends U> mapper,
+                                            Class<? extends Exception> expectedException,
+                                            Either<U, R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> either.mapLeft(mapper));
+        } else {
+            assertEquals(expectedResult, either.mapLeft(mapper));
         }
     }
 
@@ -514,30 +516,6 @@ public class EitherTest {
     }
 
 
-    static Stream<Arguments> peekLeftTestCases() {
-        Either<String, Integer> right = Either.right(33);
-        Either<String, Integer> left = Either.left("Problem");
-        Consumer<String> action = System.out::println;
-        return Stream.of(
-                //@formatter:off
-                //            either,   action,   expectedResult
-                Arguments.of( left,     null,     left ),
-                Arguments.of( left,     action,   left ),
-                Arguments.of( right,    null,     right ),
-                Arguments.of( right,    action,   right )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("peekLeftTestCases")
-    @DisplayName("peekLeft: test cases")
-    public <L, R> void peekLeft_testCases(Either<L, R> either,
-                                          Consumer<? super L> action,
-                                          Either<L, R> expectedResult) {
-        assertEquals(expectedResult, either.peekLeft(action));
-    }
-
-
     static Stream<Arguments> peekWithBothConsumersTestCases() {
         Either<String, Integer> right = Either.right(99);
         Either<String, Integer> left = Either.left("An error happened");
@@ -563,6 +541,30 @@ public class EitherTest {
                                                        Consumer<? super R> actionRight,
                                                        Either<L, R> expectedResult) {
         assertEquals(expectedResult, either.peek(actionLeft, actionRight));
+    }
+
+
+    static Stream<Arguments> peekLeftTestCases() {
+        Either<String, Integer> right = Either.right(33);
+        Either<String, Integer> left = Either.left("Problem");
+        Consumer<String> action = System.out::println;
+        return Stream.of(
+                //@formatter:off
+                //            either,   action,   expectedResult
+                Arguments.of( left,     null,     left ),
+                Arguments.of( left,     action,   left ),
+                Arguments.of( right,    null,     right ),
+                Arguments.of( right,    action,   right )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("peekLeftTestCases")
+    @DisplayName("peekLeft: test cases")
+    public <L, R> void peekLeft_testCases(Either<L, R> either,
+                                          Consumer<? super L> action,
+                                          Either<L, R> expectedResult) {
+        assertEquals(expectedResult, either.peekLeft(action));
     }
 
 
@@ -593,7 +595,7 @@ public class EitherTest {
     }
 
 
-    static Stream<Arguments> getOrElseThrowTestCases() {
+    static Stream<Arguments> getOrElseThrowWithSupplierTestCases() {
         Either<String, Integer> rightEmpty = Either.right(null);
         Either<String, Integer> rightNotEmpty = Either.right(44);
         Either<String, Integer> leftNotEmpty = Either.left("There was a problem");
@@ -611,16 +613,54 @@ public class EitherTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getOrElseThrowTestCases")
-    @DisplayName("getOrElseThrow: test cases")
-    public <L, R, X extends Throwable> void getOrElseThrow_testCases(Either<L, R> either,
-                                                                     Supplier<X> exceptionSupplier,
-                                                                     Class<? extends Exception> expectedException,
-                                                                     R expectedResult) throws Throwable {
+    @MethodSource("getOrElseThrowWithSupplierTestCases")
+    @DisplayName("getOrElseThrow: with Supplier as parameter test cases")
+    public <L, R, X extends Throwable> void getOrElseThrowWithSupplier_testCases(Either<L, R> either,
+                                                                                 Supplier<X> exceptionSupplier,
+                                                                                 Class<? extends Exception> expectedException,
+                                                                                 R expectedResult) throws Throwable {
         if (null != expectedException) {
             assertThrows(expectedException, () -> either.getOrElseThrow(exceptionSupplier));
         } else {
             assertEquals(expectedResult, either.getOrElseThrow(exceptionSupplier));
+        }
+    }
+
+
+    static Stream<Arguments> getOrElseThrowWithFunctionTestCases() {
+        Either<String, Integer> rightEmpty = Either.right(null);
+        Either<String, Integer> rightNotEmpty = Either.right(44);
+        Either<String, Integer> leftNotEmpty = Either.left("There was a problem");
+        Function<String, Exception> exceptionFunction =
+                (s) ->
+                        new IllegalArgumentException(
+                                format("Something was wrong. Reason: %s",
+                                        s
+                                )
+                        );
+        return Stream.of(
+                //@formatter:off
+                //            either,          exceptionFunction,   expectedException,                expectedResult
+                Arguments.of( rightEmpty,      null,                null,                             null ),
+                Arguments.of( rightEmpty,      exceptionFunction,   null,                             null ),
+                Arguments.of( rightNotEmpty,   null,                null,                             rightNotEmpty.get() ),
+                Arguments.of( rightNotEmpty,   exceptionFunction,   null,                             rightNotEmpty.get() ),
+                Arguments.of( leftNotEmpty,    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( leftNotEmpty,    exceptionFunction,   IllegalArgumentException.class,   null )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElseThrowWithFunctionTestCases")
+    @DisplayName("getOrElseThrow: with Function as parameter test cases")
+    public <L, R, X extends Throwable> void getOrElseThrowWithFunction_testCases(Either<L, R> either,
+                                                                                 Function<? super L, X> exceptionFunction,
+                                                                                 Class<? extends Exception> expectedException,
+                                                                                 R expectedResult) throws Throwable {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> either.getOrElseThrow(exceptionFunction));
+        } else {
+            assertEquals(expectedResult, either.getOrElseThrow(exceptionFunction));
         }
     }
 
@@ -752,11 +792,59 @@ public class EitherTest {
     }
 
 
+    static Stream<Arguments> toTryTestCases() {
+        Either<String, Integer> rightEmpty = Either.right(null);
+        Either<String, Integer> rightNotEmpty = Either.right(11);
+        Either<String, Integer> leftEmpty = Either.left(null);
+        Either<String, Integer> leftNotEmpty = Either.left("There was a problem");
+
+        NullPointerException nullPointerException = new NullPointerException("Something is missing");
+        IllegalArgumentException illegalArgumentException = new IllegalArgumentException("Something is not valid");
+
+        Try<Integer> tryFromEmptyRight = Try.success(null);
+        Try<Integer> tryFromRight = Try.success(11);
+        Try<Integer> tryFromEmptyLeft = Try.failure(nullPointerException);
+        Try<Integer> tryFromLeft = Try.failure(illegalArgumentException);
+
+        Function<String, ? extends Throwable> mapperLeft =
+                (s) ->
+                        null == s
+                                ? nullPointerException
+                                : illegalArgumentException;
+        return Stream.of(
+                //@formatter:off
+                //            either,          mapperLeft,   expectedException,                expectedResult
+                Arguments.of( rightEmpty,      null,         null,                             tryFromEmptyRight ),
+                Arguments.of( rightEmpty,      mapperLeft,   null,                             tryFromEmptyRight ),
+                Arguments.of( rightNotEmpty,   null,         null,                             tryFromRight ),
+                Arguments.of( rightNotEmpty,   mapperLeft,   null,                             tryFromRight ),
+                Arguments.of( leftEmpty,       null,         IllegalArgumentException.class,   null ),
+                Arguments.of( leftEmpty,       mapperLeft,   null,                             tryFromEmptyLeft ),
+                Arguments.of( leftNotEmpty,    null,         IllegalArgumentException.class,   null ),
+                Arguments.of( leftNotEmpty,    mapperLeft,   null,                             tryFromLeft )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toTryTestCases")
+    @DisplayName("toTry: test cases")
+    public <L, R> void toTry_testCases(Either<L, R> either,
+                                       Function<? super L, ? extends Throwable> mapperLeft,
+                                       Class<? extends Exception> expectedException,
+                                       Try<R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> either.toTry(mapperLeft));
+        } else {
+            assertEquals(expectedResult, either.toTry(mapperLeft));
+        }
+    }
+
+
     static Stream<Arguments> toValidationTestCases() {
         Either<String, Integer> rightEmpty = Either.right(null);
         Either<String, Integer> rightNotEmpty = Either.right(11);
         Either<String, Integer> leftEmpty = Either.left(null);
-        Either<String, Integer> left = Either.left("There was a problem");
+        Either<String, Integer> leftNotEmpty = Either.left("There was a problem");
 
         Validation<String, Integer> validFromEmptyEither = Validation.valid(null);
         Validation<String, Integer> validFromEither = Validation.valid(11);
@@ -768,7 +856,7 @@ public class EitherTest {
                 Arguments.of( rightEmpty,      validFromEmptyEither ),
                 Arguments.of( rightNotEmpty,   validFromEither ),
                 Arguments.of( leftEmpty,       invalidFromEmptyEither ),
-                Arguments.of( left,            invalidFromEither )
+                Arguments.of( leftNotEmpty,    invalidFromEither )
         ); //@formatter:on
     }
 

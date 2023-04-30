@@ -54,8 +54,8 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     *    Gets the exception of this {@link Try} if is a {@link Failure} or throws {@link NoSuchElementException} if this
-     * is an {@link Success}.
+     *    Gets the {@link Throwable} of this {@link Try} if is a {@link Failure} or throws {@link NoSuchElementException}
+     * if this is an {@link Success}.
      *
      * @return the {@link Failure} exception
      *
