@@ -25,7 +25,7 @@
         <simpleflatmapper.version>8.2.3</simpleflatmapper.version>
         <spring-cloud.version>2021.0.7</spring-cloud.version>
         <springdoc.version>1.7.0</springdoc.version>
-        <spring5-microservices-common.version>3.1.9</spring5-microservices-common.version>
+        <spring5-microservices-common.version>3.1.10</spring5-microservices-common.version>
         <spring5-microservices-grpc.version>1.0.1</spring5-microservices-grpc.version>
     </properties>
 

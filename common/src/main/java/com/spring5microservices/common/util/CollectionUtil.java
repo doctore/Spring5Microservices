@@ -33,8 +33,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.spring5microservices.common.util.CollectorsUtil.toMapNullableValues;
 import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullFirst;
 import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullLast;
+import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMapperToMapEntry;
+import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static java.lang.String.format;
@@ -2156,6 +2159,225 @@ public class CollectionUtil {
                 .filter(finalFilterPredicate)
                 .collect(
                         toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
+     * Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [("1", 2), ("2", 3), ("3", 4), ("6", 7)]
+     *    i -> i.toString()
+     *    i -> i + 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} with the elements to transform and include in the returned {@link Map}
+     * @param keyMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} into keys of the returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} into values of the returned {@link Map}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} or {@code valueMapper} are {@code null}
+     */
+    public static <T, K, V> Map<K, V> toMap(final Collection<? extends T> sourceCollection,
+                                            final Function<? super T, ? extends K> keyMapper,
+                                            final Function<? super T, ? extends V> valueMapper) {
+        return toMap(
+                sourceCollection,
+                keyMapper,
+                valueMapper,
+                alwaysTrue(),
+                overwriteWithNew(),
+                HashMap::new
+        );
+    }
+
+
+    /**
+     * Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [("1", 2), ("3", 4)]
+     *    i -> i.toString()
+     *    i -> i + 1
+     *    i -> i % 2 == 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} with the elements to transform and include in the returned {@link Map}
+     * @param keyMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} into keys of the returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} into values of the returned {@link Map}
+     * @param filterPredicate
+     *    {@link Predicate} used to filter values from {@code sourceCollection} will not been added in the returned {@link Map}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} or {@code valueMapper} are {@code null}
+     */
+    public static <T, K, V> Map<K, V> toMap(final Collection<? extends T> sourceCollection,
+                                            final Function<? super T, ? extends K> keyMapper,
+                                            final Function<? super T, ? extends V> valueMapper,
+                                            final Predicate<? super T> filterPredicate) {
+        return toMap(
+                sourceCollection,
+                keyMapper,
+                valueMapper,
+                filterPredicate,
+                overwriteWithNew(),
+                HashMap::new
+        );
+    }
+
+
+    /**
+     * Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 3]             [("1", 2), ("3", 4)]
+     *    i -> i.toString()
+     *    i -> i + 1
+     *    i -> i % 2 == 1
+     *    (old, new) -> new
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} with the elements to transform and include in the returned {@link Map}
+     * @param keyMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} into keys of the returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} into values of the returned {@link Map}
+     * @param filterPredicate
+     *    {@link Predicate} used to filter values from {@code sourceCollection} will not been added in the returned {@link Map}
+     * @param mergeValueFunction
+     *    {@link BinaryOperator} used to resolve collisions between values associated with the same key. If no one is
+     *    provided, by default last value will be used
+     * @param mapFactory
+     *      {@link Supplier} of the {@link Map} used to store the returned elements.
+     *      If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} or {@code valueMapper} are {@code null}
+     */
+    public static <T, K, V> Map<K, V> toMap(final Collection<? extends T> sourceCollection,
+                                            final Function<? super T, ? extends K> keyMapper,
+                                            final Function<? super T, ? extends V> valueMapper,
+                                            final Predicate<? super T> filterPredicate,
+                                            final BinaryOperator<V> mergeValueFunction,
+                                            final Supplier<Map<K, V>> mapFactory) {
+        final Supplier<Map<K, V>> finalMapFactory = getOrElse(
+                mapFactory,
+                HashMap::new
+        );
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalMapFactory.get();
+        }
+        return toMap(
+                sourceCollection,
+                PartialFunction.of(
+                        getOrElse(
+                                filterPredicate,
+                                alwaysTrue()
+                        ),
+                        fromKeyValueMapperToMapEntry(
+                                keyMapper,
+                                valueMapper
+                        )
+                ),
+                mergeValueFunction,
+                mapFactory
+        );
+    }
+
+
+    /**
+     * Converts the given {@link Collection} in to a {@link Map} using provided {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                 Result:
+     *    [1, 2, 3, 3]                                                                [("1", 2), ("3", 4)]
+     *    new PartialFunction<>() {
+     *
+     *      public Map.Entry<String, Integer> apply(final Integer integer) {
+     *        return null == entry
+     *                 ? null
+     *                 : new AbstractMap.SimpleEntry<>(
+     *                      integer.toString(),
+     *                      null == integer
+     *                         ? 0
+     *                         : integer + 1
+     *                   );
+     *      }
+     *
+     *      public boolean isDefinedAt(final Integer integer) {
+     *        return null != integer &&
+     *               1 == integer % 2;
+     *      }
+     *    }
+     *    (old, new) -> new
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} with the elements to transform and include in the returned {@link Map}
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
+     * @param mergeValueFunction
+     *    {@link BinaryOperator} used to resolve collisions between values associated with the same key. If no one is
+     *    provided, by default last value will be used
+     * @param mapFactory
+     *      {@link Supplier} of the {@link Map} used to store the returned elements.
+     *      If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code partialFunction} is {@code null}
+     */
+    public static <T, K, V> Map<K, V> toMap(final Collection<? extends T> sourceCollection,
+                                            final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
+                                            final BinaryOperator<V> mergeValueFunction,
+                                            final Supplier<Map<K, V>> mapFactory) {
+        final Supplier<Map<K, V>> finalMapFactory = getOrElse(
+                mapFactory,
+                HashMap::new
+        );
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalMapFactory.get();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+
+        final BinaryOperator<V> finalMergeValueFunction = getOrElse(
+                mergeValueFunction,
+                overwriteWithNew()
+        );
+        return sourceCollection
+                .stream()
+                .filter(partialFunction::isDefinedAt)
+                .map(partialFunction)
+                .collect(
+                        toMapNullableValues(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                finalMergeValueFunction
+                        )
                 );
     }
 

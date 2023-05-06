@@ -1,8 +1,9 @@
 package com.spring5microservices.common.interfaces.functional;
 
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  *    Represents a {@link Function} that accepts four arguments and produces a result. This is the five-arity specialization
@@ -68,7 +69,7 @@ public interface PentaFunction<T, U, V, W, X, R> {
      * @throws NullPointerException if {@code after} is {@code null}
      */
     default <Z> PentaFunction<T, U, V, W, X, Z> andThen(final Function<? super R, ? extends Z> after) {
-        Objects.requireNonNull(after, "after must be not null");
+        requireNonNull(after, "after must be not null");
         return (T t, U u, V v, W w, X x) -> after.apply(apply(t, u, v, w, x));
     }
 

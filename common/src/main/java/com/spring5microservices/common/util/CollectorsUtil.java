@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
@@ -193,15 +194,6 @@ public class CollectorsUtil {
                     return result;
                 }
       );
-    }
-
-
-    /**
-     *    Helper method used in conflict resolution on {@link Map}'s creation, when the new instance already contains
-     * an entry with the same key but different value than the new one to add. In this case, the new value will be returned.
-     */
-    private static <T> BinaryOperator<T> overwriteWithNew() {
-        return (oldValue, newValue) -> newValue;
     }
 
 }

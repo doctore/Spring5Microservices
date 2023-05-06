@@ -1,7 +1,6 @@
 package com.spring5microservices.common.interfaces.functional;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -12,6 +11,7 @@ import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  *    Unary function where the domain does not necessarily include all values of type T. The method {@link PartialFunction#isDefinedAt(Object)}
@@ -117,7 +117,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      */
     static <T,R> PartialFunction<T, R> of(final Predicate<? super T> filterPredicate,
                                           final Function<? super T, ? extends R> mapFunction) {
-        Objects.requireNonNull(mapFunction, "mapFunction must be not null");
+        requireNonNull(mapFunction, "mapFunction must be not null");
         final Predicate<? super T> finalFilterPredicate = getOrElse(
                 filterPredicate,
                 alwaysTrue()
@@ -152,7 +152,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      */
     static <K1, K2, V1, V2> PartialFunction<Map.Entry<K1, V1>, Map.Entry<K2, V2>> of(final BiPredicate<? super K1, ? super V1> filterPredicate,
                                                                                      final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> mapFunction) {
-        Objects.requireNonNull(mapFunction, "mapFunction must be not null");
+        requireNonNull(mapFunction, "mapFunction must be not null");
         final BiPredicate<? super K1, ? super V1> finalFilterPredicate = getOrElse(
                 filterPredicate,
                 biAlwaysTrue()
@@ -196,7 +196,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
     @Override
     @SuppressWarnings("unchecked")
     default <V> PartialFunction<T, V> andThen(final Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after, "after must be not null");
+        requireNonNull(after, "after must be not null");
         if (after instanceof PartialFunction) {
             return andThen((PartialFunction) after);
         }
@@ -233,7 +233,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      * @throws NullPointerException if {@code after} is {@code null}
      */
     default <V> PartialFunction<T, V> andThen(final PartialFunction<? super R, ? extends V> after) {
-        Objects.requireNonNull(after, "after must be not null");
+        requireNonNull(after, "after must be not null");
         return new PartialFunction<>() {
 
             @Override
@@ -275,7 +275,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
         if (isDefinedAt(t)) {
             return apply(t);
         }
-        Objects.requireNonNull(defaultFunction, "defaultFunction must be not null");
+        requireNonNull(defaultFunction, "defaultFunction must be not null");
         return defaultFunction.apply(t);
     }
 
@@ -298,7 +298,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
     @Override
     @SuppressWarnings("unchecked")
     default <V> PartialFunction<V, R> compose(final Function<? super V, ? extends T> before) {
-        Objects.requireNonNull(before, "before must be not null");
+        requireNonNull(before, "before must be not null");
         if (before instanceof PartialFunction) {
             return compose((PartialFunction) before);
         }
@@ -337,7 +337,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      * @throws NullPointerException if {@code before} is {@code null}
      */
     default <V> PartialFunction<V, R> compose(final PartialFunction<? super V, ? extends T> before) {
-        Objects.requireNonNull(before, "before must be not null");
+        requireNonNull(before, "before must be not null");
         return new PartialFunction<>() {
 
             @Override

@@ -26,6 +26,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.CollectorsUtil.toMapNullableValues;
+import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -936,7 +937,7 @@ public class MapUtil {
 
 
     /**
-     * Converts given {@code sourceMap} into a {@link List} formed by the elements of these iterable collections.
+     * Converts given {@code sourceMap} into a {@link Collection} formed by the elements of these iterable collections.
      *
      * <pre>
      * Example:
@@ -2224,25 +2225,6 @@ public class MapUtil {
                 mapFactory,
                 HashMap::new
         );
-    }
-
-
-    /**
-     *    Helper method used in conflict resolution on {@link Map}'s creation, when the new instance already contains
-     * an entry with the same key but different value than the new one to add. In this case, the new value will be returned.
-     *
-     * <pre>
-     * Example:
-     *
-     *   toMap(
-     *      Map.Entry::getKey,
-     *      Map.Entry::getValue,
-     *      overwriteWithNew()
-     *   )
-     * </pre>
-     */
-    private static <T> BinaryOperator<T> overwriteWithNew() {
-        return (oldValue, newValue) -> newValue;
     }
 
 }

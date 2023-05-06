@@ -1415,7 +1415,7 @@ public class MapUtilTest {
     @ParameterizedTest
     @MethodSource("foldLeftTestCases")
     @DisplayName("foldLeft: test cases")
-    public <T, E, R> void foldLeft_testCases(Map<T, E> sourceMap,
+    public <T, E, R> void foldLeft_testCases(Map<? extends T, ? extends E> sourceMap,
                                              R initialValue,
                                              TriFunction<R, ? super T, ?super E, R> accumulator,
                                              Class<? extends Exception> expectedException,
@@ -1560,7 +1560,7 @@ public class MapUtilTest {
     @ParameterizedTest
     @MethodSource("groupByNoMapFactoryTestCases")
     @DisplayName("groupBy: without map factory test cases")
-    public <T, E, R> void groupByNoMapFactory_testCases(Map<T, E> sourceMap,
+    public <T, E, R> void groupByNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
                                                         BiFunction<? super T, ? super E, ? extends R> discriminator,
                                                         Map<R, Map<T, E>> expectedResult) {
         assertEquals(expectedResult, groupBy(sourceMap, discriminator));
@@ -1623,7 +1623,7 @@ public class MapUtilTest {
     @ParameterizedTest
     @MethodSource("groupByAllParametersTestCases")
     @DisplayName("groupBy: with all parameters test cases")
-    public <T, E, R> void groupByAllParameters_testCases(Map<T, E> sourceMap,
+    public <T, E, R> void groupByAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
                                                          BiFunction<? super T, ? super E, ? extends R> discriminator,
                                                          Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                          Supplier<Map<T, E>> mapValuesFactory,

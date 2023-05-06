@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +91,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("andThenNoCollectionFactoryTestCases")
     @DisplayName("andThen: without collection factory test cases")
-    public <T, E, R> void andThenNoCollectionFactory_testCases(Collection<T> sourceCollection,
+    public <T, E, R> void andThenNoCollectionFactory_testCases(Collection<? extends T> sourceCollection,
                                                                Function<? super T, ? extends E> firstMapper,
                                                                Function<? super E, ? extends R> secondMapper,
                                                                Class<? extends Exception> expectedException,
@@ -173,7 +175,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("andThenAllParametersTestCases")
     @DisplayName("andThen: with all parameters test cases")
-    public <T, E, R> void andThenAllParameters_testCases(Collection<T> sourceCollection,
+    public <T, E, R> void andThenAllParameters_testCases(Collection<? extends T> sourceCollection,
                                                          Function<? super T, ? extends E> firstMapper,
                                                          Function<? super E, ? extends R> secondMapper,
                                                          Supplier<Collection<R>> collectionFactory,
@@ -230,7 +232,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("applyOrElseWithPredicateAndFunctionsTestCases")
     @DisplayName("applyOrElse: with Predicate and Functions test cases")
-    public <T, E> void applyOrElseWithPredicateAndFunctions_testCases(Collection<T> sourceCollection,
+    public <T, E> void applyOrElseWithPredicateAndFunctions_testCases(Collection<? extends T> sourceCollection,
                                                                       Predicate<? super T> filterPredicate,
                                                                       Function<? super T, ? extends E> defaultMapper,
                                                                       Function<? super T, ? extends E> orElseMapper,
@@ -301,7 +303,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("applyOrElseWithPredicateFunctionsAndSupplierTestCases")
     @DisplayName("applyOrElse: with Predicate, Functions and Supplier test cases")
-    public <T, E> void applyOrElseWithPredicateFunctionsAndSupplier_testCases(Collection<T> sourceCollection,
+    public <T, E> void applyOrElseWithPredicateFunctionsAndSupplier_testCases(Collection<? extends T> sourceCollection,
                                                                               Predicate<? super T> filterPredicate,
                                                                               Function<? super T, ? extends E> defaultMapper,
                                                                               Function<? super T, ? extends E> orElseMapper,
@@ -367,7 +369,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("applyOrElseWithPartialFunctionAndFunctionTestCases")
     @DisplayName("applyOrElse: with PartialFunction and Function test cases")
-    public <T, E> void applyOrElseWithPartialFunctionAndFunction_testCases(Collection<T> sourceCollection,
+    public <T, E> void applyOrElseWithPartialFunctionAndFunction_testCases(Collection<? extends T> sourceCollection,
                                                                            PartialFunction<? super T, ? extends E> partialFunction,
                                                                            Function<? super T, ? extends E> orElseMapper,
                                                                            Class<? extends Exception> expectedException,
@@ -443,7 +445,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("applyOrElseWithPartialFunctionFunctionAndSupplierTestCases")
     @DisplayName("applyOrElse: with PartialFunction, Function and Supplier test cases")
-    public <T, E> void applyOrElseWithPartialFunctionFunctionAndSupplier_testCases(Collection<T> sourceCollection,
+    public <T, E> void applyOrElseWithPartialFunctionFunctionAndSupplier_testCases(Collection<? extends T> sourceCollection,
                                                                                    PartialFunction<? super T, ? extends E> partialFunction,
                                                                                    Function<? super T, ? extends E> orElseMapper,
                                                                                    Supplier<Collection<E>> collectionFactory,
@@ -558,7 +560,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectWithPredicateAndFunctionTestCases")
     @DisplayName("collect: with Predicate and Function test cases")
-    public <T, E> void collectWithPredicateAndFunction_testCases(Collection<T> sourceCollection,
+    public <T, E> void collectWithPredicateAndFunction_testCases(Collection<? extends T> sourceCollection,
                                                                  Predicate<? super T> filterPredicate,
                                                                  Function<? super T, ? extends E> mapFunction,
                                                                  Class<? extends Exception> expectedException,
@@ -600,7 +602,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectWithPredicateFunctionAndSupplierTestCases")
     @DisplayName("collect: with Predicate, Function and Supplier test cases")
-    public <T, E> void collectWithPredicateFunctionAndSupplier_testCases(Collection<T> sourceCollection,
+    public <T, E> void collectWithPredicateFunctionAndSupplier_testCases(Collection<? extends T> sourceCollection,
                                                                          Predicate<? super T> filterPredicate,
                                                                          Function<? super T, ? extends E> mapFunction,
                                                                          Supplier<Collection<E>> collectionFactory,
@@ -646,7 +648,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectWithPartialFunctionTestCases")
     @DisplayName("collect: with PartialFunction test cases")
-    public <T, E> void collectWithPartialFunction_testCases(Collection<T> sourceCollection,
+    public <T, E> void collectWithPartialFunction_testCases(Collection<? extends T> sourceCollection,
                                                             PartialFunction<? super T, ? extends E> partialFunction,
                                                             Class<? extends Exception> expectedException,
                                                             List<E> expectedResult) {
@@ -697,7 +699,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectWithPartialFunctionAndSupplierTestCases")
     @DisplayName("collect: with PartialFunction and Supplier test cases")
-    public <T, E> void collectWithPartialFunctionAndSupplier_testCases(Collection<T> sourceCollection,
+    public <T, E> void collectWithPartialFunctionAndSupplier_testCases(Collection<? extends T> sourceCollection,
                                                                        PartialFunction<? super T, ? extends E> partialFunction,
                                                                        Supplier<Collection<E>> collectionFactory,
                                                                        Class<? extends Exception> expectedException,
@@ -742,7 +744,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectFirstTestCases")
     @DisplayName("collectFirst: test cases")
-    public <T, E> void collectFirst_testCases(Collection<T> sourceCollection,
+    public <T, E> void collectFirst_testCases(Collection<? extends T> sourceCollection,
                                               PartialFunction<? super T, ? extends E> partialFunction,
                                               Class<? extends Exception> expectedException,
                                               Optional<E> expectedResult) {
@@ -862,7 +864,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectPropertiesNoCollectionFactoryTestCases")
     @DisplayName("collectProperties: without collection factory test cases")
-    public <T> void collectPropertiesNoCollectionFactory_testCases(Collection<T> sourceCollection,
+    public <T> void collectPropertiesNoCollectionFactory_testCases(Collection<? extends T> sourceCollection,
                                                                    List<Function<? super T, ?>> propertyExtractors,
                                                                    Class<? extends Exception> expectedException,
                                                                    List<Tuple> expectedResult) {
@@ -934,7 +936,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("collectPropertiesAllParametersTestCases")
     @DisplayName("collectProperties: with all parameters test cases")
-    public <T> void collectPropertiesAllParameters_testCases(Collection<T> sourceCollection,
+    public <T> void collectPropertiesAllParameters_testCases(Collection<? extends T> sourceCollection,
                                                              List<Function<? super T, ?>> propertyExtractors,
                                                              Supplier<Collection<Tuple>> collectionFactory,
                                                              Class<? extends Exception> expectedException,
@@ -2162,6 +2164,293 @@ public class CollectionUtilTest {
                                                      Supplier<Collection<T>> collectionFactory,
                                                      Collection<T> expectedResult) {
         assertEquals(expectedResult, takeWhile(sourceCollection, filterPredicate, collectionFactory));
+    }
+
+
+    static Stream<Arguments> toMapWithKeyAndValueMapperTestCases() {
+        List<Integer> ints = asList(1, null, 2, 3);
+
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? ""
+                        : String.valueOf(i * 2);
+        Function<Integer, Integer> plus10 =
+                i -> null == i
+                        ? 0
+                        : i + 10;
+
+        Map<String, Integer> expectedResult = new HashMap<>() {{
+            put("2", 11);
+            put("", 0);
+            put("4", 12);
+            put("6", 13);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   keyMapper,         valueMapper,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,          null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   null,          null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   plus10,        null,                             Map.of() ),
+                Arguments.of( ints,               null,              null,          IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               multiply2String,   null,          IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              plus10,        IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          multiply2String,   plus10,        null,                             Map.of() ),
+                Arguments.of( ints,               multiply2String,   plus10,        null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toMapWithKeyAndValueMapperTestCases")
+    @DisplayName("toMap: with keyMapper and valueMapper test cases")
+    public <T, K, V> void toMapWithKeyAndValueMapper_testCases(Collection<? extends T> sourceCollection,
+                                                               Function<? super T, ? extends K> keyMapper,
+                                                               Function<? super T, ? extends V> valueMapper,
+                                                               Class<? extends Exception> expectedException,
+                                                               Map<K, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toMap(
+                            sourceCollection, keyMapper, valueMapper
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toMap(
+                            sourceCollection, keyMapper, valueMapper
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> toMapWithKeyAndValueMapperAndPredicateTestCases() {
+        List<Integer> ints = asList(1, null, 2, 3);
+
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? ""
+                        : String.valueOf(i * 2);
+        Function<Integer, Integer> plus10 =
+                i -> null == i
+                        ? 0
+                        : i + 10;
+
+        Predicate<Integer> isOdd = i -> null != i && 1 == i % 2;
+
+        Map<String, Integer> expectedResultNoFilter = new HashMap<>() {{
+            put("2", 11);
+            put("", 0);
+            put("4", 12);
+            put("6", 13);
+        }};
+        Map<String, Integer> expectedResultWithFilter = new HashMap<>() {{
+            put("2", 11);
+            put("6", 13);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   keyMapper,         valueMapper,   filterPredicate,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,          null,              null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   null,          null,              null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   plus10,        null,              null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   plus10,        isOdd,             null,                             Map.of() ),
+                Arguments.of( ints,               null,              null,          null,              IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               multiply2String,   null,          null,              IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              plus10,        null,              IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              plus10,        isOdd,             IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          multiply2String,   plus10,        null,              null,                             Map.of() ),
+                Arguments.of( List.of(),          multiply2String,   plus10,        isOdd,             null,                             Map.of() ),
+                Arguments.of( ints,               multiply2String,   plus10,        null,              null,                             expectedResultNoFilter ),
+                Arguments.of( ints,               multiply2String,   plus10,        isOdd,             null,                             expectedResultWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toMapWithKeyAndValueMapperAndPredicateTestCases")
+    @DisplayName("toMap: with keyMapper, valueMapper and filterPredicate test cases")
+    public <T, K, V> void toMapWithKeyAndValueMapperAndPredicate_testCases(Collection<? extends T> sourceCollection,
+                                                                           Function<? super T, ? extends K> keyMapper,
+                                                                           Function<? super T, ? extends V> valueMapper,
+                                                                           Predicate<? super T> filterPredicate,
+                                                                           Class<? extends Exception> expectedException,
+                                                                           Map<K, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toMap(
+                            sourceCollection, keyMapper, valueMapper, filterPredicate
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toMap(
+                            sourceCollection, keyMapper, valueMapper, filterPredicate
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> toMapWithKeyAndValueMapperPredicateBinaryOperatorAndSupplierTestCases() {
+        List<Integer> ints = asList(1, null, 2, 1);
+
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? ""
+                        : String.valueOf(i * 2);
+        Function<Integer, Integer> plus10 =
+                i -> null == i
+                        ? 0
+                        : i + 10;
+
+        Predicate<Integer> isOdd = i -> null != i && 1 == i % 2;
+        BinaryOperator<Integer> keepsOldValue = (oldValue, newValue) -> oldValue;
+        Supplier<Map<String, Integer>> mapFactory = LinkedHashMap::new;
+
+        Map<String, Integer> expectedResultNoFilterDefaultFactory = new HashMap<>() {{
+            put("2", 11);
+            put("", 0);
+            put("4", 12);
+        }};
+        Map<String, Integer> expectedResultNoFilterMapFactory = new LinkedHashMap<>() {{
+            put("2", 11);
+            put("", 0);
+            put("4", 12);
+        }};
+        Map<String, Integer> expectedResultWithFilterDefaultFactory = new HashMap<>() {{
+            put("2", 11);
+        }};
+        Map<String, Integer> expectedResultWithFilterMapFactory = new LinkedHashMap<>() {{
+            put("2", 11);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   keyMapper,         valueMapper,   filterPredicate,   mergeValueFunction,   mapFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,          null,              null,                 null,         null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   null,          null,              null,                 null,         null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   plus10,        null,              null,                 null,         null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   plus10,        isOdd,             null,                 null,         null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   plus10,        isOdd,             keepsOldValue,        null,         null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   plus10,        isOdd,             keepsOldValue,        mapFactory,   null,                             Map.of() ),
+                Arguments.of( ints,               null,              null,          null,              null,                 null,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               multiply2String,   null,          null,              null,                 null,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               multiply2String,   null,          isOdd,             keepsOldValue,        mapFactory,   IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              plus10,        null,              null,                 null,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              plus10,        isOdd,             keepsOldValue,        mapFactory,   IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,              null,          null,              null,                 null,         null,                             Map.of() ),
+                Arguments.of( List.of(),          multiply2String,   plus10,        null,              null,                 null,         null,                             Map.of() ),
+                Arguments.of( List.of(),          multiply2String,   plus10,        isOdd,             keepsOldValue,        mapFactory,   null,                             Map.of() ),
+                Arguments.of( ints,               multiply2String,   plus10,        null,              null,                 null,         null,                             expectedResultNoFilterDefaultFactory ),
+                Arguments.of( ints,               multiply2String,   plus10,        isOdd,             null,                 null,         null,                             expectedResultWithFilterDefaultFactory ),
+                Arguments.of( ints,               multiply2String,   plus10,        isOdd,             keepsOldValue,        null,         null,                             expectedResultWithFilterDefaultFactory ),
+                Arguments.of( ints,               multiply2String,   plus10,        null,              null,                 mapFactory,   null,                             expectedResultNoFilterMapFactory ),
+                Arguments.of( ints,               multiply2String,   plus10,        isOdd,             null,                 mapFactory,   null,                             expectedResultWithFilterMapFactory ),
+                Arguments.of( ints,               multiply2String,   plus10,        isOdd,             keepsOldValue,        mapFactory,   null,                             expectedResultWithFilterMapFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toMapWithKeyAndValueMapperPredicateBinaryOperatorAndSupplierTestCases")
+    @DisplayName("toMap: with keyMapper, valueMapper, filterPredicate, mergeValueFunction and mapFactory test cases")
+    public <T, K, V> void toMapWithKeyAndValueMapperPredicateBinaryOperatorAndSupplier_testCases(Collection<? extends T> sourceCollection,
+                                                                                                 Function<? super T, ? extends K> keyMapper,
+                                                                                                 Function<? super T, ? extends V> valueMapper,
+                                                                                                 Predicate<? super T> filterPredicate,
+                                                                                                 BinaryOperator<V> mergeValueFunction,
+                                                                                                 Supplier<Map<K, V>> mapFactory,
+                                                                                                 Class<? extends Exception> expectedException,
+                                                                                                 Map<K, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toMap(
+                            sourceCollection, keyMapper, valueMapper, filterPredicate, mergeValueFunction, mapFactory
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toMap(
+                            sourceCollection, keyMapper, valueMapper, filterPredicate, mergeValueFunction, mapFactory
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> toMapWithPartialFunctionBinaryOperatorAndSupplierTestCases() {
+        List<Integer> ints = asList(1, null, 2, 1);
+
+        PartialFunction<Integer, Map.Entry<String, Integer>> partialFunction = new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<String, Integer> apply(final Integer integer) {
+                return null == integer
+                        ? new AbstractMap.SimpleEntry<>(
+                                "",
+                                0
+                          )
+                        : new AbstractMap.SimpleEntry<>(
+                                String.valueOf(integer * 2),
+                                integer + 10
+                          );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Integer integer) {
+                return null != integer &&
+                        1 == integer % 2;
+            }
+        };
+
+        BinaryOperator<Integer> keepsOldValue = (oldValue, newValue) -> oldValue;
+        Supplier<Map<String, Integer>> mapFactory = LinkedHashMap::new;
+
+        Map<String, Integer> expectedResultDefaultFactory = new HashMap<>() {{
+            put("2", 11);
+        }};
+        Map<String, Integer> expectedResultMapFactory = new LinkedHashMap<>() {{
+            put("2", 11);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,   mergeValueFunction,   mapFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,                 null,         null,                             Map.of() ),
+                Arguments.of( null,               partialFunction,   null,                 null,         null,                             Map.of() ),
+                Arguments.of( null,               partialFunction,   keepsOldValue,        null,         null,                             Map.of() ),
+                Arguments.of( null,               partialFunction,   keepsOldValue,        mapFactory,   null,                             Map.of() ),
+                Arguments.of( ints,               null,              null,                 null,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              keepsOldValue,        null,         IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               null,              keepsOldValue,        mapFactory,   IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,              null,                 null,         null,                             Map.of() ),
+                Arguments.of( List.of(),          partialFunction,   null,                 null,         null,                             Map.of() ),
+                Arguments.of( List.of(),          partialFunction,   keepsOldValue,        null,         null,                             Map.of() ),
+                Arguments.of( List.of(),          partialFunction,   keepsOldValue,        mapFactory,   null,                             Map.of() ),
+                Arguments.of( ints,               partialFunction,   null,                 null,         null,                             expectedResultDefaultFactory ),
+                Arguments.of( ints,               partialFunction,   keepsOldValue,        null,         null,                             expectedResultDefaultFactory ),
+                Arguments.of( ints,               partialFunction,   keepsOldValue,        mapFactory,   null,                             expectedResultMapFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toMapWithPartialFunctionBinaryOperatorAndSupplierTestCases")
+    @DisplayName("toMap: with partialFunction, mergeValueFunction and mapFactory test cases")
+    public <T, K, V> void toMapWithPartialFunctionBinaryOperatorAndSupplier_testCases(Collection<? extends T> sourceCollection,
+                                                                                      PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
+                                                                                      BinaryOperator<V> mergeValueFunction,
+                                                                                      Supplier<Map<K, V>> mapFactory,
+                                                                                      Class<? extends Exception> expectedException,
+                                                                                      Map<K, V> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toMap(
+                            sourceCollection, partialFunction, mergeValueFunction, mapFactory
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toMap(
+                            sourceCollection, partialFunction, mergeValueFunction, mapFactory
+                    )
+            );
+        }
     }
 
 
