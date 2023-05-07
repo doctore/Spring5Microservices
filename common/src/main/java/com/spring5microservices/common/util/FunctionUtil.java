@@ -5,11 +5,34 @@ import org.springframework.util.Assert;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 @UtilityClass
 public class FunctionUtil {
+
+    /**
+     *    Transforms the given {@link BiFunction} {@code keyValueMapper} into another one used to create new objects from
+     * {@link Map#entry(Object, Object)} instances.
+     *
+     * @param keyValueMapper
+     *    {@link BiFunction} to transform key/value of returned {@link Function} {@link Map#entry(Object, Object)} source
+     *
+     * @return {@link Function} to transform {@link Map#entry(Object, Object)} instances into another object
+     *
+     * @throws IllegalArgumentException if {@code keyMapper} or {@code valueMapper} are {@code null}
+     * @throws NullPointerException if provided {@link Map#entry(Object, Object)} is {@code null}
+     */
+    public static <T, K, V> Function<Map.Entry<K, V>, T> fromKeyValueMapperToMapEntry(final BiFunction<? super K, ? super V, ? extends T> keyValueMapper) {
+        Assert.notNull(keyValueMapper, "keyValueMapper must be not null");
+        return (entry) ->
+                keyValueMapper.apply(
+                        entry.getKey(),
+                        entry.getValue()
+                );
+    }
+
 
     /**
      *    Transforms the given {@link Function} {@code keyMapper} and {@code valueMapper} into another one used to create
@@ -24,18 +47,15 @@ public class FunctionUtil {
      *
      * @throws IllegalArgumentException if {@code keyMapper} or {@code valueMapper} are {@code null}
      */
-    public static <T, K, V> Function<T, Map.Entry<K, V>> fromKeyValueMapperToMapEntry(final Function<? super T, ? extends K> keyMapper,
-                                                                                      final Function<? super T, ? extends V> valueMapper) {
+    public static <T, K, V> Function<T, Map.Entry<K, V>> fromKeyValueMappersToMapEntry(final Function<? super T, ? extends K> keyMapper,
+                                                                                       final Function<? super T, ? extends V> valueMapper) {
         Assert.notNull(keyMapper, "keyMapper must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
-        return (t) -> {
-            K key = keyMapper.apply(t);
-            V value = valueMapper.apply(t);
-            return new AbstractMap.SimpleEntry<>(
-                    key,
-                    value
-            );
-        };
+        return (t) ->
+                new AbstractMap.SimpleEntry<>(
+                        keyMapper.apply(t),
+                        valueMapper.apply(t)
+                );
     }
 
 

@@ -6,7 +6,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -23,6 +25,7 @@ import static com.spring5microservices.common.util.PredicateUtil.biAlwaysFalse;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAnyOf;
 import static com.spring5microservices.common.util.PredicateUtil.distinctByKey;
+import static com.spring5microservices.common.util.PredicateUtil.fromBiPredicateToMapEntryPredicate;
 import static java.util.Objects.isNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -100,6 +103,7 @@ public class PredicateUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceInstance,     expectedResult
+                Arguments.of( null,               false ),
                 Arguments.of( "noMatterString",   false ),
                 Arguments.of( 12,                 false ),
                 Arguments.of( carbonara,          false )
@@ -120,6 +124,7 @@ public class PredicateUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceInstance,     expectedResult
+                Arguments.of( null,               true ),
                 Arguments.of( "noMatterString",   true ),
                 Arguments.of( 12,                 true ),
                 Arguments.of( carbonara,          true )
@@ -204,6 +209,7 @@ public class PredicateUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            firstSourceInstance,   secondSourceInstance,   expectedResult
+                Arguments.of( null,                  null,                   false ),
                 Arguments.of( "noMatterString",      11,                     false ),
                 Arguments.of( 12,                    54L,                    false ),
                 Arguments.of( carbonara,             Boolean.TRUE,           false )
@@ -225,6 +231,7 @@ public class PredicateUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            firstSourceInstance,   secondSourceInstance,   expectedResult
+                Arguments.of( null,                  null,                   true ),
                 Arguments.of( "noMatterString",      11,                     true ),
                 Arguments.of( 12,                    54L,                    true ),
                 Arguments.of( carbonara,             Boolean.TRUE,           true )
@@ -269,6 +276,41 @@ public class PredicateUtilTest {
                 .filter(distinctByKey(keyExtractor))
                 .toList();
         assertEquals(expectedResult, distinctCollection);
+    }
+
+
+    static Stream<Arguments> fromBiPredicateToMapEntryPredicateTestCases() {
+        Map.Entry<String, Integer> emptyEntry = new AbstractMap.SimpleEntry<>(
+                null,
+                null
+        );
+        BiPredicate<Integer, String> predicate =
+                (i, s) ->
+                        null != i &&
+                                0 == i % 2;
+        return Stream.of(
+                //@formatter:off
+                //            entry,              predicate,   expectedResult
+                Arguments.of( null,               null,        true ),
+                Arguments.of( null,               predicate,   true ),
+                Arguments.of( emptyEntry,         null,        true ),
+                Arguments.of( emptyEntry,         predicate,   false ),
+                Arguments.of( Map.entry(1, ""),   predicate,   false ),
+                Arguments.of( Map.entry(2, ""),   predicate,   true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromBiPredicateToMapEntryPredicateTestCases")
+    @DisplayName("fromBiPredicateToMapEntryPredicate: test cases")
+    public <K, V> void fromBiPredicateToMapEntryPredicate_testCases(Map.Entry<? super K, ? super V> entry,
+                                                                    BiPredicate<? super K, ? super V> predicate,
+                                                                    boolean expectedResult) {
+        // Required because sometimes the Java compiler is stupid
+        Predicate<Map.Entry<K, V>> predicateToApply = fromBiPredicateToMapEntryPredicate(
+                predicate
+        );
+        assertEquals(expectedResult, predicateToApply.test((Map.Entry<K, V>) entry));
     }
 
 }

@@ -22,12 +22,15 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.CollectorsUtil.toMapNullableValues;
+import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMapperToMapEntry;
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
+import static com.spring5microservices.common.util.PredicateUtil.fromBiPredicateToMapEntryPredicate;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
@@ -333,6 +336,7 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
      */
+    @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, V2> applyOrElse(final Map<? extends K1, ? extends V1> sourceMap,
                                                            final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
                                                            final BiFunction<? super K1, ? super V1, ? extends Map.Entry<K2, V2>> orElseMapper,
@@ -1548,6 +1552,7 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
+    @SuppressWarnings("unchecked")
     public static <T, E> Optional<Map.Entry<T, E>> max(final Map<? extends T, ? extends E> sourceMap,
                                                        final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
         Assert.notNull(comparator, "comparator must be not null");
@@ -1667,6 +1672,7 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code comparator} is {@code null}
      */
+    @SuppressWarnings("unchecked")
     public static <T, E> Optional<Map.Entry<T, E>> min(final Map<? extends T, ? extends E> sourceMap,
                                                        final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
         Assert.notNull(comparator, "comparator must be not null");
@@ -2207,6 +2213,188 @@ public class MapUtil {
                                 Map.Entry::getValue,
                                 finalMapFactory
                         )
+                );
+    }
+
+
+    /**
+     * Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                            Result:
+     *    [("a", 1), ("b", 2), ("d", 4)]         [2, 3, 5]
+     *    (s, i) -> s.length() + i
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with the elements to transform and include in the returned {@link List}
+     * @param keyValueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap} into elements of the returned {@link List}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code keyValueMapper} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <K, V, R> List<R> toCollection(final Map<? extends K, ? extends V> sourceMap,
+                                                 final BiFunction<? super K, ? super V, ? extends R> keyValueMapper) {
+        return (List<R>) toCollection(
+                sourceMap,
+                keyValueMapper,
+                biAlwaysTrue(),
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}, only with the elements
+     * that satisfy the {@link BiPredicate} {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                            Result:
+     *    [("a", 1), ("b", 2), ("d", 4)]         [3, 5]
+     *    (s, i) -> s.length() + i
+     *    (s, i) -> 0 == i % 2
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with the elements to transform and include in the returned {@link List}
+     * @param keyValueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap} into elements of the returned {@link List}
+     * @param filterPredicate
+     *    {@link BiPredicate} used to filter values from {@code sourceMap} that will be added in the returned {@link Map}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code keyValueMapper} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <K, V, R> List<R> toCollection(final Map<? extends K, ? extends V> sourceMap,
+                                                 final BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                 final BiPredicate<? super K, ? super V> filterPredicate) {
+        return (List<R>) toCollection(
+                sourceMap,
+                keyValueMapper,
+                filterPredicate,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}, only with the elements
+     * that satisfy the {@link BiPredicate} {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                            Result:
+     *    [("a", 1), ("b", 2), ("d", 4)]         [3, 5]
+     *    (s, i) -> s.length() + i
+     *    (s, i) -> 0 == i % 2,
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with the elements to transform and include in the returned {@link List}
+     * @param keyValueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap} into elements of the returned {@link List}
+     * @param filterPredicate
+     *    {@link BiPredicate} used to filter values from {@code sourceMap} that will be added in the returned {@link Map}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection}
+     *
+     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code keyValueMapper} is {@code null}
+     */
+    public static <K, V, R> Collection<R> toCollection(final Map<? extends K, ? extends V> sourceMap,
+                                                       final BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                       final BiPredicate<? super K, ? super V> filterPredicate,
+                                                       final Supplier<Collection<R>> collectionFactory) {
+        final Supplier<Collection<R>> finalCollectionFactory = ObjectUtil.getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalCollectionFactory.get();
+        }
+        return toCollection(
+                sourceMap,
+                PartialFunction.of(
+                        fromBiPredicateToMapEntryPredicate(
+                                filterPredicate
+                        ),
+                        fromKeyValueMapperToMapEntry(
+                                keyValueMapper
+                        )
+                ),
+                collectionFactory
+        );
+    }
+
+
+    /**
+     * Converts the given {@link Map} in to a {@link List} using provided {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                  Result:
+     *    [("a", 1), ("b", 2), ("d", 4)]                                               [3, 5]
+     *    new PartialFunction<>() {
+     *
+     *      public Integer apply(final Map.Entry<String, Integer> entry) {
+     *        return null == entry
+     *                 ? 0
+     *                 : entry.getKey().length() + entry.getValue();
+     *      }
+     *
+     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+     *        return null != entry &&
+     *               0 == entry.getKey() % 2;
+     *      }
+     *    },
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with the elements to transform and include in the returned {@link List}
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection}
+     *
+     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code partialFunction} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <K, V, R> Collection<R> toCollection(final Map<? extends K, ? extends V> sourceMap,
+                                                       final PartialFunction<? super Map.Entry<K, V>, ? extends R> partialFunction,
+                                                       final Supplier<Collection<R>> collectionFactory) {
+        final Supplier<Collection<R>> finalCollectionFactory = ObjectUtil.getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+
+        // Allowed because immutable/read-only Maps are covariant.
+        Map<K, V> narrowedSourceMap = (Map<K, V>) sourceMap;
+        return narrowedSourceMap.entrySet()
+                .stream()
+                .filter(partialFunction::isDefinedAt)
+                .map(partialFunction)
+                .collect(
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 

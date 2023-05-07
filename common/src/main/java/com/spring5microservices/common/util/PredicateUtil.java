@@ -3,6 +3,7 @@ package com.spring5microservices.common.util;
 import lombok.experimental.UtilityClass;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
@@ -207,6 +208,29 @@ public class PredicateUtil {
     public static <T> Predicate<T> distinctByKey(final Function<? super T, ?> keyExtractor) {
         final Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
+    }
+
+
+    /**
+     *    Transforms the given {@link BiPredicate} {@code filterPredicate} into a {@link Predicate} using {@link Map#entry(Object, Object)}
+     * as source. If {@code predicate} or {@link Map#entry(Object, Object)} to verify are {@code null} will return {@code true}.
+     *
+     * @param predicate
+     *    {@link BiPredicate} to transform into a {@link Predicate}
+     *
+     * @return {@link Predicate} to verify {@link Map#entry(Object, Object)} instances
+     */
+    public static <K, V> Predicate<Map.Entry<K, V>> fromBiPredicateToMapEntryPredicate(BiPredicate<? super K, ? super V> predicate) {
+        if (isNull(predicate)) {
+            return alwaysTrue();
+        }
+        return (entry) ->
+                isNull(entry)
+                        ? true
+                        : predicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                          );
     }
 
 }

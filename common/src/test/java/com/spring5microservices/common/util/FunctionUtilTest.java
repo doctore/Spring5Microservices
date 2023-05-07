@@ -6,13 +6,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.PizzaEnum.CARBONARA;
 import static com.spring5microservices.common.PizzaEnum.MARGUERITA;
 import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMapperToMapEntry;
+import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMappersToMapEntry;
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,6 +23,57 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class FunctionUtilTest {
 
     static Stream<Arguments> fromKeyValueMapperToMapEntryTestCases() {
+        Map.Entry<String, Integer> emptyEntry = new AbstractMap.SimpleEntry<>(
+                null,
+                null
+        );
+        BiFunction<String, Integer, Integer> sumStringLengthAndInteger =
+                (s, i) -> {
+                   final int sLength = null == s ? 0 : s.length();
+                   final int finalI = null == i ? 0 : i;
+                   return sLength + finalI;
+                };
+        return Stream.of(
+                //@formatter:off
+                //            entry,                 keyValueMapper,              expectedException,                expectedResult
+                Arguments.of( null,                  null,                        IllegalArgumentException.class,   null ),
+                Arguments.of( emptyEntry,            null,                        IllegalArgumentException.class,   null ),
+                Arguments.of( null,                  sumStringLengthAndInteger,   NullPointerException.class,       null ),
+                Arguments.of( emptyEntry,            sumStringLengthAndInteger,   null,                             0 ),
+                Arguments.of( Map.entry("10", 32),   sumStringLengthAndInteger,   null,                             34 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromKeyValueMapperToMapEntryTestCases")
+    @DisplayName("fromKeyValueMapperToMapEntry: test cases")
+    public <T, K, V> void fromKeyValueMapperToMapEntry_testCases(Map.Entry<? super K, ? super V> entry,
+                                                                 BiFunction<? super K, ? super V, ? extends T> keyValueMapper,
+                                                                 Class<? extends Exception> expectedException,
+                                                                 T expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> {
+                        // Required because sometimes the Java compiler is stupid
+                        Function<Map.Entry<K, V>, T> functionToApply = fromKeyValueMapperToMapEntry(
+                                keyValueMapper
+                        );
+                        functionToApply.apply((Map.Entry<K, V>)entry);
+                    }
+            );
+        } else {
+            // Required because sometimes the Java compiler is stupid
+            Function<Map.Entry<K, V>, T> functionToApply = fromKeyValueMapperToMapEntry(
+                    keyValueMapper
+            );
+            assertEquals(expectedResult,
+                    functionToApply.apply((Map.Entry<K, V>)entry)
+            );
+        }
+    }
+
+
+    static Stream<Arguments> fromKeyValueMappersToMapEntryTestCases() {
         Function<Integer, String> multiply2String =
                 i -> null == i
                         ? ""
@@ -41,17 +95,17 @@ public class FunctionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("fromKeyValueMapperToMapEntryTestCases")
-    @DisplayName("fromKeyValueMapperToMapEntry: test cases")
-    public <T, K, V> void fromKeyValueMapperToMapEntry_testCases(T t,
-                                                                 Function<? super T, ? extends K> keyMapper,
-                                                                 Function<? super T, ? extends V> valueMapper,
-                                                                 Class<? extends Exception> expectedException,
-                                                                 Map.Entry<K, V> expectedResult) {
+    @MethodSource("fromKeyValueMappersToMapEntryTestCases")
+    @DisplayName("fromKeyValueMappersToMapEntry: test cases")
+    public <T, K, V> void fromKeyValueMappersToMapEntry_testCases(T t,
+                                                                  Function<? super T, ? extends K> keyMapper,
+                                                                  Function<? super T, ? extends V> valueMapper,
+                                                                  Class<? extends Exception> expectedException,
+                                                                  Map.Entry<K, V> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
                     () ->
-                            fromKeyValueMapperToMapEntry(
+                            fromKeyValueMappersToMapEntry(
                                     keyMapper,
                                     valueMapper
                             )
@@ -59,7 +113,7 @@ public class FunctionUtilTest {
             );
         } else {
             assertEquals(expectedResult,
-                    fromKeyValueMapperToMapEntry(
+                    fromKeyValueMappersToMapEntry(
                             keyMapper,
                             valueMapper
                     )

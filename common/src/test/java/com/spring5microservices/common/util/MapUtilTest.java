@@ -12,6 +12,7 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullLast;
 import static com.spring5microservices.common.util.MapUtil.*;
+import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -2753,6 +2755,255 @@ public class MapUtilTest {
                                                         Supplier<Map<T, E>> mapFactory,
                                                         Map<T, E> expectedResult) {
         assertEquals(expectedResult, takeWhile(sourceMap, filterPredicate, mapFactory));
+    }
+
+
+    static Stream<Arguments> toCollectionWithKeyValueMapperTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+            put(6, null);
+        }};
+        BiFunction<Integer, String, Integer> sumIntegerAndStringLength =
+                (i, s) -> {
+                    final int finalI = null == i ? 0 : i;
+                    final int sLength = null == s ? 0 : s.length();
+                    return sLength + finalI;
+                };
+        List<Integer> expectedResult = asList(2, 3, 5, 6);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        keyValueMapper,              expectedException,                expectedResult
+                Arguments.of( null,             null,                        null,                             List.of() ),
+                Arguments.of( null,             sumIntegerAndStringLength,   null,                             List.of() ),
+                Arguments.of( Map.of(),         null,                        null,                             List.of() ),
+                Arguments.of( Map.of(),         sumIntegerAndStringLength,   null,                             List.of() ),
+                Arguments.of( intsAndStrings,   null,                        IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toCollectionWithKeyValueMapperTestCases")
+    @DisplayName("toCollection: with keyValueMapper test cases")
+    public <K, V, R> void toCollectionWithKeyValueMapper_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                                   BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                                   Class<? extends Exception> expectedException,
+                                                                   List<R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toCollection(
+                            sourceMap, keyValueMapper
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toCollection(
+                            sourceMap, keyValueMapper
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> toCollectionWithKeyValueMapperAndBiPredicateTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+            put(6, null);
+        }};
+        BiFunction<Integer, String, Integer> sumIntegerAndStringLength =
+                (i, s) -> {
+                    final int finalI = null == i ? 0 : i;
+                    final int sLength = null == s ? 0 : s.length();
+                    return sLength + finalI;
+                };
+        BiPredicate<Integer, String> filterPredicate =
+                (i, s) ->
+                        null != i &&
+                        0 == i % 2;
+
+        List<Integer> expectedResultWithoutFilter = asList(2, 3, 5, 6);
+        List<Integer> expectedResultWithFilter = asList(3, 5, 6);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        keyValueMapper,              filterPredicate,   expectedException,                expectedResult
+                Arguments.of( null,             null,                        null,              null,                             List.of() ),
+                Arguments.of( null,             sumIntegerAndStringLength,   null,              null,                             List.of() ),
+                Arguments.of( null,             sumIntegerAndStringLength,   filterPredicate,   null,                             List.of() ),
+                Arguments.of( Map.of(),         null,                        null,              null,                             List.of() ),
+                Arguments.of( Map.of(),         sumIntegerAndStringLength,   null,              null,                             List.of() ),
+                Arguments.of( Map.of(),         sumIntegerAndStringLength,   filterPredicate,   null,                             List.of() ),
+                Arguments.of( intsAndStrings,   null,                        null,              IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                        filterPredicate,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   null,              null,                             expectedResultWithoutFilter ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   filterPredicate,   null,                             expectedResultWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toCollectionWithKeyValueMapperAndBiPredicateTestCases")
+    @DisplayName("toCollection: with keyValueMapper and filterPredicate test cases")
+    public <K, V, R> void toCollectionWithKeyValueMapperAndBiPredicate_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                                                 BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                                                 BiPredicate<? super K, ? super V> filterPredicate,
+                                                                                 Class<? extends Exception> expectedException,
+                                                                                 List<R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toCollection(
+                            sourceMap, keyValueMapper, filterPredicate
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toCollection(
+                            sourceMap, keyValueMapper, filterPredicate
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> toCollectionWithKeyValueMapperBiPredicateAndSupplierTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "Aa");
+            put(2, "B");
+            put(4, "o");
+            put(6, null);
+        }};
+        BiFunction<Integer, String, Integer> sumIntegerAndStringLength =
+                (i, s) -> {
+                    final int finalI = null == i ? 0 : i;
+                    final int sLength = null == s ? 0 : s.length();
+                    return sLength + finalI;
+                };
+        BiPredicate<Integer, String> filterPredicate =
+                (i, s) ->
+                        null != i &&
+                                0 == i % 2;
+        Supplier<Set<Integer>> setSupplier = HashSet::new;
+
+        List<Integer> expectedResultWithoutFilterDefaultSupplier = asList(3, 3, 5, 6);
+        Set<Integer> expectedResultWithoutFilterSetSupplier = new HashSet<>(expectedResultWithoutFilterDefaultSupplier);
+        List<Integer> expectedResultWithFilterDefaultSupplier = asList(3, 5, 6);
+        Set<Integer> expectedResultWithFilterSetSupplier = new HashSet<>(expectedResultWithFilterDefaultSupplier);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        keyValueMapper,              filterPredicate,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,             null,                        null,              null,                null,                             List.of() ),
+                Arguments.of( null,             sumIntegerAndStringLength,   null,              null,                null,                             List.of() ),
+                Arguments.of( null,             sumIntegerAndStringLength,   filterPredicate,   null,                null,                             List.of() ),
+                Arguments.of( null,             sumIntegerAndStringLength,   filterPredicate,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( Map.of(),         null,                        null,              null,                null,                             List.of() ),
+                Arguments.of( Map.of(),         sumIntegerAndStringLength,   null,              null,                null,                             List.of() ),
+                Arguments.of( Map.of(),         sumIntegerAndStringLength,   filterPredicate,   null,                null,                             List.of() ),
+                Arguments.of( Map.of(),         sumIntegerAndStringLength,   filterPredicate,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( intsAndStrings,   null,                        null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                        filterPredicate,   null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,                        filterPredicate,   setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   null,              null,                null,                             expectedResultWithoutFilterDefaultSupplier ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   filterPredicate,   null,                null,                             expectedResultWithFilterDefaultSupplier ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   null,              setSupplier,         null,                             expectedResultWithoutFilterSetSupplier ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   filterPredicate,   setSupplier,         null,                             expectedResultWithFilterSetSupplier )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toCollectionWithKeyValueMapperBiPredicateAndSupplierTestCases")
+    @DisplayName("toCollection: with keyValueMapper, filterPredicate and collectionFactory test cases")
+    public <K, V, R> void toCollectionWithKeyValueMapperBiPredicateAndSupplier_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                                                         BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                                                         BiPredicate<? super K, ? super V> filterPredicate,
+                                                                                         Supplier<Collection<R>> collectionFactory,
+                                                                                         Class<? extends Exception> expectedException,
+                                                                                         Collection<R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toCollection(
+                            sourceMap, keyValueMapper, filterPredicate, collectionFactory
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toCollection(
+                            sourceMap, keyValueMapper, filterPredicate, collectionFactory
+                    )
+            );
+        }
+    }
+
+
+    static Stream<Arguments> toCollectionWithPartialFunctionAndSupplierTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "Aa");
+            put(2, "B");
+            put(4, "o");
+            put(6, null);
+        }};
+        PartialFunction<Map.Entry<Integer, String>, Integer> partialFunction = new PartialFunction<>() {
+
+            @Override
+            public Integer apply(final Map.Entry<Integer, String> entry) {
+                if (null == entry) {
+                    return 0;
+                }
+                final int finalKey = null == entry.getKey() ? 0 : entry.getKey();
+                final int finalValue = null == entry.getValue() ? 0 : entry.getValue().length();
+                return finalKey + finalValue;
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
+                return null != entry &&
+                       null != entry.getKey() &&
+                       0 == entry.getKey() % 2;
+            }
+        };
+
+        Supplier<Set<Integer>> setSupplier = HashSet::new;
+
+        List<Integer> expectedResultWithFilterDefaultSupplier = asList(3, 5, 6);
+        Set<Integer> expectedResultWithFilterSetSupplier = new HashSet<>(expectedResultWithFilterDefaultSupplier);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        partialFunction,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,             null,              null,                null,                             List.of() ),
+                Arguments.of( null,             partialFunction,   null,                null,                             List.of() ),
+                Arguments.of( null,             partialFunction,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( Map.of(),         null,              null,                null,                             List.of() ),
+                Arguments.of( Map.of(),         partialFunction,   null,                null,                             List.of() ),
+                Arguments.of( Map.of(),         partialFunction,   setSupplier,         null,                             Set.of() ),
+                Arguments.of( intsAndStrings,   null,              null,                IllegalArgumentException.class,   List.of() ),
+                Arguments.of( intsAndStrings,   null,              setSupplier,         IllegalArgumentException.class,   Set.of() ),
+                Arguments.of( intsAndStrings,   partialFunction,   null,                null,                             expectedResultWithFilterDefaultSupplier ),
+                Arguments.of( intsAndStrings,   partialFunction,   setSupplier,         null,                             expectedResultWithFilterSetSupplier )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toCollectionWithPartialFunctionAndSupplierTestCases")
+    @DisplayName("toCollection: with partialFunction and collectionFactory test cases")
+    public <K, V, R> void toCollectionWithPartialFunctionAndSupplier_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                                               PartialFunction<? super Map.Entry<K, V>, ? extends R> partialFunction,
+                                                                               Supplier<Collection<R>> collectionFactory,
+                                                                               Class<? extends Exception> expectedException,
+                                                                               Collection<R> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toCollection(
+                            sourceMap, partialFunction, collectionFactory
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toCollection(
+                            sourceMap, partialFunction, collectionFactory
+                    )
+            );
+        }
     }
 
 }

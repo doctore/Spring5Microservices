@@ -36,7 +36,7 @@ import java.util.stream.StreamSupport;
 import static com.spring5microservices.common.util.CollectorsUtil.toMapNullableValues;
 import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullFirst;
 import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullLast;
-import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMapperToMapEntry;
+import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMappersToMapEntry;
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
@@ -2201,7 +2201,8 @@ public class CollectionUtil {
 
 
     /**
-     * Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
+     *    Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper},
+     * only with the elements that satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * <pre>
      * Example:
@@ -2220,7 +2221,7 @@ public class CollectionUtil {
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection} into values of the returned {@link Map}
      * @param filterPredicate
-     *    {@link Predicate} used to filter values from {@code sourceCollection} will not been added in the returned {@link Map}
+     *    {@link Predicate} used to filter values from {@code sourceCollection} that will be added in the returned {@link Map}
      *
      * @return {@link Map}
      *
@@ -2242,7 +2243,8 @@ public class CollectionUtil {
 
 
     /**
-     * Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
+     *    Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper},
+     * only with the elements that satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * <pre>
      * Example:
@@ -2263,7 +2265,7 @@ public class CollectionUtil {
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection} into values of the returned {@link Map}
      * @param filterPredicate
-     *    {@link Predicate} used to filter values from {@code sourceCollection} will not been added in the returned {@link Map}
+     *    {@link Predicate} used to filter values from {@code sourceCollection} that will be added in the returned {@link Map}
      * @param mergeValueFunction
      *    {@link BinaryOperator} used to resolve collisions between values associated with the same key. If no one is
      *    provided, by default last value will be used
@@ -2295,7 +2297,7 @@ public class CollectionUtil {
                                 filterPredicate,
                                 alwaysTrue()
                         ),
-                        fromKeyValueMapperToMapEntry(
+                        fromKeyValueMappersToMapEntry(
                                 keyMapper,
                                 valueMapper
                         )
