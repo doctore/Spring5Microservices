@@ -24,7 +24,7 @@ public class FunctionUtil {
      * @throws IllegalArgumentException if {@code keyMapper} or {@code valueMapper} are {@code null}
      * @throws NullPointerException if provided {@link Map#entry(Object, Object)} is {@code null}
      */
-    public static <T, K, V> Function<Map.Entry<K, V>, T> fromKeyValueMapperToMapEntry(final BiFunction<? super K, ? super V, ? extends T> keyValueMapper) {
+    public static <T, K, V> Function<Map.Entry<K, V>, T> fromBiFunctionToMapEntryFunction(final BiFunction<? super K, ? super V, ? extends T> keyValueMapper) {
         Assert.notNull(keyValueMapper, "keyValueMapper must be not null");
         return (entry) ->
                 keyValueMapper.apply(
@@ -47,8 +47,8 @@ public class FunctionUtil {
      *
      * @throws IllegalArgumentException if {@code keyMapper} or {@code valueMapper} are {@code null}
      */
-    public static <T, K, V> Function<T, Map.Entry<K, V>> fromKeyValueMappersToMapEntry(final Function<? super T, ? extends K> keyMapper,
-                                                                                       final Function<? super T, ? extends V> valueMapper) {
+    public static <T, K, V> Function<T, Map.Entry<K, V>> fromFunctionsToMapEntryFunction(final Function<? super T, ? extends K> keyMapper,
+                                                                                         final Function<? super T, ? extends V> valueMapper) {
         Assert.notNull(keyMapper, "keyMapper must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
         return (t) ->

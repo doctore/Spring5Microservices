@@ -36,7 +36,7 @@ import java.util.stream.StreamSupport;
 import static com.spring5microservices.common.util.CollectorsUtil.toMapNullableValues;
 import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullFirst;
 import static com.spring5microservices.common.util.ComparatorUtil.safeNaturalOrderNullLast;
-import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMappersToMapEntry;
+import static com.spring5microservices.common.util.FunctionUtil.fromFunctionsToMapEntryFunction;
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
@@ -51,7 +51,6 @@ import static java.util.stream.Collectors.toList;
 
 @UtilityClass
 public class CollectionUtil {
-
 
     /**
      *    Returns a new {@link List} using the given {@code sourceCollection}, applying to its elements the compose
@@ -2297,7 +2296,7 @@ public class CollectionUtil {
                                 filterPredicate,
                                 alwaysTrue()
                         ),
-                        fromKeyValueMappersToMapEntry(
+                        fromFunctionsToMapEntryFunction(
                                 keyMapper,
                                 valueMapper
                         )

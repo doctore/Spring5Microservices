@@ -2758,7 +2758,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> toCollectionWithKeyValueMapperTestCases() {
+    static Stream<Arguments> toListWithKeyValueMapperTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -2785,21 +2785,21 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("toCollectionWithKeyValueMapperTestCases")
-    @DisplayName("toCollection: with keyValueMapper test cases")
-    public <K, V, R> void toCollectionWithKeyValueMapper_testCases(Map<? extends K, ? extends V> sourceMap,
-                                                                   BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
-                                                                   Class<? extends Exception> expectedException,
-                                                                   List<R> expectedResult) {
+    @MethodSource("toListWithKeyValueMapperTestCases")
+    @DisplayName("toList: with keyValueMapper test cases")
+    public <K, V, R> void toListWithKeyValueMapper_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                             BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                             Class<? extends Exception> expectedException,
+                                                             List<R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
-                    () -> toCollection(
+                    () -> toList(
                             sourceMap, keyValueMapper
                     )
             );
         } else {
             assertEquals(expectedResult,
-                    toCollection(
+                    toList(
                             sourceMap, keyValueMapper
                     )
             );
@@ -2807,7 +2807,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> toCollectionWithKeyValueMapperAndBiPredicateTestCases() {
+    static Stream<Arguments> toListWithKeyValueMapperAndBiPredicateTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -2844,22 +2844,22 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("toCollectionWithKeyValueMapperAndBiPredicateTestCases")
-    @DisplayName("toCollection: with keyValueMapper and filterPredicate test cases")
-    public <K, V, R> void toCollectionWithKeyValueMapperAndBiPredicate_testCases(Map<? extends K, ? extends V> sourceMap,
-                                                                                 BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
-                                                                                 BiPredicate<? super K, ? super V> filterPredicate,
-                                                                                 Class<? extends Exception> expectedException,
-                                                                                 List<R> expectedResult) {
+    @MethodSource("toListWithKeyValueMapperAndBiPredicateTestCases")
+    @DisplayName("toList: with keyValueMapper and filterPredicate test cases")
+    public <K, V, R> void toListWithKeyValueMapperAndBiPredicate_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                                           BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                                           BiPredicate<? super K, ? super V> filterPredicate,
+                                                                           Class<? extends Exception> expectedException,
+                                                                           List<R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
-                    () -> toCollection(
+                    () -> toList(
                             sourceMap, keyValueMapper, filterPredicate
                     )
             );
         } else {
             assertEquals(expectedResult,
-                    toCollection(
+                    toList(
                             sourceMap, keyValueMapper, filterPredicate
                     )
             );

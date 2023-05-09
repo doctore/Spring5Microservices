@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.CollectorsUtil.toMapNullableValues;
-import static com.spring5microservices.common.util.FunctionUtil.fromKeyValueMapperToMapEntry;
+import static com.spring5microservices.common.util.FunctionUtil.fromBiFunctionToMapEntryFunction;
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.fromBiPredicateToMapEntryPredicate;
@@ -37,11 +37,9 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
 @UtilityClass
 public class MapUtil {
-
 
     /**
      *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the compose
@@ -986,8 +984,9 @@ public class MapUtil {
                                 entry.getValue()
                         )
                 )
-                .collect(toList());
-
+                .collect(
+                        Collectors.toList()
+                );
         return CollectionUtil.flatten(
                 (Collection<Object>)result,
                 collectionFactory
@@ -1963,7 +1962,7 @@ public class MapUtil {
         List<Map<T, E>> slides = IntStream.range(0, expectedSize)
                 .mapToObj(index -> new LinkedHashMap<T, E>())
                 .collect(
-                        toList()
+                        Collectors.toList()
                 );
         int i = 0;
         for (var entry : sourceMap.entrySet()) {
@@ -2120,8 +2119,9 @@ public class MapUtil {
 
         List<Map<T, E>> splits = IntStream.range(0, expectedSize)
                 .mapToObj(index -> new LinkedHashMap<T, E>())
-                .collect(toList());
-
+                .collect(
+                        Collectors.toList()
+                );
         int i = 0, currentSplit = 0;
         for (var entry : sourceMap.entrySet()) {
             splits.get(currentSplit)
@@ -2218,75 +2218,6 @@ public class MapUtil {
 
 
     /**
-     * Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                            Result:
-     *    [("a", 1), ("b", 2), ("d", 4)]         [2, 3, 5]
-     *    (s, i) -> s.length() + i
-     * </pre>
-     *
-     * @param sourceMap
-     *    {@link Map} with the elements to transform and include in the returned {@link List}
-     * @param keyValueMapper
-     *    {@link BiFunction} to transform elements of {@code sourceMap} into elements of the returned {@link List}
-     *
-     * @return {@link List}
-     *
-     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code keyValueMapper} is {@code null}
-     */
-    @SuppressWarnings("unchecked")
-    public static <K, V, R> List<R> toCollection(final Map<? extends K, ? extends V> sourceMap,
-                                                 final BiFunction<? super K, ? super V, ? extends R> keyValueMapper) {
-        return (List<R>) toCollection(
-                sourceMap,
-                keyValueMapper,
-                biAlwaysTrue(),
-                ArrayList::new
-        );
-    }
-
-
-    /**
-     *    Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}, only with the elements
-     * that satisfy the {@link BiPredicate} {@code filterPredicate}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                            Result:
-     *    [("a", 1), ("b", 2), ("d", 4)]         [3, 5]
-     *    (s, i) -> s.length() + i
-     *    (s, i) -> 0 == i % 2
-     * </pre>
-     *
-     * @param sourceMap
-     *    {@link Map} with the elements to transform and include in the returned {@link List}
-     * @param keyValueMapper
-     *    {@link BiFunction} to transform elements of {@code sourceMap} into elements of the returned {@link List}
-     * @param filterPredicate
-     *    {@link BiPredicate} used to filter values from {@code sourceMap} that will be added in the returned {@link Map}
-     *
-     * @return {@link List}
-     *
-     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code keyValueMapper} is {@code null}
-     */
-    @SuppressWarnings("unchecked")
-    public static <K, V, R> List<R> toCollection(final Map<? extends K, ? extends V> sourceMap,
-                                                 final BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
-                                                 final BiPredicate<? super K, ? super V> filterPredicate) {
-        return (List<R>) toCollection(
-                sourceMap,
-                keyValueMapper,
-                filterPredicate,
-                ArrayList::new
-        );
-    }
-
-
-    /**
      *    Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}, only with the elements
      * that satisfy the {@link BiPredicate} {@code filterPredicate}.
      *
@@ -2330,7 +2261,7 @@ public class MapUtil {
                         fromBiPredicateToMapEntryPredicate(
                                 filterPredicate
                         ),
-                        fromKeyValueMapperToMapEntry(
+                        fromBiFunctionToMapEntryFunction(
                                 keyValueMapper
                         )
                 ),
@@ -2396,6 +2327,75 @@ public class MapUtil {
                 .collect(
                         Collectors.toCollection(finalCollectionFactory)
                 );
+    }
+
+
+    /**
+     * Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                            Result:
+     *    [("a", 1), ("b", 2), ("d", 4)]         [2, 3, 5]
+     *    (s, i) -> s.length() + i
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with the elements to transform and include in the returned {@link List}
+     * @param keyValueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap} into elements of the returned {@link List}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code keyValueMapper} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <K, V, R> List<R> toList(final Map<? extends K, ? extends V> sourceMap,
+                                           final BiFunction<? super K, ? super V, ? extends R> keyValueMapper) {
+        return (List<R>) toCollection(
+                sourceMap,
+                keyValueMapper,
+                biAlwaysTrue(),
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}, only with the elements
+     * that satisfy the {@link BiPredicate} {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                            Result:
+     *    [("a", 1), ("b", 2), ("d", 4)]         [3, 5]
+     *    (s, i) -> s.length() + i
+     *    (s, i) -> 0 == i % 2
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with the elements to transform and include in the returned {@link List}
+     * @param keyValueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap} into elements of the returned {@link List}
+     * @param filterPredicate
+     *    {@link BiPredicate} used to filter values from {@code sourceMap} that will be added in the returned {@link Map}
+     *
+     * @return {@link List}
+     *
+     * @throws IllegalArgumentException if {@code sourceMap} is not empty and {@code keyValueMapper} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <K, V, R> List<R> toList(final Map<? extends K, ? extends V> sourceMap,
+                                           final BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                           final BiPredicate<? super K, ? super V> filterPredicate) {
+        return (List<R>) toCollection(
+                sourceMap,
+                keyValueMapper,
+                filterPredicate,
+                ArrayList::new
+        );
     }
 
 
