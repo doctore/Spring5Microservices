@@ -12,6 +12,8 @@ import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 
 /**
  *    Unary function where the domain does not necessarily include all values of type T. The method {@link PartialFunction#isDefinedAt(Object)}
@@ -245,11 +247,10 @@ public interface PartialFunction<T, R> extends Function<T, R> {
 
             @Override
             public boolean isDefinedAt(final T t) {
-                return PartialFunction.this.isDefinedAt(t)
-                        ? after.isDefinedAt(
+                return PartialFunction.this.isDefinedAt(t) &&
+                        after.isDefinedAt(
                                 PartialFunction.this.apply(t)
-                          )
-                        : false;
+                        );
             }
         };
     }
@@ -349,11 +350,10 @@ public interface PartialFunction<T, R> extends Function<T, R> {
 
             @Override
             public boolean isDefinedAt(final V v) {
-                return before.isDefinedAt(v)
-                        ? PartialFunction.this.isDefinedAt(
+                return before.isDefinedAt(v) &&
+                        PartialFunction.this.isDefinedAt(
                                 before.apply(v)
-                          )
-                        : false;
+                        );
             }
         };
     }
@@ -368,10 +368,10 @@ public interface PartialFunction<T, R> extends Function<T, R> {
     default Function<T, Optional<R>> lift() {
         return t ->
                 isDefinedAt(t)
-                        ? Optional.ofNullable(
+                        ? ofNullable(
                                 apply(t)
                           )
-                        : Optional.empty();
+                        : empty();
     }
 
 
@@ -383,8 +383,8 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      *    {@link PartialFunction} to apply when current value is not contained in this {@link PartialFunction}'s domain
      *
      * @return {@link PartialFunction} which has as domain the union of the domains of this {@link PartialFunction} and
-     *         {@code orElsePartialFunction}. The resulting {@link PartialFunction} takes {@code x} to {@code this(x)}
-     *         where this is defined, and to {@code orElsePartialFunction(x)} where it is not.
+     *         {@code defaultPartialFunction}. The resulting {@link PartialFunction} takes {@code x} to {@code this(x)}
+     *         where this is defined, and to {@code defaultPartialFunction(x)} where it is not.
      */
     default PartialFunction<T, R> orElse(final PartialFunction<? super T, ? extends R> defaultPartialFunction) {
 
@@ -404,8 +404,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
             public boolean isDefinedAt(final T t) {
                 return isNull(defaultPartialFunction)
                         ? PartialFunction.this.isDefinedAt(t)
-                        : PartialFunction.this.isDefinedAt(t) ||
-                          defaultPartialFunction.isDefinedAt(t);
+                        : PartialFunction.this.isDefinedAt(t) || defaultPartialFunction.isDefinedAt(t);
             }
         };
     }
