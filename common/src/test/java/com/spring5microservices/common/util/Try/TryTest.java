@@ -1,5 +1,8 @@
 package com.spring5microservices.common.util.Try;
 
+import com.spring5microservices.common.interfaces.functional.PentaFunction;
+import com.spring5microservices.common.interfaces.functional.QuadFunction;
+import com.spring5microservices.common.interfaces.functional.TriFunction;
 import com.spring5microservices.common.util.either.Either;
 import com.spring5microservices.common.util.validation.Validation;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TryTest {
 
-    static Stream<Arguments> ofTestCases() {
+    static Stream<Arguments> ofSupplierTestCases() {
         Supplier<Long> supplierSuccess = () -> 23L;
         Supplier<Long> supplierDivisionByZero = () -> 12L / 0;
 
@@ -44,12 +47,169 @@ public class TryTest {
     }
 
     @ParameterizedTest
-    @MethodSource("ofTestCases")
-    @DisplayName("of: test cases")
-    public <T> void of_testCases(Supplier<T> supplier,
+    @MethodSource("ofSupplierTestCases")
+    @DisplayName("of: using a Supplier test cases")
+    public <T> void ofSupplier_testCases(Supplier<T> supplier,
                                  Try<T> expectedResult) {
 
         Try<T> result = Try.of(supplier);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> ofFunctionTestCases() {
+        Function<String, Integer> fromStringToInteger = Integer::valueOf;
+
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"java.util.function.Function.apply(Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"a\""));
+        return Stream.of(
+                //@formatter:off
+                //             t1,    function,              expectedResult
+                Arguments.of( null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    fromStringToInteger,   expectedFailureNumberFormatException ),
+                Arguments.of( "1",    fromStringToInteger,   Try.success(1) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofFunctionTestCases")
+    @DisplayName("of: using a Function test cases")
+    public <T1, R> void ofFunction_testCases(T1 t1,
+                                             Function<T1, R> function,
+                                             Try<R> expectedResult) {
+
+        Try<R> result = Try.of(t1, function);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> ofBiFunctionTestCases() {
+        BiFunction<String, String, Integer> fromStringToInteger = (s1, s2) -> Integer.valueOf(s1 + s2);
+
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"java.util.function.BiFunction.apply(Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"ab\""));
+        return Stream.of(
+                //@formatter:off
+                //             t1,    t2,     function,              expectedResult
+                Arguments.of( null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    "b",    fromStringToInteger,   expectedFailureNumberFormatException ),
+                Arguments.of( "1",    "2",    fromStringToInteger,   Try.success(12) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofBiFunctionTestCases")
+    @DisplayName("of: using a BiFunction test cases")
+    public <T1, T2, R> void ofBiFunction_testCases(T1 t1,
+                                                   T2 t2,
+                                                   BiFunction<T1, T2, R> function,
+                                                   Try<R> expectedResult) {
+
+        Try<R> result = Try.of(t1, t2, function);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> ofTriFunctionTestCases() {
+        TriFunction<String, String, String, Integer> fromStringToInteger = (s1, s2, s3) -> Integer.valueOf(s1 + s2 + s3);
+
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.TriFunction.apply(Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abc\""));
+        return Stream.of(
+                //@formatter:off
+                //             t1,    t2,     t3,     function,              expectedResult
+                Arguments.of( null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    "1",    "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    "b",    "c",    fromStringToInteger,   expectedFailureNumberFormatException ),
+                Arguments.of( "1",    "2",    "3",    fromStringToInteger,   Try.success(123) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofTriFunctionTestCases")
+    @DisplayName("of: using a TriFunction test cases")
+    public <T1, T2, T3, R> void ofTriFunction_testCases(T1 t1,
+                                                        T2 t2,
+                                                        T3 t3,
+                                                        TriFunction<T1, T2, T3, R> function,
+                                                        Try<R> expectedResult) {
+
+        Try<R> result = Try.of(t1, t2, t3, function);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> ofQuadFunctionTestCases() {
+        QuadFunction<String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4) -> Integer.valueOf(s1 + s2 + s3 + s4);
+
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.QuadFunction.apply(Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcd\""));
+        return Stream.of(
+                //@formatter:off
+                //             t1,    t2,     t3,     t4,     function,              expectedResult
+                Arguments.of( null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   "1",    null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    "1",    "1",    "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    "b",    "c",    "d",    fromStringToInteger,   expectedFailureNumberFormatException ),
+                Arguments.of( "1",    "2",    "3",    "4",    fromStringToInteger,   Try.success(1234) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofQuadFunctionTestCases")
+    @DisplayName("of: using a QuadFunction test cases")
+    public <T1, T2, T3, T4, R> void ofQuadFunction_testCases(T1 t1,
+                                                             T2 t2,
+                                                             T3 t3,
+                                                             T4 t4,
+                                                             QuadFunction<T1, T2, T3, T4, R> function,
+                                                             Try<R> expectedResult) {
+        Try<R> result = Try.of(t1, t2, t3, t4, function);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> ofPentaFunctionTestCases() {
+        PentaFunction<String, String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4, s5) -> Integer.valueOf(s1 + s2 + s3 + s4 + s5);
+
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.PentaFunction.apply(Object, Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcde\""));
+        return Stream.of(
+                //@formatter:off
+                //             t1,    t2,     t3,     t4,     t5,     function,              expectedResult
+                Arguments.of( null,   null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   "1",    null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   "1",    null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   null,   "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    "1",    "1",    "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    "b",    "c",    "d",    "e",    fromStringToInteger,   expectedFailureNumberFormatException ),
+                Arguments.of( "1",    "2",    "3",    "4",    "5",    fromStringToInteger,   Try.success(12345) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofPentaFunctionTestCases")
+    @DisplayName("of: using a PentaFunction test cases")
+    public <T1, T2, T3, T4, T5, R> void ofPentaFunction_testCases(T1 t1,
+                                                                  T2 t2,
+                                                                  T3 t3,
+                                                                  T4 t4,
+                                                                  T5 t5,
+                                                                  PentaFunction<T1, T2, T3, T4, T5, R> function,
+                                                                  Try<R> expectedResult) {
+        Try<R> result = Try.of(t1, t2, t3, t4, t5, function);
         compareTry(expectedResult, result);
     }
 

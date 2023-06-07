@@ -1,5 +1,8 @@
 package com.spring5microservices.common.util.Try;
 
+import com.spring5microservices.common.interfaces.functional.PentaFunction;
+import com.spring5microservices.common.interfaces.functional.QuadFunction;
+import com.spring5microservices.common.interfaces.functional.TriFunction;
 import com.spring5microservices.common.util.ObjectUtil;
 import com.spring5microservices.common.util.either.Either;
 import com.spring5microservices.common.util.validation.Validation;
@@ -65,16 +68,164 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     * Creates a {@link Success} that contains the given {@code value}.
+     * Creates a {@link Success} invoking the provided {@link Supplier}.
      *
      * @param supplier
      *    {@link Supplier} used to get the value to store in the returned {@link Success}
      *
-     * @return {@link Success}
+     * @return {@link Success} if invoking the {@link Supplier} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
      */
     public static <T> Try<T> of(final Supplier<T> supplier) {
         try {
-            return success(supplier.get());
+            return success(
+                    supplier.get()
+            );
+        } catch (Throwable t) {
+            return failure(t);
+        }
+    }
+
+
+    /**
+     * Creates a {@link Success} invoking the provided {@link Function} with given {@code t1}.
+     *
+     * @param t1
+     *    Input parameter used by given {@link Function}
+     * @param function
+     *    {@link Function} used to get the value to store in the returned {@link Success}
+     *
+     * @return {@link Success} if invoking the {@link Function} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
+     */
+    public static <T1, R> Try<R> of(final T1 t1,
+                                    final Function<T1, R> function) {
+        try {
+            return success(
+                    function.apply(t1)
+            );
+        } catch (Throwable t) {
+            return failure(t);
+        }
+    }
+
+
+    /**
+     * Creates a {@link Success} invoking the provided {@link BiFunction} with given input parameters.
+     *
+     * @param t1
+     *    First input parameter used by given {@link BiFunction}
+     * @param t2
+     *    Second input parameter used by given {@link BiFunction}
+     * @param function
+     *    {@link BiFunction} used to get the value to store in the returned {@link Success}
+     *
+     * @return {@link Success} if invoking the {@link BiFunction} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
+     */
+    public static <T1, T2, R> Try<R> of(final T1 t1,
+                                        final T2 t2,
+                                        final BiFunction<T1, T2, R> function) {
+        try {
+            return success(
+                    function.apply(t1, t2)
+            );
+        } catch (Throwable t) {
+            return failure(t);
+        }
+    }
+
+
+    /**
+     * Creates a {@link Success} invoking the provided {@link TriFunction} with given input parameters.
+     *
+     * @param t1
+     *    First input parameter used by given {@link TriFunction}
+     * @param t2
+     *    Second input parameter used by given {@link TriFunction}
+     * @param t3
+     *    Third input parameter used by given {@link TriFunction}
+     * @param function
+     *    {@link TriFunction} used to get the value to store in the returned {@link Success}
+     *
+     * @return {@link Success} if invoking the {@link TriFunction} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
+     */
+    public static <T1, T2, T3, R> Try<R> of(final T1 t1,
+                                            final T2 t2,
+                                            final T3 t3,
+                                            final TriFunction<T1, T2, T3, R> function) {
+        try {
+            return success(
+                    function.apply(t1, t2, t3)
+            );
+        } catch (Throwable t) {
+            return failure(t);
+        }
+    }
+
+
+    /**
+     * Creates a {@link Success} invoking the provided {@link QuadFunction} with given input parameters.
+     *
+     * @param t1
+     *    First input parameter used by given {@link QuadFunction}
+     * @param t2
+     *    Second input parameter used by given {@link QuadFunction}
+     * @param t3
+     *    Third input parameter used by given {@link QuadFunction}
+     * @param t4
+     *    Fourth input parameter used by given {@link QuadFunction}
+     * @param function
+     *    {@link QuadFunction} used to get the value to store in the returned {@link Success}
+     *
+     * @return {@link Success} if invoking the {@link QuadFunction} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
+     */
+    public static <T1, T2, T3, T4, R> Try<R> of(final T1 t1,
+                                                final T2 t2,
+                                                final T3 t3,
+                                                final T4 t4,
+                                                final QuadFunction<T1, T2, T3, T4, R> function) {
+        try {
+            return success(
+                    function.apply(t1, t2, t3, t4)
+            );
+        } catch (Throwable t) {
+            return failure(t);
+        }
+    }
+
+
+    /**
+     * Creates a {@link Success} invoking the provided {@link PentaFunction} with given input parameters.
+     *
+     * @param t1
+     *    First input parameter used by given {@link PentaFunction}
+     * @param t2
+     *    Second input parameter used by given {@link PentaFunction}
+     * @param t3
+     *    Third input parameter used by given {@link PentaFunction}
+     * @param t4
+     *    Fourth input parameter used by given {@link PentaFunction}
+     * @param t5
+     *    Fifth input parameter used by given {@link PentaFunction}
+     * @param function
+     *    {@link PentaFunction} used to get the value to store in the returned {@link Success}
+     *
+     * @return {@link Success} if invoking the {@link PentaFunction} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
+     */
+    public static <T1, T2, T3, T4, T5, R> Try<R> of(final T1 t1,
+                                                    final T2 t2,
+                                                    final T3 t3,
+                                                    final T4 t4,
+                                                    final T5 t5,
+                                                    final PentaFunction<T1, T2, T3, T4, T5, R> function) {
+        try {
+            return success(
+                    function.apply(t1, t2, t3, t4, t5)
+            );
         } catch (Throwable t) {
             return failure(t);
         }
