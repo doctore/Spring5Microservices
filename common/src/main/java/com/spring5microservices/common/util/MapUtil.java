@@ -1001,10 +1001,10 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                       Result:
-     *    [(1, "Hi"), (2, "Hello")]         10
+     *   Parameters:                                 Result:
+     *    [(1, "Hi"), (2, "Hello")]                   10
      *    0
-     *    (k, v) -> k + v.length()
+     *    (prev, k, v) -> prev + k + v.length()
      * </pre>
      *
      * @param sourceMap
