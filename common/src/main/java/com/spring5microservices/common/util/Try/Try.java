@@ -327,7 +327,7 @@ public abstract class Try<T> implements Serializable {
      * <pre>
      * Examples:
      *
-     *   mapperSuccess = (r1, r2) -> r2;
+     *   mapperSuccess = (s1, s2) -> s2;
      *
      *   combineGetFirstFailure(mapperSuccess, () -> Try.success(11), () -> Try.success(7));                                                       // Success(7)
      *   combineGetFirstFailure(mapperSuccess, () -> Try.success(13), () -> Try.failure(new Exception()));                                         // Failure(new Exception())
@@ -344,7 +344,7 @@ public abstract class Try<T> implements Serializable {
      * @throws IllegalArgumentException if {@code mapperSuccess} is {@code null} but {@code suppliers} is not empty.
      */
     @SafeVarargs
-    public static  <T> Try<T> combineGetFirstFailure(final BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
+    public static <T> Try<T> combineGetFirstFailure(final BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
                                                      final Supplier<Try<T>>... suppliers) {
         if (ObjectUtil.isEmpty(suppliers)) {
             return Success.empty();
