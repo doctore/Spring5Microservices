@@ -291,8 +291,8 @@ public abstract class Try<T> implements Serializable {
      *
      * @return {@link Try}
      *
-     * @throws IllegalArgumentException if {@code mapperFailure} or {@code mapperSuccess} is {@code null} and {@code tries}
-     *                                  has elements.
+     * @throws IllegalArgumentException if {@code mapperFailure} or {@code mapperSuccess} is {@code null} but {@code tries}
+     *                                  is not empty
      */
     @SafeVarargs
     public static <T> Try<T> combine(final BiFunction<? super Throwable, ? super Throwable, ? extends Throwable> mapperFailure,
@@ -316,17 +316,22 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     *    Checks the given {@link Supplier} of {@link Try}, returning a {@link Success} instance if no {@link Failure}
-     * {@link Supplier} was given or the first {@link Failure} one.
+     * Merges the given {@code tries} in a one result that will be:
+     * <p>
+     *   1. {@link Success} instance if all given {@code tries} are {@link Success} ones or such parameters is {@code null}
+     *      or empty. Using provided {@link BiFunction} {@code mapperSuccess} to get the final value added into the
+     *      returned {@link Success}.
+     * <p>
+     *   2. {@link Failure} instance with the first {@link Failure} found in the given {@code tries}.
      *
      * <pre>
      * Examples:
      *
-     *   mapperRight = (r1, r2) -> r2;
+     *   mapperSuccess = (r1, r2) -> r2;
      *
-     *   combineGetFirstFailure(mapperSuccess, Try.success(11), Try.success(7));                                                 // Success(7)
-     *   combineGetFirstFailure(mapperSuccess, Try.success(13), Try.failure(new Exception()));                                   // Failure(new Exception())
-     *   combineGetFirstFailure(mapperSuccess, Try.success(10), Try.failure(new Exception()), Try.failure(new IOException()));   // Failure(new IOException())
+     *   combineGetFirstFailure(mapperSuccess, () -> Try.success(11), () -> Try.success(7));                                                       // Success(7)
+     *   combineGetFirstFailure(mapperSuccess, () -> Try.success(13), () -> Try.failure(new Exception()));                                         // Failure(new Exception())
+     *   combineGetFirstFailure(mapperSuccess, () -> Try.success(10), () -> Try.failure(new Exception()), () -> Try.failure(new IOException()));   // Failure(new Exception())
      * </pre>
      *
      * @param mapperSuccess
@@ -336,7 +341,7 @@ public abstract class Try<T> implements Serializable {
      *
      * @return {@link Try}
      *
-     * @throws IllegalArgumentException if {@code mapperSuccess} is {@code null} and {@code suppliers} has elements.
+     * @throws IllegalArgumentException if {@code mapperSuccess} is {@code null} but {@code suppliers} is not empty.
      */
     @SafeVarargs
     public static  <T> Try<T> combineGetFirstFailure(final BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
@@ -349,7 +354,7 @@ public abstract class Try<T> implements Serializable {
         for (int i = 1; i < suppliers.length; i++) {
             result = result.ap(
                     suppliers[i].get(),
-                    (l1, l2) -> l1,
+                    (f1, f2) -> f1,
                     mapperSuccess
             );
             if (!result.isSuccess()) {
@@ -403,7 +408,7 @@ public abstract class Try<T> implements Serializable {
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Try} if this is a {@link Success}.
      * Otherwise, does nothing if this is a {@link Failure}.
      * <p>
-     * If given {@code mapper} invocation returns an {@link Exception} is thrown then returned {@link Try} will {@link Failure}.
+     * If given {@code mapper} invocation returns an {@link Exception}, then returned {@link Try} will {@link Failure}.
      *
      * @param mapper
      *    The mapping function to apply to a value of a {@link Success} instance.
@@ -416,9 +421,8 @@ public abstract class Try<T> implements Serializable {
         if (isSuccess()) {
             Assert.notNull(mapper, "mapper must be not null");
             return mapTry(mapper);
-        } else {
-            return failure(getException());
         }
+        return failure(getException());
     }
 
 
@@ -426,7 +430,7 @@ public abstract class Try<T> implements Serializable {
      *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Try} if this is a {@link Failure}.
      * Otherwise, does nothing if this is a {@link Success}.
      * <p>
-     * If given {@code mapper} invocation returns an {@link Exception} is thrown then returned {@link Try} will {@link Failure}.
+     * If given {@code mapper} invocation returns an {@link Exception}, then returned {@link Try} will {@link Failure}.
      *
      * @param mapper
      *    The mapping function to apply to a value of a {@link Failure} instance.
@@ -439,9 +443,8 @@ public abstract class Try<T> implements Serializable {
         if (!isSuccess()) {
             Assert.notNull(mapper, "mapper must be not null");
             return mapFailureTry(mapper);
-        } else {
-            return success(get());
         }
+        return success(get());
     }
 
 

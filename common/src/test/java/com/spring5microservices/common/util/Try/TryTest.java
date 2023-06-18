@@ -323,7 +323,7 @@ public class TryTest {
     }
 
 
-    static Stream<Arguments> combineGetFirstLeftTestCases() {
+    static Stream<Arguments> combineGetFirstFailureTestCases() {
         Try<Long> success1 = Try.success(10L);
         Try<Long> success2 = Try.success(20L);
         Try<Long> failure1 = Try.failure(new IndexOutOfBoundsException("Index out of bound error"));
@@ -354,20 +354,21 @@ public class TryTest {
                 Arguments.of( sumAll,                             supFailure1,   supFailure2,   null,          null,                             failure1 ),
                 Arguments.of( sumAll,                             supFailure1,   supSuccess1,   supSuccess2,   null,                             failure1 ),
                 Arguments.of( sumAll,                             supSuccess1,   supSuccess2,   supFailure1,   null,                             failure1 ),
+                Arguments.of( sumAll,                             supSuccess1,   supFailure1,   supFailure2,   null,                             failure1 ),
                 Arguments.of( functionSuccessThrowsAnException,   supSuccess1,   supSuccess2,   supFailure1,   null,                             expectedFromMapperSuccessThrowsAnException )
         ); //@formatter:on
     }
 
 
     @ParameterizedTest
-    @MethodSource("combineGetFirstLeftTestCases")
-    @DisplayName("combineGetFirstLeft: test cases")
-    public <T> void combineGetFirstLeft_testCases(BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
-                                                  Supplier<Try<T>> supplier1,
-                                                  Supplier<Try<T>> supplier2,
-                                                  Supplier<Try<T>> supplier3,
-                                                  Class<? extends Exception> expectedException,
-                                                  Try<T> expectedResult) {
+    @MethodSource("combineGetFirstFailureTestCases")
+    @DisplayName("combineGetFirstFailure: test cases")
+    public <T> void combineGetFirstFailure_testCases(BiFunction<? super T, ? super T, ? extends T> mapperSuccess,
+                                                     Supplier<Try<T>> supplier1,
+                                                     Supplier<Try<T>> supplier2,
+                                                     Supplier<Try<T>> supplier3,
+                                                     Class<? extends Exception> expectedException,
+                                                     Try<T> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> Try.combineGetFirstFailure(mapperSuccess, supplier1));
         } else {
