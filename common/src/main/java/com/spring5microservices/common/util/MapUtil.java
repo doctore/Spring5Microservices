@@ -51,7 +51,7 @@ public class MapUtil {
      *   Parameters:                                                      Result:
      *    [(1, "AGTF"), (3, "CD")]                                         [(2, "4"), (4, "2")]
      *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.toString())
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.toString())
      * </pre>
      *
      * @param sourceMap
@@ -88,7 +88,7 @@ public class MapUtil {
      *   Parameters:                                                      Result:
      *    [(1, "AGTF"), (3, "CD")]                                         [(2, "4"), (4, "2")]
      *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.toString())
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.toString())
      *    HashMap::new
      * </pre>
      *
@@ -140,11 +140,11 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:               Result:
-     *    [("A", 1), ("B", 2)]      [("A", 2), ("B", 4)]
+     *   Parameters:                                              Result:
+     *    [("A", 1), ("B", 2)]                                     [("A", 2), ("B", 4)]
      *    (k, v) -> v % 2 == 1
-     *    (k, v) -> v + 1
-     *    (k, v) -> v * 2
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v + 1)
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      * </pre>
      *
      * @param sourceMap
@@ -182,11 +182,11 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:               Result:
-     *    [("A", 1), ("B", 2)]      [("A", 2), ("B", 4)]
+     *   Parameters:                                              Result:
+     *    [("A", 1), ("B", 2)]                                     [("A", 2), ("B", 4)]
      *    (k, v) -> v % 2 == 1
-     *    (k, v) -> v + 1
-     *    (k, v) -> v * 2
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v + 1)
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      *    HashMap::new
      * </pre>
      *
@@ -241,8 +241,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                      Result:
-     *    [("A", 1), ("B", 2)]                              [("A", 2), ("B", 4)]
+     *   Parameters:                                                                                  Result:
+     *    [("A", 1), ("B", 2)]                                                                         [("A", 2), ("B", 4)]
      *    new PartialFunction<>() {
      *
      *      public Map.Entry<String, Integer> apply(final Map.Entry<String, Integer> entry) {
@@ -261,7 +261,7 @@ public class MapUtil {
      *               1 == entry.getValue() % 2;
      *      }
      *    }
-     *    (k, v) -> v * 2
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      * </pre>
      *
      * @param sourceMap
@@ -269,7 +269,7 @@ public class MapUtil {
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      * @param orElseMapper
-     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
+     *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@link PartialFunction#isDefinedAt(Object)}
      *
      * @return {@link Map}
      *
@@ -295,8 +295,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                      Result:
-     *    [("A", 1), ("B", 2)]                              [("A", 2), ("B", 4)]
+     *   Parameters:                                                                                  Result:
+     *    [("A", 1), ("B", 2)]                                                                         [("A", 2), ("B", 4)]
      *    new PartialFunction<>() {
      *
      *      public Map.Entry<String, Integer> apply(final Map.Entry<String, Integer> entry) {
@@ -315,7 +315,7 @@ public class MapUtil {
      *               1 == entry.getValue() % 2;
      *      }
      *    }
-     *    (k, v) -> v * 2
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      *    HashMap::new
      * </pre>
      *
@@ -380,7 +380,7 @@ public class MapUtil {
      *   Parameters:                                                     Result:
      *    [(1, "Hi"), (2, "Hello")]                                       [(3, 4)]
      *    (k, v) -> k % 2 == 0
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.length())
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.length())
      * </pre>
      *
      * @param sourceMap
@@ -418,7 +418,7 @@ public class MapUtil {
      *   Parameters:                                                     Result:
      *    [(1, "Hi"), (2, "Hello")]                                       [(3, 4)]
      *    (k, v) -> k % 2 == 0
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k+1, v.length())
+     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.length())
      *    HashMap::new
      * </pre>
      *
@@ -655,8 +655,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                     Result:
-     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Dear"), (5, "World")]
      *    [(2, "Dear"), (5, "World")]
      * </pre>
      *
@@ -682,8 +682,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                     Result:
-     *    HashMap::new                    [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *   Parameters:                      Result:
+     *    HashMap::new                     [(1, "Hi"), (2, "Dear"), (5, "World")]
      *    [(1, "Hi"), (2, "Hello")]
      *    [(2, "Dear"), (5, "World")]
      * </pre>
@@ -713,8 +713,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                     Result:
-     *    HashMap::new                    [(1, "Hi"), (2, "Hello"), (5, "World")]
+     *   Parameters:                      Result:
+     *    HashMap::new                     [(1, "Hi"), (2, "Hello"), (5, "World")]
      *    (oldV, newV) -> oldV
      *    [(1, "Hi"), (2, "Hello")]
      *    [(2, "Dear"), (5, "World")]
@@ -766,8 +766,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      1
+     *   Parameters:                     Result:
+     *    [(1, "Hi"), (2, "Hello")]       1
      *    (k, v) -> k % 2 == 0
      * </pre>
      *
@@ -806,8 +806,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
+     *   Parameters:                     Result:
+     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      * </pre>
      *
@@ -835,8 +835,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
+     *   Parameters:                     Result:
+     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      *    HashMap::new
      * </pre>
@@ -870,8 +870,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      Optional((2, "Hello"))
+     *   Parameters:                     Result:
+     *    [(1, "Hi"), (2, "Hello")]       Optional((2, "Hello"))
      *    (k, v) -> k % 2 == 0
      * </pre>
      *

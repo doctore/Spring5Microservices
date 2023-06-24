@@ -269,7 +269,7 @@ public class CollectionUtil {
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      * @param orElseMapper
-     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
+     *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@link PartialFunction#isDefinedAt(Object)}
      *
      * @return {@link List}
      *
