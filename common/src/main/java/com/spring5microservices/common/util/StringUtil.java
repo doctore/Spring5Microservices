@@ -307,7 +307,7 @@ public class StringUtil {
             return new ArrayList<>();
         }
         if (1 > size ||
-                size > sourceString.length()) {
+                size >= sourceString.length()) {
             return asList(sourceString);
         }
         List<String> parts = new ArrayList<>();

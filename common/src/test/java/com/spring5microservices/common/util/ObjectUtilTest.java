@@ -7,17 +7,44 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.PizzaEnum.CARBONARA;
 import static com.spring5microservices.common.PizzaEnum.MARGUERITA;
+import static com.spring5microservices.common.util.ObjectUtil.coalesce;
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.ObjectUtil.isEmpty;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ObjectUtilTest {
+
+    static Stream<Arguments> coalesce_TestCases() {
+
+        return Stream.of(
+                //@formatter:off
+                //            valueToVerify1,   valuesToVerify2,   valuesToVerify3,   expectedResult
+                Arguments.of( null,             null,              null,              empty() ),
+                Arguments.of( null,             12,                null,              of(12) ),
+                Arguments.of( null,             11,                12,                of(11) ),
+                Arguments.of( 10,               11,                12,                of(10) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("coalesce_TestCases")
+    @DisplayName("coalesce: test cases")
+    public <T> void coalesce_testCases(T valueToVerify1,
+                                       T valueToVerify2,
+                                       T valueToVerify3,
+                                       Optional<T> expectedResult) {
+        assertEquals(expectedResult, coalesce(valueToVerify1, valueToVerify2, valueToVerify3));
+    }
+
 
     static Stream<Arguments> isEmpty_ArrayAsParameterTestCases() {
         Object[] emptyArray = {};

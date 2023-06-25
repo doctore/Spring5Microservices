@@ -2,6 +2,9 @@ package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -10,6 +13,32 @@ import static java.util.Optional.ofNullable;
 
 @UtilityClass
 public class ObjectUtil {
+
+    /**
+     * Returns the first not {@code null} value of the provided ones.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:         Result:
+     *    null, 12, 15        Optional(12)
+     * </pre>
+     *
+     * @param valuesToVerify
+     *    Values to check the first not {@code null} one
+     *
+     * @return {@link Optional} containing the first not {@code null} value included in {@code valuesToVerify},
+     *         {@link Optional#empty()} otherwise.
+     */
+    public static <T> Optional<T> coalesce(T ...valuesToVerify) {
+        return ofNullable(valuesToVerify)
+                .flatMap(values ->
+                        Arrays.stream(values)
+                                .filter(Objects::nonNull)
+                                .findFirst()
+                );
+    }
+
 
     /**
      * Determine whether the given {@code sourceArray} is empty: i.e. {@code null} or of zero length.
@@ -50,8 +79,8 @@ public class ObjectUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:             Result:
-     *    "   "                      "other"
+     *   Parameters:                     Result:
+     *    "   "                           "other"
      *    s -> s.trim().size() > 0
      *    "other"
      * </pre>
