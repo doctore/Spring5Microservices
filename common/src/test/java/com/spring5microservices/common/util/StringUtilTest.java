@@ -436,26 +436,28 @@ public class StringUtilTest {
     static Stream<Arguments> splitMultilevelAllParametersTestCases() {
         String s1 = "ABC,DEF";
         String s2 = "1,2.3,6,7.8.9";
-        String s3 = "1,1.3,6,7.8.9,7.2";
+        String s3 = "1,13&%7,8,22&3";
 
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
 
         List<String> commaSeparator = List.of(",");
         List<String> dotSeparator = List.of(".");
-        List<String> allSeparators = List.of(commaSeparator.get(0), dotSeparator.get(0));
+        List<String> ampersandPercentageSeparator = List.of("&%");
+        List<String> commaAndDotSeparators = List.of(commaSeparator.get(0), dotSeparator.get(0));
+        List<String> commaAndAmpersandPercentageSeparators = List.of(commaSeparator.get(0), ampersandPercentageSeparator.get(0));
 
         List<String> expectedResultWithCommaSeparator = List.of("ABC", "DEF");
-        List<String> expectedResultWithAllSeparators = List.of("1", "2", "3", "6", "7", "8", "9");
-        Set<String> expectedResultAllSeparatorsAndSetSupplier = Set.of("1", "3", "6", "7", "8", "9", "2");
+        List<String> expectedResultWithCommaAndDotSeparators = List.of("1", "2", "3", "6", "7", "8", "9");
+        Set<String> expectedResultWithCommaAndAmpersandPercentageAndSetSupplier = Set.of("1", "13", "7", "8", "22&3");
         return Stream.of(
                 //@formatter:off
-                //            source,   collectionFactory,   separators,       expectedResult
-                Arguments.of( null,     null,                null,             List.of() ),
-                Arguments.of( null,     null,                allSeparators,    List.of() ),
-                Arguments.of( s1,       null,                null,             List.of(s1) ),
-                Arguments.of( s1,       null,                commaSeparator,   expectedResultWithCommaSeparator ),
-                Arguments.of( s2,       null,                allSeparators,    expectedResultWithAllSeparators ),
-                Arguments.of( s3,       setSupplier,         allSeparators,    expectedResultAllSeparatorsAndSetSupplier )
+                //            source,   collectionFactory,   separators,                              expectedResult
+                Arguments.of( null,     null,                null,                                    List.of() ),
+                Arguments.of( null,     null,                commaAndDotSeparators,                   List.of() ),
+                Arguments.of( s1,       null,                null,                                    List.of(s1) ),
+                Arguments.of( s1,       null,                commaSeparator,                          expectedResultWithCommaSeparator ),
+                Arguments.of( s2,       null,                commaAndDotSeparators,                   expectedResultWithCommaAndDotSeparators ),
+                Arguments.of( s3,       setSupplier,         commaAndAmpersandPercentageSeparators,   expectedResultWithCommaAndAmpersandPercentageAndSetSupplier )
         ); //@formatter:on
     }
 
