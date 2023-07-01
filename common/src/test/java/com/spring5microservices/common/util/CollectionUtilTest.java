@@ -1469,7 +1469,7 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> groupMapNoCollectionFactoryTestCases() {
+    static Stream<Arguments> groupMapWithFunctionsTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Function<Integer, Integer> mod3 = i -> i % 3;
         Function<Integer, Integer> square = i -> i * i;
@@ -1485,6 +1485,7 @@ public class CollectionUtilTest {
                 Arguments.of( List.of(),          null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         mod3,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,               square,        IllegalArgumentException.class,   null ),
                 Arguments.of( null,               mod3,               square,        null,                             Map.of() ),
                 Arguments.of( List.of(),          mod3,               square,        null,                             Map.of() ),
                 Arguments.of( ints,               mod3,               square,        null,                             usingMod3AsDiscriminatorKey )
@@ -1492,13 +1493,13 @@ public class CollectionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("groupMapNoCollectionFactoryTestCases")
-    @DisplayName("groupMap: without collection factory test cases")
-    public <T, K, V> void groupMapNoCollectionFactory_testCases(Collection<? extends T> sourceCollection,
-                                                                Function<? super T, ? extends K> discriminatorKey,
-                                                                Function<? super T, ? extends V> valueMapper,
-                                                                Class<? extends Exception> expectedException,
-                                                                Map<K, List<V>> expectedResult) {
+    @MethodSource("groupMapWithFunctionsTestCases")
+    @DisplayName("groupMap: with discriminatorKey and valueMapper test cases")
+    public <T, K, V> void groupMapWithFunctions_testCases(Collection<? extends T> sourceCollection,
+                                                          Function<? super T, ? extends K> discriminatorKey,
+                                                          Function<? super T, ? extends V> valueMapper,
+                                                          Class<? extends Exception> expectedException,
+                                                          Map<K, List<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey, valueMapper));
         } else {
@@ -1507,33 +1508,102 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> groupMapAllParametersTestCases() {
-        List<String> strings = List.of("AA", "BFF", "5TR", "H", "B");
+    static Stream<Arguments> groupMapWithPredicateAndFunctionsTestCases() {
+        List<String> strings = List.of("AA", "BFF", "5TR", "H", "B", "TYSSGT");
+        Predicate<String> sSmallerThan5 = s -> 5 > s.length();
         Function<String, Integer> sLength = String::length;
         Function<String, String> sVersion2 = s -> s + "2";
-        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
 
-        Map<Integer, List<String>> resultWithDefaultCollectionFactory = new HashMap<>() {{
+        Map<Integer, List<String>> resultNoFilter = new HashMap<>() {{
+            put(1, List.of("H2", "B2"));
+            put(2, List.of("AA2"));
+            put(3, List.of("BFF2", "5TR2"));
+            put(6, List.of("TYSSGT2"));
+        }};
+        Map<Integer, List<String>> resultFilter = new HashMap<>() {{
             put(1, List.of("H2", "B2"));
             put(2, List.of("AA2"));
             put(3, List.of("BFF2", "5TR2"));
         }};
-        Map<Integer, Set<String>> resultWithSetCollectionFactory = new HashMap<>() {{
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   discriminatorKey,   valueMapper,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,              null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,              null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     sLength,            null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     null,               sVersion2,     IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              sLength,            sVersion2,     null,                             Map.of() ),
+                Arguments.of( null,               sSmallerThan5,     sLength,            sVersion2,     null,                             Map.of() ),
+                Arguments.of( strings,            null,              sLength,            sVersion2,     null,                             resultNoFilter ),
+                Arguments.of( strings,            sSmallerThan5,     sLength,            sVersion2,     null,                             resultFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithPredicateAndFunctionsTestCases")
+    @DisplayName("groupMap: with filterPredicate, discriminatorKey and valueMapper test cases")
+    public <T, K, V> void groupMapWithPredicateAndFunctions_testCases(Collection<? extends T> sourceCollection,
+                                                                      Predicate<? super T> filterPredicate,
+                                                                      Function<? super T, ? extends K> discriminatorKey,
+                                                                      Function<? super T, ? extends V> valueMapper,
+                                                                      Class<? extends Exception> expectedException,
+                                                                      Map<K, Collection<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceCollection, filterPredicate, discriminatorKey, valueMapper));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceCollection, filterPredicate, discriminatorKey, valueMapper));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapAllParametersTestCases() {
+        List<String> strings = List.of("AA", "BFF", "5TR", "H", "B", "TYSSGT");
+        Predicate<String> sSmallerThan5 = s -> 5 > s.length();
+        Function<String, Integer> sLength = String::length;
+        Function<String, String> sVersion2 = s -> s + "2";
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Map<Integer, List<String>> resultNoFilterWithDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of("H2", "B2"));
+            put(2, List.of("AA2"));
+            put(3, List.of("BFF2", "5TR2"));
+            put(6, List.of("TYSSGT2"));
+        }};
+        Map<Integer, List<String>> resultFilterWithDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of("H2", "B2"));
+            put(2, List.of("AA2"));
+            put(3, List.of("BFF2", "5TR2"));
+        }};
+        Map<Integer, Set<String>> resultNoFilterWithSetCollectionFactory = new HashMap<>() {{
+            put(1, new LinkedHashSet<>(List.of("H2", "B2")));
+            put(2, new LinkedHashSet<>(List.of("AA2")));
+            put(3, new LinkedHashSet<>(List.of("BFF2", "5TR2")));
+            put(6, new LinkedHashSet<>(List.of("TYSSGT2")));
+        }};
+        Map<Integer, Set<String>> resultFilterWithSetCollectionFactory = new HashMap<>() {{
             put(1, new LinkedHashSet<>(List.of("H2", "B2")));
             put(2, new LinkedHashSet<>(List.of("AA2")));
             put(3, new LinkedHashSet<>(List.of("BFF2", "5TR2")));
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,               null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(1),         null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(1),         sLength,            null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,               sLength,            sVersion2,     null,                null,                             Map.of() ),
-                Arguments.of( List.of(),          sLength,            sVersion2,     null,                null,                             Map.of() ),
-                Arguments.of( strings,            sLength,            sVersion2,     null,                null,                             resultWithDefaultCollectionFactory ),
-                Arguments.of( strings,            sLength,            sVersion2,     setSupplier,         null,                             resultWithSetCollectionFactory )
+                //            sourceCollection,   filterPredicate,   discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,              null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,              null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     sLength,            null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     null,               sVersion2,     null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              sLength,            sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( null,               sSmallerThan5,     sLength,            sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              sLength,            sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          sSmallerThan5,     sLength,            sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( strings,            null,              sLength,            sVersion2,     null,                null,                             resultNoFilterWithDefaultCollectionFactory ),
+                Arguments.of( strings,            sSmallerThan5,     sLength,            sVersion2,     null,                null,                             resultFilterWithDefaultCollectionFactory ),
+                Arguments.of( strings,            null,              sLength,            sVersion2,     setSupplier,         null,                             resultNoFilterWithSetCollectionFactory ),
+                Arguments.of( strings,            sSmallerThan5,     sLength,            sVersion2,     setSupplier,         null,                             resultFilterWithSetCollectionFactory )
         ); //@formatter:on
     }
 
@@ -1541,15 +1611,16 @@ public class CollectionUtilTest {
     @MethodSource("groupMapAllParametersTestCases")
     @DisplayName("groupMap: with all parameters test cases")
     public <T, K, V> void groupMapAllParameters_testCases(Collection<? extends T> sourceCollection,
+                                                          Predicate<? super T> filterPredicate,
                                                           Function<? super T, ? extends K> discriminatorKey,
                                                           Function<? super T, ? extends V> valueMapper,
                                                           Supplier<Collection<V>> collectionFactory,
                                                           Class<? extends Exception> expectedException,
                                                           Map<K, Collection<V>> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey, valueMapper, collectionFactory));
+            assertThrows(expectedException, () -> groupMap(sourceCollection, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
         } else {
-            assertEquals(expectedResult, groupMap(sourceCollection, discriminatorKey, valueMapper, collectionFactory));
+            assertEquals(expectedResult, groupMap(sourceCollection, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
         }
     }
 

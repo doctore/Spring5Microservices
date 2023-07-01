@@ -1634,7 +1634,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> groupMapNoCollectionFactoryTestCases() {
+    static Stream<Arguments> groupMapWithFunctionsTestCases() {
         Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
             put(1, "Hi");
             put(2, "Hello");
@@ -1655,6 +1655,7 @@ public class MapUtilTest {
                 Arguments.of( Map.of(),         null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   keyMod3,            null,          IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,               valueLength,   IllegalArgumentException.class,   null ),
                 Arguments.of( null,             keyMod3,            valueLength,   null,                             Map.of() ),
                 Arguments.of( Map.of(),         keyMod3,            valueLength,   null,                             Map.of() ),
                 Arguments.of( intsAndStrings,   keyMod3,            valueLength,   null,                             usingKeyMod3AsDiscriminatorKey )
@@ -1662,17 +1663,73 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("groupMapNoCollectionFactoryTestCases")
-    @DisplayName("groupMap: without collection factory test cases")
-    public <T, E, R, V> void groupMapNoCollectionFactory_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                                   BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
-                                                                   BiFunction<? super T, ? super E, ? extends V> valueMapper,
-                                                                   Class<? extends Exception> expectedException,
-                                                                   Map<R, List<V>> expectedResult) {
+    @MethodSource("groupMapWithFunctionsTestCases")
+    @DisplayName("groupMap: with discriminatorKey and valueMapper test cases")
+    public <T, E, R, V> void groupMapWithFunctions_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                             BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                             BiFunction<? super T, ? super E, ? extends V> valueMapper,
+                                                             Class<? extends Exception> expectedException,
+                                                             Map<R, List<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceMap, discriminatorKey, valueMapper));
         } else {
             assertEquals(expectedResult, groupMap(sourceMap, discriminatorKey, valueMapper));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapWithPredicateAndFunctionsTestCases() {
+        Map<String, Integer> stringsAndIntegers = new LinkedHashMap<>() {{
+            put("A", 10);
+            put("BY", 20);
+            put("C", 30);
+            put("DH", 40);
+            put("GHT", 55);
+        }};
+        BiPredicate<String, Integer> keySmallerThan3AndValueLowerThan50 = (k, v) -> 3 > k.length() && 50 > v;
+        BiFunction<String, Integer, Integer> keyLength = (k, v) -> k.length();
+        BiFunction<String, Integer, Integer> valuePlus5 = (k, v) -> v + 5;
+
+        Map<Integer, List<Integer>> resultNoFilter = new HashMap<>() {{
+            put(1, List.of(15, 35));
+            put(2, List.of(25, 45));
+            put(3, List.of(60));
+        }};
+        Map<Integer, List<Integer>> resultFilter = new HashMap<>() {{
+            put(1, List.of(15, 35));
+            put(2, List.of(25, 45));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,            filterPredicate,                      discriminatorKey,   valueMapper,   expectedException,                expectedResult
+                Arguments.of( null,                 null,                                 null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),             null,                                 null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   null,                                 null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   keyLength,          null,          IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   null,               valuePlus5,    IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,                                 keyLength,          valuePlus5,    null,                             Map.of() ),
+                Arguments.of( null,                 keySmallerThan3AndValueLowerThan50,   keyLength,          valuePlus5,    null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,                                 keyLength,          valuePlus5,    null,                             Map.of() ),
+                Arguments.of( Map.of(),             keySmallerThan3AndValueLowerThan50,   keyLength,          valuePlus5,    null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   null,                                 keyLength,          valuePlus5,    null,                             resultNoFilter ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   keyLength,          valuePlus5,    null,                             resultFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithPredicateAndFunctionsTestCases")
+    @DisplayName("groupMap: with filterPredicate, discriminatorKey and valueMapper test cases")
+    public <T, E, R, V> void groupMapWithPredicateAndFunctions_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                         BiPredicate<? super T, ? super E> filterPredicate,
+                                                                         BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                                         BiFunction<? super T, ? super E, ? extends V> valueMapper,
+                                                                         Class<? extends Exception> expectedException,
+                                                                         Map<R, Collection<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceMap, filterPredicate, discriminatorKey, valueMapper));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceMap, filterPredicate, discriminatorKey, valueMapper));
         }
     }
 
@@ -1683,30 +1740,48 @@ public class MapUtilTest {
             put("BY", 20);
             put("C", 30);
             put("DH", 40);
+            put("GHT", 55);
         }};
+        BiPredicate<String, Integer> keySmallerThan3AndValueLowerThan50 = (k, v) -> 3 > k.length() && 50 > v;
         BiFunction<String, Integer, Integer> keyLength = (k, v) -> k.length();
         BiFunction<String, Integer, Integer> valuePlus5 = (k, v) -> v + 5;
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
 
-        Map<Integer, List<Integer>> resultWithDefaultCollectionFactory = new HashMap<>() {{
+        Map<Integer, List<Integer>> resultNoFilterWithDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of(15, 35));
+            put(2, List.of(25, 45));
+            put(3, List.of(60));
+        }};
+        Map<Integer, List<Integer>> resultFilterWithDefaultCollectionFactory = new HashMap<>() {{
             put(1, List.of(15, 35));
             put(2, List.of(25, 45));
         }};
-        Map<Integer, Set<Integer>> resultWithSetCollectionFactory = new HashMap<>() {{
+        Map<Integer, Set<Integer>> resultNoFilterWithSetCollectionFactory = new HashMap<>() {{
+            put(1, new LinkedHashSet<>(List.of(15, 35)));
+            put(2, new LinkedHashSet<>(List.of(25, 45)));
+            put(3, new LinkedHashSet<>(List.of(60)));
+        }};
+        Map<Integer, Set<Integer>> resultFilterWithSetCollectionFactory = new HashMap<>() {{
             put(1, new LinkedHashSet<>(List.of(15, 35)));
             put(2, new LinkedHashSet<>(List.of(25, 45)));
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,            discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,                 null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),             null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( stringsAndIntegers,   null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( stringsAndIntegers,   keyLength,          null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,                 keyLength,          valuePlus5,    null,                null,                             Map.of() ),
-                Arguments.of( Map.of(),             keyLength,          valuePlus5,    null,                null,                             Map.of() ),
-                Arguments.of( stringsAndIntegers,   keyLength,          valuePlus5,    null,                null,                             resultWithDefaultCollectionFactory ),
-                Arguments.of( stringsAndIntegers,   keyLength,          valuePlus5,    setSupplier,         null,                             resultWithSetCollectionFactory )
+                //            sourceMap,            filterPredicate,                      discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,                 null,                                 null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),             null,                                 null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   null,                                 null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   keyLength,          null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   null,               valuePlus5,    null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,                                 keyLength,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( null,                 keySmallerThan3AndValueLowerThan50,   keyLength,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,                                 keyLength,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             keySmallerThan3AndValueLowerThan50,   keyLength,          valuePlus5,    null,                null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   null,                                 keyLength,          valuePlus5,    null,                null,                             resultNoFilterWithDefaultCollectionFactory ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   keyLength,          valuePlus5,    null,                null,                             resultFilterWithDefaultCollectionFactory ),
+                Arguments.of( stringsAndIntegers,   null,                                 keyLength,          valuePlus5,    setSupplier,         null,                             resultNoFilterWithSetCollectionFactory ),
+                Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   keyLength,          valuePlus5,    setSupplier,         null,                             resultFilterWithSetCollectionFactory )
         ); //@formatter:on
     }
 
@@ -1714,15 +1789,16 @@ public class MapUtilTest {
     @MethodSource("groupMapAllParametersTestCases")
     @DisplayName("groupMap: with all parameters test cases")
     public <T, E, R, V> void groupMapAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                             BiPredicate<? super T, ? super E> filterPredicate,
                                                              BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
                                                              BiFunction<? super T, ? super E, ? extends V> valueMapper,
                                                              Supplier<Collection<V>> collectionFactory,
                                                              Class<? extends Exception> expectedException,
                                                              Map<R, Collection<V>> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> groupMap(sourceMap, discriminatorKey, valueMapper, collectionFactory));
+            assertThrows(expectedException, () -> groupMap(sourceMap, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
         } else {
-            assertEquals(expectedResult, groupMap(sourceMap, discriminatorKey, valueMapper, collectionFactory));
+            assertEquals(expectedResult, groupMap(sourceMap, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
         }
     }
 

@@ -31,6 +31,7 @@ import static com.spring5microservices.common.util.FunctionUtil.fromBiFunctionTo
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.fromBiPredicateToMapEntryPredicate;
+import static com.spring5microservices.common.util.PredicateUtil.getOrAlwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
@@ -218,10 +219,8 @@ public class MapUtil {
         }
         Assert.notNull(defaultMapper, "defaultMapper must be not null");
         Assert.notNull(orElseMapper, "orElseMapper must be not null");
-        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = ObjectUtil.getOrElse(
-                filterPredicate,
-                biAlwaysTrue()
-        );
+
+        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return applyOrElse(
                 sourceMap,
                 PartialFunction.of(
@@ -445,10 +444,8 @@ public class MapUtil {
             return finalMapFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = ObjectUtil.getOrElse(
-                filterPredicate,
-                biAlwaysTrue()
-        );
+
+        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return collect(
                 sourceMap,
                 PartialFunction.of(
@@ -1214,13 +1211,6 @@ public class MapUtil {
     /**
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
-     * <p>
-     * It is equivalent to:
-     *
-     * <pre>
-     *    Map<R, Map<T, E>> groupedMap = groupBy(sourceMap, discriminatorKey)
-     *    Map<R, List<V>> finalMap = mapValues(groupedMap, valueMapper)
-     * </pre>
      *
      * <pre>
      * Example:
@@ -1248,6 +1238,7 @@ public class MapUtil {
                                                         final BiFunction<? super T, ? super E, ? extends V> valueMapper) {
         return (Map) groupMap(
                 sourceMap,
+                biAlwaysTrue(),
                 discriminatorKey,
                 valueMapper,
                 ArrayList::new
@@ -1256,28 +1247,68 @@ public class MapUtil {
 
 
     /**
-     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
-     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey},
+     * only if the current element matches {@code filterPredicate}.
      * <p>
-     * It is equivalent to:
-     *
-     * <pre>
-     *    Map<R, Map<T, E>> groupedMap = groupBy(sourceMap, discriminatorKey)
-     *    Map<R, List<V>> finalMap = mapValues(groupedMap, valueMapper)
-     * </pre>
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
      *
      * <pre>
      * Example:
      *
-     *   Parameters:                                             Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]       [(0,  [1])
-     *    (k, v) -> k % 3                                          (1,  [2])
-     *    (k, v) -> v.length()                                     (2,  [5, 5])]
-     *    ArrayList::new
+     *   Parameters:                                                           Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!"), (11, "Not")]        [(0,  [1])
+     *    (k, v) -> 10 > k                                                       (1,  [2])
+     *    (k, v) -> k % 3                                                        (2,  [5, 5])]
+     *    (k, v) -> v.length()
      * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to transform.
+     * @param discriminatorKey
+     *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link BiFunction} to transform elements of {@code sourceMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, E, R, V> Map<R, List<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
+                                                        final BiPredicate<? super T, ? super E> filterPredicate,
+                                                        final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
+                                                        final BiFunction<? super T, ? super E, ? extends V> valueMapper) {
+        return (Map) groupMap(
+                sourceMap,
+                filterPredicate,
+                discriminatorKey,
+                valueMapper,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey},
+     * only if the current element matches {@code filterPredicate}.
+     * <p>
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                           Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!"), (11, "Not")]        [(0,  [1])
+     *    (k, v) -> 10 > k                                                       (1,  [2])
+     *    (k, v) -> k % 3                                                        (2,  [5, 5])]
+     *    (k, v) -> v.length()
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform
+     * @param filterPredicate
+     *    {@link BiPredicate} used to filter elements of {@code sourceMap}
      * @param discriminatorKey
      *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1291,6 +1322,7 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
     public static <T, E, R, V> Map<R, Collection<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
+                                                              final BiPredicate<? super T, ? super E> filterPredicate,
                                                               final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
                                                               final BiFunction<? super T, ? super E, ? extends V> valueMapper,
                                                               final Supplier<Collection<V>> collectionFactory) {
@@ -1303,16 +1335,20 @@ public class MapUtil {
                 collectionFactory,
                 ArrayList::new
         );
+        final BiPredicate<? super T, ? super E> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+
         Map<R, Collection<V>> result = new HashMap<>();
         sourceMap.forEach(
                 (k, v) -> {
-                    R discriminatorKeyResult = discriminatorKey.apply(k, v);
-                    result.putIfAbsent(
-                            discriminatorKeyResult,
-                            finalCollectionFactory.get()
-                    );
-                    result.get(discriminatorKeyResult)
-                            .add(valueMapper.apply(k, v));
+                    if (finalFilterPredicate.test(k, v)) {
+                        R discriminatorKeyResult = discriminatorKey.apply(k, v);
+                        result.putIfAbsent(
+                                discriminatorKeyResult,
+                                finalCollectionFactory.get()
+                        );
+                        result.get(discriminatorKeyResult)
+                                .add(valueMapper.apply(k, v));
+                    }
                 }
         );
         return result;
@@ -2195,10 +2231,7 @@ public class MapUtil {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return finalMapFactory.get();
         }
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = ObjectUtil.getOrElse(
-                filterPredicate,
-                biAlwaysTrue()
-        );
+        final BiPredicate<? super T, ? super E> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return sourceMap.entrySet()
                 .stream()
                 .filter(entry ->

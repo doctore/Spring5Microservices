@@ -40,6 +40,7 @@ import static com.spring5microservices.common.util.FunctionUtil.fromFunctionsToM
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
+import static com.spring5microservices.common.util.PredicateUtil.getOrAlwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
@@ -223,10 +224,8 @@ public class CollectionUtil {
         }
         Assert.notNull(defaultMapper, "defaultMapper must be not null");
         Assert.notNull(orElseMapper, "orElseMapper must be not null");
-        final Predicate<? super T> finalFilterPredicate = getOrElse(
-                filterPredicate,
-                alwaysTrue()
-        );
+
+        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return applyOrElse(
                 sourceCollection,
                 PartialFunction.of(
@@ -484,10 +483,8 @@ public class CollectionUtil {
             return finalCollectionFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-        final Predicate<? super T> finalFilterPredicate = getOrElse(
-                filterPredicate,
-                alwaysTrue()
-        );
+
+        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return collect(
                 sourceCollection,
                 PartialFunction.of(
@@ -1317,11 +1314,6 @@ public class CollectionUtil {
     /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
-     * <p>
-     * It is equivalent to:
-     * <p>
-     *    Map<K, List<T>> groupedMap = sourceCollection.stream().collect(groupingBy(discriminatorKey))
-     *    Map<K, List<V>> finalMap = mapValues(groupedMap, valueMapper)
      *
      * <pre>
      * Example:
@@ -1333,7 +1325,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform.
+     *    Source {@link Collection} with the elements to transform
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1349,6 +1341,7 @@ public class CollectionUtil {
                                                      final Function<? super T, ? extends V> valueMapper) {
         return (Map) groupMap(
                 sourceCollection,
+                alwaysTrue(),
                 discriminatorKey,
                 valueMapper,
                 ArrayList::new
@@ -1357,26 +1350,69 @@ public class CollectionUtil {
 
 
     /**
-     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey},
+     * only if the current element matches {@code filterPredicate}.
+     * <p>
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
-     * <p>
-     * It is equivalent to:
-     * <p>
-     *    Map<K, List<T>> groupedMap = sourceCollection.stream().collect(groupingBy(discriminatorKey))
-     *    Map<K, List<V>> finalMap = mapValues(groupedMap, valueMapper)
      *
      * <pre>
      * Example:
      *
      *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [(0,  [4, 7])
-     *    k -> i % 3                (1,  [2])
-     *    i -> i + 1                (2,  [3])]
+     *    [1, 2, 3, 6, 11]          [(0,  [4, 7])
+     *    i -> 10 > i                (1,  [2])
+     *    k -> i % 3                 (2,  [3])]
+     *    i -> i + 1
      *    ArrayList::new
      * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to transform.
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                           final Predicate<? super T> filterPredicate,
+                                                           final Function<? super T, ? extends K> discriminatorKey,
+                                                           final Function<? super T, ? extends V> valueMapper) {
+        return groupMap(
+                sourceCollection,
+                filterPredicate,
+                discriminatorKey,
+                valueMapper,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey},
+     * only if the current element matches {@code filterPredicate}.
+     * <p>
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6, 11]          [(0,  [4, 7])
+     *    i -> 10 > i                (1,  [2])
+     *    k -> i % 3                 (2,  [3])]
+     *    i -> i + 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1390,6 +1426,7 @@ public class CollectionUtil {
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
     public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                           final Predicate<? super T> filterPredicate,
                                                            final Function<? super T, ? extends K> discriminatorKey,
                                                            final Function<? super T, ? extends V> valueMapper,
                                                            final Supplier<Collection<V>> collectionFactory) {
@@ -1399,18 +1436,21 @@ public class CollectionUtil {
             return new HashMap<>();
         }
         final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+
         Map<K, Collection<V>> result = new HashMap<>();
-        sourceCollection.forEach(
-                e -> {
-                    K discriminatorKeyResult = discriminatorKey.apply(e);
-                    result.putIfAbsent(
-                            discriminatorKeyResult,
-                            finalCollectionFactory.get()
-                    );
-                    result.get(discriminatorKeyResult)
-                            .add(valueMapper.apply(e));
-                }
-        );
+        sourceCollection.stream()
+                .filter(finalFilterPredicate)
+                .forEach(
+                        e -> {
+                            K discriminatorKeyResult = discriminatorKey.apply(e);
+                            result.putIfAbsent(
+                                    discriminatorKeyResult,
+                                    finalCollectionFactory.get()
+                            );
+                            result.get(discriminatorKeyResult)
+                                    .add(valueMapper.apply(e));
+                        });
         return result;
     }
 
@@ -2149,10 +2189,7 @@ public class CollectionUtil {
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
-        final Predicate<? super T> finalFilterPredicate = getOrElse(
-                filterPredicate,
-                alwaysTrue()
-        );
+        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return sourceCollection
                 .stream()
                 .filter(finalFilterPredicate)

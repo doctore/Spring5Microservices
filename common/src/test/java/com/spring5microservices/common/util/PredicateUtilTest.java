@@ -26,8 +26,13 @@ import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAnyOf;
 import static com.spring5microservices.common.util.PredicateUtil.distinctByKey;
 import static com.spring5microservices.common.util.PredicateUtil.fromBiPredicateToMapEntryPredicate;
+import static com.spring5microservices.common.util.PredicateUtil.getOrAlwaysFalse;
+import static com.spring5microservices.common.util.PredicateUtil.getOrAlwaysTrue;
 import static java.util.Objects.isNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PredicateUtilTest {
 
@@ -99,44 +104,44 @@ public class PredicateUtilTest {
 
 
     static Stream<Arguments> alwaysFalseTestCases() {
+        Integer nullInt = null;
         PizzaDto carbonara = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
         return Stream.of(
                 //@formatter:off
-                //            sourceInstance,     expectedResult
-                Arguments.of( null,               false ),
-                Arguments.of( "noMatterString",   false ),
-                Arguments.of( 12,                 false ),
-                Arguments.of( carbonara,          false )
+                //            t
+                Arguments.of( nullInt ),
+                Arguments.of( "noMatterString" ),
+                Arguments.of( 12 ),
+                Arguments.of( carbonara )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("alwaysFalseTestCases")
     @DisplayName("alwaysFalse: test cases")
-    public <T> void alwaysFalse_testCases(T sourceInstance,
-                                          boolean expectedResult) {
-        assertEquals(expectedResult, alwaysFalse().test(sourceInstance));
+    public <T> void alwaysFalse_testCases(T t) {
+        assertFalse(alwaysFalse().test(t));
     }
 
 
     static Stream<Arguments> alwaysTrueTestCases() {
+        Integer nullInt = null;
         PizzaDto carbonara = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
         return Stream.of(
                 //@formatter:off
-                //            sourceInstance,     expectedResult
-                Arguments.of( null,               true ),
-                Arguments.of( "noMatterString",   true ),
-                Arguments.of( 12,                 true ),
-                Arguments.of( carbonara,          true )
+                //            t
+                Arguments.of( nullInt ),
+                Arguments.of( "noMatterString" ),
+                Arguments.of( 12 ),
+                Arguments.of( carbonara )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("alwaysTrueTestCases")
     @DisplayName("alwaysTrue: test cases")
-    public <T> void alwaysTrue_testCases(T sourceInstance,
-                                         boolean expectedResult) {
-        assertEquals(expectedResult, alwaysTrue().test(sourceInstance));
+    public <T> void alwaysTrue_testCases(T t) {
+        assertTrue(alwaysTrue().test(t));
     }
 
 
@@ -311,6 +316,118 @@ public class PredicateUtilTest {
                 predicate
         );
         assertEquals(expectedResult, predicateToApply.test((Map.Entry<K, V>) entry));
+    }
+
+
+    static Stream<Arguments> getOrAlwaysFalsePredicateTestCases() {
+        Predicate<Integer> greaterThan10 = i -> 0 < i.compareTo(10);
+        return Stream.of(
+                //@formatter:off
+                //            predicate,       t,      expectedResult
+                Arguments.of( null,            null,   false ),
+                Arguments.of( null,            12,     false ),
+                Arguments.of( greaterThan10,   9,      false ),
+                Arguments.of( greaterThan10,   12,     true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrAlwaysFalsePredicateTestCases")
+    @DisplayName("getOrAlwaysFalse: with Predicate test cases")
+    public <T> void getOrAlwaysFalsePredicate_testCases(Predicate<? super T> predicate,
+                                                        T t,
+                                                        boolean expectedResult) {
+        Predicate<T> predicateToApply = getOrAlwaysFalse(
+                predicate
+        );
+        assertNotNull(predicateToApply);
+        assertEquals(expectedResult, predicateToApply.test(t));
+    }
+
+
+    static Stream<Arguments> getOrAlwaysFalseBiPredicateTestCases() {
+        BiPredicate<Integer, String> isIntegerGreaterThanTenAndStringLongerThan2 = (i, s) -> (10 < i) && (2 < s.length());
+        return Stream.of(
+                //@formatter:off
+                //            predicate,                                     t,      e,       expectedResult
+                Arguments.of( null,                                          null,   null,    false ),
+                Arguments.of( null,                                          11,     null,    false ),
+                Arguments.of( null,                                          null,   "ab",    false ),
+                Arguments.of( null,                                          9,      "ab",    false ),
+                Arguments.of( isIntegerGreaterThanTenAndStringLongerThan2,   9,      "abc",   false ),
+                Arguments.of( isIntegerGreaterThanTenAndStringLongerThan2,   11,     "ab",    false ),
+                Arguments.of( isIntegerGreaterThanTenAndStringLongerThan2,   11,     "abc",   true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrAlwaysFalseBiPredicateTestCases")
+    @DisplayName("getOrAlwaysFalse: with BiPredicate test cases")
+    public <T, E> void getOrAlwaysFalseBiPredicate_testCases(BiPredicate<? super T, ? super E> predicate,
+                                                             T t,
+                                                             E e,
+                                                             boolean expectedResult) {
+        BiPredicate<T, E> predicateToApply = getOrAlwaysFalse(
+                predicate
+        );
+        assertNotNull(predicateToApply);
+        assertEquals(expectedResult, predicateToApply.test(t, e));
+    }
+
+
+    static Stream<Arguments> getOrAlwaysTruePredicateTestCases() {
+        Predicate<Integer> greaterThan10 = i -> 0 < i.compareTo(10);
+        return Stream.of(
+                //@formatter:off
+                //            predicate,       t,      expectedResult
+                Arguments.of( null,            null,   true ),
+                Arguments.of( null,            12,     true ),
+                Arguments.of( greaterThan10,   9,      false ),
+                Arguments.of( greaterThan10,   12,     true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrAlwaysTruePredicateTestCases")
+    @DisplayName("getOrAlwaysTrue: with Predicate test cases")
+    public <T> void getOrAlwaysTruePredicate_testCases(Predicate<? super T> predicate,
+                                                       T t,
+                                                       boolean expectedResult) {
+        Predicate<T> predicateToApply = getOrAlwaysTrue(
+                predicate
+        );
+        assertNotNull(predicateToApply);
+        assertEquals(expectedResult, predicateToApply.test(t));
+    }
+
+
+    static Stream<Arguments> getOrAlwaysTrueBiPredicateTestCases() {
+        BiPredicate<Integer, String> isIntegerGreaterThanTenAndStringLongerThan2 = (i, s) -> (10 < i) && (2 < s.length());
+        return Stream.of(
+                //@formatter:off
+                //            predicate,                                     t,      e,       expectedResult
+                Arguments.of( null,                                          null,   null,    true ),
+                Arguments.of( null,                                          11,     null,    true ),
+                Arguments.of( null,                                          null,   "ab",    true ),
+                Arguments.of( null,                                          9,      "ab",    true ),
+                Arguments.of( isIntegerGreaterThanTenAndStringLongerThan2,   9,      "abc",   false ),
+                Arguments.of( isIntegerGreaterThanTenAndStringLongerThan2,   11,     "ab",    false ),
+                Arguments.of( isIntegerGreaterThanTenAndStringLongerThan2,   11,     "abc",   true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrAlwaysTrueBiPredicateTestCases")
+    @DisplayName("getOrAlwaysTrue: with BiPredicate test cases")
+    public <T, E> void getOrAlwaysTrueBiPredicate_testCases(BiPredicate<? super T, ? super E> predicate,
+                                                            T t,
+                                                            E e,
+                                                            boolean expectedResult) {
+        BiPredicate<T, E> predicateToApply = getOrAlwaysTrue(
+                predicate
+        );
+        assertNotNull(predicateToApply);
+        assertEquals(expectedResult, predicateToApply.test(t, e));
     }
 
 }

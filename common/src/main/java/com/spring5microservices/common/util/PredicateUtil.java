@@ -10,6 +10,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -225,12 +226,79 @@ public class PredicateUtil {
             return alwaysTrue();
         }
         return (entry) ->
-                isNull(entry)
-                        ? true
-                        : predicate.test(
+                isNull(entry) ||
+                        predicate.test(
                                 entry.getKey(),
                                 entry.getValue()
-                          );
+                        );
+    }
+
+
+    /**
+     * Returns the given {@code predicate} if not {@code null}, {@link PredicateUtil#alwaysFalse()} otherwise.
+     *
+     * @param predicate
+     *    {@link Predicate} to return if not {@code null}
+     *
+     * @return {@code predicate} if not {@code null},
+     *         {@link PredicateUtil#alwaysFalse()} otherwise.
+     */
+    public static <T> Predicate<T> getOrAlwaysFalse(final Predicate<? super T> predicate) {
+        return (Predicate<T>) getOrElse(
+                predicate,
+                alwaysFalse()
+        );
+    }
+
+
+    /**
+     * Returns the given {@code predicate} if not {@code null}, {@link PredicateUtil#biAlwaysFalse()}} otherwise.
+     *
+     * @param predicate
+     *    {@link BiPredicate} to return if not {@code null}
+     *
+     * @return {@code predicate} if not {@code null},
+     *         {@link PredicateUtil#biAlwaysFalse()} otherwise.
+     */
+    public static <T, E> BiPredicate<T, E> getOrAlwaysFalse(final BiPredicate<? super T, ? super E> predicate) {
+        return (BiPredicate<T, E>) getOrElse(
+                predicate,
+                biAlwaysFalse()
+        );
+    }
+
+
+    /**
+     * Returns the given {@code predicate} if not {@code null}, {@link PredicateUtil#alwaysTrue()} otherwise.
+     *
+     * @param predicate
+     *    {@link Predicate} to return if not {@code null}
+     *
+     * @return {@code predicate} if not {@code null},
+     *         {@link PredicateUtil#alwaysTrue()} otherwise.
+     */
+    public static <T> Predicate<T> getOrAlwaysTrue(final Predicate<? super T> predicate) {
+        return (Predicate<T>) getOrElse(
+                predicate,
+                alwaysTrue()
+        );
+    }
+
+
+    /**
+     * Returns the given {@code predicate} if not {@code null}, {@link PredicateUtil#biAlwaysTrue()}} otherwise.
+     *
+     * @param predicate
+     *    {@link BiPredicate} to return if not {@code null}
+     *
+     * @return {@code predicate} if not {@code null},
+     *         {@link PredicateUtil#biAlwaysTrue()} otherwise.
+     */
+    public static <T, E> BiPredicate<T, E> getOrAlwaysTrue(final BiPredicate<? super T, ? super E> predicate) {
+        return (BiPredicate<T, E>) getOrElse(
+                predicate,
+                biAlwaysTrue()
+        );
     }
 
 }
