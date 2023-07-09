@@ -964,7 +964,7 @@ public abstract class Try<T> implements Serializable {
      * @param mapperFailure
      *    {@link Function} to apply the stored value if the current instance is a {@link Failure} one
      *
-     * @return @return {@link Try}
+     * @return {@link Try}
      */
     private Try<T> recoverTry(final Function<? super Throwable, ? extends T> mapperFailure) {
         try {
@@ -985,7 +985,7 @@ public abstract class Try<T> implements Serializable {
      * @param mapperFailure
      *    {@link Function} to apply the stored value if the current instance is a {@link Failure} one
      *
-     * @return @return {@link Try}
+     * @return {@link Try}
      */
     @SuppressWarnings("unchecked")
     private Try<T> recoverWithTry(final Function<? super Throwable, ? extends Try<? extends T>> mapperFailure) {
