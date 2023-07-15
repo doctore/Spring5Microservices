@@ -1549,7 +1549,7 @@ public class CollectionUtilTest {
                                                                       Function<? super T, ? extends K> discriminatorKey,
                                                                       Function<? super T, ? extends V> valueMapper,
                                                                       Class<? extends Exception> expectedException,
-                                                                      Map<K, Collection<V>> expectedResult) {
+                                                                      Map<K, List<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceCollection, filterPredicate, discriminatorKey, valueMapper));
         } else {

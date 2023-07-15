@@ -1379,11 +1379,11 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
-    public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
-                                                           final Predicate<? super T> filterPredicate,
-                                                           final Function<? super T, ? extends K> discriminatorKey,
-                                                           final Function<? super T, ? extends V> valueMapper) {
-        return groupMap(
+    public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                     final Predicate<? super T> filterPredicate,
+                                                     final Function<? super T, ? extends K> discriminatorKey,
+                                                     final Function<? super T, ? extends V> valueMapper) {
+        return (Map) groupMap(
                 sourceCollection,
                 filterPredicate,
                 discriminatorKey,

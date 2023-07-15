@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.collection.tuple.Tuple2;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDateTime;
@@ -192,11 +193,108 @@ public class DateTimeUtil {
 
 
     /**
+     * Returns a {@link Tuple2} with the interval:
+     * <p>
+     *   1. [ sourceDate - difference, sourceDate ]                if difference is lower than 0.
+     *   2. [ sourceDate,              sourceDate + difference ]   if difference is greater than 0
+     *
+     * @param sourceDate
+     *    {@link Date} value from which to add/subtract the specified {@code difference}. If {@code null} then new {@link Date} will be used
+     * @param difference
+     *    How much time we need to add/subtract to the provided {@code sourceDate}.
+     * @param timeUnit
+     *    {@link ChronoUnit} of the given {@code valueToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used.
+     * @param zoneId
+     *    {@link ZoneId} used in the conversion
+     *
+     * @return {@link Tuple2} with the interval
+     */
+    public static Tuple2<Date, Date> getDateIntervalFromGiven(final Date sourceDate,
+                                                              final long difference,
+                                                              final ChronoUnit timeUnit,
+                                                              final ZoneId zoneId) {
+        Tuple2<LocalDateTime, LocalDateTime> localDateTimeInterval = getLocalDateTimeIntervalFromGiven(
+                fromDateToLocalDateTime(
+                        sourceDate,
+                        zoneId
+                ),
+                difference,
+                timeUnit,
+                zoneId
+        );
+        return Tuple2.of(
+                fromLocalDateTimeToDate(
+                        localDateTimeInterval._1,
+                        zoneId
+                ),
+                fromLocalDateTimeToDate(
+                        localDateTimeInterval._2,
+                        zoneId
+                )
+        );
+    }
+
+
+    /**
+     * Returns a {@link Tuple2} with the interval:
+     * <p>
+     *   1. [ sourceLocalDateTime - difference, sourceLocalDateTime ]                if difference is lower than 0.
+     *   2. [ sourceLocalDateTime,              sourceLocalDateTime + difference ]   if difference is greater than 0
+     *
+     * @param sourceLocalDateTime
+     *    {@link LocalDateTime} value from which to add/subtract the specified {@code difference}. If {@code null} then {@link LocalDateTime#now()} will be used
+     * @param difference
+     *    How much time we need to add/subtract to the provided {@code sourceDate}.
+     * @param timeUnit
+     *    {@link ChronoUnit} of the given {@code valueToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used.
+     * @param zoneId
+     *    {@link ZoneId} used in the conversion
+     *
+     * @return {@link Tuple2} with the interval
+     */
+    public static Tuple2<LocalDateTime, LocalDateTime> getLocalDateTimeIntervalFromGiven(final LocalDateTime sourceLocalDateTime,
+                                                                                         final long difference,
+                                                                                         final ChronoUnit timeUnit,
+                                                                                         final ZoneId zoneId) {
+        final ZoneId finalZoneId = getOrElse(
+                zoneId,
+                ZoneId.systemDefault()
+        );
+        final LocalDateTime finalSourceLocalDateTime = getOrElse(
+                sourceLocalDateTime,
+                LocalDateTime.now(finalZoneId)
+        )
+        .atZone(finalZoneId)
+        .toLocalDateTime();
+
+        return 0 > difference
+                ? Tuple2.of(
+                        minus(
+                                finalSourceLocalDateTime,
+                                Math.abs(difference),
+                                timeUnit,
+                                finalZoneId
+                        ),
+                        finalSourceLocalDateTime
+                  )
+                : Tuple2.of(
+                        finalSourceLocalDateTime,
+                        plus(
+                                finalSourceLocalDateTime,
+                                difference,
+                                timeUnit,
+                                finalZoneId
+                        )
+                  );
+    }
+
+
+    /**
      *    Returns a {@link Date} based on {@code sourceDate} with the specified {@code amountToSubtract} subtracted,
      * in terms of {@code timeUnit}.
      *
      * @param sourceDate
-     *    {@link Date} value from which to subtract the specified amount. If {@code null} then new {@link Date} will be used
+     *    {@link Date} value from which to subtract the specified {@code amountToSubtract}. If {@code null} then new {@link Date} will be used
      * @param amountToSubtract
      *    The amount of the {@code timeUnit} to subtract from {@code sourceDate}. If less than zero then 1 will be used
      * @param timeUnit
@@ -221,7 +319,7 @@ public class DateTimeUtil {
      * subtracted, in terms of {@code timeUnit}.
      *
      * @param sourceLocalDateTime
-     *    {@link LocalDateTime} value from which to subtract the specified amount. If {@code null} then {@link LocalDateTime#now()} will be used
+     *    {@link LocalDateTime} value from which to subtract the specified {@code amountToSubtract}. If {@code null} then {@link LocalDateTime#now()} will be used
      * @param amountToSubtract
      *    The amount of the {@code timeUnit} to subtract from {@code sourceLocalDateTime}. If less than zero then 1 will be used
      * @param timeUnit
@@ -246,7 +344,7 @@ public class DateTimeUtil {
      * in terms of {@code timeUnit}.
      *
      * @param sourceDate
-     *    {@link Date} value from which to subtract the specified amount. If {@code null} then new {@link Date} will be used
+     *    {@link Date} value from which to subtract the specified {@code amountToSubtract}. If {@code null} then new {@link Date} will be used
      * @param amountToSubtract
      *    The amount of the {@code timeUnit} to subtract from {@code sourceDate}. If less than zero then 1 will be used
      * @param timeUnit
@@ -277,7 +375,7 @@ public class DateTimeUtil {
      * subtracted, in terms of {@code timeUnit}.
      *
      * @param sourceLocalDateTime
-     *    {@link LocalDateTime} value from which to subtract the specified amount. If {@code null} then {@link LocalDateTime#now()} will be used
+     *    {@link LocalDateTime} value from which to subtract the specified {@code amountToSubtract}. If {@code null} then {@link LocalDateTime#now()} will be used
      * @param amountToSubtract
      *    The amount of the {@code timeUnit} to subtract from {@code sourceLocalDateTime}. If less than zero then 1 will be used
      * @param timeUnit
@@ -322,7 +420,7 @@ public class DateTimeUtil {
      * in terms of {@code timeUnit}.
      *
      * @param sourceDate
-     *    {@link Date} value from which to subtract the specified amount. If {@code null} then new {@link Date} will be used
+     *    {@link Date} value from which to add the specified {@code amountToAdd}. If {@code null} then new {@link Date} will be used
      * @param amountToAdd
      *    The amount of the {@code timeUnit} to add from {@code sourceDate}. If less than zero then 1 will be used
      * @param timeUnit
@@ -347,7 +445,7 @@ public class DateTimeUtil {
      * added, in terms of {@code timeUnit}.
      *
      * @param sourceLocalDateTime
-     *    {@link LocalDateTime} value from which to subtract the specified amount. If {@code null} then {@link LocalDateTime#now()} will be used
+     *    {@link LocalDateTime} value from which to add the specified {@code amountToAdd}. If {@code null} then {@link LocalDateTime#now()} will be used
      * @param amountToAdd
      *    The amount of the {@code timeUnit} to add from {@code sourceLocalDateTime}. If less than zero then 1 will be used
      * @param timeUnit
@@ -372,7 +470,7 @@ public class DateTimeUtil {
      * added, in terms of {@code timeUnit}.
      *
      * @param sourceLocalDateTime
-     *    {@link LocalDateTime} value from which to subtract the specified amount. If {@code null} then {@link LocalDateTime#now()} will be used
+     *    {@link LocalDateTime} value from which to add the specified {@code amountToAdd}. If {@code null} then {@link LocalDateTime#now()} will be used
      * @param amountToAdd
      *    The amount of the {@code timeUnit} to add from {@code sourceLocalDateTime}. If less than zero then 1 will be used
      * @param timeUnit
@@ -417,7 +515,7 @@ public class DateTimeUtil {
      * in terms of {@code timeUnit}.
      *
      * @param sourceDate
-     *    {@link Date} value from which to subtract the specified amount. If {@code null} then new {@link Date} will be used
+     *    {@link Date} value from which to add the specified {@code amountToAdd}. If {@code null} then new {@link Date} will be used
      * @param amountToAdd
      *    The amount of the {@code timeUnit} to add from {@code sourceDate}. If less than zero then 1 will be used
      * @param timeUnit
