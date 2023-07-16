@@ -147,7 +147,7 @@ public class DateTimeUtilTest {
     }
 
 
-    static Stream<Arguments> fromLocalDateTimeToDateWithLocalDateTimeAndZoneIdTestCases() {
+    static Stream<Arguments> fromLocalDateTimeToDateAllParametersTestCases() {
         ZoneId gmtZoneId = ZoneId.of("GMT");
         LocalDateTime ldt1 = LocalDateTime.of(2020, 10, 10, 12, 0, 0);
         LocalDateTime ldt2 = LocalDateTime.of(2022, 11, 12, 23, 0, 0);
@@ -167,11 +167,11 @@ public class DateTimeUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("fromLocalDateTimeToDateWithLocalDateTimeAndZoneIdTestCases")
-    @DisplayName("fromLocalDateTimeToDate: with LocalDateTime and ZoneId test cases")
-    public void fromLocalDateTimeToDateWithLocalDateTimeAndZoneId_testCases(LocalDateTime sourceLocalDateTime,
-                                                                            ZoneId zoneId,
-                                                                            Date expectedResult) {
+    @MethodSource("fromLocalDateTimeToDateAllParametersTestCases")
+    @DisplayName("fromLocalDateTimeToDate: with all parameters test cases")
+    public void fromLocalDateTimeToDateAllParameters_testCases(LocalDateTime sourceLocalDateTime,
+                                                               ZoneId zoneId,
+                                                               Date expectedResult) {
         if (null == sourceLocalDateTime) {
             int compareResult = DateTimeUtil.compare(
                     fromLocalDateTimeToDate(sourceLocalDateTime),
@@ -222,7 +222,7 @@ public class DateTimeUtilTest {
     }
 
 
-    static Stream<Arguments> fromDateToLocalDateTimeWithDateAndZoneIdTestCases() {
+    static Stream<Arguments> fromDateToLocalDateTimeAllParametersTestCases() {
         ZoneId gmtZoneId = ZoneId.of("GMT");
         LocalDateTime ldt1 = LocalDateTime.of(2020, 10, 10, 12, 0, 0);
         LocalDateTime ldt2 = LocalDateTime.of(2022, 11, 12, 23, 0, 0);
@@ -245,11 +245,11 @@ public class DateTimeUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("fromDateToLocalDateTimeWithDateAndZoneIdTestCases")
-    @DisplayName("fromDateToLocalDateTime: with Date and ZoneId test cases")
-    public void fromDateToLocalDateTimeWithDateAndZoneId_testCases(Date sourceDate,
-                                                                   ZoneId zoneId,
-                                                                   LocalDateTime expectedResult) {
+    @MethodSource("fromDateToLocalDateTimeAllParametersTestCases")
+    @DisplayName("fromDateToLocalDateTime: with all parameters test cases")
+    public void fromDateToLocalDateTimeAllParameters_testCases(Date sourceDate,
+                                                               ZoneId zoneId,
+                                                               LocalDateTime expectedResult) {
         if (null == sourceDate) {
             int compareResult = DateTimeUtil.compare(
                     fromDateToLocalDateTime(sourceDate, zoneId),
@@ -264,7 +264,79 @@ public class DateTimeUtilTest {
     }
 
 
-    static Stream<Arguments> getDateIntervalFromGivenTestCases() {
+    static Stream<Arguments> getDateIntervalFromGivenWithDateAndDifferenceAndChronoUnitTestCases() {
+        Date d1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 12, 10, 0).getTime();
+        Date d2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0).getTime();
+        Date d3 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 10, 0).getTime();
+        Date d4 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 5, 0).getTime();
+
+        Date nullSource = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()), ZoneId.systemDefault());
+        Date nullSourceNegativeAmountNullUnit = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        Date nullSourceNegativeAmountAndSeconds = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.SECONDS), ZoneId.systemDefault());
+        Date nullSourcePositiveAmountAndMinutes = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
+
+        Tuple2<Date, Date> expectedResultNullSourceNegativeAmountNullUnit = Tuple2.of(
+                nullSourceNegativeAmountNullUnit,
+                nullSource
+        );
+        Tuple2<Date, Date> expectedResultNullSourceNegativeAmountAndSeconds = Tuple2.of(
+                nullSourceNegativeAmountAndSeconds,
+                nullSource
+        );
+        Tuple2<Date, Date> expectedResultNullSourcePositiveAmountAndMinutes = Tuple2.of(
+                nullSource,
+                nullSourcePositiveAmountAndMinutes
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceDate,   difference,   timeUnit,             expectedResult
+                Arguments.of( null,         -1,           null,                 expectedResultNullSourceNegativeAmountNullUnit ),
+                Arguments.of( null,         -1,           ChronoUnit.SECONDS,   expectedResultNullSourceNegativeAmountAndSeconds ),
+                Arguments.of( null,         1,            ChronoUnit.MINUTES,   expectedResultNullSourcePositiveAmountAndMinutes ),
+                Arguments.of( d1,           0,            ChronoUnit.HOURS,     Tuple2.of(d1, d1) ),
+                Arguments.of( d1,           0,            ChronoUnit.HOURS,     Tuple2.of(d1, d1) ),
+                Arguments.of( d1,           0,            ChronoUnit.DAYS,      Tuple2.of(d1, d1) ),
+                Arguments.of( d1,           0,            ChronoUnit.DAYS,      Tuple2.of(d1, d1) ),
+                Arguments.of( d2,           2,            ChronoUnit.MONTHS,    Tuple2.of(d2, d1) ),
+                Arguments.of( d3,           1,            ChronoUnit.HOURS,     Tuple2.of(d3, d2) ),
+                Arguments.of( d4,           5,            ChronoUnit.MINUTES,   Tuple2.of(d4, d3) ),
+                Arguments.of( d1,          -2,            ChronoUnit.MONTHS,    Tuple2.of(d2, d1) ),
+                Arguments.of( d2,          -1,            ChronoUnit.HOURS,     Tuple2.of(d3, d2) ),
+                Arguments.of( d3,          -5,            ChronoUnit.MINUTES,   Tuple2.of(d4, d3) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getDateIntervalFromGivenWithDateAndDifferenceAndChronoUnitTestCases")
+    @DisplayName("getDateIntervalFromGiven: with Date and Difference and ChronoUnit test cases")
+    public void getDateIntervalFromGivenWithDateAndDifferenceAndChronoUnit_testCases(Date sourceDate,
+                                                                                     long difference,
+                                                                                     ChronoUnit timeUnit,
+                                                                                     Tuple2<Date, Date> expectedResult) {
+        Tuple2<Date, Date> result = getDateIntervalFromGiven(sourceDate, difference, timeUnit);
+        if (null == sourceDate) {
+            int compareResultLeft = DateTimeUtil.compare(
+                    result._1,
+                    expectedResult._1,
+                    5,
+                    ChronoUnit.SECONDS
+            );
+            int compareResultRight = DateTimeUtil.compare(
+                    result._2,
+                    expectedResult._2,
+                    5,
+                    ChronoUnit.SECONDS
+            );
+            verifyCompareToResult(compareResultLeft, CompareToResult.ZERO);
+            verifyCompareToResult(compareResultRight, CompareToResult.ZERO);
+        } else {
+            assertEquals(expectedResult._1, result._1);
+            assertEquals(expectedResult._2, result._2);
+        }
+    }
+
+
+    static Stream<Arguments> getDateIntervalFromGivenAllParametersTestCases() {
         ZoneId utcZoneId = ZoneId.of("UTC");
         ZoneId gmtZoneId = ZoneId.of("GMT");
 
@@ -339,15 +411,15 @@ public class DateTimeUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getDateIntervalFromGivenTestCases")
-    @DisplayName("getDateIntervalFromGiven: test cases")
-    public void getDateIntervalFromGiven_testCases(Date sourceDate,
-                                                   long difference,
-                                                   ChronoUnit timeUnit,
-                                                   ZoneId zoneId,
-                                                   Tuple2<Date, Date> expectedResult) {
+    @MethodSource("getDateIntervalFromGivenAllParametersTestCases")
+    @DisplayName("getDateIntervalFromGiven: with all parameters test cases")
+    public void getDateIntervalFromGivenAllParameters_testCases(Date sourceDate,
+                                                                long difference,
+                                                                ChronoUnit timeUnit,
+                                                                ZoneId zoneId,
+                                                                Tuple2<Date, Date> expectedResult) {
+        Tuple2<Date, Date> result = getDateIntervalFromGiven(sourceDate, difference, timeUnit, zoneId);
         if (null == sourceDate) {
-            Tuple2<Date, Date> result = getDateIntervalFromGiven(sourceDate, difference, timeUnit, zoneId);
             int compareResultLeft = DateTimeUtil.compare(
                     result._1,
                     expectedResult._1,
@@ -363,15 +435,83 @@ public class DateTimeUtilTest {
             verifyCompareToResult(compareResultLeft, CompareToResult.ZERO);
             verifyCompareToResult(compareResultRight, CompareToResult.ZERO);
         } else {
-            Tuple2<Date, Date> result = getDateIntervalFromGiven(sourceDate, difference, timeUnit, zoneId);
-
             assertEquals(expectedResult._1, result._1);
             assertEquals(expectedResult._2, result._2);
         }
     }
 
 
-    static Stream<Arguments> getLocalDateTimeIntervalFromGivenTestCases() {
+    static Stream<Arguments> getLocalDateTimeIntervalFromGivenWithLocalDateTimeAndDifferenceAndChronoUnitTestCases() {
+        LocalDateTime ldt1 = LocalDateTime.of(2022, 11, 11, 12, 10, 0);
+        LocalDateTime ldt2 = LocalDateTime.of(2022, 9, 11, 12, 10, 0);
+        LocalDateTime ldt3 = LocalDateTime.of(2022, 9, 11, 11, 10, 0);
+        LocalDateTime ldt4 = LocalDateTime.of(2022, 9, 11, 11, 5, 0);
+
+        LocalDateTime nullSource = LocalDateTime.now(ZoneId.systemDefault());
+        LocalDateTime nullSourceNegativeAmountNullUnit = LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.MINUTES);
+        LocalDateTime nullSourceNegativeAmountAndSeconds = LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.SECONDS);
+        LocalDateTime nullSourcePositiveAmountAndMinutes = LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.MINUTES);
+
+        Tuple2<LocalDateTime, LocalDateTime> expectedResultNullSourceNegativeAmountNullUnit = Tuple2.of(
+                nullSourceNegativeAmountNullUnit,
+                nullSource
+        );
+        Tuple2<LocalDateTime, LocalDateTime> expectedResultNullSourceNegativeAmountAndSeconds = Tuple2.of(
+                nullSourceNegativeAmountAndSeconds,
+                nullSource
+        );
+        Tuple2<LocalDateTime, LocalDateTime> expectedResultNullSourcePositiveAmountAndMinutes = Tuple2.of(
+                nullSource,
+                nullSourcePositiveAmountAndMinutes
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceLocalDateTime,   difference,   timeUnit,             expectedResult
+                Arguments.of( null,                  -1,           null,                 expectedResultNullSourceNegativeAmountNullUnit ),
+                Arguments.of( null,                  -1,           ChronoUnit.SECONDS,   expectedResultNullSourceNegativeAmountAndSeconds ),
+                Arguments.of( null,                  1,            ChronoUnit.MINUTES,   expectedResultNullSourcePositiveAmountAndMinutes ),
+                Arguments.of( ldt1,                  0,            ChronoUnit.HOURS,     Tuple2.of(ldt1, ldt1) ),
+                Arguments.of( ldt1,                  0,            ChronoUnit.DAYS,      Tuple2.of(ldt1, ldt1) ),
+                Arguments.of( ldt2,                  2,            ChronoUnit.MONTHS,    Tuple2.of(ldt2, ldt1) ),
+                Arguments.of( ldt3,                  1,            ChronoUnit.HOURS,     Tuple2.of(ldt3, ldt2) ),
+                Arguments.of( ldt4,                  5,            ChronoUnit.MINUTES,   Tuple2.of(ldt4, ldt3) ),
+                Arguments.of( ldt1,                  -2,           ChronoUnit.MONTHS,    Tuple2.of(ldt2, ldt1) ),
+                Arguments.of( ldt2,                  -1,           ChronoUnit.HOURS,     Tuple2.of(ldt3, ldt2) ),
+                Arguments.of( ldt3,                  -5,           ChronoUnit.MINUTES,   Tuple2.of(ldt4, ldt3) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getLocalDateTimeIntervalFromGivenWithLocalDateTimeAndDifferenceAndChronoUnitTestCases")
+    @DisplayName("getLocalDateTimeIntervalFromGiven: with LocalDateTime and Difference and ChronoUnit test cases")
+    public void getLocalDateTimeIntervalFromGivenWithLocalDateTimeAndDifferenceAndChronoUnit_testCases(LocalDateTime sourceLocalDateTime,
+                                                                                                       long difference,
+                                                                                                       ChronoUnit timeUnit,
+                                                                                                       Tuple2<LocalDateTime, LocalDateTime> expectedResult) {
+        Tuple2<LocalDateTime, LocalDateTime> result = getLocalDateTimeIntervalFromGiven(sourceLocalDateTime, difference, timeUnit);
+        if (null == sourceLocalDateTime) {
+            int compareResultLeft = DateTimeUtil.compare(
+                    result._1,
+                    expectedResult._1,
+                    5,
+                    ChronoUnit.SECONDS
+            );
+            int compareResultRight = DateTimeUtil.compare(
+                    result._2,
+                    expectedResult._2,
+                    5,
+                    ChronoUnit.SECONDS
+            );
+            verifyCompareToResult(compareResultLeft, CompareToResult.ZERO);
+            verifyCompareToResult(compareResultRight, CompareToResult.ZERO);
+        } else {
+            assertEquals(expectedResult._1, result._1);
+            assertEquals(expectedResult._2, result._2);
+        }
+    }
+
+
+    static Stream<Arguments> getLocalDateTimeIntervalFromGivenAllParametersTestCases() {
         ZoneId utcZoneId = ZoneId.of("UTC");
         ZoneId utcPlus1ZoneId = ZoneId.of("UTC+1");
 
@@ -441,15 +581,15 @@ public class DateTimeUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getLocalDateTimeIntervalFromGivenTestCases")
-    @DisplayName("getLocalDateTimeIntervalFromGiven: test cases")
-    public void getLocalDateTimeIntervalFromGiven_testCases(LocalDateTime sourceLocalDateTime,
-                                                            long difference,
-                                                            ChronoUnit timeUnit,
-                                                            ZoneId zoneId,
-                                                            Tuple2<LocalDateTime, LocalDateTime> expectedResult) {
+    @MethodSource("getLocalDateTimeIntervalFromGivenAllParametersTestCases")
+    @DisplayName("getLocalDateTimeIntervalFromGiven: with all parameters test cases")
+    public void getLocalDateTimeIntervalFromGivenAllParameters_testCases(LocalDateTime sourceLocalDateTime,
+                                                                         long difference,
+                                                                         ChronoUnit timeUnit,
+                                                                         ZoneId zoneId,
+                                                                         Tuple2<LocalDateTime, LocalDateTime> expectedResult) {
+        Tuple2<LocalDateTime, LocalDateTime> result = getLocalDateTimeIntervalFromGiven(sourceLocalDateTime, difference, timeUnit, zoneId);
         if (null == sourceLocalDateTime) {
-            Tuple2<LocalDateTime, LocalDateTime> result = getLocalDateTimeIntervalFromGiven(sourceLocalDateTime, difference, timeUnit, zoneId);
             int compareResultLeft = DateTimeUtil.compare(
                     result._1,
                     expectedResult._1,
@@ -465,8 +605,6 @@ public class DateTimeUtilTest {
             verifyCompareToResult(compareResultLeft, CompareToResult.ZERO);
             verifyCompareToResult(compareResultRight, CompareToResult.ZERO);
         } else {
-            Tuple2<LocalDateTime, LocalDateTime> result = getLocalDateTimeIntervalFromGiven(sourceLocalDateTime, difference, timeUnit, zoneId);
-
             assertEquals(expectedResult._1, result._1);
             assertEquals(expectedResult._2, result._2);
         }
@@ -517,6 +655,71 @@ public class DateTimeUtilTest {
     }
 
 
+    static Stream<Arguments> minusDateAllParametersTestCases() {
+        ZoneId utcZoneId = ZoneId.of("UTC");
+        ZoneId gmtZoneId = ZoneId.of("GMT");
+
+        Date d1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 12, 10, 0).getTime();
+        Date d2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0).getTime();
+        Date d3 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 10, 0).getTime();
+        Date d4 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 5, 0).getTime();
+
+        GregorianCalendar gc1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 13, 10, 0);
+        gc1.setTimeZone(TimeZone.getTimeZone("GMT+1"));
+        Date gc1Date = gc1.getTime();
+
+        GregorianCalendar gc2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0);
+        gc2.setTimeZone(TimeZone.getTimeZone("GMT"));
+        Date gc2Date = gc2.getTime();
+
+        Date expectedResultNullSourceNegativeAmountNullUnitZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        Date expectedResultNullSourceNegativeAmountNullUnitAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).minus(1, ChronoUnit.MINUTES), utcZoneId);
+        Date expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.SECONDS), ZoneId.systemDefault());
+        Date expectedResultNullSourceNegativeAmountAndSecondsAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).minus(1, ChronoUnit.SECONDS), utcZoneId);
+        Date expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        Date expectedResultNullSourcePositiveAmountAndMinutesAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).minus(1, ChronoUnit.MINUTES), utcZoneId);
+        return Stream.of(
+                //@formatter:off
+                //            sourceDate,   amountToSubtract,   timeUnit,             zoneId,      expectedResult
+                Arguments.of( null,         -1,                 null,                 null,        expectedResultNullSourceNegativeAmountNullUnitZoneId ),
+                Arguments.of( null,         -1,                 null,                 utcZoneId,   expectedResultNullSourceNegativeAmountNullUnitAndUtc ),
+                Arguments.of( null,         -1,                 ChronoUnit.SECONDS,   null,        expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId ),
+                Arguments.of( null,         -1,                 ChronoUnit.SECONDS,   utcZoneId,   expectedResultNullSourceNegativeAmountAndSecondsAndUtc ),
+                Arguments.of( null,         1,                  ChronoUnit.MINUTES,   null,        expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId ),
+                Arguments.of( null,         1,                  ChronoUnit.MINUTES,   utcZoneId,   expectedResultNullSourcePositiveAmountAndMinutesAndUtc ),
+                Arguments.of( d1,           0,                  ChronoUnit.HOURS,     null,        d1 ),
+                Arguments.of( d1,           0,                  ChronoUnit.HOURS,     utcZoneId,   d1 ),
+                Arguments.of( d1,           0,                  ChronoUnit.DAYS,      null,        d1 ),
+                Arguments.of( d1,           0,                  ChronoUnit.DAYS,      utcZoneId,   d1 ),
+                Arguments.of( d1,           2,                  ChronoUnit.MONTHS,    null,        d2 ),
+                Arguments.of( d2,           1,                  ChronoUnit.HOURS,     null,        d3 ),
+                Arguments.of( d3,           5,                  ChronoUnit.MINUTES,   null,        d4 ),
+                Arguments.of( gc1Date,      2,                  ChronoUnit.MONTHS,    gmtZoneId,   gc2Date )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("minusDateAllParametersTestCases")
+    @DisplayName("minus: Date with all parameters test cases")
+    public void minusDateAllParameters_testCases(Date sourceDate,
+                                                 long amountToSubtract,
+                                                 ChronoUnit timeUnit,
+                                                 ZoneId zoneId,
+                                                 Date expectedResult) {
+        if (null == sourceDate) {
+            int compareResult = DateTimeUtil.compare(
+                    minus(sourceDate, amountToSubtract, timeUnit, zoneId),
+                    expectedResult,
+                    5,
+                    ChronoUnit.SECONDS
+            );
+            verifyCompareToResult(compareResult, CompareToResult.ZERO);
+        } else {
+            assertEquals(expectedResult, minus(sourceDate, amountToSubtract, timeUnit, zoneId));
+        }
+    }
+
+
     static Stream<Arguments> minusLocalDateTimeWithAmountToSubtractAndTimeUnitTestCases() {
         LocalDateTime ldt1 = LocalDateTime.of(2022, 11, 11, 12, 10, 0);
         LocalDateTime ldt2 = LocalDateTime.of(2022, 9, 11, 12, 10, 0);
@@ -561,72 +764,7 @@ public class DateTimeUtilTest {
     }
 
 
-    static Stream<Arguments> minusDateWithAmountToSubtractTimeUnitAndZoneIdTestCases() {
-        ZoneId utcZoneId = ZoneId.of("UTC");
-        ZoneId gmtZoneId = ZoneId.of("GMT");
-
-        Date d1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 12, 10, 0).getTime();
-        Date d2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0).getTime();
-        Date d3 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 10, 0).getTime();
-        Date d4 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 5, 0).getTime();
-
-        GregorianCalendar gc1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 13, 10, 0);
-        gc1.setTimeZone(TimeZone.getTimeZone("GMT+1"));
-        Date gc1Date = gc1.getTime();
-
-        GregorianCalendar gc2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0);
-        gc2.setTimeZone(TimeZone.getTimeZone("GMT"));
-        Date gc2Date = gc2.getTime();
-
-        Date expectedResultNullSourceNegativeAmountNullUnitZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
-        Date expectedResultNullSourceNegativeAmountNullUnitAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).minus(1, ChronoUnit.MINUTES), utcZoneId);
-        Date expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.SECONDS), ZoneId.systemDefault());
-        Date expectedResultNullSourceNegativeAmountAndSecondsAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).minus(1, ChronoUnit.SECONDS), utcZoneId);
-        Date expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).minus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
-        Date expectedResultNullSourcePositiveAmountAndMinutesAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).minus(1, ChronoUnit.MINUTES), utcZoneId);
-        return Stream.of(
-                //@formatter:off
-                //            sourceDate,   amountToSubtract,   timeUnit,             zoneId,      expectedResult
-                Arguments.of( null,         -1,                 null,                 null,        expectedResultNullSourceNegativeAmountNullUnitZoneId ),
-                Arguments.of( null,         -1,                 null,                 utcZoneId,   expectedResultNullSourceNegativeAmountNullUnitAndUtc ),
-                Arguments.of( null,         -1,                 ChronoUnit.SECONDS,   null,        expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId ),
-                Arguments.of( null,         -1,                 ChronoUnit.SECONDS,   utcZoneId,   expectedResultNullSourceNegativeAmountAndSecondsAndUtc ),
-                Arguments.of( null,         1,                  ChronoUnit.MINUTES,   null,        expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId ),
-                Arguments.of( null,         1,                  ChronoUnit.MINUTES,   utcZoneId,   expectedResultNullSourcePositiveAmountAndMinutesAndUtc ),
-                Arguments.of( d1,           0,                  ChronoUnit.HOURS,     null,        d1 ),
-                Arguments.of( d1,           0,                  ChronoUnit.HOURS,     utcZoneId,   d1 ),
-                Arguments.of( d1,           0,                  ChronoUnit.DAYS,      null,        d1 ),
-                Arguments.of( d1,           0,                  ChronoUnit.DAYS,      utcZoneId,   d1 ),
-                Arguments.of( d1,           2,                  ChronoUnit.MONTHS,    null,        d2 ),
-                Arguments.of( d2,           1,                  ChronoUnit.HOURS,     null,        d3 ),
-                Arguments.of( d3,           5,                  ChronoUnit.MINUTES,   null,        d4 ),
-                Arguments.of( gc1Date,      2,                  ChronoUnit.MONTHS,    gmtZoneId,   gc2Date )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("minusDateWithAmountToSubtractTimeUnitAndZoneIdTestCases")
-    @DisplayName("minus: Date with amountToSubtract, TimeUnit and ZoneId test cases")
-    public void minusDateWithAmountToSubtractTimeUnitAndZoneId_testCases(Date sourceDate,
-                                                                         long amountToSubtract,
-                                                                         ChronoUnit timeUnit,
-                                                                         ZoneId zoneId,
-                                                                         Date expectedResult) {
-        if (null == sourceDate) {
-            int compareResult = DateTimeUtil.compare(
-                    minus(sourceDate, amountToSubtract, timeUnit, zoneId),
-                    expectedResult,
-                    5,
-                    ChronoUnit.SECONDS
-            );
-            verifyCompareToResult(compareResult, CompareToResult.ZERO);
-        } else {
-            assertEquals(expectedResult, minus(sourceDate, amountToSubtract, timeUnit, zoneId));
-        }
-    }
-
-
-    static Stream<Arguments> minusLocalDateTimeWithAmountToSubtractTimeUnitAndZoneIdTestCases() {
+    static Stream<Arguments> minusLocalDateTimeAllParametersTestCases() {
         ZoneId utcZoneId = ZoneId.of("UTC");
         ZoneId utcPlus1ZoneId = ZoneId.of("UTC+1");
 
@@ -666,13 +804,13 @@ public class DateTimeUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("minusLocalDateTimeWithAmountToSubtractTimeUnitAndZoneIdTestCases")
-    @DisplayName("minus: LocalDateTime with amountToSubtract, TimeUnit and ZoneId test cases")
-    public void minusLocalDatetimeWithAmountToSubtractTimeUnitAndZoneId_testCases(LocalDateTime sourceLocalDateTime,
-                                                                                  long amountToSubtract,
-                                                                                  ChronoUnit timeUnit,
-                                                                                  ZoneId zoneId,
-                                                                                  LocalDateTime expectedResult) {
+    @MethodSource("minusLocalDateTimeAllParametersTestCases")
+    @DisplayName("minus: LocalDateTime with all parameters test cases")
+    public void minusLocalDateTimeAllParameters_testCases(LocalDateTime sourceLocalDateTime,
+                                                          long amountToSubtract,
+                                                          ChronoUnit timeUnit,
+                                                          ZoneId zoneId,
+                                                          LocalDateTime expectedResult) {
         if (null == sourceLocalDateTime) {
            int compareResult = DateTimeUtil.compare(
                     minus(sourceLocalDateTime, amountToSubtract, timeUnit, zoneId),
@@ -731,6 +869,71 @@ public class DateTimeUtilTest {
     }
 
 
+    static Stream<Arguments> plusDateAllParametersTestCases() {
+        ZoneId utcZoneId = ZoneId.of("UTC");
+        ZoneId gmtZoneId = ZoneId.of("GMT");
+
+        Date d1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 12, 10, 0).getTime();
+        Date d2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0).getTime();
+        Date d3 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 10, 0).getTime();
+        Date d4 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 5, 0).getTime();
+
+        GregorianCalendar gc1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 13, 10, 0);
+        gc1.setTimeZone(TimeZone.getTimeZone("GMT+1"));
+        Date gc1Date = gc1.getTime();
+
+        GregorianCalendar gc2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0);
+        gc2.setTimeZone(TimeZone.getTimeZone("GMT"));
+        Date gc2Date = gc2.getTime();
+
+        Date expectedResultNullSourceNegativeAmountNullUnitZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        Date expectedResultNullSourceNegativeAmountNullUnitAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).plus(1, ChronoUnit.MINUTES), utcZoneId);
+        Date expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.SECONDS), ZoneId.systemDefault());
+        Date expectedResultNullSourceNegativeAmountAndSecondsAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).plus(1, ChronoUnit.SECONDS), utcZoneId);
+        Date expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        Date expectedResultNullSourcePositiveAmountAndMinutesAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).plus(1, ChronoUnit.MINUTES), utcZoneId);
+        return Stream.of(
+                //@formatter:off
+                //            sourceDate,   amountToAdd,   timeUnit,             zoneId,      expectedResult
+                Arguments.of( null,         -1,            null,                 null,        expectedResultNullSourceNegativeAmountNullUnitZoneId ),
+                Arguments.of( null,         -1,            null,                 utcZoneId,   expectedResultNullSourceNegativeAmountNullUnitAndUtc ),
+                Arguments.of( null,         -1,            ChronoUnit.SECONDS,   null,        expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId ),
+                Arguments.of( null,         -1,            ChronoUnit.SECONDS,   utcZoneId,   expectedResultNullSourceNegativeAmountAndSecondsAndUtc ),
+                Arguments.of( null,         1,             ChronoUnit.MINUTES,   null,        expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId ),
+                Arguments.of( null,         1,             ChronoUnit.MINUTES,   utcZoneId,   expectedResultNullSourcePositiveAmountAndMinutesAndUtc ),
+                Arguments.of( d1,           0,             ChronoUnit.HOURS,     null,        d1 ),
+                Arguments.of( d1,           0,             ChronoUnit.HOURS,     utcZoneId,   d1 ),
+                Arguments.of( d1,           0,             ChronoUnit.DAYS,      null,        d1 ),
+                Arguments.of( d1,           0,             ChronoUnit.DAYS,      utcZoneId,   d1 ),
+                Arguments.of( d2,           2,             ChronoUnit.MONTHS,    null,        d1 ),
+                Arguments.of( d3,           1,             ChronoUnit.HOURS,     null,        d2 ),
+                Arguments.of( d4,           5,             ChronoUnit.MINUTES,   null,        d3 ),
+                Arguments.of( gc2Date,      2,             ChronoUnit.MONTHS,    gmtZoneId,   gc1Date )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("plusDateAllParametersTestCases")
+    @DisplayName("plus: Date with all parameters test cases")
+    public void plusDateAllParameters_testCases(Date sourceDate,
+                                                long amountToAdd,
+                                                ChronoUnit timeUnit,
+                                                ZoneId zoneId,
+                                                Date expectedResult) {
+        if (null == sourceDate) {
+            int compareResult = DateTimeUtil.compare(
+                    plus(sourceDate, amountToAdd, timeUnit, zoneId),
+                    expectedResult,
+                    5,
+                    ChronoUnit.SECONDS
+            );
+            verifyCompareToResult(compareResult, CompareToResult.ZERO);
+        } else {
+            assertEquals(expectedResult, plus(sourceDate, amountToAdd, timeUnit, zoneId));
+        }
+    }
+
+
     static Stream<Arguments> plusLocalDateTimeWithAmountToSubtractAndTimeUnitTestCases() {
         LocalDateTime ldt1 = LocalDateTime.of(2022, 11, 11, 12, 10, 0);
         LocalDateTime ldt2 = LocalDateTime.of(2022, 9, 11, 12, 10, 0);
@@ -775,72 +978,7 @@ public class DateTimeUtilTest {
     }
 
 
-    static Stream<Arguments> plusDateWithAmountToSubtractTimeUnitAndZoneIdTestCases() {
-        ZoneId utcZoneId = ZoneId.of("UTC");
-        ZoneId gmtZoneId = ZoneId.of("GMT");
-
-        Date d1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 12, 10, 0).getTime();
-        Date d2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0).getTime();
-        Date d3 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 10, 0).getTime();
-        Date d4 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 11, 5, 0).getTime();
-
-        GregorianCalendar gc1 = new GregorianCalendar(2022, Calendar.NOVEMBER, 11, 13, 10, 0);
-        gc1.setTimeZone(TimeZone.getTimeZone("GMT+1"));
-        Date gc1Date = gc1.getTime();
-
-        GregorianCalendar gc2 = new GregorianCalendar(2022, Calendar.SEPTEMBER, 11, 12, 10, 0);
-        gc2.setTimeZone(TimeZone.getTimeZone("GMT"));
-        Date gc2Date = gc2.getTime();
-
-        Date expectedResultNullSourceNegativeAmountNullUnitZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
-        Date expectedResultNullSourceNegativeAmountNullUnitAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).plus(1, ChronoUnit.MINUTES), utcZoneId);
-        Date expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.SECONDS), ZoneId.systemDefault());
-        Date expectedResultNullSourceNegativeAmountAndSecondsAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).plus(1, ChronoUnit.SECONDS), utcZoneId);
-        Date expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(ZoneId.systemDefault()).plus(1, ChronoUnit.MINUTES), ZoneId.systemDefault());
-        Date expectedResultNullSourcePositiveAmountAndMinutesAndUtc = DateTimeUtil.fromLocalDateTimeToDate(LocalDateTime.now(utcZoneId).plus(1, ChronoUnit.MINUTES), utcZoneId);
-        return Stream.of(
-                //@formatter:off
-                //            sourceDate,   amountToAdd,   timeUnit,             zoneId,      expectedResult
-                Arguments.of( null,         -1,            null,                 null,        expectedResultNullSourceNegativeAmountNullUnitZoneId ),
-                Arguments.of( null,         -1,            null,                 utcZoneId,   expectedResultNullSourceNegativeAmountNullUnitAndUtc ),
-                Arguments.of( null,         -1,            ChronoUnit.SECONDS,   null,        expectedResultNullSourceNegativeAmountAndSecondsAndNullZoneId ),
-                Arguments.of( null,         -1,            ChronoUnit.SECONDS,   utcZoneId,   expectedResultNullSourceNegativeAmountAndSecondsAndUtc ),
-                Arguments.of( null,         1,             ChronoUnit.MINUTES,   null,        expectedResultNullSourcePositiveAmountAndMinutesAndNullZoneId ),
-                Arguments.of( null,         1,             ChronoUnit.MINUTES,   utcZoneId,   expectedResultNullSourcePositiveAmountAndMinutesAndUtc ),
-                Arguments.of( d1,           0,             ChronoUnit.HOURS,     null,        d1 ),
-                Arguments.of( d1,           0,             ChronoUnit.HOURS,     utcZoneId,   d1 ),
-                Arguments.of( d1,           0,             ChronoUnit.DAYS,      null,        d1 ),
-                Arguments.of( d1,           0,             ChronoUnit.DAYS,      utcZoneId,   d1 ),
-                Arguments.of( d2,           2,             ChronoUnit.MONTHS,    null,        d1 ),
-                Arguments.of( d3,           1,             ChronoUnit.HOURS,     null,        d2 ),
-                Arguments.of( d4,           5,             ChronoUnit.MINUTES,   null,        d3 ),
-                Arguments.of( gc2Date,      2,             ChronoUnit.MONTHS,    gmtZoneId,   gc1Date )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("plusDateWithAmountToSubtractTimeUnitAndZoneIdTestCases")
-    @DisplayName("plus: Date with amountToAdd, TimeUnit and ZoneId test cases")
-    public void plusDateWithAmountToAddTimeUnitAndZoneId_testCases(Date sourceDate,
-                                                                   long amountToAdd,
-                                                                   ChronoUnit timeUnit,
-                                                                   ZoneId zoneId,
-                                                                   Date expectedResult) {
-        if (null == sourceDate) {
-            int compareResult = DateTimeUtil.compare(
-                    plus(sourceDate, amountToAdd, timeUnit, zoneId),
-                    expectedResult,
-                    5,
-                    ChronoUnit.SECONDS
-            );
-            verifyCompareToResult(compareResult, CompareToResult.ZERO);
-        } else {
-            assertEquals(expectedResult, plus(sourceDate, amountToAdd, timeUnit, zoneId));
-        }
-    }
-
-
-    static Stream<Arguments> plusLocalDateTimeWithAmountToSubtractTimeUnitAndZoneIdTestCases() {
+    static Stream<Arguments> plusLocalDateTimeAllParametersTestCases() {
         ZoneId utcZoneId = ZoneId.of("UTC");
         ZoneId utcPlus1ZoneId = ZoneId.of("UTC+1");
 
@@ -880,13 +1018,13 @@ public class DateTimeUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("plusLocalDateTimeWithAmountToSubtractTimeUnitAndZoneIdTestCases")
-    @DisplayName("plus: LocalDateTime with amountToAdd, TimeUnit and ZoneId test cases")
-    public void plusLocalDateTimeWithAmountToAddTimeUnitAndZoneId_testCases(LocalDateTime sourceLocalDateTime,
-                                                                            long amountToAdd,
-                                                                            ChronoUnit timeUnit,
-                                                                            ZoneId zoneId,
-                                                                            LocalDateTime expectedResult) {
+    @MethodSource("plusLocalDateTimeAllParametersTestCases")
+    @DisplayName("plus: LocalDateTime with all parameters test cases")
+    public void plusLocalDateTimeAllParameters_testCases(LocalDateTime sourceLocalDateTime,
+                                                         long amountToAdd,
+                                                         ChronoUnit timeUnit,
+                                                         ZoneId zoneId,
+                                                         LocalDateTime expectedResult) {
         if (null == sourceLocalDateTime) {
             int compareResult = DateTimeUtil.compare(
                     plus(sourceLocalDateTime, amountToAdd, timeUnit, zoneId),

@@ -128,7 +128,7 @@ public class DateTimeUtil {
      * @param sourceLocalDateTime
      *    {@link LocalDateTime} value to convert. If {@code null} then {@link LocalDateTime#now()} with {@code zoneId} will be used
      * @param zoneId
-     *    {@link ZoneId} used in the conversion
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
      *
      * @return {@link Date}
      */
@@ -172,7 +172,7 @@ public class DateTimeUtil {
      * @param sourceDate
      *    {@link Date} value to convert. If {@code null} then new {@link Date} will be used
      * @param zoneId
-     *    {@link ZoneId} used in the conversion
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
      *
      * @return {@link LocalDateTime}
      */
@@ -204,8 +204,35 @@ public class DateTimeUtil {
      *    How much time we need to add/subtract to the provided {@code sourceDate}.
      * @param timeUnit
      *    {@link ChronoUnit} of the given {@code valueToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used.
+     *
+     * @return {@link Tuple2} with the interval
+     */
+    public static Tuple2<Date, Date> getDateIntervalFromGiven(final Date sourceDate,
+                                                              final long difference,
+                                                              final ChronoUnit timeUnit) {
+        return getDateIntervalFromGiven(
+                sourceDate,
+                difference,
+                timeUnit,
+                ZoneId.systemDefault()
+        );
+    }
+
+
+    /**
+     * Returns a {@link Tuple2} with the interval:
+     * <p>
+     *   1. [ sourceDate - difference, sourceDate ]                if difference is lower than 0.
+     *   2. [ sourceDate,              sourceDate + difference ]   if difference is greater than 0
+     *
+     * @param sourceDate
+     *    {@link Date} value from which to add/subtract the specified {@code difference}. If {@code null} then new {@link Date} will be used
+     * @param difference
+     *    How much time we need to add/subtract to the provided {@code sourceDate}.
+     * @param timeUnit
+     *    {@link ChronoUnit} of the given {@code valueToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used.
      * @param zoneId
-     *    {@link ZoneId} used in the conversion
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
      *
      * @return {@link Tuple2} with the interval
      */
@@ -247,8 +274,35 @@ public class DateTimeUtil {
      *    How much time we need to add/subtract to the provided {@code sourceDate}.
      * @param timeUnit
      *    {@link ChronoUnit} of the given {@code valueToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used.
+     *
+     * @return {@link Tuple2} with the interval
+     */
+    public static Tuple2<LocalDateTime, LocalDateTime> getLocalDateTimeIntervalFromGiven(final LocalDateTime sourceLocalDateTime,
+                                                                                         final long difference,
+                                                                                         final ChronoUnit timeUnit) {
+        return getLocalDateTimeIntervalFromGiven(
+                sourceLocalDateTime,
+                difference,
+                timeUnit,
+                ZoneId.systemDefault()
+        );
+    }
+
+
+    /**
+     * Returns a {@link Tuple2} with the interval:
+     * <p>
+     *   1. [ sourceLocalDateTime - difference, sourceLocalDateTime ]                if difference is lower than 0.
+     *   2. [ sourceLocalDateTime,              sourceLocalDateTime + difference ]   if difference is greater than 0
+     *
+     * @param sourceLocalDateTime
+     *    {@link LocalDateTime} value from which to add/subtract the specified {@code difference}. If {@code null} then {@link LocalDateTime#now()} will be used
+     * @param difference
+     *    How much time we need to add/subtract to the provided {@code sourceDate}.
+     * @param timeUnit
+     *    {@link ChronoUnit} of the given {@code valueToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used.
      * @param zoneId
-     *    {@link ZoneId} used in the conversion
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
      *
      * @return {@link Tuple2} with the interval
      */
@@ -315,31 +369,6 @@ public class DateTimeUtil {
 
 
     /**
-     *    Returns a {@link LocalDateTime} based on {@code sourceLocalDateTime} with the specified {@code amountToSubtract}
-     * subtracted, in terms of {@code timeUnit}.
-     *
-     * @param sourceLocalDateTime
-     *    {@link LocalDateTime} value from which to subtract the specified {@code amountToSubtract}. If {@code null} then {@link LocalDateTime#now()} will be used
-     * @param amountToSubtract
-     *    The amount of the {@code timeUnit} to subtract from {@code sourceLocalDateTime}. If less than zero then 1 will be used
-     * @param timeUnit
-     *    {@link ChronoUnit} of the given {@code amountToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used
-     *
-     * @return {@link LocalDateTime}
-     */
-    public static LocalDateTime minus(final LocalDateTime sourceLocalDateTime,
-                                      final long amountToSubtract,
-                                      final ChronoUnit timeUnit) {
-        return minus(
-                sourceLocalDateTime,
-                amountToSubtract,
-                timeUnit,
-                ZoneId.systemDefault()
-        );
-    }
-
-
-    /**
      *    Returns a {@link Date} based on {@code sourceDate} with the specified {@code amountToSubtract} subtracted,
      * in terms of {@code timeUnit}.
      *
@@ -350,7 +379,7 @@ public class DateTimeUtil {
      * @param timeUnit
      *    {@link ChronoUnit} of the given {@code amountToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used
      * @param zoneId
-     *    {@link ZoneId} used to create new {@link LocalDateTime} if {@code sourceDate} is {@code null}
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
      *
      * @return {@link Date}
      */
@@ -380,8 +409,33 @@ public class DateTimeUtil {
      *    The amount of the {@code timeUnit} to subtract from {@code sourceLocalDateTime}. If less than zero then 1 will be used
      * @param timeUnit
      *    {@link ChronoUnit} of the given {@code amountToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used
+     *
+     * @return {@link LocalDateTime}
+     */
+    public static LocalDateTime minus(final LocalDateTime sourceLocalDateTime,
+                                      final long amountToSubtract,
+                                      final ChronoUnit timeUnit) {
+        return minus(
+                sourceLocalDateTime,
+                amountToSubtract,
+                timeUnit,
+                ZoneId.systemDefault()
+        );
+    }
+
+
+    /**
+     *    Returns a {@link LocalDateTime} based on {@code sourceLocalDateTime} with the specified {@code amountToSubtract}
+     * subtracted, in terms of {@code timeUnit}.
+     *
+     * @param sourceLocalDateTime
+     *    {@link LocalDateTime} value from which to subtract the specified {@code amountToSubtract}. If {@code null} then {@link LocalDateTime#now()} will be used
+     * @param amountToSubtract
+     *    The amount of the {@code timeUnit} to subtract from {@code sourceLocalDateTime}. If less than zero then 1 will be used
+     * @param timeUnit
+     *    {@link ChronoUnit} of the given {@code amountToSubtract}. If {@code null} then {@link ChronoUnit#MINUTES} will be used
      * @param zoneId
-     *    {@link ZoneId} used to create new {@link LocalDateTime} if {@code sourceLocalDateTime} is {@code null}
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
      *
      * @return {@link LocalDateTime}
      */
@@ -441,6 +495,37 @@ public class DateTimeUtil {
 
 
     /**
+     *    Returns a {@link Date} based on {@code sourceLocalDateTime} with the specified {@code amountToAdd} added,
+     * in terms of {@code timeUnit}.
+     *
+     * @param sourceDate
+     *    {@link Date} value from which to add the specified {@code amountToAdd}. If {@code null} then new {@link Date} will be used
+     * @param amountToAdd
+     *    The amount of the {@code timeUnit} to add from {@code sourceDate}. If less than zero then 1 will be used
+     * @param timeUnit
+     *    {@link ChronoUnit} of the given {@code amountToAdd}. If {@code null} then {@link ChronoUnit#MINUTES} will be used
+     * @param zoneId
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
+     *
+     * @return {@link Date}
+     */
+    public static Date plus(final Date sourceDate,
+                            final long amountToAdd,
+                            final ChronoUnit timeUnit,
+                            final ZoneId zoneId) {
+        return fromLocalDateTimeToDate(
+                plus(
+                        fromDateToLocalDateTime(sourceDate, zoneId),
+                        amountToAdd,
+                        timeUnit,
+                        zoneId
+                ),
+                zoneId
+        );
+    }
+
+
+    /**
      *    Returns a {@link LocalDateTime} based on {@code sourceLocalDateTime} with the specified {@code amountToAdd}
      * added, in terms of {@code timeUnit}.
      *
@@ -476,7 +561,7 @@ public class DateTimeUtil {
      * @param timeUnit
      *    {@link ChronoUnit} of the given {@code amountToAdd}. If {@code null} then {@link ChronoUnit#MINUTES} will be used
      * @param zoneId
-     *    {@link ZoneId} used to create new {@link LocalDateTime} if {@code sourceLocalDateTime} is {@code null}
+     *    {@link ZoneId} used in the conversion. If {@code null} then new {@link ZoneId#systemDefault()} will be used
      *
      * @return {@link LocalDateTime}
      */
@@ -507,37 +592,6 @@ public class DateTimeUtil {
                         finalTimeUnit
                 )
                 .toLocalDateTime();
-    }
-
-
-    /**
-     *    Returns a {@link Date} based on {@code sourceLocalDateTime} with the specified {@code amountToAdd} added,
-     * in terms of {@code timeUnit}.
-     *
-     * @param sourceDate
-     *    {@link Date} value from which to add the specified {@code amountToAdd}. If {@code null} then new {@link Date} will be used
-     * @param amountToAdd
-     *    The amount of the {@code timeUnit} to add from {@code sourceDate}. If less than zero then 1 will be used
-     * @param timeUnit
-     *    {@link ChronoUnit} of the given {@code amountToAdd}. If {@code null} then {@link ChronoUnit#MINUTES} will be used
-     * @param zoneId
-     *    {@link ZoneId} used to create new {@link LocalDateTime} if {@code sourceDate} is {@code null}
-     *
-     * @return {@link Date}
-     */
-    public static Date plus(final Date sourceDate,
-                            final long amountToAdd,
-                            final ChronoUnit timeUnit,
-                            final ZoneId zoneId) {
-        return fromLocalDateTimeToDate(
-                plus(
-                        fromDateToLocalDateTime(sourceDate, zoneId),
-                        amountToAdd,
-                        timeUnit,
-                        zoneId
-                ),
-                zoneId
-        );
     }
 
 }
