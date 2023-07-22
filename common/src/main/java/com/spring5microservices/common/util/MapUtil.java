@@ -240,26 +240,19 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                                  Result:
-     *    [("A", 1), ("B", 2)]                                                                         [("A", 2), ("B", 4)]
-     *    new PartialFunction<>() {
-     *
-     *      public Map.Entry<String, Integer> apply(final Map.Entry<String, Integer> entry) {
-     *        return null == entry
-     *                 ? null
-     *                 : new AbstractMap.SimpleEntry<>(
-     *                      entry.getKey(),
-     *                      null == entry.getValue()
+     *   Parameters:                                                      Result:
+     *    [("A", 1), ("B", 2)]                                             [("A", 2), ("B", 4)]
+     *    PartialFunction.of(
+     *      e -> null != e && 1 == e.getValue() % 2,
+     *      e -> null == e
+     *              ? null
+     *              : new AbstractMap.SimpleEntry<>(
+     *                      e.getKey(),
+     *                      null == e.getValue()
      *                         ? 0
-     *                         : entry.getValue() + 1
-     *                   );
-     *      }
-     *
-     *      public boolean isDefinedAt(final Map.Entry<String, Integer> entry) {
-     *        return null != entry &&
-     *               1 == entry.getValue() % 2;
-     *      }
-     *    }
+     *                         : e.getValue() + 1
+     *                )
+     *    )
      *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      * </pre>
      *
@@ -294,26 +287,19 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                                  Result:
-     *    [("A", 1), ("B", 2)]                                                                         [("A", 2), ("B", 4)]
-     *    new PartialFunction<>() {
-     *
-     *      public Map.Entry<String, Integer> apply(final Map.Entry<String, Integer> entry) {
-     *        return null == entry
-     *                 ? null
-     *                 : new AbstractMap.SimpleEntry<>(
-     *                      entry.getKey(),
-     *                      null == entry.getValue()
+     *   Parameters:                                                      Result:
+     *    [("A", 1), ("B", 2)]                                             [("A", 2), ("B", 4)]
+     *    PartialFunction.of(
+     *      e -> null != e && 1 == e.getValue() % 2,
+     *      e -> null == e
+     *              ? null
+     *              : new AbstractMap.SimpleEntry<>(
+     *                      e.getKey(),
+     *                      null == e.getValue()
      *                         ? 0
-     *                         : entry.getValue() + 1
-     *                   );
-     *      }
-     *
-     *      public boolean isDefinedAt(final Map.Entry<String, Integer> entry) {
-     *        return null != entry &&
-     *               1 == entry.getValue() % 2;
-     *      }
-     *    }
+     *                         : e.getValue() + 1
+     *                )
+     *    )
      *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      *    HashMap::new
      * </pre>
@@ -376,8 +362,8 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                     Result:
-     *    [(1, "Hi"), (2, "Hello")]                                       [(3, 4)]
+     *   Parameters:                                                      Result:
+     *    [(1, "Hi"), (2, "Hello")]                                        [(3, 4)]
      *    (k, v) -> k % 2 == 0
      *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.length())
      * </pre>
@@ -466,26 +452,19 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                                 Result:
-     *    [(1, "Hi"), (2, "Hello")]                                                                   [(1, 2)]
-     *    new PartialFunction<>() {
-     *
-     *      public Map.Entry<Integer, Integer> apply(final Map.Entry<Integer, String> entry) {
-     *        return null == entry
-     *                 ? null
-     *                 : new AbstractMap.SimpleEntry<>(
-     *                      entry.getKey(),
-     *                      null == entry.getValue()
+     *   Parameters:                                                      Result:
+     *    [(1, "Hi"), (2, "Hello")]                                        [(1, 2)]
+     *    PartialFunction.of(
+     *      e -> null != e && 1 == e.getKey() % 2,
+     *      e -> null == e
+     *              ? null
+     *              : new AbstractMap.SimpleEntry<>(
+     *                      e.getKey(),
+     *                      null == e.getValue()
      *                         ? 0
-     *                         : entry.getValue().length()
-     *                   );
-     *      }
-     *
-     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-     *        return null != entry &&
-     *               1 == entry.getKey() % 2;
-     *      }
-     *    }
+     *                         : e.getValue().length()
+     *                )
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -516,26 +495,19 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                                 Result:
-     *    [(1, "Hi"), (2, "Hello")]                                                                   [(1, 2)]
-     *    new PartialFunction<>() {
-     *
-     *      public Map.Entry<Integer, Integer> apply(final Map.Entry<Integer, String> entry) {
-     *        return null == entry
-     *                 ? null
-     *                 : new AbstractMap.SimpleEntry<>(
-     *                      entry.getKey(),
-     *                      null == entry.getValue()
+     *   Parameters:                                                      Result:
+     *    [(1, "Hi"), (2, "Hello")]                                        [(1, 2)]
+     *    PartialFunction.of(
+     *      e -> null != e && 1 == e.getKey() % 2,
+     *      e -> null == e
+     *              ? null
+     *              : new AbstractMap.SimpleEntry<>(
+     *                      e.getKey(),
+     *                      null == e.getValue()
      *                         ? 0
-     *                         : entry.getValue().length()
-     *                   );
-     *      }
-     *
-     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-     *        return null != entry &&
-     *               1 == entry.getKey() % 2;
-     *      }
-     *    },
+     *                         : e.getValue().length()
+     *                )
+     *    )
      *    HashMap::new
      * </pre>
      *
@@ -584,26 +556,19 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                                 Result:
-     *    [(1, "Hi"), (2, "Hello")]                                                                   Optional[(2, 4)]
-     *    new PartialFunction<>() {
-     *
-     *      public Map.Entry<Integer, Integer> apply(final Map.Entry<Integer, String> entry) {
-     *        return null == entry
-     *                 ? null
-     *                 : new AbstractMap.SimpleEntry<>(
-     *                      entry.getKey(),
-     *                      null == entry.getValue()
+     *   Parameters:                                                      Result:
+     *    [(1, "Hi"), (2, "Hello")]                                        Optional[(2, 4)]
+     *    PartialFunction.of(
+     *      e -> null != e && 0 == e.getKey() % 2,
+     *      e -> null == e
+     *              ? null
+     *              : new AbstractMap.SimpleEntry<>(
+     *                      e.getKey(),
+     *                      null == e.getValue()
      *                         ? 0
-     *                         : entry.getValue().length()
-     *                   );
-     *      }
-     *
-     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-     *        return null != entry &&
-     *               0 == entry.getKey() % 2;
-     *      }
-     *    }
+     *                         : e.getValue().length()
+     *                )
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1038,8 +1003,8 @@ public class MapUtil {
 
 
     /**
-     *    Returns the value associated with the given {@code key}, or the result of {@code defaultValue} if the {@code key}
-     * is not contained in {@code sourceMap}.
+     *    Returns the value associated with the given {@code key} if {@code sourceMap} contains it, {@code defaultValue}
+     * otherwise.
      *
      * <pre>
      * Example 1:
@@ -1064,9 +1029,9 @@ public class MapUtil {
      * @param key
      *    Key to search in {@code sourceMap}
      * @param defaultValue
-     *    {@link Supplier} that yields a default value in case no binding for {@code key} is found in {@code sourceMap}
+     *    Default value to return in case no binding for {@code key} is found in {@code sourceMap}
      *
-     * @return value related with given {@code key} is exists,
+     * @return value related with given {@code key} if {@code sourceMap} contains it,
      *         {@code defaultValue} otherwise.
      */
     public static <T, E> E getOrElse(final Map<? extends T, ? extends E> sourceMap,
@@ -1081,8 +1046,8 @@ public class MapUtil {
 
 
     /**
-     *    Returns the value associated with the given {@code key}, or the result of {@code defaultValue} if the {@code key}
-     * is not contained in {@code sourceMap}.
+     *    Returns the value associated with the given {@code key} if {@code sourceMap} contains it, {@link Supplier#get()}
+     * of {@code defaultValue} otherwise.
      *
      * <pre>
      * Example 1:
@@ -1109,8 +1074,8 @@ public class MapUtil {
      * @param defaultValue
      *    {@link Supplier} that yields a default value in case no binding for {@code key} is found in {@code sourceMap}
      *
-     * @return value related with given {@code key} is exists,
-     *         {@code defaultValue} otherwise.
+     * @return value related with given {@code key} if {@code sourceMap} contains it,
+     *         {@link Supplier#get()} of {@code defaultValue} otherwise.
      *
      * @throws IllegalArgumentException if {@code defaultValue} is {@code null}
      */
@@ -1209,6 +1174,113 @@ public class MapUtil {
 
 
     /**
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     * Each element in the {@link Map} is transformed into a {@link Map.Entry} using {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                 Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (7, "!")]           [(1,  [3, 2])
+     *    PartialFunction.of(                                          (2,  [6])]
+     *      e -> null != e && 1 == e.getValue() % 2,
+     *      e -> null == e
+     *              ? null
+     *              : new AbstractMap.SimpleEntry<>(
+     *                      e.getKey() % 3,
+     *                      null == e.getValue()
+     *                         ? 0
+     *                         : e.getValue().length() + 1
+     *                )
+     *          )
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform.
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
+                                                              final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction) {
+        return (Map) groupMap(
+                sourceMap,
+                partialFunction,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     * Each element in the {@link Map} is transformed into a {@link Map.Entry} using {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                 Result:
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (7, "!")]           [(1,  [3, 2])
+     *    PartialFunction.of(                                          (2,  [6])]
+     *      e -> null != e && 1 == e.getValue() % 2,
+     *      e -> null == e
+     *              ? null
+     *              : new AbstractMap.SimpleEntry<>(
+     *                      e.getKey() % 3,
+     *                      null == e.getValue()
+     *                         ? 0
+     *                         : e.getValue().length() + 1
+     *                )
+     *          )
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to transform.
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <K1, K2, V1, V2> Map<K2, Collection<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
+                                                                    final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                    final Supplier<Collection<V2>> collectionFactory) {
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return new HashMap<>();
+        }
+        final Supplier<Collection<V2>> finalCollectionFactory = ObjectUtil.getOrElse(
+                collectionFactory,
+                ArrayList::new
+        );
+        Map<K2, Collection<V2>> result = new HashMap<>();
+
+        // Allowed because immutable/read-only Maps are covariant.
+        Map<K1, V1> narrowedSourceMap = (Map<K1, V1>) sourceMap;
+        narrowedSourceMap.entrySet().stream()
+                .filter(partialFunction::isDefinedAt)
+                .forEach(e -> {
+                    Map.Entry<K2, V2> keyValue = partialFunction.apply(e);
+                    result.putIfAbsent(
+                            keyValue.getKey(),
+                            finalCollectionFactory.get()
+                    );
+                    result.get(keyValue.getKey())
+                            .add(keyValue.getValue());
+                });
+        return result;
+    }
+
+
+    /**
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
      *
@@ -1233,9 +1305,9 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
     @SuppressWarnings("unchecked")
-    public static <T, E, R, V> Map<R, List<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
-                                                        final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
-                                                        final BiFunction<? super T, ? super E, ? extends V> valueMapper) {
+    public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
+                                                              final BiFunction<? super K1, ? super V1, ? extends K2> discriminatorKey,
+                                                              final BiFunction<? super K1, ? super V1, ? extends V2> valueMapper) {
         return (Map) groupMap(
                 sourceMap,
                 biAlwaysTrue(),
@@ -1274,10 +1346,10 @@ public class MapUtil {
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
     @SuppressWarnings("unchecked")
-    public static <T, E, R, V> Map<R, List<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
-                                                        final BiPredicate<? super T, ? super E> filterPredicate,
-                                                        final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
-                                                        final BiFunction<? super T, ? super E, ? extends V> valueMapper) {
+    public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
+                                                              final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                              final BiFunction<? super K1, ? super V1, ? extends K2> discriminatorKey,
+                                                              final BiFunction<? super K1, ? super V1, ? extends V2> valueMapper) {
         return (Map) groupMap(
                 sourceMap,
                 filterPredicate,
@@ -1321,27 +1393,27 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
-    public static <T, E, R, V> Map<R, Collection<V>> groupMap(final Map<? extends T, ? extends E> sourceMap,
-                                                              final BiPredicate<? super T, ? super E> filterPredicate,
-                                                              final BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
-                                                              final BiFunction<? super T, ? super E, ? extends V> valueMapper,
-                                                              final Supplier<Collection<V>> collectionFactory) {
+    public static <K1, K2, V1, V2> Map<K2, Collection<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
+                                                                    final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                    final BiFunction<? super K1, ? super V1, ? extends K2> discriminatorKey,
+                                                                    final BiFunction<? super K1, ? super V1, ? extends V2> valueMapper,
+                                                                    final Supplier<Collection<V2>> collectionFactory) {
         Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        final Supplier<Collection<V>> finalCollectionFactory = ObjectUtil.getOrElse(
+        final Supplier<Collection<V2>> finalCollectionFactory = ObjectUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
         );
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
 
-        Map<R, Collection<V>> result = new HashMap<>();
+        Map<K2, Collection<V2>> result = new HashMap<>();
         sourceMap.forEach(
                 (k, v) -> {
                     if (finalFilterPredicate.test(k, v)) {
-                        R discriminatorKeyResult = discriminatorKey.apply(k, v);
+                        K2 discriminatorKeyResult = discriminatorKey.apply(k, v);
                         result.putIfAbsent(
                                 discriminatorKeyResult,
                                 finalCollectionFactory.get()
@@ -2309,21 +2381,15 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                  Result:
-     *    [("a", 1), ("b", 2), ("d", 4)]                                               [3, 5]
-     *    new PartialFunction<>() {
+     *   Parameters:                                                      Result:
+     *    [("a", 1), ("b", 2), ("d", 4)]                                   [3, 5]
+     *    PartialFunction.of(
+     *      e -> null != e && 0 == e.getKey() % 2,
+     *      e -> null == e
+     *              ? 0
+     *              : e.getKey().length() + e.getValue()
      *
-     *      public Integer apply(final Map.Entry<String, Integer> entry) {
-     *        return null == entry
-     *                 ? 0
-     *                 : entry.getKey().length() + entry.getValue();
-     *      }
-     *
-     *      public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-     *        return null != entry &&
-     *               0 == entry.getKey() % 2;
-     *      }
-     *    },
+     *    )
      *    ArrayList::new
      * </pre>
      *

@@ -382,72 +382,36 @@ public class PartialFunctionTest {
     }
 
 
-    private static final PartialFunction<Integer, Integer> multiply2IfEven = new PartialFunction<>() {
-
-        @Override
-        public Integer apply(final Integer i) {
-            return null == i
+    private static final PartialFunction<Integer, Integer> multiply2IfEven = PartialFunction.of(
+            i -> null != i && 0 == i % 2,
+            i -> null == i
                     ? null
-                    : i * 2;
-        }
-
-        @Override
-        public boolean isDefinedAt(final Integer i) {
-            return null != i &&
-                   0 == i % 2;
-        }
-    };
+                    : i * 2
+    );
 
 
-    private static final PartialFunction<Integer, Long> toLongIfGreaterThan15 = new PartialFunction<>() {
-
-        @Override
-        public Long apply(final Integer i) {
-            return null == i
+    private static final PartialFunction<Integer, Long> toLongIfGreaterThan15 = PartialFunction.of(
+            i -> null != i && 0 < i.compareTo(15),
+            i -> null == i
                     ? null
-                    : (long) i;
-        }
-
-        @Override
-        public boolean isDefinedAt(final Integer i) {
-            return null != i &&
-                    0 < i.compareTo(15);
-        }
-    };
+                    : (long) i
+    );
 
 
-    private static final PartialFunction<Integer, String> toStringIfLowerThan20 = new PartialFunction<>() {
-
-        @Override
-        public String apply(final Integer i) {
-            return null == i
+    private static final PartialFunction<Integer, String> toStringIfLowerThan20 = PartialFunction.of(
+            i -> null != i && 0 > i.compareTo(20),
+            i -> null == i
                     ? null
-                    : i.toString();
-        }
-
-        @Override
-        public boolean isDefinedAt(final Integer i) {
-            return null != i &&
-                    0 > i.compareTo(20);
-        }
-    };
+                    : i.toString()
+    );
 
 
-    private static final PartialFunction<Integer, String> multiply2AndToStringIfGreaterThan30 = new PartialFunction<>() {
-
-        @Override
-        public String apply(final Integer i) {
-            return null == i
+    private static final PartialFunction<Integer, String> multiply2AndToStringIfGreaterThan30 = PartialFunction.of(
+            i -> null != i && 0 < i.compareTo(30),
+            i -> null == i
                     ? null
-                    : Integer.valueOf(i * 2).toString();
-        }
-
-        @Override
-        public boolean isDefinedAt(final Integer i) {
-            return null != i &&
-                    0 < i.compareTo(30);
-        }
-    };
+                    : Integer.valueOf(i * 2).toString()
+    );
 
 
     private static final Function<String, Integer> stringLength =

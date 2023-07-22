@@ -7,6 +7,7 @@ import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -78,6 +79,7 @@ public class CollectionUtil {
      * @throws IllegalArgumentException if {@code firstMapper} or {@code secondMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
      */
+    @SuppressWarnings("unchecked")
     public static <T, E, R> List<R> andThen(final Collection<? extends T> sourceCollection,
                                             final Function<? super T, ? extends E> firstMapper,
                                             final Function<? super E, ? extends R> secondMapper) {
@@ -245,21 +247,14 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                          Result:
-     *    [1, 2, 3, 6]                                         [2, 4, 4, 12]
-     *    new PartialFunction<>() {
-     *
-     *      public Integer apply(final Integer i) {
-     *        return null == i
-     *                 ? null
-     *                 : i + 1;
-     *      }
-     *
-     *      public boolean isDefinedAt(final Integer i) {
-     *        return null != i &&
-     *                 1 == i % 2;
-     *      }
-     *    }
+     *   Parameters:                                  Result:
+     *    [1, 2, 3, 6]                                 [2, 4, 4, 12]
+     *    PartialFunction.of(
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : i + 1
+     *    )
      *    i -> i * 2
      * </pre>
      *
@@ -294,21 +289,14 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                          Result:
-     *    [1, 2, 3, 6]                                         [2, 4, 4, 12]
-     *    new PartialFunction<>() {
-     *
-     *      public Integer apply(final Integer i) {
-     *        return null == i
-     *                 ? null
-     *                 : i + 1;
-     *      }
-     *
-     *      public boolean isDefinedAt(final Integer i) {
-     *        return null != i &&
-     *                 1 == i % 2;
-     *      }
-     *    }
+     *   Parameters:                                  Result:
+     *    [1, 2, 3, 6]                                 [2, 4, 4, 12]
+     *    PartialFunction.of(
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : i + 1
+     *    )
      *    i -> i * 2
      *    ArrayList::new
      * </pre>
@@ -505,21 +493,14 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                           Result:
-     *    [1, 2, 3, 6]                                          ["1", "3"]
-     *    new PartialFunction<>() {
-     *
-     *      public String apply(final Integer i) {
-     *        return null == i
-     *                 ? null
-     *                 : i.toString();
-     *      }
-     *
-     *      public boolean isDefinedAt(final Integer i) {
-     *        return null != i &&
-     *                 1 == i % 2;
-     *      }
-     *    }
+     *   Parameters:                                  Result:
+     *    [1, 2, 3, 6]                                 ["1", "3"]
+     *    PartialFunction.of(
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : i.toString()
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -551,21 +532,14 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                           Result:
-     *    [1, 2, 3, 6]                                          ["1", "3"]
-     *    new PartialFunction<>() {
-     *
-     *      public String apply(final Integer i) {
-     *        return null == i
-     *                 ? null
-     *                 : i.toString();
-     *      }
-     *
-     *      public boolean isDefinedAt(final Integer i) {
-     *        return null != i &&
-     *                 1 == i % 2;
-     *      }
-     *    },
+     *   Parameters:                                  Result:
+     *    [1, 2, 3, 6]                                 ["1", "3"]
+     *    PartialFunction.of(
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : i.toString()
+     *    )
      *    ArrayList::new
      * </pre>
      *
@@ -606,21 +580,14 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                           Result:
-     *    [1, 2, 3, 6]                                          Optional("2")
-     *    new PartialFunction<>() {
-     *
-     *      public String apply(final Integer i) {
-     *        return null == i
-     *                 ? null
-     *                 : i.toString();
-     *      }
-     *
-     *      public boolean isDefinedAt(final Integer i) {
-     *        return null != i &&
-     *                 0 == i % 2;
-     *      }
-     *    }
+     *   Parameters:                                  Result:
+     *    [1, 2, 3, 6]                                 Optional("2")
+     *    PartialFunction.of(
+     *      i -> null != i && 0 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : i.toString()
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1312,6 +1279,106 @@ public class CollectionUtil {
 
 
     /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                           Result:
+     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
+     *    PartialFunction.of(                                    (1, [2])]
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                     i % 3,
+     *                     i + 1
+     *               )
+     *    )
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                     final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction) {
+       return (Map) groupMap(
+               sourceCollection,
+               partialFunction,
+               (Supplier<Collection<V>>) ArrayList::new
+       );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                           Result:
+     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
+     *    PartialFunction.of(                                    (1, [2])]
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                     i % 3,
+     *                     i + 1
+     *               )
+     *    )
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null}
+     */
+    public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                           final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
+                                                           final Supplier<Collection<V>> collectionFactory) {
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
+        final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+
+        Map<K, Collection<V>> result = new HashMap<>();
+        sourceCollection.stream()
+                .filter(partialFunction::isDefinedAt)
+                .forEach(
+                        e -> {
+                            Map.Entry<K, V> keyValue = partialFunction.apply(e);
+                            result.putIfAbsent(
+                                    keyValue.getKey(),
+                                    finalCollectionFactory.get()
+                            );
+                            result.get(keyValue.getKey())
+                                    .add(keyValue.getValue());
+                        }
+                );
+        return result;
+    }
+
+
+    /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
      *
@@ -1359,9 +1426,9 @@ public class CollectionUtil {
      * Example:
      *
      *   Parameters:              Result:
-     *    [1, 2, 3, 6, 11]          [(0,  [4, 7])
-     *    i -> 10 > i                (1,  [2])
-     *    k -> i % 3                 (2,  [3])]
+     *    [1, 2, 3, 6, 11]          [(0, [4, 7])
+     *    i -> 10 > i                (1, [2])
+     *    k -> i % 3                 (2, [3])]
      *    i -> i + 1
      *    ArrayList::new
      * </pre>
@@ -1379,6 +1446,7 @@ public class CollectionUtil {
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      */
+    @SuppressWarnings("unchecked")
     public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
                                                      final Predicate<? super T> filterPredicate,
                                                      final Function<? super T, ? extends K> discriminatorKey,
@@ -1438,20 +1506,17 @@ public class CollectionUtil {
         final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
 
-        Map<K, Collection<V>> result = new HashMap<>();
-        sourceCollection.stream()
-                .filter(finalFilterPredicate)
-                .forEach(
-                        e -> {
-                            K discriminatorKeyResult = discriminatorKey.apply(e);
-                            result.putIfAbsent(
-                                    discriminatorKeyResult,
-                                    finalCollectionFactory.get()
-                            );
-                            result.get(discriminatorKeyResult)
-                                    .add(valueMapper.apply(e));
-                        });
-        return result;
+        return groupMap(
+                sourceCollection,
+                PartialFunction.of(
+                        finalFilterPredicate,
+                        t -> new AbstractMap.SimpleEntry<>(
+                                discriminatorKey.apply(t),
+                                valueMapper.apply(t)
+                             )
+                ),
+                finalCollectionFactory
+        );
     }
 
 
@@ -2350,26 +2415,20 @@ public class CollectionUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                 Result:
-     *    [1, 2, 3, 3]                                                                [("1", 2), ("3", 4)]
-     *    new PartialFunction<>() {
-     *
-     *      public Map.Entry<String, Integer> apply(final Integer integer) {
-     *        return null == entry
-     *                 ? null
-     *                 : new AbstractMap.SimpleEntry<>(
-     *                      integer.toString(),
-     *                      null == integer
-     *                         ? 0
-     *                         : integer + 1
-     *                   );
-     *      }
-     *
-     *      public boolean isDefinedAt(final Integer integer) {
-     *        return null != integer &&
-     *               1 == integer % 2;
-     *      }
-     *    }
+     *   Parameters:                                            Result:
+     *    [1, 2, 3, 3]                                           [("1", 2), ("3", 4)]
+     *    PartialFunction.of(
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? new AbstractMap.SimpleEntry<>(
+     *                     "",
+     *                     0
+     *               )
+     *             : new AbstractMap.SimpleEntry<>(
+     *                     i.toString(),
+     *                     i + 1
+     *               )
+     *    )
      *    (old, new) -> new
      *    HashMap::new
      * </pre>

@@ -89,18 +89,10 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      * @return {@link PartialFunction} that always returns its input argument
      */
     static <T> PartialFunction<T, T> identity() {
-
-        return new PartialFunction<>() {
-            @Override
-            public T apply(final T t) {
-                return t;
-            }
-
-            @Override
-            public boolean isDefinedAt(final T t) {
-                return true;
-            }
-        };
+        return of(
+                alwaysTrue(),
+                Function.identity()
+        );
     }
 
 

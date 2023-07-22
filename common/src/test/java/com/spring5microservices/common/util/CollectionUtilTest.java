@@ -328,22 +328,12 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> applyOrElseWithPartialFunctionAndFunctionTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(asList(1, null, 3, 6));
-
-        PartialFunction<Integer, String> plus1StringIfEven = new PartialFunction<>() {
-
-            @Override
-            public String apply(final Integer i) {
-                return null == i
-                        ? null
-                        : String.valueOf(i + 1);
-            }
-
-            @Override
-            public boolean isDefinedAt(final Integer i) {
-                return null != i &&
-                        0 == i % 2;
-            }
-        };
+        PartialFunction<Integer, String> plus1StringIfEven = PartialFunction.of(
+            i -> null != i && 0 == i % 2,
+            i -> null == i
+                    ? null
+                    : String.valueOf(i + 1)
+        );
         Function<Integer, String> multiply2String =
                 i -> null == i
                         ? null
@@ -393,22 +383,12 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> applyOrElseWithPartialFunctionFunctionAndSupplierTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(asList(1, null, 3, 6));
-
-        PartialFunction<Integer, String> plus1StringIfEven = new PartialFunction<>() {
-
-            @Override
-            public String apply(final Integer i) {
-                return null == i
+        PartialFunction<Integer, String> plus1StringIfEven = PartialFunction.of(
+                i -> null != i && 0 == i % 2,
+                i -> null == i
                         ? null
-                        : String.valueOf(i + 1);
-            }
-
-            @Override
-            public boolean isDefinedAt(final Integer i) {
-                return null != i &&
-                        0 == i % 2;
-            }
-        };
+                        : String.valueOf(i + 1)
+        );
         Function<Integer, String> multiply2String =
                 i -> null == i
                         ? null
@@ -618,21 +598,12 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> collectWithPartialFunctionTestCases() {
         List<Integer> ints = asList(1, null, 12, 33, 45, 6);
-        PartialFunction<Integer, String> toStringIfLowerThan20 = new PartialFunction<>() {
-
-            @Override
-            public String apply(final Integer i) {
-                return null == i
+        PartialFunction<Integer, String> toStringIfLowerThan20 = PartialFunction.of(
+                i -> null != i && 0 > i.compareTo(20),
+                i -> null == i
                         ? null
-                        : i.toString();
-            }
-
-            @Override
-            public boolean isDefinedAt(final Integer i) {
-                return null != i &&
-                        0 > i.compareTo(20);
-            }
-        };
+                        : i.toString()
+        );
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   partialFunction,         expectedException,                expectedResult
@@ -662,21 +633,12 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> collectWithPartialFunctionAndSupplierTestCases() {
         List<String> strings = asList("A", "AB", null, "ABC", "T");
-        PartialFunction<String, Integer> lengthIfSizeGreaterThan1 = new PartialFunction<>() {
-
-            @Override
-            public Integer apply(final String s) {
-                return null == s
+        PartialFunction<String, Integer> lengthIfSizeGreaterThan1 = PartialFunction.of(
+                s -> null != s && 1 < s.length(),
+                s -> null == s
                         ? null
-                        : s.length();
-            }
-
-            @Override
-            public boolean isDefinedAt(final String s) {
-                return null != s &&
-                        1 < s.length();
-            }
-        };
+                        : s.length()
+        );
         Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
         return Stream.of(
                 //@formatter:off
@@ -714,21 +676,12 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> collectFirstTestCases() {
         List<String> strings = asList("A", "AB", null, "ABC", "T");
-        PartialFunction<String, Integer> lengthIfSizeGreaterThan1 = new PartialFunction<>() {
-
-            @Override
-            public Integer apply(final String s) {
-                return null == s
+        PartialFunction<String, Integer> lengthIfSizeGreaterThan1 = PartialFunction.of(
+                s -> null != s && 1 < s.length(),
+                s -> null == s
                         ? null
-                        : s.length();
-            }
-
-            @Override
-            public boolean isDefinedAt(final String s) {
-                return null != s &&
-                        1 < s.length();
-            }
-        };
+                        : s.length()
+        );
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   partialFunction,            expectedException,            expectedResult
@@ -1469,6 +1422,102 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> groupMapWithPartialFunctionTestCases() {
+        List<String> strings = List.of("AA", "BFF", "5TR", "H", "B", "TYSSGT");
+        PartialFunction<String, Map.Entry<Integer, String>> partialFunction = PartialFunction.of(
+                s -> null != s && 5 > s.length(),
+                s -> new AbstractMap.SimpleEntry<>(
+                        s.length(),
+                        s + "2"
+                     )
+        );
+        Map<Integer, List<String>> expectedResult = new HashMap<>() {{
+            put(1, List.of("H2", "B2"));
+            put(2, List.of("AA2"));
+            put(3, List.of("BFF2", "5TR2"));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,   expectedException,                expectedResult
+                Arguments.of( null,               null,              IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,              IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,              IllegalArgumentException.class,   null ),
+                Arguments.of( null,               partialFunction,   null,                             Map.of() ),
+                Arguments.of( List.of(),          partialFunction,   null,                             Map.of() ),
+                Arguments.of( strings,            partialFunction,   null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithPartialFunctionTestCases")
+    @DisplayName("groupMap: with partialFunction test cases")
+    public <T, K, V> void groupMapWithPartialFunction_testCases(Collection<? extends T> sourceCollection,
+                                                                PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
+                                                                Class<? extends Exception> expectedException,
+                                                                Map<K, List<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceCollection, partialFunction));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceCollection, partialFunction));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapWithPartialFunctionAndSupplierTestCases() {
+        List<String> strings = List.of("AA", "BFF", "5TR", "H", "B", "TYSSGT");
+        PartialFunction<String, Map.Entry<Integer, String>> partialFunction = PartialFunction.of(
+                s -> null != s && 5 > s.length(),
+                s -> new AbstractMap.SimpleEntry<>(
+                        s.length(),
+                        s + "2"
+                )
+        );
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Map<Integer, List<String>> expectedResultDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of("H2", "B2"));
+            put(2, List.of("AA2"));
+            put(3, List.of("BFF2", "5TR2"));
+        }};
+        Map<Integer, Set<String>> expectedResultWithSetCollectionFactory = new HashMap<>() {{
+            put(1, new LinkedHashSet<>(List.of("H2", "B2")));
+            put(2, new LinkedHashSet<>(List.of("AA2")));
+            put(3, new LinkedHashSet<>(List.of("BFF2", "5TR2")));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   partialFunction,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( null,               partialFunction,   null,                null,                             Map.of() ),
+                Arguments.of( null,               partialFunction,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(),          partialFunction,   null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          partialFunction,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( strings,            partialFunction,   null,                null,                             expectedResultDefaultCollectionFactory ),
+                Arguments.of( strings,            partialFunction,   setSupplier,         null,                             expectedResultWithSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithPartialFunctionAndSupplierTestCases")
+    @DisplayName("groupMap: with partialFunction and collectionFactory test cases")
+    public <T, K, V> void groupMapWithPartialFunctionAndSupplier_testCases(Collection<? extends T> sourceCollection,
+                                                                           PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
+                                                                           Supplier<Collection<V>> collectionFactory,
+                                                                           Class<? extends Exception> expectedException,
+                                                                           Map<K, Collection<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceCollection, partialFunction, collectionFactory));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceCollection, partialFunction, collectionFactory));
+        }
+    }
+
+
     static Stream<Arguments> groupMapWithFunctionsTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Function<Integer, Integer> mod3 = i -> i % 3;
@@ -1558,7 +1607,7 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> groupMapAllParametersTestCases() {
+    static Stream<Arguments> groupMapWithPredicateFunctionsAndSupplierTestCases() {
         List<String> strings = List.of("AA", "BFF", "5TR", "H", "B", "TYSSGT");
         Predicate<String> sSmallerThan5 = s -> 5 > s.length();
         Function<String, Integer> sLength = String::length;
@@ -1608,15 +1657,15 @@ public class CollectionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("groupMapAllParametersTestCases")
-    @DisplayName("groupMap: with all parameters test cases")
-    public <T, K, V> void groupMapAllParameters_testCases(Collection<? extends T> sourceCollection,
-                                                          Predicate<? super T> filterPredicate,
-                                                          Function<? super T, ? extends K> discriminatorKey,
-                                                          Function<? super T, ? extends V> valueMapper,
-                                                          Supplier<Collection<V>> collectionFactory,
-                                                          Class<? extends Exception> expectedException,
-                                                          Map<K, Collection<V>> expectedResult) {
+    @MethodSource("groupMapWithPredicateFunctionsAndSupplierTestCases")
+    @DisplayName("groupMap: with filterPredicate, discriminatorKey, valueMapper and collectionFactory test cases")
+    public <T, K, V> void groupMapWithPredicateFunctionsAndSupplier_testCases(Collection<? extends T> sourceCollection,
+                                                                              Predicate<? super T> filterPredicate,
+                                                                              Function<? super T, ? extends K> discriminatorKey,
+                                                                              Function<? super T, ? extends V> valueMapper,
+                                                                              Supplier<Collection<V>> collectionFactory,
+                                                                              Class<? extends Exception> expectedException,
+                                                                              Map<K, Collection<V>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceCollection, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
         } else {
@@ -2448,29 +2497,18 @@ public class CollectionUtilTest {
 
     static Stream<Arguments> toMapWithPartialFunctionBinaryOperatorAndSupplierTestCases() {
         List<Integer> ints = asList(1, null, 2, 1);
-
-        PartialFunction<Integer, Map.Entry<String, Integer>> partialFunction = new PartialFunction<>() {
-
-            @Override
-            public Map.Entry<String, Integer> apply(final Integer integer) {
-                return null == integer
+        PartialFunction<Integer, Map.Entry<String, Integer>> partialFunction = PartialFunction.of(
+                i -> null != i && 1 == i % 2,
+                i -> null == i
                         ? new AbstractMap.SimpleEntry<>(
                                 "",
                                 0
                           )
                         : new AbstractMap.SimpleEntry<>(
-                                String.valueOf(integer * 2),
-                                integer + 10
-                          );
-            }
-
-            @Override
-            public boolean isDefinedAt(final Integer integer) {
-                return null != integer &&
-                        1 == integer % 2;
-            }
-        };
-
+                                String.valueOf(i * 2),
+                                i + 10
+                          )
+        );
         BinaryOperator<Integer> keepsOldValue = (oldValue, newValue) -> oldValue;
         Supplier<Map<String, Integer>> mapFactory = LinkedHashMap::new;
 

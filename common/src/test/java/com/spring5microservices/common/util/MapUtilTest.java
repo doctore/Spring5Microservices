@@ -433,28 +433,20 @@ public class MapUtilTest {
             put(3, null);
             put(4, "o");
         }};
-        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
-
-            @Override
-            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
-                return null == entry
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = PartialFunction.of(
+                e -> null != e &&
+                        null != e.getValue() &&
+                        1 == e.getKey() % 2 &&
+                        "AEIOUaeiou".contains(e.getValue()),
+                e -> null == e
                         ? null
                         : new AbstractMap.SimpleEntry<>(
-                                entry.getKey(),
-                                null == entry.getValue()
+                                e.getKey(),
+                                null == e.getValue()
                                         ? 0L
-                                        : (long) (entry.getKey() * 2 + entry.getValue().length())
-                );
-            }
-
-            @Override
-            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-                return null != entry &&
-                        null != entry.getValue() &&
-                        1 == entry.getKey() % 2 &&
-                        "AEIOUaeiou".contains(entry.getValue());
-            }
-        };
+                                        : (long) (e.getKey() * 2 + e.getValue().length())
+                          )
+        );
         BiFunction<Integer, String, Map.Entry<Integer, Long>> sumKeyPlusValueLength =
                 (k, v) ->
                         new AbstractMap.SimpleEntry<>(
@@ -521,28 +513,20 @@ public class MapUtilTest {
             put(3, null);
             put(4, "o");
         }};
-        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
-
-            @Override
-            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
-                return null == entry
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = PartialFunction.of(
+                e -> null != e &&
+                        null != e.getValue() &&
+                        1 == e.getKey() % 2 &&
+                        "AEIOUaeiou".contains(e.getValue()),
+                e -> null == e
                         ? null
                         : new AbstractMap.SimpleEntry<>(
-                        entry.getKey(),
-                        null == entry.getValue()
-                                ? 0L
-                                : (long) (entry.getKey() * 2 + entry.getValue().length())
-                );
-            }
-
-            @Override
-            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-                return null != entry &&
-                        null != entry.getValue() &&
-                        1 == entry.getKey() % 2 &&
-                        "AEIOUaeiou".contains(entry.getValue());
-            }
-        };
+                                e.getKey(),
+                                null == e.getValue()
+                                        ? 0L
+                                        : (long) (e.getKey() * 2 + e.getValue().length())
+                          )
+        );
         BiFunction<Integer, String, Map.Entry<Integer, Long>> sumKeyPlusValueLength =
                 (k, v) ->
                         new AbstractMap.SimpleEntry<>(
@@ -750,28 +734,20 @@ public class MapUtilTest {
             put(2, null);
             put(4, "o");
         }};
-        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
-
-            @Override
-            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
-                return null == entry
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = PartialFunction.of(
+                e -> null != e &&
+                        null != e.getValue() &&
+                        0 == e.getKey() % 2 &&
+                        "AEIOUaeiou".contains(e.getValue()),
+                e -> null == e
                         ? null
                         : new AbstractMap.SimpleEntry<>(
-                                entry.getKey(),
-                                null == entry.getValue()
+                                e.getKey(),
+                                null == e.getValue()
                                         ? 0L
-                                        : (long) (entry.getKey() * 2 + entry.getValue().length())
-                          );
-            }
-
-            @Override
-            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-                return null != entry &&
-                        null != entry.getValue() &&
-                        0 == entry.getKey() % 2 &&
-                        "AEIOUaeiou".contains(entry.getValue());
-            }
-        };
+                                        : (long) (e.getKey() * 2 + e.getValue().length())
+                          )
+        );
         Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
             put(4, 9L);
         }};
@@ -808,26 +784,17 @@ public class MapUtilTest {
             put(2, null);
             put(4, "o");
         }};
-        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
-
-            @Override
-            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
-                return null == entry
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = PartialFunction.of(
+                e -> null != e && 0 == e.getKey() % 2,
+                e -> null == e
                         ? null
                         : new AbstractMap.SimpleEntry<>(
-                                entry.getKey() + 1,
-                                null == entry.getValue()
+                                e.getKey() + 1,
+                                null == e.getValue()
                                         ? 0L
-                                        : (long) (entry.getKey() * 2 + entry.getValue().length())
-                          );
-            }
-
-            @Override
-            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-                return null != entry &&
-                        0 == entry.getKey() % 2;
-            }
-        };
+                                        : (long) (e.getKey() * 2 + e.getValue().length())
+                          )
+        );
         Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
         Map<Integer, Long> intsAndLongsResult = new HashMap<>() {{
             put(3, 0L);
@@ -874,28 +841,20 @@ public class MapUtilTest {
             put(2, null);
             put(4, "o");
         }};
-        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = new PartialFunction<>() {
-
-            @Override
-            public Map.Entry<Integer, Long> apply(final Map.Entry<Integer, String> entry) {
-                return null == entry
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Long>> multiply2KeyPlusValueLength = PartialFunction.of(
+                e -> null != e &&
+                        null != e.getValue() &&
+                        0 == e.getKey() % 2 &&
+                        "AEIOUaeiou".contains(e.getValue()),
+                e -> null == e
                         ? null
                         : new AbstractMap.SimpleEntry<>(
-                        entry.getKey(),
-                        null == entry.getValue()
-                                ? 0L
-                                : (long) (entry.getKey() * 2 + entry.getValue().length())
-                );
-            }
-
-            @Override
-            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-                return null != entry &&
-                        null != entry.getValue() &&
-                        0 == entry.getKey() % 2 &&
-                        "AEIOUaeiou".contains(entry.getValue());
-            }
-        };
+                                e.getKey(),
+                                null == e.getValue()
+                                        ? 0L
+                                        : (long) (e.getKey() * 2 + e.getValue().length())
+                          )
+        );
         Map.Entry<Integer, Long> intsAndLongsResult = new AbstractMap.SimpleEntry<>(4, 9L);
         return Stream.of(
                 //@formatter:off
@@ -1634,6 +1593,115 @@ public class MapUtilTest {
     }
 
 
+    static Stream<Arguments> groupMapWithPartialFunctionTestCases() {
+        Map<String, Integer> stringsAndIntegers = new LinkedHashMap<>() {{
+            put("A", 10);
+            put("BY", 20);
+            put("C", 30);
+            put("DH", 40);
+            put("GHT", 55);
+        }};
+        PartialFunction<Map.Entry<String, Integer>, Map.Entry<Integer, Integer>> partialFunction = PartialFunction.of(
+                e -> null != e &&
+                        3 > e.getKey().length() &&
+                        50 > e.getValue(),
+                e -> new AbstractMap.SimpleEntry<>(
+                        e.getKey().length(),
+                        e.getValue() + 5
+                     )
+        );
+        Map<Integer, List<Integer>> expectedResult = new HashMap<>() {{
+            put(1, List.of(15, 35));
+            put(2, List.of(25, 45));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,            partialFunction,   expectedException,                expectedResult
+                Arguments.of( null,                 null,              IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),             null,              IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   null,              IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 partialFunction,   null,                             Map.of() ),
+                Arguments.of( Map.of(),             partialFunction,   null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   partialFunction,   null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithPartialFunctionTestCases")
+    @DisplayName("groupMap: with partialFunction test cases")
+    public <K1, K2, V1, V2> void groupMapWithPartialFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                       PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                       Class<? extends Exception> expectedException,
+                                                                       Map<K2, Collection<V2>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceMap, partialFunction));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceMap, partialFunction));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapWithPartialFunctionAndSupplierTestCases() {
+        Map<String, Integer> stringsAndIntegers = new LinkedHashMap<>() {{
+            put("A", 10);
+            put("BY", 20);
+            put("C", 30);
+            put("DH", 40);
+            put("GHT", 55);
+        }};
+        Supplier<Collection<Integer>> setSupplier = LinkedHashSet::new;
+
+        PartialFunction<Map.Entry<String, Integer>, Map.Entry<Integer, Integer>> partialFunction = PartialFunction.of(
+                e -> null != e &&
+                        3 > e.getKey().length() &&
+                        50 > e.getValue(),
+                e -> new AbstractMap.SimpleEntry<>(
+                        e.getKey().length(),
+                        e.getValue() + 5
+                )
+        );
+        Map<Integer, List<Integer>> expectedResultDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of(15, 35));
+            put(2, List.of(25, 45));
+        }};
+        Map<Integer, Set<Integer>> expectedResultSetCollectionFactory = new HashMap<>() {{
+            put(1, new LinkedHashSet<>(List.of(15, 35)));
+            put(2, new LinkedHashSet<>(List.of(25, 45)));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,            partialFunction,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,                 null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),             null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( Map.of(),             null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 partialFunction,   null,                null,                             Map.of() ),
+                Arguments.of( null,                 partialFunction,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( Map.of(),             partialFunction,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             partialFunction,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   partialFunction,   null,                null,                             expectedResultDefaultCollectionFactory ),
+                Arguments.of( stringsAndIntegers,   partialFunction,   setSupplier,         null,                             expectedResultSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithPartialFunctionAndSupplierTestCases")
+    @DisplayName("groupMap: with partialFunction and collectionFactory test cases")
+    public <K1, K2, V1, V2> void groupMapWithPartialFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                  PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                                  Supplier<Collection<V2>> collectionFactory,
+                                                                                  Class<? extends Exception> expectedException,
+                                                                                  Map<K2, Collection<V2>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceMap, partialFunction, collectionFactory));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceMap, partialFunction, collectionFactory));
+        }
+    }
+
+
     static Stream<Arguments> groupMapWithFunctionsTestCases() {
         Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
             put(1, "Hi");
@@ -1720,12 +1788,12 @@ public class MapUtilTest {
     @ParameterizedTest
     @MethodSource("groupMapWithPredicateAndFunctionsTestCases")
     @DisplayName("groupMap: with filterPredicate, discriminatorKey and valueMapper test cases")
-    public <T, E, R, V> void groupMapWithPredicateAndFunctions_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                                         BiPredicate<? super T, ? super E> filterPredicate,
-                                                                         BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
-                                                                         BiFunction<? super T, ? super E, ? extends V> valueMapper,
-                                                                         Class<? extends Exception> expectedException,
-                                                                         Map<R, Collection<V>> expectedResult) {
+    public <K1, K2, V1, V2> void groupMapWithPredicateAndFunctions_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                             BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                             BiFunction<? super K1, ? super V1, ? extends K2> discriminatorKey,
+                                                                             BiFunction<? super K1, ? super V1, ? extends V2> valueMapper,
+                                                                             Class<? extends Exception> expectedException,
+                                                                             Map<K2, Collection<V2>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceMap, filterPredicate, discriminatorKey, valueMapper));
         } else {
@@ -1734,7 +1802,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> groupMapAllParametersTestCases() {
+    static Stream<Arguments> groupMapWithPredicateFunctionsAndSupplierTestCases() {
         Map<String, Integer> stringsAndIntegers = new LinkedHashMap<>() {{
             put("A", 10);
             put("BY", 20);
@@ -1786,15 +1854,15 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("groupMapAllParametersTestCases")
-    @DisplayName("groupMap: with all parameters test cases")
-    public <T, E, R, V> void groupMapAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                             BiPredicate<? super T, ? super E> filterPredicate,
-                                                             BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
-                                                             BiFunction<? super T, ? super E, ? extends V> valueMapper,
-                                                             Supplier<Collection<V>> collectionFactory,
-                                                             Class<? extends Exception> expectedException,
-                                                             Map<R, Collection<V>> expectedResult) {
+    @MethodSource("groupMapWithPredicateFunctionsAndSupplierTestCases")
+    @DisplayName("groupMap: with filterPredicate, discriminatorKey, valueMapper and collectionFactory test cases")
+    public <K1, K2, V1, V2> void groupMapWithPredicateFunctionsAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                     BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                                     BiFunction<? super K1, ? super V1, ? extends K1> discriminatorKey,
+                                                                                     BiFunction<? super K1, ? super V1, ? extends V2> valueMapper,
+                                                                                     Supplier<Collection<V2>> collectionFactory,
+                                                                                     Class<? extends Exception> expectedException,
+                                                                                     Map<K2, Collection<V2>> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMap(sourceMap, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
         } else {
@@ -3019,26 +3087,23 @@ public class MapUtilTest {
             put(4, "o");
             put(6, null);
         }};
-        PartialFunction<Map.Entry<Integer, String>, Integer> partialFunction = new PartialFunction<>() {
-
-            @Override
-            public Integer apply(final Map.Entry<Integer, String> entry) {
-                if (null == entry) {
-                    return 0;
+        PartialFunction<Map.Entry<Integer, String>, Integer> partialFunction = PartialFunction.of(
+                e -> null != e &&
+                        null != e.getKey() &&
+                        0 == e.getKey() % 2,
+                e -> {
+                    if (null == e) {
+                        return 0;
+                    }
+                    final int finalKey = null == e.getKey()
+                            ? 0
+                            : e.getKey();
+                    final int finalValue = null == e.getValue()
+                            ? 0
+                            : e.getValue().length();
+                    return finalKey + finalValue;
                 }
-                final int finalKey = null == entry.getKey() ? 0 : entry.getKey();
-                final int finalValue = null == entry.getValue() ? 0 : entry.getValue().length();
-                return finalKey + finalValue;
-            }
-
-            @Override
-            public boolean isDefinedAt(final Map.Entry<Integer, String> entry) {
-                return null != entry &&
-                       null != entry.getKey() &&
-                       0 == entry.getKey() % 2;
-            }
-        };
-
+        );
         Supplier<Set<Integer>> setSupplier = HashSet::new;
 
         List<Integer> expectedResultWithFilterDefaultSupplier = asList(3, 5, 6);
