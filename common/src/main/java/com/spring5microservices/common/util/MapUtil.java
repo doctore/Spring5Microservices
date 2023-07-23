@@ -977,23 +977,61 @@ public class MapUtil {
      *    A {@link TriFunction} which combines elements
      *
      * @return a folded value
-     *
-     * @throws IllegalArgumentException if {@code initialValue} is {@code null}
      */
     public static <T, E, R> R foldLeft(final Map<? extends T, ? extends E> sourceMap,
                                        final R initialValue,
                                        final TriFunction<R, ? super T, ? super E, R> accumulator) {
-        Assert.notNull(initialValue, "initialValue must be not null");
+        return foldLeft(
+                sourceMap,
+                biAlwaysTrue(),
+                initialValue,
+                accumulator
+        );
+    }
+
+
+    /**
+     *    Folds given {@link Map} values from the left, starting with {@code initialValue} and successively
+     * calling {@code accumulator}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                  Result:
+     *    [(1, "Hi"), (2, "Hola"), (3, "World")]       10
+     *    (k, v) -> 1 == k % 2
+     *    0
+     *    (prev, k, v) -> prev + k + v.length()
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with elements to combine
+     * @param filterPredicate
+     *    {@link BiPredicate} used to filter elements of {@code sourceMap}
+     * @param initialValue
+     *    The initial value to start with
+     * @param accumulator
+     *    A {@link TriFunction} which combines elements
+     *
+     * @return a folded value
+     */
+    public static <T, E, R> R foldLeft(final Map<? extends T, ? extends E> sourceMap,
+                                       final BiPredicate<? super T, ? super E> filterPredicate,
+                                       final R initialValue,
+                                       final TriFunction<R, ? super T, ? super E, R> accumulator) {
         return ofNullable(sourceMap)
                 .map(sm -> {
                     R result = initialValue;
                     if (nonNull(accumulator)) {
-                        for (var entry : sm.entrySet()) {
-                            result = accumulator.apply(
-                                    result,
-                                    entry.getKey(),
-                                    entry.getValue()
-                            );
+                        final BiPredicate<? super T, ? super E> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+                        for (var entry: sm.entrySet()) {
+                            if (finalFilterPredicate.test(entry.getKey(), entry.getValue())) {
+                                result = accumulator.apply(
+                                        result,
+                                        entry.getKey(),
+                                        entry.getValue()
+                                );
+                            }
                         }
                     }
                     return result;
@@ -1202,7 +1240,7 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
     @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
@@ -1247,16 +1285,16 @@ public class MapUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
     @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, Collection<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
                                                                     final PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
                                                                     final Supplier<Collection<V2>> collectionFactory) {
-        Assert.notNull(partialFunction, "partialFunction must be not null");
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
         final Supplier<Collection<V2>> finalCollectionFactory = ObjectUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new
@@ -1303,6 +1341,7 @@ public class MapUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceMap}
      */
     @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
@@ -1335,7 +1374,9 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform.
+     *    Source {@link Map} with the elements to transform
+     * @param filterPredicate
+     *    {@link BiPredicate} used to filter elements of {@code sourceMap}
      * @param discriminatorKey
      *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1344,6 +1385,7 @@ public class MapUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceMap}
      */
     @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
@@ -1392,17 +1434,18 @@ public class MapUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceMap}
      */
     public static <K1, K2, V1, V2> Map<K2, Collection<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
                                                                     final BiPredicate<? super K1, ? super V1> filterPredicate,
                                                                     final BiFunction<? super K1, ? super V1, ? extends K2> discriminatorKey,
                                                                     final BiFunction<? super K1, ? super V1, ? extends V2> valueMapper,
                                                                     final Supplier<Collection<V2>> collectionFactory) {
-        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
-        Assert.notNull(valueMapper, "valueMapper must be not null");
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        Assert.notNull(valueMapper, "valueMapper must be not null");
         final Supplier<Collection<V2>> finalCollectionFactory = ObjectUtil.getOrElse(
                 collectionFactory,
                 ArrayList::new

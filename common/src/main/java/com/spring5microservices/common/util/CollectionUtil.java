@@ -1076,21 +1076,12 @@ public class CollectionUtil {
      * elements of {@code sourceCollection}, going left to right.
      *
      * <pre>
-     * Example 1:
+     * Example:
      *
      *   Parameters:              Result:
      *    [5, 7, 9]                315
      *    1
      *    (a, b) -> a * b
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:              Result:
-     *    ["a", "h"]               "!ah"
-     *    "!"
-     *    (a, b) -> a + b
      * </pre>
      *
      * @param sourceCollection
@@ -1102,20 +1093,59 @@ public class CollectionUtil {
      *
      * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
      *         left to right with the start value {@code initialValue} on the left.
-     *
-     * @throws IllegalArgumentException if {@code initialValue} is {@code null}
      */
     public static <T, E> E foldLeft(final Collection<? extends T> sourceCollection,
                                     final E initialValue,
                                     final BiFunction<E, ? super T, E> accumulator) {
-        Assert.notNull(initialValue, "initialValue must be not null");
+        return foldLeft(
+                sourceCollection,
+                alwaysTrue(),
+                initialValue,
+                accumulator
+        );
+    }
+
+
+    /**
+     *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to elements
+     * of {@code sourceCollection} that verify {@code filterPredicate}, going left to right.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [5, 7, 8, 9]             315
+     *    1
+     *    (a, b) -> a * b
+     *    i -> 1 == i % 2
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} with elements to combine
+     * @param filterPredicate
+     *    {@link Predicate} used to filter elements of {@code sourceCollection}
+     * @param initialValue
+     *    The initial value to start with
+     * @param accumulator
+     *    A {@link BiFunction} which combines elements
+     *
+     * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
+     *         left to right with the start value {@code initialValue} on the left.
+     */
+    public static <T, E> E foldLeft(final Collection<? extends T> sourceCollection,
+                                    final Predicate<? super T> filterPredicate,
+                                    final E initialValue,
+                                    final BiFunction<E, ? super T, E> accumulator) {
         return ofNullable(sourceCollection)
                 .map(CollectionUtil::getCollectionKeepingInternalOrdination)
                 .map(sc -> {
                     E result = initialValue;
                     if (nonNull(accumulator)) {
+                        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
                         for (T element: sc) {
-                            result = accumulator.apply(result, element);
+                            if (finalFilterPredicate.test(element)) {
+                                result = accumulator.apply(result, element);
+                            }
                         }
                     }
                     return result;
@@ -1129,7 +1159,7 @@ public class CollectionUtil {
      * elements of {@code sourceCollection}, going right to left.
      *
      * <pre>
-     * Example 1:
+     * Example:
      *
      *   Parameters:              Result:
      *    [5, 7, 9]                315
@@ -1137,32 +1167,61 @@ public class CollectionUtil {
      *    (a, b) -> a * b
      * </pre>
      *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:              Result:
-     *    ["a", "h"]               "!ha"
-     *    "!"
-     *    (a, b) -> a + b
-     * </pre>
-     *
      * @param sourceCollection
-     *    {@link Collection} with elements to combine.
+     *    {@link Collection} with elements to combine
      * @param initialValue
-     *    The initial value to start with.
+     *    The initial value to start with
      * @param accumulator
-     *    A {@link BiFunction} which combines elements.
+     *    A {@link BiFunction} which combines elements
      *
      * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
      *         right to left with the start value {@code initialValue} on the right.
-     *
-     * @throws IllegalArgumentException if {@code initialValue} is {@code null}
      */
     public static <T, E> E foldRight(final Collection<? extends T> sourceCollection,
                                      final E initialValue,
                                      final BiFunction<E, ? super T, E> accumulator) {
+        return foldRight(
+                sourceCollection,
+                alwaysTrue(),
+                initialValue,
+                accumulator
+        );
+    }
+
+
+    /**
+     *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to elements
+     * of {@code sourceCollection} that verify {@code filterPredicate}, going right to left.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [5, 7, 8, 9]             315
+     *    1
+     *    (a, b) -> a * b
+     *    i -> 1 == i % 2
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} with elements to combine
+     * @param filterPredicate
+     *    {@link Predicate} used to filter elements of {@code sourceCollection}
+     * @param initialValue
+     *    The initial value to start with
+     * @param accumulator
+     *    A {@link BiFunction} which combines elements
+     *
+     * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
+     *         right to left with the start value {@code initialValue} on the right.
+     */
+    public static <T, E> E foldRight(final Collection<? extends T> sourceCollection,
+                                     final Predicate<? super T> filterPredicate,
+                                     final E initialValue,
+                                     final BiFunction<E, ? super T, E> accumulator) {
         return foldLeft(
                 reverseList(sourceCollection),
+                filterPredicate,
                 initialValue,
                 accumulator
         );
@@ -1305,7 +1364,7 @@ public class CollectionUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code partialFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
      */
     @SuppressWarnings("unchecked")
     public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
@@ -1349,15 +1408,15 @@ public class CollectionUtil {
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code partialFunction} is {@code null}
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
      */
     public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
                                                            final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
                                                            final Supplier<Collection<V>> collectionFactory) {
-        Assert.notNull(partialFunction, "partialFunction must be not null");
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new HashMap<>();
         }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
         final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
 
         Map<K, Collection<V>> result = new HashMap<>();
@@ -1401,6 +1460,7 @@ public class CollectionUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
      */
     @SuppressWarnings("unchecked")
     public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
@@ -1445,6 +1505,7 @@ public class CollectionUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
      */
     @SuppressWarnings("unchecked")
     public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
@@ -1492,17 +1553,18 @@ public class CollectionUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
      */
     public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
                                                            final Predicate<? super T> filterPredicate,
                                                            final Function<? super T, ? extends K> discriminatorKey,
                                                            final Function<? super T, ? extends V> valueMapper,
                                                            final Supplier<Collection<V>> collectionFactory) {
-        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
-        Assert.notNull(valueMapper, "valueMapper must be not null");
         if (CollectionUtils.isEmpty(sourceCollection)) {
             return new HashMap<>();
         }
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        Assert.notNull(valueMapper, "valueMapper must be not null");
         final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
 

@@ -43,6 +43,7 @@ import static com.spring5microservices.common.util.CollectionUtil.*;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -1210,83 +1211,173 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> foldLeftTestCases() {
+    static Stream<Arguments> foldLeftWithInitialValueAndAccumulatorTestCases() {
         List<Integer> integers = List.of(1, 3, 5);
         List<String> strings = List.of("AB", "E", "GMT");
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
         longs.addAll(List.of(54L, 75L, 12L));
 
         BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
+        BiFunction<Long, Long, Long> sum = (a, b) -> ofNullable(a).orElse(0L) + ofNullable(b).orElse(0L);
         BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
-        BiFunction<String, String, String> concat = (a, b) -> a + b;
-        BiFunction<Long, Long, Long> subtract = (a, b) -> a - b;
+        BiFunction<String, String, String> concat = (a, b) -> ofNullable(a).orElse("") + ofNullable(b).orElse("");
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   initialValue,   accumulator,   expectedException,                expectedResult
-                Arguments.of( null,               null,           null,          IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          2,              null,          null,                             2 ),
-                Arguments.of( List.of(),          1,              multiply,      null,                             1 ),
-                Arguments.of( integers,           0,              null,          null,                             0 ),
-                Arguments.of( integers,           1,              multiply,      null,                             15 ),
-                Arguments.of( strings,            0,              sumLength,     null,                             6 ),
-                Arguments.of( strings,            "-",            concat,        null,                             "-ABEGMT" ),
-                Arguments.of( longs,              10L,            subtract,      null,                             -131L )
+                //            sourceCollection,   initialValue,   accumulator,   expectedResult
+                Arguments.of( null,               null,           null,          null ),
+                Arguments.of( List.of(),          2,              null,          2 ),
+                Arguments.of( List.of(),          1,              multiply,      1 ),
+                Arguments.of( integers,           0,              null,          0 ),
+                Arguments.of( integers,           1,              multiply,      15 ),
+                Arguments.of( longs,              null,           sum,           141L ),
+                Arguments.of( longs,              3L,             sum,           144L ),
+                Arguments.of( strings,            0,              sumLength,     6 ),
+                Arguments.of( strings,            "-",            concat,        "-ABEGMT" ),
+                Arguments.of( strings,            null,           concat,        "ABEGMT" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("foldLeftTestCases")
-    @DisplayName("foldLeft: test cases")
-    public <T, E> void foldLeft_testCases(Collection<T> sourceCollection,
-                                          E initialValue,
-                                          BiFunction<E, ? super T, E> accumulator,
-                                          Class<? extends Exception> expectedException,
-                                          E expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> foldLeft(sourceCollection, initialValue, accumulator));
-        } else {
-            assertEquals(expectedResult, foldLeft(sourceCollection, initialValue, accumulator));
-        }
+    @MethodSource("foldLeftWithInitialValueAndAccumulatorTestCases")
+    @DisplayName("foldLeft: with initialValue and accumulator test cases")
+    public <T, E> void foldLeftWithInitialValueAndAccumulator_testCases(Collection<T> sourceCollection,
+                                                                        E initialValue,
+                                                                        BiFunction<E, ? super T, E> accumulator,
+                                                                        E expectedResult) {
+        assertEquals(expectedResult, foldLeft(sourceCollection, initialValue, accumulator));
     }
 
 
-    static Stream<Arguments> foldRightTestCases() {
+    static Stream<Arguments> foldLeftAllParametersTestCases() {
+        List<Integer> integers = List.of(1, 3, 5, 6);
+        List<String> strings = asList("AB", "E", "GMTY", null);
+
+        Predicate<Integer> isOdd = i -> null != i && 1 == i % 2;
+        Predicate<String> longerThan2 = s -> null != s && 2 < s.length();
+
+        BiFunction<Integer, Integer, Integer> multiply = (a, b) -> ofNullable(a).orElse(1) * ofNullable(b).orElse(1);
+        BiFunction<String, String, String> concat = (a, b) -> ofNullable(a).orElse("") + ofNullable(b).orElse("");
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   initialValue,   accumulator,   expectedResult
+                Arguments.of( null,               null,              null,           null,          null ),
+                Arguments.of( null,               isOdd,             null,           null,          null ),
+                Arguments.of( List.of(),          null,              null,           null,          null ),
+                Arguments.of( List.of(),          isOdd,             null,           null,          null ),
+                Arguments.of( List.of(),          null,              2,              null,          2 ),
+                Arguments.of( List.of(),          isOdd,             2,              null,          2 ),
+                Arguments.of( List.of(),          null,              1,              multiply,      1 ),
+                Arguments.of( List.of(),          isOdd,             1,              multiply,      1 ),
+                Arguments.of( integers,           null,              null,           null,          null ),
+                Arguments.of( integers,           null,              null,           multiply,      90 ),
+                Arguments.of( integers,           null,              0,              null,          0 ),
+                Arguments.of( integers,           null,              1,              multiply,      90 ),
+                Arguments.of( integers,           isOdd,             1,              multiply,      15 ),
+                Arguments.of( strings,            null,              null,           null,          null ),
+                Arguments.of( strings,            longerThan2,       null,           null,          null ),
+                Arguments.of( strings,            null,              "",             null,          "" ),
+                Arguments.of( strings,            longerThan2,       "",             null,          "" ),
+                Arguments.of( strings,            null,              null,           concat,        "ABEGMTY" ),
+                Arguments.of( strings,            longerThan2,       null,           concat,        "GMTY" ),
+                Arguments.of( strings,            null,              "-",            concat,        "-ABEGMTY" ),
+                Arguments.of( strings,            longerThan2,       "-",            concat,        "-GMTY" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldLeftAllParametersTestCases")
+    @DisplayName("foldLeft: with all parameters test cases")
+    public <T, E> void foldLeftAllParameters_testCases(Collection<T> sourceCollection,
+                                                       Predicate<? super T> filterPredicate,
+                                                       E initialValue,
+                                                       BiFunction<E, ? super T, E> accumulator,
+                                                       E expectedResult) {
+        assertEquals(expectedResult, foldLeft(sourceCollection, filterPredicate, initialValue, accumulator));
+    }
+
+
+    static Stream<Arguments> foldRightWithInitialValueAndAccumulatorTestCases() {
         List<Integer> integers = List.of(1, 3, 5);
         List<String> strings = List.of("AB", "E", "GMT");
         PriorityQueue<Long> longs = new PriorityQueue<>(Comparator.naturalOrder());
         longs.addAll(List.of(54L, 75L, 12L));
 
         BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;
+        BiFunction<Long, Long, Long> sum = (a, b) -> ofNullable(a).orElse(0L) + ofNullable(b).orElse(0L);
         BiFunction<Integer, String, Integer> sumLength = (a, b) -> a + b.length();
-        BiFunction<String, String, String> concat = (a, b) -> a + b;
-        BiFunction<Long, Long, Long> subtract = (a, b) -> a - b;
+        BiFunction<String, String, String> concat = (a, b) -> ofNullable(a).orElse("") + ofNullable(b).orElse("");
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   initialValue,   accumulator,   expectedException,                expectedResult
-                Arguments.of( null,               null,           null,          IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          2,              null,          null,                             2 ),
-                Arguments.of( List.of(),          1,              multiply,      null,                             1 ),
-                Arguments.of( integers,           0,              null,          null,                             0 ),
-                Arguments.of( integers,           1,              multiply,      null,                             15 ),
-                Arguments.of( strings,            0,              sumLength,     null,                             6 ),
-                Arguments.of( strings,            "-",            concat,        null,                             "-GMTEAB" ),
-                Arguments.of( longs,              10L,            subtract,      null,                             -131L )
+                //            sourceCollection,   initialValue,   accumulator,   expectedResult
+                Arguments.of( null,               null,           null,          null ),
+                Arguments.of( List.of(),          2,              null,          2 ),
+                Arguments.of( List.of(),          1,              multiply,      1 ),
+                Arguments.of( integers,           0,              null,          0 ),
+                Arguments.of( integers,           1,              multiply,      15 ),
+                Arguments.of( longs,              null,           sum,           141L ),
+                Arguments.of( longs,              3L,             sum,           144L ),
+                Arguments.of( strings,            0,              sumLength,     6 ),
+                Arguments.of( strings,            "-",            concat,        "-GMTEAB" ),
+                Arguments.of( strings,            null,           concat,        "GMTEAB" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("foldRightTestCases")
-    @DisplayName("foldRight: test cases")
-    public <T, E> void foldRight_testCases(Collection<T> sourceCollection,
-                                           E initialValue,
-                                           BiFunction<E, ? super T, E> accumulator,
-                                           Class<? extends Exception> expectedException,
-                                           E expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> foldRight(sourceCollection, initialValue, accumulator));
-        } else {
-            assertEquals(expectedResult, foldRight(sourceCollection, initialValue, accumulator));
-        }
+    @MethodSource("foldRightWithInitialValueAndAccumulatorTestCases")
+    @DisplayName("foldRight: with initialValue and accumulator test cases")
+    public <T, E> void foldRightWithInitialValueAndAccumulator_testCases(Collection<T> sourceCollection,
+                                                                         E initialValue,
+                                                                         BiFunction<E, ? super T, E> accumulator,
+                                                                         E expectedResult) {
+        assertEquals(expectedResult, foldRight(sourceCollection, initialValue, accumulator));
+    }
+
+
+    static Stream<Arguments> foldRightAllParametersTestCases() {
+        List<Integer> integers = List.of(1, 3, 5, 6);
+        List<String> strings = List.of("AB", "E", "GMTY");
+
+        Predicate<Integer> isOdd = i -> null != i && 1 == i % 2;
+        Predicate<String> longerThan2 = s -> null != s && 2 < s.length();
+
+        BiFunction<Integer, Integer, Integer> multiply = (a, b) -> ofNullable(a).orElse(1) * ofNullable(b).orElse(1);
+        BiFunction<String, String, String> concat = (a, b) -> ofNullable(a).orElse("") + ofNullable(b).orElse("");
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   initialValue,   accumulator,   expectedResult
+                Arguments.of( null,               null,              null,           null,          null ),
+                Arguments.of( null,               isOdd,             null,           null,          null ),
+                Arguments.of( List.of(),          null,              null,           null,          null ),
+                Arguments.of( List.of(),          isOdd,             null,           null,          null ),
+                Arguments.of( List.of(),          null,              2,              null,          2 ),
+                Arguments.of( List.of(),          isOdd,             2,              null,          2 ),
+                Arguments.of( List.of(),          null,              1,              multiply,      1 ),
+                Arguments.of( List.of(),          isOdd,             1,              multiply,      1 ),
+                Arguments.of( integers,           null,              null,           null,          null ),
+                Arguments.of( integers,           null,              null,           multiply,      90 ),
+                Arguments.of( integers,           null,              0,              null,          0 ),
+                Arguments.of( integers,           null,              1,              multiply,      90 ),
+                Arguments.of( integers,           isOdd,             1,              multiply,      15 ),
+                Arguments.of( strings,            null,              null,           null,          null ),
+                Arguments.of( strings,            longerThan2,       null,           null,          null ),
+                Arguments.of( strings,            null,              "",             null,          "" ),
+                Arguments.of( strings,            longerThan2,       "",             null,          "" ),
+                Arguments.of( strings,            null,              null,           concat,        "GMTYEAB" ),
+                Arguments.of( strings,            longerThan2,       null,           concat,        "GMTY" ),
+                Arguments.of( strings,            null,              "-",            concat,        "-GMTYEAB" ),
+                Arguments.of( strings,            longerThan2,       "-",            concat,        "-GMTY" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldRightAllParametersTestCases")
+    @DisplayName("foldRight: with all parameters test cases")
+    public <T, E> void foldRightAllParameters_testCases(Collection<T> sourceCollection,
+                                                        Predicate<? super T> filterPredicate,
+                                                        E initialValue,
+                                                        BiFunction<E, ? super T, E> accumulator,
+                                                        E expectedResult) {
+        assertEquals(expectedResult, foldRight(sourceCollection, filterPredicate, initialValue, accumulator));
     }
 
 
@@ -1439,8 +1530,8 @@ public class CollectionUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   partialFunction,   expectedException,                expectedResult
-                Arguments.of( null,               null,              IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,                             Map.of() ),
                 Arguments.of( List.of(1),         null,              IllegalArgumentException.class,   null ),
                 Arguments.of( null,               partialFunction,   null,                             Map.of() ),
                 Arguments.of( List.of(),          partialFunction,   null,                             Map.of() ),
@@ -1487,10 +1578,10 @@ public class CollectionUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   partialFunction,   collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,               null,              null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,               null,              setSupplier,         IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              null,                IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,                null,                             Map.of() ),
+                Arguments.of( null,               null,              setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              setSupplier,         null,                             Map.of() ),
                 Arguments.of( List.of(1),         null,              null,                IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         null,              setSupplier,         IllegalArgumentException.class,   null ),
                 Arguments.of( null,               partialFunction,   null,                null,                             Map.of() ),
@@ -1530,8 +1621,8 @@ public class CollectionUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   discriminatorKey,   valueMapper,   expectedException,                expectedResult
-                Arguments.of( null,               null,               null,          IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,               null,          null,                             Map.of() ),
+                Arguments.of( List.of(),          null,               null,          null,                             Map.of() ),
                 Arguments.of( List.of(1),         null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         mod3,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         null,               square,        IllegalArgumentException.class,   null ),
@@ -1577,8 +1668,8 @@ public class CollectionUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   discriminatorKey,   valueMapper,   expectedException,                expectedResult
-                Arguments.of( null,               null,              null,               null,          IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,               null,          null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,               null,          null,                             Map.of() ),
                 Arguments.of( List.of(1),         null,              null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         sSmallerThan5,     null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         sSmallerThan5,     sLength,            null,          IllegalArgumentException.class,   null ),
@@ -1639,8 +1730,10 @@ public class CollectionUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceCollection,   filterPredicate,   discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,               null,              null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          null,              null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              null,               null,          null,                null,                             Map.of() ),
+                Arguments.of( null,               null,              null,               null,          setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,               null,          null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,               null,          setSupplier,         null,                             Map.of() ),
                 Arguments.of( List.of(1),         null,              null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         sSmallerThan5,     null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( List.of(1),         sSmallerThan5,     sLength,            null,          null,                IllegalArgumentException.class,   null ),

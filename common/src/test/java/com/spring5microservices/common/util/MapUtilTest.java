@@ -32,6 +32,7 @@ import static com.spring5microservices.common.util.MapUtil.*;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -1348,44 +1349,96 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> foldLeftTestCases() {
+    static Stream<Arguments> foldLeftWithInitialValueAndAccumulatorTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
-            put(4, "o");
+            put(4, null);
         }};
         Map<Integer, Long> intsAndLongs = new HashMap<>() {{
             put(7, 3L);
             put(11, 6L);
             put(21, 9L);
         }};
-        TriFunction<Integer, Integer, String, Integer> multiply = (a, b, c) -> a * b * c.length();
+        TriFunction<Integer, Integer, String, Integer> multiply = (a, b, c) -> ofNullable(a).orElse(1) * b * ofNullable(c).map(String::length).orElse(1);
         TriFunction<Long, Integer, Long, Long> sum = (a, b, c) -> a + (long)b + c;
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,         initialValue,   accumulator,   expectedException,                expectedResult
-                Arguments.of( null,              null,           null,          IllegalArgumentException.class,   null ),
-                Arguments.of( new HashMap<>(),   2,              null,          null,                             2 ),
-                Arguments.of( new HashMap<>(),   1,              multiply,      null,                             1 ),
-                Arguments.of( intsAndStrings,    0,              null,          null,                             0 ),
-                Arguments.of( intsAndStrings,    1,              multiply,      null,                             8 ),
-                Arguments.of( intsAndLongs,      5L,             sum,           null,                             62L )
+                //            sourceMap,         initialValue,   accumulator,   expectedResult
+                Arguments.of( null,              null,           null,          null ),
+                Arguments.of( new HashMap<>(),   2,              null,          2 ),
+                Arguments.of( new HashMap<>(),   1,              multiply,      1 ),
+                Arguments.of( intsAndStrings,    0,              null,          0 ),
+                Arguments.of( intsAndStrings,    1,              multiply,      8 ),
+                Arguments.of( intsAndStrings,    null,           multiply,      8 ),
+                Arguments.of( intsAndLongs,      5L,             sum,           62L )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("foldLeftTestCases")
-    @DisplayName("foldLeft: test cases")
-    public <T, E, R> void foldLeft_testCases(Map<? extends T, ? extends E> sourceMap,
-                                             R initialValue,
-                                             TriFunction<R, ? super T, ?super E, R> accumulator,
-                                             Class<? extends Exception> expectedException,
-                                             R expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> foldLeft(sourceMap, initialValue, accumulator));
-        } else {
-            assertEquals(expectedResult, foldLeft(sourceMap, initialValue, accumulator));
-        }
+    @MethodSource("foldLeftWithInitialValueAndAccumulatorTestCases")
+    @DisplayName("foldLeft: with initialValue and accumulator test cases")
+    public <T, E, R> void foldLeftWithInitialValueAndAccumulator_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                           R initialValue,
+                                                                           TriFunction<R, ? super T, ?super E, R> accumulator,
+                                                                           R expectedResult) {
+        assertEquals(expectedResult, foldLeft(sourceMap, initialValue, accumulator));
+    }
+
+
+    static Stream<Arguments> foldLeftAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, null);
+            put(6, "e");
+        }};
+        Map<Integer, Long> intsAndLongs = new HashMap<>() {{
+            put(7, 3L);
+            put(11, 6L);
+            put(21, null);
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) ->
+                k % 2 == 0 &&
+                        (
+                                null != v &&
+                                        "AEIOUaeiou".contains(v)
+                        );
+        TriFunction<Integer, Integer, String, Integer> multiply = (a, b, c) -> ofNullable(a).orElse(1) * b * ofNullable(c).map(String::length).orElse(1);
+        TriFunction<Long, Integer, Long, Long> sum = (a, b, c) -> ofNullable(a).orElse(0L) + (long)b + ofNullable(c).orElse(0L);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         filterPredicate,           initialValue,   accumulator,   expectedResult
+                Arguments.of( null,               null,                     null,           null,          null ),
+                Arguments.of( null,               isKeyEvenAndValueVowel,   null,           null,          null ),
+                Arguments.of( new HashMap<>(),    null,                     null,           null,          null ),
+                Arguments.of( new HashMap<>(),    isKeyEvenAndValueVowel,   null,           null,          null ),
+                Arguments.of( new HashMap<>(),    null,                     2,              null,          2 ),
+                Arguments.of( new HashMap<>(),    isKeyEvenAndValueVowel,   2,              null,          2 ),
+                Arguments.of( new HashMap<>(),    null,                     1,              multiply,      1 ),
+                Arguments.of( new HashMap<>(),    isKeyEvenAndValueVowel,   1,              multiply,      1 ),
+                Arguments.of( intsAndLongs,       null,                     null,           null,          null ),
+                Arguments.of( intsAndLongs,       null,                     null,           sum,           48L ),
+                Arguments.of( intsAndLongs,       null,                     0L,             null,          0L ),
+                Arguments.of( intsAndLongs,       null,                     2L,             sum,           50L ),
+                Arguments.of( intsAndStrings,     null,                     null,           null,          null ),
+                Arguments.of( intsAndStrings,     isKeyEvenAndValueVowel,   null,           null,          null ),
+                Arguments.of( intsAndStrings,     null,                     0,              null,          0 ),
+                Arguments.of( intsAndStrings,     isKeyEvenAndValueVowel,   0,              null,          0 ),
+                Arguments.of( intsAndStrings,     null,                     1,              multiply,      48 ),
+                Arguments.of( intsAndStrings,     isKeyEvenAndValueVowel,   1,              multiply,      6 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldLeftAllParametersTestCases")
+    @DisplayName("foldLeft: with all parameters test cases")
+    public <T, E, R> void foldLeftAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                          BiPredicate<? super T, ? super E> filterPredicate,
+                                                          R initialValue,
+                                                          TriFunction<R, ? super T, ?super E, R> accumulator,
+                                                          R expectedResult) {
+        assertEquals(expectedResult, foldLeft(sourceMap, filterPredicate, initialValue, accumulator));
     }
 
 
@@ -1617,8 +1670,8 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,            partialFunction,   expectedException,                expectedResult
-                Arguments.of( null,                 null,              IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),             null,              IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,              null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,              null,                             Map.of() ),
                 Arguments.of( stringsAndIntegers,   null,              IllegalArgumentException.class,   null ),
                 Arguments.of( null,                 partialFunction,   null,                             Map.of() ),
                 Arguments.of( Map.of(),             partialFunction,   null,                             Map.of() ),
@@ -1671,10 +1724,10 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,            partialFunction,   collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,                 null,              null,                IllegalArgumentException.class,   null ),
-                Arguments.of( null,                 null,              setSupplier,         IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),             null,              null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),             null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,              null,                null,                             Map.of() ),
+                Arguments.of( null,                 null,              setSupplier,         null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,              null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,              setSupplier,         null,                             Map.of() ),
                 Arguments.of( stringsAndIntegers,   null,              null,                IllegalArgumentException.class,   null ),
                 Arguments.of( stringsAndIntegers,   null,              setSupplier,         IllegalArgumentException.class,   null ),
                 Arguments.of( null,                 partialFunction,   null,                null,                             Map.of() ),
@@ -1719,8 +1772,8 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,        discriminatorKey,   valueMapper,   expectedException,                expectedResult
-                Arguments.of( null,             null,               null,          IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( null,             null,               null,          null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,               null,          null,                             Map.of() ),
                 Arguments.of( intsAndStrings,   null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   keyMod3,            null,          IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   null,               valueLength,   IllegalArgumentException.class,   null ),
@@ -1770,8 +1823,8 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,            filterPredicate,                      discriminatorKey,   valueMapper,   expectedException,                expectedResult
-                Arguments.of( null,                 null,                                 null,               null,          IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),             null,                                 null,               null,          IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,                                 null,               null,          null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,                                 null,               null,          null,                             Map.of() ),
                 Arguments.of( stringsAndIntegers,   null,                                 null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   null,               null,          IllegalArgumentException.class,   null ),
                 Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   keyLength,          null,          IllegalArgumentException.class,   null ),
@@ -1836,8 +1889,10 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,            filterPredicate,                      discriminatorKey,   valueMapper,   collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,                 null,                                 null,               null,          null,                IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),             null,                                 null,               null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 null,                                 null,               null,          null,                null,                             Map.of() ),
+                Arguments.of( null,                 null,                                 null,               null,          setSupplier,         null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,                                 null,               null,          null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,                                 null,               null,          setSupplier,         null,                             Map.of() ),
                 Arguments.of( stringsAndIntegers,   null,                                 null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   null,               null,          null,                IllegalArgumentException.class,   null ),
                 Arguments.of( stringsAndIntegers,   keySmallerThan3AndValueLowerThan50,   keyLength,          null,          null,                IllegalArgumentException.class,   null ),

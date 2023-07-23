@@ -27,27 +27,22 @@ import static java.util.Optional.ofNullable;
  *
  * <pre>
  * Example:
- *    PartialFunction<Integer, String> toStringIfEven = new PartialFunction<Integer, String> {
+ *    PartialFunction<Integer, String> toStringIfEven = PartialFunction.of(
+ *       i -> null != i && i % 2 == 0,
+ *       i -> i.toString()
+ *    );
  *
- *       isDefinedAt(Integer i) {
- *          return null != i &&
- *                 i % 2 == 0;
- *       }
- *
- *       String apply(Integer i) {
- *           return i.toString();
- *       }
- *    }
- *
- *    String fromIntToString1 = toStringIfEven.applyOrElse(
+ *    // Will return empty string
+ *    toStringIfEven.applyOrElse(
  *       null,
  *       i -> ""
- *    );   // Will return empty string
+ *    );
  *
- *    String fromIntToString2 = toStringIfEven.applyOrElse(
+ *    // Will return "10"
+ *    toStringIfEven.applyOrElse(
  *       10,
  *       i -> ""
- *    );   // Will return "10"
+ *    );
  * </pre>
  *
  * @param <T>
