@@ -226,12 +226,10 @@ public class CollectionUtil {
         }
         Assert.notNull(defaultMapper, "defaultMapper must be not null");
         Assert.notNull(orElseMapper, "orElseMapper must be not null");
-
-        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return applyOrElse(
                 sourceCollection,
                 PartialFunction.of(
-                        finalFilterPredicate,
+                        getOrAlwaysTrue(filterPredicate),
                         defaultMapper
                 ),
                 orElseMapper,
@@ -471,12 +469,10 @@ public class CollectionUtil {
             return finalCollectionFactory.get();
         }
         Assert.notNull(mapFunction, "mapFunction must be not null");
-
-        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
         return collect(
                 sourceCollection,
                 PartialFunction.of(
-                        finalFilterPredicate,
+                        getOrAlwaysTrue(filterPredicate),
                         mapFunction
                 ),
                 collectionFactory
@@ -1338,106 +1334,6 @@ public class CollectionUtil {
 
 
     /**
-     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
-     * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                           Result:
-     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
-     *    PartialFunction.of(                                    (1, [2])]
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
-     *             ? null
-     *             : new AbstractMap.SimpleEntry<>(
-     *                     i % 3,
-     *                     i + 1
-     *               )
-     *    )
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
-     * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
-     *
-     * @return {@link Map}
-     *
-     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
-     */
-    @SuppressWarnings("unchecked")
-    public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
-                                                     final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction) {
-       return (Map) groupMap(
-               sourceCollection,
-               partialFunction,
-               (Supplier<Collection<V>>) ArrayList::new
-       );
-    }
-
-
-    /**
-     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
-     * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                           Result:
-     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
-     *    PartialFunction.of(                                    (1, [2])]
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
-     *             ? null
-     *             : new AbstractMap.SimpleEntry<>(
-     *                     i % 3,
-     *                     i + 1
-     *               )
-     *    )
-     *    ArrayList::new
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
-     * @param partialFunction
-     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
-     * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
-     *    If {@code null} then {@link ArrayList}
-     *
-     * @return {@link Map}
-     *
-     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
-     */
-    public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
-                                                           final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
-                                                           final Supplier<Collection<V>> collectionFactory) {
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return new HashMap<>();
-        }
-        Assert.notNull(partialFunction, "partialFunction must be not null");
-        final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-
-        Map<K, Collection<V>> result = new HashMap<>();
-        sourceCollection.stream()
-                .filter(partialFunction::isDefinedAt)
-                .forEach(
-                        e -> {
-                            Map.Entry<K, V> keyValue = partialFunction.apply(e);
-                            result.putIfAbsent(
-                                    keyValue.getKey(),
-                                    finalCollectionFactory.get()
-                            );
-                            result.get(keyValue.getKey())
-                                    .add(keyValue.getValue());
-                        }
-                );
-        return result;
-    }
-
-
-    /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
      *
@@ -1565,20 +1461,117 @@ public class CollectionUtil {
         }
         Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
-        final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
-
         return groupMap(
                 sourceCollection,
                 PartialFunction.of(
-                        finalFilterPredicate,
+                        getOrAlwaysTrue(filterPredicate),
                         t -> new AbstractMap.SimpleEntry<>(
                                 discriminatorKey.apply(t),
                                 valueMapper.apply(t)
                              )
                 ),
-                finalCollectionFactory
+                getFinalCollectionFactory(collectionFactory)
         );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                           Result:
+     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
+     *    PartialFunction.of(                                    (1, [2])]
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                     i % 3,
+     *                     i + 1
+     *               )
+     *    )
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, K, V> Map<K, List<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                     final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction) {
+        return (Map) groupMap(
+                sourceCollection,
+                partialFunction,
+                (Supplier<Collection<V>>) ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                           Result:
+     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
+     *    PartialFunction.of(                                    (1, [2])]
+     *      i -> null != i && 1 == i % 2,
+     *      i -> null == i
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                     i % 3,
+     *                     i + 1
+     *               )
+     *    )
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
+     */
+    public static <T, K, V> Map<K, Collection<V>> groupMap(final Collection<? extends T> sourceCollection,
+                                                           final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
+                                                           final Supplier<Collection<V>> collectionFactory) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+
+        Map<K, Collection<V>> result = new HashMap<>();
+        sourceCollection.stream()
+                .filter(partialFunction::isDefinedAt)
+                .forEach(
+                        e -> {
+                            Map.Entry<K, V> keyValue = partialFunction.apply(e);
+                            result.putIfAbsent(
+                                    keyValue.getKey(),
+                                    finalCollectionFactory.get()
+                            );
+                            result.get(keyValue.getKey())
+                                    .add(keyValue.getValue());
+                        }
+                );
+        return result;
     }
 
 
@@ -1591,10 +1584,10 @@ public class CollectionUtil {
      * Example:
      *
      *   Parameters:              Intermediate Map:          Result:
-     *    [1, 2, 3, 6]             [(0,  [4, 7])               [(0, 11), (1, 2), (2, 3)]
+     *    [1, 2, 3, 6]             [(0,  [4, 7])              [(0, 11), (1, 2), (2, 3)]
      *    k -> i % 3                (1,  [2])
      *    i -> i + 1                (2,  [3])]
-     *    v -> v++
+     *    Integer::sum
      * </pre>
      *
      * @param sourceCollection
@@ -1609,27 +1602,85 @@ public class CollectionUtil {
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
-     *                                  is {@code null}
+     *                                  is {@code null} with a not empty {@code sourceCollection}
      */
     public static <T, K, V> Map<K, V> groupMapReduce(final Collection<? extends T> sourceCollection,
                                                      final Function<? super T, ? extends K> discriminatorKey,
                                                      final Function<? super T, V> valueMapper,
                                                      final BinaryOperator<V> reduceValues) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
         Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
+        Assert.notNull(reduceValues, "reduceValues must be not null");
+        return groupMapReduce(
+                sourceCollection,
+                PartialFunction.of(
+                        alwaysTrue(),
+                        t -> new AbstractMap.SimpleEntry<>(
+                                discriminatorKey.apply(t),
+                                valueMapper.apply(t)
+                        )
+                ),
+                reduceValues
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     * If the current element verifies {@link PartialFunction#isDefinedAt(Object)}, all the values that have the same key
+     * after applying {@link PartialFunction#apply(Object)} are then reduced into a single value with {@code reduceValues}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Intermediate Map:          Result:
+     *    [1, 2, 3, 6, 7, 11, 12]                              [(0,  [4, 7])               [(0, 11), (1, 10), (2, 3)]
+     *    PartialFunction.of(                                   (1,  [2, 8])
+     *      i -> null != i && 10 > i,                           (2,  [3])]
+     *      i -> null == i
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                     i % 3,
+     *                     i + 1
+     *               )
+     *    )
+     *    Integer::sum
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform and reduce.
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
+     * @param reduceValues
+     *    {@link BinaryOperator} used to reduces the values related with same key
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} or {@code reduceValues} is {@code null} with a not
+     *                                  empty {@code sourceCollection}
+     */
+    public static <T, K, V> Map<K, V> groupMapReduce(final Collection<? extends T> sourceCollection,
+                                                     final PartialFunction<? super T, ? extends Map.Entry<K, V>> partialFunction,
+                                                     final BinaryOperator<V> reduceValues) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
         Assert.notNull(reduceValues, "reduceValues must be not null");
         Map<K, V> result = new HashMap<>();
         groupMap(
                 sourceCollection,
-                discriminatorKey,
-                valueMapper
+                partialFunction
         )
         .forEach(
                 (k, v) ->
-                    result.put(
-                            k,
-                            v.stream().reduce(reduceValues).get()
-                    )
+                        result.put(
+                                k,
+                                v.stream().reduce(reduceValues).get()
+                        )
         );
         return result;
     }

@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import static com.spring5microservices.common.PizzaEnum.CARBONARA;
 import static com.spring5microservices.common.PizzaEnum.MARGUERITA;
 import static com.spring5microservices.common.util.FunctionUtil.fromBiFunctionToMapEntryFunction;
+import static com.spring5microservices.common.util.FunctionUtil.fromBiFunctionsToMapEntriesFunction;
 import static com.spring5microservices.common.util.FunctionUtil.fromFunctionsToMapEntryFunction;
 import static com.spring5microservices.common.util.FunctionUtil.overwriteWithNew;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,6 +69,71 @@ public class FunctionUtilTest {
             );
             assertEquals(expectedResult,
                     functionToApply.apply((Map.Entry<K, V>)entry)
+            );
+        }
+    }
+
+
+    static Stream<Arguments> fromBiFunctionsToMapEntriesFunctionTestCases() {
+        Map.Entry<String, Integer> emptyEntry = new AbstractMap.SimpleEntry<>(
+                null,
+                null
+        );
+        BiFunction<String, Integer, Integer> sumStringLengthAndInteger =
+                (s, i) -> {
+                    final int sLength = null == s ? 0 : s.length();
+                    final int finalI = null == i ? 0 : i;
+                    return sLength + finalI;
+                };
+        BiFunction<String, Integer, String> concatStringAndInteger =
+                (s, i) ->
+                        (null == s ? "" : s)
+                      + (null == i ? "" : i.toString());
+
+        Map.Entry<Integer, String> expectedResultEmptyEntry = Map.entry(0, "");
+        Map.Entry<Integer, String> expectedResultNotEmptyEntry = Map.entry(34, "1032");
+        return Stream.of(
+                //@formatter:off
+                //            entry,                 keyMapper,                   valueMapper               expectedException,                expectedResult
+                Arguments.of( null,                  null,                        null,                     IllegalArgumentException.class,   null ),
+                Arguments.of( null,                  sumStringLengthAndInteger,   null,                     IllegalArgumentException.class,   null ),
+                Arguments.of( null,                  null,                        concatStringAndInteger,   IllegalArgumentException.class,   null ),
+                Arguments.of( emptyEntry,            null,                        null,                     IllegalArgumentException.class,   null ),
+                Arguments.of( emptyEntry,            sumStringLengthAndInteger,   null,                     IllegalArgumentException.class,   null ),
+                Arguments.of( emptyEntry,            null,                        concatStringAndInteger,   IllegalArgumentException.class,   null ),
+                Arguments.of( null,                  sumStringLengthAndInteger,   concatStringAndInteger,   NullPointerException.class,       null ),
+                Arguments.of( emptyEntry,            sumStringLengthAndInteger,   concatStringAndInteger,   null,                             expectedResultEmptyEntry ),
+                Arguments.of( Map.entry("10", 32),   sumStringLengthAndInteger,   concatStringAndInteger,   null,                             expectedResultNotEmptyEntry )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromBiFunctionsToMapEntriesFunctionTestCases")
+    @DisplayName("fromBiFunctionsToMapEntriesFunction: test cases")
+    public <K1, K2, V1, V2> void fromBiFunctionsToMapEntriesFunction_testCases(Map.Entry<? super K1, ? super V1> entry,
+                                                                               BiFunction<? super K1, ? super V1, ? extends K2> keyMapper,
+                                                                               BiFunction<? super K1, ? super V1, ? extends V2> valueMapper,
+                                                                               Class<? extends Exception> expectedException,
+                                                                               Map.Entry<K2, V2> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> {
+                        // Required because sometimes the Java compiler is stupid
+                        Function<Map.Entry<K1, V1>, Map.Entry<K2, V2>> functionToApply = fromBiFunctionsToMapEntriesFunction(
+                                keyMapper,
+                                valueMapper
+                        );
+                        functionToApply.apply((Map.Entry<K1, V1>)entry);
+                    }
+            );
+        } else {
+            // Required because sometimes the Java compiler is stupid
+            Function<Map.Entry<K1, V1>, Map.Entry<K2, V2>> functionToApply = fromBiFunctionsToMapEntriesFunction(
+                    keyMapper,
+                    valueMapper
+            );
+            assertEquals(expectedResult,
+                    functionToApply.apply((Map.Entry<K1, V1>)entry)
             );
         }
     }

@@ -134,6 +134,69 @@ public class PartialFunctionTest {
     }
 
 
+    static Stream<Arguments> ofWithBiPredicateAndBiFunctionsTestCases() {
+        Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<>(
+                1,
+                null
+        );
+        Map.Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<>(
+                3,
+                "ABC"
+        );
+        Map.Entry<Integer, String> entry3 = new AbstractMap.SimpleEntry<>(
+                5,
+                "E"
+        );
+        BiPredicate<Integer, String> isKeyOddAndValueLengthLowerThan2 =
+                (k, v) ->
+                        1 == k % 2 &&
+                                (
+                                        null != v &&
+                                                2 > v.length()
+                                );
+        BiFunction<Integer, String, String> keyToString =
+                (k, v) ->
+                        null == k ?
+                                ""
+                                : k.toString();
+        BiFunction<Integer, String, Integer> valueLength =
+                (k, v) ->
+                        null == v
+                                ? 0
+                                : v.length();
+        return Stream.of(
+                //@formatter:off
+                //            entry,    filterPredicate,                    keyMapper,     valueMapper,   expectedException,            expectedApplyResult,   expectedIsDefinedAtResult
+                Arguments.of( entry1,   null,                               null,          null,          NullPointerException.class,   null,                  null ),
+                Arguments.of( entry1,   isKeyOddAndValueLengthLowerThan2,   null,          null,          NullPointerException.class,   null,                  null ),
+                Arguments.of( entry1,   isKeyOddAndValueLengthLowerThan2,   keyToString,   null,          NullPointerException.class,   null,                  null ),
+                Arguments.of( entry1,   isKeyOddAndValueLengthLowerThan2,   null,          valueLength,   NullPointerException.class,   null,                  null ),
+                Arguments.of( entry1,   isKeyOddAndValueLengthLowerThan2,   keyToString,   valueLength,   null,                         Map.entry("1", 0),     false ),
+                Arguments.of( entry2,   isKeyOddAndValueLengthLowerThan2,   keyToString,   valueLength,   null,                         Map.entry("3", 3),     false ),
+                Arguments.of( entry3,   isKeyOddAndValueLengthLowerThan2,   keyToString,   valueLength,   null,                         Map.entry("5", 1),     true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofWithBiPredicateAndBiFunctionsTestCases")
+    @DisplayName("of: with BiPredicate and BiFunctions parameters test cases")
+    public <K1, K2, V1, V2> void ofWithBiPredicateAndBiFunctions_testCases(Map.Entry<K1, V1> entry,
+                                                                           BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                           BiFunction<? super K1, ? super V1, ? extends K2> keyMapper,
+                                                                           BiFunction<? super K1, ? super V1, ? extends V2> valueMapper,
+                                                                           Class<? extends Exception> expectedException,
+                                                                           Map.Entry<K2, V2> expectedApplyResult,
+                                                                           Boolean expectedIsDefinedAtResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, keyMapper, valueMapper));
+        } else {
+            PartialFunction<Map.Entry<K1, V1>, Map.Entry<K2, V2>> ofResult = PartialFunction.of(filterPredicate, keyMapper, valueMapper);
+            assertEquals(expectedApplyResult, ofResult.apply(entry));
+            assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(entry));
+        }
+    }
+
+
     static Stream<Arguments> applyTestCases() {
         return Stream.of(
                 //@formatter:off

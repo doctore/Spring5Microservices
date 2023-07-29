@@ -1,5 +1,7 @@
 package com.spring5microservices.common.interfaces.functional;
 
+import com.spring5microservices.common.util.FunctionUtil;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -154,6 +156,52 @@ public interface PartialFunction<T, R> extends Function<T, R> {
                         entry.getKey(),
                         entry.getValue()
                 );
+            }
+
+            @Override
+            public boolean isDefinedAt(final Map.Entry<K1, V1> entry) {
+                return finalFilterPredicate.test(
+                        entry.getKey(),
+                        entry.getValue()
+                );
+            }
+        };
+    }
+
+
+    /**
+     *    Returns a new {@link PartialFunction} based on provided {@link BiPredicate} {@code filterPredicate} and
+     * {@link BiFunction} {@code keyMapper} and {@code valueMapper}.
+     *
+     * @param filterPredicate
+     *    {@link BiPredicate} used to know new {@link PartialFunction}'s domain
+     * @param keyMapper
+     *    {@link BiFunction} to transform a pair {@code K1} and {@code V1} into a {@code K2} instance
+     * @param valueMapper
+     *    {@link BiFunction} to transform a pair {@code K1} and {@code V1} into a {@code V2} instance
+     *
+     * @return {@link PartialFunction}
+     *
+     * @throws NullPointerException if {@code keyMapper} or {@code valueMapper} are {@code null}
+     */
+    static <K1, K2, V1, V2> PartialFunction<Map.Entry<K1, V1>, Map.Entry<K2, V2>> of(final BiPredicate<? super K1, ? super V1> filterPredicate,
+                                                                                     final BiFunction<? super K1, ? super V1, ? extends K2> keyMapper,
+                                                                                     final BiFunction<? super K1, ? super V1, ? extends V2> valueMapper) {
+        requireNonNull(keyMapper, "keyMapper must be not null");
+        requireNonNull(valueMapper, "valueMapper must be not null");
+        final BiPredicate<? super K1, ? super V1> finalFilterPredicate = getOrElse(
+                filterPredicate,
+                biAlwaysTrue()
+        );
+        return new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<K2, V2> apply(final Map.Entry<K1, V1> entry) {
+                Function<Map.Entry<K1, V1>, Map.Entry<K2, V2>> functionToApply = FunctionUtil.fromBiFunctionsToMapEntriesFunction(
+                        keyMapper,
+                        valueMapper
+                );
+                return functionToApply.apply(entry);
             }
 
             @Override

@@ -1679,81 +1679,6 @@ public class MapUtilTest {
         ); //@formatter:on
     }
 
-    @ParameterizedTest
-    @MethodSource("groupMapWithPartialFunctionTestCases")
-    @DisplayName("groupMap: with partialFunction test cases")
-    public <K1, K2, V1, V2> void groupMapWithPartialFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
-                                                                       PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
-                                                                       Class<? extends Exception> expectedException,
-                                                                       Map<K2, Collection<V2>> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> groupMap(sourceMap, partialFunction));
-        } else {
-            assertEquals(expectedResult, groupMap(sourceMap, partialFunction));
-        }
-    }
-
-
-    static Stream<Arguments> groupMapWithPartialFunctionAndSupplierTestCases() {
-        Map<String, Integer> stringsAndIntegers = new LinkedHashMap<>() {{
-            put("A", 10);
-            put("BY", 20);
-            put("C", 30);
-            put("DH", 40);
-            put("GHT", 55);
-        }};
-        Supplier<Collection<Integer>> setSupplier = LinkedHashSet::new;
-
-        PartialFunction<Map.Entry<String, Integer>, Map.Entry<Integer, Integer>> partialFunction = PartialFunction.of(
-                e -> null != e &&
-                        3 > e.getKey().length() &&
-                        50 > e.getValue(),
-                e -> new AbstractMap.SimpleEntry<>(
-                        e.getKey().length(),
-                        e.getValue() + 5
-                )
-        );
-        Map<Integer, List<Integer>> expectedResultDefaultCollectionFactory = new HashMap<>() {{
-            put(1, List.of(15, 35));
-            put(2, List.of(25, 45));
-        }};
-        Map<Integer, Set<Integer>> expectedResultSetCollectionFactory = new HashMap<>() {{
-            put(1, new LinkedHashSet<>(List.of(15, 35)));
-            put(2, new LinkedHashSet<>(List.of(25, 45)));
-        }};
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,            partialFunction,   collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,                 null,              null,                null,                             Map.of() ),
-                Arguments.of( null,                 null,              setSupplier,         null,                             Map.of() ),
-                Arguments.of( Map.of(),             null,              null,                null,                             Map.of() ),
-                Arguments.of( Map.of(),             null,              setSupplier,         null,                             Map.of() ),
-                Arguments.of( stringsAndIntegers,   null,              null,                IllegalArgumentException.class,   null ),
-                Arguments.of( stringsAndIntegers,   null,              setSupplier,         IllegalArgumentException.class,   null ),
-                Arguments.of( null,                 partialFunction,   null,                null,                             Map.of() ),
-                Arguments.of( null,                 partialFunction,   setSupplier,         null,                             Map.of() ),
-                Arguments.of( Map.of(),             partialFunction,   null,                null,                             Map.of() ),
-                Arguments.of( Map.of(),             partialFunction,   setSupplier,         null,                             Map.of() ),
-                Arguments.of( stringsAndIntegers,   partialFunction,   null,                null,                             expectedResultDefaultCollectionFactory ),
-                Arguments.of( stringsAndIntegers,   partialFunction,   setSupplier,         null,                             expectedResultSetCollectionFactory )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("groupMapWithPartialFunctionAndSupplierTestCases")
-    @DisplayName("groupMap: with partialFunction and collectionFactory test cases")
-    public <K1, K2, V1, V2> void groupMapWithPartialFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
-                                                                                  PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
-                                                                                  Supplier<Collection<V2>> collectionFactory,
-                                                                                  Class<? extends Exception> expectedException,
-                                                                                  Map<K2, Collection<V2>> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> groupMap(sourceMap, partialFunction, collectionFactory));
-        } else {
-            assertEquals(expectedResult, groupMap(sourceMap, partialFunction, collectionFactory));
-        }
-    }
-
 
     static Stream<Arguments> groupMapWithFunctionsTestCases() {
         Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
@@ -1926,7 +1851,83 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> groupMapReduceTestCases() {
+    @ParameterizedTest
+    @MethodSource("groupMapWithPartialFunctionTestCases")
+    @DisplayName("groupMap: with partialFunction test cases")
+    public <K1, K2, V1, V2> void groupMapWithPartialFunction_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                       PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                       Class<? extends Exception> expectedException,
+                                                                       Map<K2, Collection<V2>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceMap, partialFunction));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceMap, partialFunction));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapWithPartialFunctionAndSupplierTestCases() {
+        Map<String, Integer> stringsAndIntegers = new LinkedHashMap<>() {{
+            put("A", 10);
+            put("BY", 20);
+            put("C", 30);
+            put("DH", 40);
+            put("GHT", 55);
+        }};
+        Supplier<Collection<Integer>> setSupplier = LinkedHashSet::new;
+
+        PartialFunction<Map.Entry<String, Integer>, Map.Entry<Integer, Integer>> partialFunction = PartialFunction.of(
+                e -> null != e &&
+                        3 > e.getKey().length() &&
+                        50 > e.getValue(),
+                e -> new AbstractMap.SimpleEntry<>(
+                        e.getKey().length(),
+                        e.getValue() + 5
+                )
+        );
+        Map<Integer, List<Integer>> expectedResultDefaultCollectionFactory = new HashMap<>() {{
+            put(1, List.of(15, 35));
+            put(2, List.of(25, 45));
+        }};
+        Map<Integer, Set<Integer>> expectedResultSetCollectionFactory = new HashMap<>() {{
+            put(1, new LinkedHashSet<>(List.of(15, 35)));
+            put(2, new LinkedHashSet<>(List.of(25, 45)));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,            partialFunction,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,                 null,              null,                null,                             Map.of() ),
+                Arguments.of( null,                 null,              setSupplier,         null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,              null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             null,              setSupplier,         null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   null,              null,                IllegalArgumentException.class,   null ),
+                Arguments.of( stringsAndIntegers,   null,              setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( null,                 partialFunction,   null,                null,                             Map.of() ),
+                Arguments.of( null,                 partialFunction,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( Map.of(),             partialFunction,   null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),             partialFunction,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( stringsAndIntegers,   partialFunction,   null,                null,                             expectedResultDefaultCollectionFactory ),
+                Arguments.of( stringsAndIntegers,   partialFunction,   setSupplier,         null,                             expectedResultSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithPartialFunctionAndSupplierTestCases")
+    @DisplayName("groupMap: with partialFunction and collectionFactory test cases")
+    public <K1, K2, V1, V2> void groupMapWithPartialFunctionAndSupplier_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                  PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                                  Supplier<Collection<V2>> collectionFactory,
+                                                                                  Class<? extends Exception> expectedException,
+                                                                                  Map<K2, Collection<V2>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceMap, partialFunction, collectionFactory));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceMap, partialFunction, collectionFactory));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapReduceWithBiFunctionsAndBinaryOperatorTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "AB");
             put(2, "BCD");
@@ -1943,30 +1944,92 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,        discriminatorKey,   valueMapper,   reduceValues,   expectedException,                expectedResult
-                Arguments.of( null,             null,               null,          null,           IllegalArgumentException.class,   null ),
-                Arguments.of( Map.of(),         null,               null,          null,           IllegalArgumentException.class,   null ),
+                Arguments.of( null,             null,               null,          null,           null,                             Map.of() ),
+                Arguments.of( null,             keyMod2,            null,          null,           null,                             Map.of() ),
+                Arguments.of( null,             keyMod2,            valueLength,   null,           null,                             Map.of() ),
+                Arguments.of( null,             keyMod2,            valueLength,   multiplyAll,    null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,               null,          null,           null,                             Map.of() ),
+                Arguments.of( Map.of(),         keyMod2,            null,          null,           null,                             Map.of() ),
+                Arguments.of( Map.of(),         keyMod2,            valueLength,   null,           null,                             Map.of() ),
+                Arguments.of( Map.of(),         keyMod2,            valueLength,   multiplyAll,    null,                             Map.of() ),
                 Arguments.of( intsAndStrings,   null,               null,          null,           IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   keyMod2,            null,          null,           IllegalArgumentException.class,   null ),
                 Arguments.of( intsAndStrings,   keyMod2,            valueLength,   null,           IllegalArgumentException.class,   null ),
-                Arguments.of( null,             keyMod2,            valueLength,   multiplyAll,    null,                             Map.of() ),
-                Arguments.of( Map.of(),         keyMod2,            valueLength,   multiplyAll,    null,                             Map.of() ),
                 Arguments.of( intsAndStrings,   keyMod2,            valueLength,   multiplyAll,    null,                             expectedResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("groupMapReduceTestCases")
-    @DisplayName("groupMapReduce: test cases")
-    public <T, E, R, V> void groupMapReduce_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                      BiFunction<? super T, ? super E, ? extends R> discriminatorKey,
-                                                      BiFunction<? super T, ? super E, V> valueMapper,
-                                                      BinaryOperator<V> reduceValues,
-                                                      Class<? extends Exception> expectedException,
-                                                      Map<R, V> expectedResult) {
+    @MethodSource("groupMapReduceWithBiFunctionsAndBinaryOperatorTestCases")
+    @DisplayName("groupMapReduce: with discriminatorKey, valueMapper and reduceValues test cases")
+    public <K1, K2, V1, V2> void groupMapReduceWithBiFunctionsAndBinaryOperator_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                          BiFunction<? super K1, ? super V1, ? extends K2> discriminatorKey,
+                                                                                          BiFunction<? super K1, ? super V1, V2> valueMapper,
+                                                                                          BinaryOperator<V2> reduceValues,
+                                                                                          Class<? extends Exception> expectedException,
+                                                                                          Map<K2, V2> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException, () -> groupMapReduce(sourceMap, discriminatorKey, valueMapper, reduceValues));
         } else {
             assertEquals(expectedResult, groupMapReduce(sourceMap, discriminatorKey, valueMapper, reduceValues));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapReduceWithPartialFunctionAndBinaryOperatorTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "Hi");
+            put(2, "Hola");
+            put(4, "");
+            put(5, "World");
+            put(6, "!");
+            put(11, "ABC");
+        }};
+        PartialFunction<Map.Entry<Integer, String>, Map.Entry<Integer, Integer>> partialFunction = PartialFunction.of(
+                e -> null != e && 10 > e.getKey(),
+                e -> null == e
+                        ? null
+                        : new AbstractMap.SimpleEntry<>(
+                                e.getKey() % 3,
+                                null == e.getValue()
+                                       ? 0
+                                       : e.getValue().length() + 1
+                               )
+        );
+        BinaryOperator<Integer> sumAll = Integer::sum;
+        Map<Integer, Integer> expectedResult = new HashMap<>() {{
+            put(0, 2);
+            put(1, 4);
+            put(2, 11);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        partialFunction,   reduceValues,   expectedException,                expectedResult
+                Arguments.of( null,             null,              null,           null,                             Map.of() ),
+                Arguments.of( null,             partialFunction,   null,           null,                             Map.of() ),
+                Arguments.of( null,             partialFunction,   sumAll,         null,                             Map.of() ),
+                Arguments.of( Map.of(),         null,              null,           null,                             Map.of() ),
+                Arguments.of( Map.of(),         partialFunction,   null,           null,                             Map.of() ),
+                Arguments.of( Map.of(),         partialFunction,   sumAll,         null,                             Map.of() ),
+                Arguments.of( intsAndStrings,   null,              null,           IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   partialFunction,   null,           IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   null,              sumAll,         IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   partialFunction,   sumAll,         null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapReduceWithPartialFunctionAndBinaryOperatorTestCases")
+    @DisplayName("groupMapReduce: with partialFunction and reduceValues test cases")
+    public <K1, K2, V1, V2> void groupMapReduceWithPartialFunctionAndBinaryOperator_testCases(Map<? extends K1, ? extends V1> sourceMap,
+                                                                                              PartialFunction<? super Map.Entry<K1, V1>, ? extends Map.Entry<K2, V2>> partialFunction,
+                                                                                              BinaryOperator<V2> reduceValues,
+                                                                                              Class<? extends Exception> expectedException,
+                                                                                              Map<K2, V2> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMapReduce(sourceMap, partialFunction, reduceValues));
+        } else {
+            assertEquals(expectedResult, groupMapReduce(sourceMap, partialFunction, reduceValues));
         }
     }
 
