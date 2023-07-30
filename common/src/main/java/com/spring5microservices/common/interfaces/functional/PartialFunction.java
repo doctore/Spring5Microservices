@@ -1,7 +1,5 @@
 package com.spring5microservices.common.interfaces.functional;
 
-import com.spring5microservices.common.util.FunctionUtil;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -9,6 +7,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static com.spring5microservices.common.util.FunctionUtil.fromBiFunctionsToMapEntriesFunction;
+import static com.spring5microservices.common.util.FunctionUtil.fromFunctionsToMapEntryFunction;
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
@@ -106,8 +106,8 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      *
      * @throws NullPointerException if {@code mapFunction} is {@code null}
      */
-    static <T,R> PartialFunction<T, R> of(final Predicate<? super T> filterPredicate,
-                                          final Function<? super T, ? extends R> mapFunction) {
+    static <T, R> PartialFunction<T, R> of(final Predicate<? super T> filterPredicate,
+                                           final Function<? super T, ? extends R> mapFunction) {
         requireNonNull(mapFunction, "mapFunction must be not null");
         final Predicate<? super T> finalFilterPredicate = getOrElse(
                 filterPredicate,
@@ -118,6 +118,49 @@ public interface PartialFunction<T, R> extends Function<T, R> {
             @Override
             public R apply(final T t) {
                 return mapFunction.apply(t);
+            }
+
+            @Override
+            public boolean isDefinedAt(final T t) {
+                return finalFilterPredicate.test(t);
+            }
+        };
+    }
+
+
+    /**
+     *    Returns a new {@link PartialFunction} based on provided {@link Predicate} {@code filterPredicate} and
+     * {@link Function} {@code keyMapper} and {@code valueMapper}.
+     *
+     * @param filterPredicate
+     *    {@link Predicate} used to know new {@link PartialFunction}'s domain
+     * @param keyMapper
+     *    {@link Function} to transform an instance of {@code T} into a {@code K} one
+     * @param valueMapper
+     *    {@link Function} to transform an instance of {@code T} into a {@code V} one
+     *
+     * @return {@link PartialFunction}
+     *
+     * @throws NullPointerException if {@code keyMapper} or {@code valueMapper} are {@code null}
+     */
+    static <T, K, V> PartialFunction<T, Map.Entry<K, V>> of(final Predicate<? super T> filterPredicate,
+                                                            final Function<? super T, ? extends K> keyMapper,
+                                                            final Function<? super T, ? extends V> valueMapper) {
+        requireNonNull(keyMapper, "keyMapper must be not null");
+        requireNonNull(valueMapper, "valueMapper must be not null");
+        final Predicate<? super T> finalFilterPredicate = getOrElse(
+                filterPredicate,
+                alwaysTrue()
+        );
+        return new PartialFunction<>() {
+
+            @Override
+            public Map.Entry<K, V> apply(final T t) {
+                Function<T, Map.Entry<K, V>> functionToApply = fromFunctionsToMapEntryFunction(
+                        keyMapper,
+                        valueMapper
+                );
+                return functionToApply.apply(t);
             }
 
             @Override
@@ -197,7 +240,7 @@ public interface PartialFunction<T, R> extends Function<T, R> {
 
             @Override
             public Map.Entry<K2, V2> apply(final Map.Entry<K1, V1> entry) {
-                Function<Map.Entry<K1, V1>, Map.Entry<K2, V2>> functionToApply = FunctionUtil.fromBiFunctionsToMapEntriesFunction(
+                Function<Map.Entry<K1, V1>, Map.Entry<K2, V2>> functionToApply = fromBiFunctionsToMapEntriesFunction(
                         keyMapper,
                         valueMapper
                 );

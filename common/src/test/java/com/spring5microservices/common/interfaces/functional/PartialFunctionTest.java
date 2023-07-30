@@ -43,7 +43,6 @@ public class PartialFunctionTest {
 
 
     static Stream<Arguments> ofWithPredicateAndFunctionTestCases() {
-        Predicate<Integer> isOdd = i -> 1 == i % 2;
         Predicate<String> lengthLongerThan5 = s -> 5 < s.length();
         return Stream.of(
                 //@formatter:off
@@ -70,6 +69,43 @@ public class PartialFunctionTest {
             assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, mapFunction));
         } else {
             PartialFunction<T, R> ofResult = PartialFunction.of(filterPredicate, mapFunction);
+            assertEquals(expectedApplyResult, ofResult.apply(t));
+            assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(t));
+        }
+    }
+
+
+    static Stream<Arguments> ofWithPredicateAndFunctionsTestCases() {
+        Predicate<String> lengthLongerThan5 = s -> 5 < s.length();
+        return Stream.of(
+                //@formatter:off
+                //            t,          filterPredicate,     keyMapper,     valueMapper,    expectedException,            expectedApplyResult,        expectedIsDefinedAtResult
+                Arguments.of( 1,          null,                null,          null,           NullPointerException.class,   null,                       null ),
+                Arguments.of( 1,          isOdd,               null,          null,           NullPointerException.class,   null,                       null ),
+                Arguments.of( 1,          isOdd,               plus3ToLong,   null,           NullPointerException.class,   null,                       null ),
+                Arguments.of( 1,          isOdd,               null,          toString,       NullPointerException.class,   null,                       null ),
+                Arguments.of( 2,          isOdd,               plus3ToLong,   toString,       null,                         Map.entry(5L, "2"),         false ),
+                Arguments.of( 3,          isOdd,               plus3ToLong,   toString,       null,                         Map.entry(6L, "3"),         true ),
+                Arguments.of( "AB",       lengthLongerThan5,   addStringV2,   stringLength,   null,                         Map.entry("ABv2", 2),       false ),
+                Arguments.of( "ABCDEF",   lengthLongerThan5,   addStringV2,   stringLength,   null,                         Map.entry("ABCDEFv2", 6),   true )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("ofWithPredicateAndFunctionsTestCases")
+    @DisplayName("of: with Predicate and Functions parameters test cases")
+    public <T, K, V> void ofWithPredicateAndFunctions_testCases(T t,
+                                                                Predicate<? super T> filterPredicate,
+                                                                Function<? super T, ? extends K> keyMapper,
+                                                                Function<? super T, ? extends V> valueMapper,
+                                                                Class<? extends Exception> expectedException,
+                                                                Map.Entry<K, V> expectedApplyResult,
+                                                                Boolean expectedIsDefinedAtResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, keyMapper, valueMapper));
+        } else {
+            PartialFunction<T, Map.Entry<K, V>> ofResult = PartialFunction.of(filterPredicate, keyMapper, valueMapper);
             assertEquals(expectedApplyResult, ofResult.apply(t));
             assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(t));
         }
@@ -154,16 +190,7 @@ public class PartialFunctionTest {
                                         null != v &&
                                                 2 > v.length()
                                 );
-        BiFunction<Integer, String, String> keyToString =
-                (k, v) ->
-                        null == k ?
-                                ""
-                                : k.toString();
-        BiFunction<Integer, String, Integer> valueLength =
-                (k, v) ->
-                        null == v
-                                ? 0
-                                : v.length();
+
         return Stream.of(
                 //@formatter:off
                 //            entry,    filterPredicate,                    keyMapper,     valueMapper,   expectedException,            expectedApplyResult,   expectedIsDefinedAtResult
@@ -477,6 +504,11 @@ public class PartialFunctionTest {
     );
 
 
+    private static final Predicate<Integer> isOdd = i ->
+            null != i &&
+            1 == i % 2;
+
+
     private static final Function<String, Integer> stringLength =
             s -> null == s
                     ? 0
@@ -489,9 +521,29 @@ public class PartialFunctionTest {
                     : (long) (i + 3);
 
 
+    private static final Function<Object, String> toString =
+            o -> null == o
+                    ? ""
+                    : o.toString();
+
+
     private static final Function<String, String> addStringV2 =
             i -> null == i
                     ? null
                     : i + "v2";
+
+
+    private static final BiFunction<Integer, String, String> keyToString =
+            (k, v) ->
+                    null == k
+                            ? ""
+                            : k.toString();
+
+
+    private static final BiFunction<Integer, String, Integer> valueLength =
+            (k, v) ->
+                    null == v
+                            ? 0
+                            : v.length();
 
 }

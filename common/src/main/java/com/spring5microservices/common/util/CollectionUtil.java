@@ -7,7 +7,6 @@ import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1465,10 +1464,8 @@ public class CollectionUtil {
                 sourceCollection,
                 PartialFunction.of(
                         getOrAlwaysTrue(filterPredicate),
-                        t -> new AbstractMap.SimpleEntry<>(
-                                discriminatorKey.apply(t),
-                                valueMapper.apply(t)
-                             )
+                        discriminatorKey,
+                        valueMapper
                 ),
                 getFinalCollectionFactory(collectionFactory)
         );
@@ -1618,10 +1615,8 @@ public class CollectionUtil {
                 sourceCollection,
                 PartialFunction.of(
                         alwaysTrue(),
-                        t -> new AbstractMap.SimpleEntry<>(
-                                discriminatorKey.apply(t),
-                                valueMapper.apply(t)
-                        )
+                        discriminatorKey,
+                        valueMapper
                 ),
                 reduceValues
         );
