@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1643,6 +1644,172 @@ public class MapUtilTest {
                                                          Supplier<Map<T, E>> mapValuesFactory,
                                                          Map<R, Map<T, E>> expectedResult) {
         assertEquals(expectedResult, groupBy(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
+    }
+
+
+    static Stream<Arguments> groupByMultiKeyNoMapFactoryTestCases() {
+        Map<Integer, String> sourceMap = new HashMap<>() {{
+            put(1, "Hi");
+            put(2, "Hello");
+            put(11, "World");
+        }};
+        BiFunction<Integer, String, List<String>> oddEvenAndCompareWith10Key = (k, v) -> {
+            List<String> keys = new ArrayList<>();
+            if (0 == k % 2) {
+                keys.add("evenKey");
+            } else {
+                keys.add("oddKey");
+            }
+            if (10 > k) {
+                keys.add("smaller10Key");
+            } else {
+                keys.add("greaterEqual10Key");
+            }
+            return keys;
+        };
+
+        Map<String, Map<Integer, String>> expectedResult = new HashMap<>() {{
+            put("evenKey",
+                    new HashMap<>() {{
+                        put(2, "Hello");
+                    }}
+            );
+            put("oddKey",
+                    new HashMap<>() {{
+                        put(1, "Hi");
+                        put(11, "World");
+                    }}
+            );
+            put("smaller10Key",
+                    new HashMap<>() {{
+                        put(1, "Hi");
+                        put(2, "Hello");
+                    }}
+            );
+            put("greaterEqual10Key",
+                    new HashMap<>() {{
+                        put(11, "World");
+                    }}
+            );
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   discriminator,                expectedResult
+                Arguments.of( null,        null,                         Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   Map.of() ),
+                Arguments.of( Map.of(),    null,                         Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   Map.of() ),
+                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByMultiKeyNoMapFactoryTestCases")
+    @DisplayName("groupByMultiKey: without map factory test cases")
+    public <T, E, R> void groupByMultiKeyNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                BiFunction<? super T, ? super E, Collection<? extends R>> discriminator,
+                                                                Map<R, Map<T, E>> expectedResult) {
+        assertEquals(expectedResult, groupByMultiKey(sourceMap, discriminator));
+    }
+
+
+    static Stream<Arguments> groupByMultiKeyAllParametersTestCases() {
+        Map<Integer, String> sourceMap = new HashMap<>() {{
+            put(1, "Hi");
+            put(2, "Hello");
+            put(11, "World");
+        }};
+        BiFunction<Integer, String, List<String>> oddEvenAndCompareWith10Key = (k, v) -> {
+            List<String> keys = new ArrayList<>();
+            if (0 == k % 2) {
+                keys.add("evenKey");
+            } else {
+                keys.add("oddKey");
+            }
+            if (10 > k) {
+                keys.add("smaller10Key");
+            } else {
+                keys.add("greaterEqual10Key");
+            }
+            return keys;
+        };
+        Supplier<Map<String, String>> linkedMapSupplier = LinkedHashMap::new;
+
+        Map<String, Map<Integer, String>> expectedResultWithoutMapFactories = new HashMap<>() {{
+            put("evenKey",
+                    new HashMap<>() {{
+                        put(2, "Hello");
+                    }}
+            );
+            put("oddKey",
+                    new HashMap<>() {{
+                        put(1, "Hi");
+                        put(11, "World");
+                    }}
+            );
+            put("smaller10Key",
+                    new HashMap<>() {{
+                        put(1, "Hi");
+                        put(2, "Hello");
+                    }}
+            );
+            put("greaterEqual10Key",
+                    new HashMap<>() {{
+                        put(11, "World");
+                    }}
+            );
+        }};
+        Map<String, Map<Integer, String>> expectedResultWithMapFactories = new LinkedHashMap<>() {{
+            put("evenKey",
+                    new LinkedHashMap<>() {{
+                        put(2, "Hello");
+                    }}
+            );
+            put("oddKey",
+                    new LinkedHashMap<>() {{
+                        put(1, "Hi");
+                        put(11, "World");
+                    }}
+            );
+            put("smaller10Key",
+                    new LinkedHashMap<>() {{
+                        put(1, "Hi");
+                        put(2, "Hello");
+                    }}
+            );
+            put("greaterEqual10Key",
+                    new LinkedHashMap<>() {{
+                        put(11, "World");
+                    }}
+            );
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,   discriminator,                mapResultFactory,    mapValuesFactory,    expectedResult
+                Arguments.of( null,        null,                         null,                null,                Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   null,                null,                Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   linkedMapSupplier,   null,                new LinkedHashMap<>() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   null,                linkedMapSupplier,   Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),    null,                         null,                null,                Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   null,                null,                Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   linkedMapSupplier,   null,                new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   null,                linkedMapSupplier,   Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
+                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   null,                null,                expectedResultWithoutMapFactories ),
+                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   expectedResultWithMapFactories )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByMultiKeyAllParametersTestCases")
+    @DisplayName("groupByMultiKey: with all parameters test cases")
+    public <T, E, R> void groupByMultiKeyAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                                 BiFunction<? super T, ? super E, Collection<? extends R>> discriminator,
+                                                                 Supplier<Map<R, Map<T, E>>> mapResultFactory,
+                                                                 Supplier<Map<T, E>> mapValuesFactory,
+                                                                 Map<R, Map<T, E>> expectedResult) {
+        assertEquals(expectedResult, groupByMultiKey(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
     }
 
 

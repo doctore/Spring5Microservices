@@ -1767,6 +1767,208 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> groupMapMultiKeyWithFunctionsTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6, 11, 12));
+        Function<Integer, List<String>> oddEvenAndCompareWith10 = i -> {
+            List<String> keys = new ArrayList<>();
+            if (0 == i % 2) {
+               keys.add("evenKey");
+            } else {
+               keys.add("oddKey");
+            }
+            if (10 > i) {
+               keys.add("smaller10Key");
+            } else {
+               keys.add("greaterEqual10Key");
+            }
+            return keys;
+         };
+        Function<Integer, Integer> square = i -> i * i;
+        Map<String, List<Integer>> expectedResult = new HashMap<>() {{
+            put("evenKey", List.of(4, 36, 144));
+            put("oddKey", List.of(1, 9, 121));
+            put("smaller10Key", List.of(1, 4, 9, 36));
+            put("greaterEqual10Key", List.of(121, 144));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,          valueMapper,   expectedException,                expectedResult
+                Arguments.of( null,               null,                      null,          null,                             Map.of() ),
+                Arguments.of( List.of(),          null,                      null,          null,                             Map.of() ),
+                Arguments.of( List.of(1),         null,                      null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         oddEvenAndCompareWith10,   null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,                      square,        IllegalArgumentException.class,   null ),
+                Arguments.of( null,               oddEvenAndCompareWith10,   square,        null,                             Map.of() ),
+                Arguments.of( List.of(),          oddEvenAndCompareWith10,   square,        null,                             Map.of() ),
+                Arguments.of( ints,               oddEvenAndCompareWith10,   square,        null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapMultiKeyWithFunctionsTestCases")
+    @DisplayName("groupMapMultiKey: with discriminatorKey and valueMapper test cases")
+    public <T, K, V> void groupMapMultiKeyWithFunctions_testCases(Collection<? extends T> sourceCollection,
+                                                                  Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                                  Function<? super T, ? extends V> valueMapper,
+                                                                  Class<? extends Exception> expectedException,
+                                                                  Map<K, List<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMapMultiKey(sourceCollection, discriminatorKey, valueMapper));
+        } else {
+            assertEquals(expectedResult, groupMapMultiKey(sourceCollection, discriminatorKey, valueMapper));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapMultiKeyWithPredicateAndFunctionsTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6, 11, 12));
+        Predicate<Integer> smallerThan10 = i -> 10 > i;
+        Function<Integer, List<String>> oddEvenAndCompareWith5 = i -> {
+            List<String> keys = new ArrayList<>();
+            if (0 == i % 2) {
+                keys.add("evenKey");
+            } else {
+                keys.add("oddKey");
+            }
+            if (5 > i) {
+                keys.add("smaller5Key");
+            } else {
+                keys.add("greaterEqual5Key");
+            }
+            return keys;
+        };
+        Function<Integer, Integer> square = i -> i * i;
+
+        Map<String, List<Integer>> resultNoFilter = new HashMap<>() {{
+            put("evenKey", List.of(4, 36, 144));
+            put("oddKey", List.of(1, 9, 121));
+            put("smaller5Key", List.of(1, 4, 9));
+            put("greaterEqual5Key", List.of(36, 121, 144));
+        }};
+        Map<String, List<Integer>> resultFilter = new HashMap<>() {{
+            put("evenKey", List.of(4, 36));
+            put("oddKey", List.of(1, 9));
+            put("smaller5Key", List.of(1, 4, 9));
+            put("greaterEqual5Key", List.of(36));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   discriminatorKey,         valueMapper,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,                     null,          null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,                     null,          null,                             Map.of() ),
+                Arguments.of( List.of(1),         null,              null,                     null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         smallerThan10,     null,                     null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         smallerThan10,     oddEvenAndCompareWith5,   null,          IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         smallerThan10,     null,                     square,        IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              oddEvenAndCompareWith5,   square,        null,                             Map.of() ),
+                Arguments.of( null,               smallerThan10,     oddEvenAndCompareWith5,   square,        null,                             Map.of() ),
+                Arguments.of( ints,               null,              oddEvenAndCompareWith5,   square,        null,                             resultNoFilter ),
+                Arguments.of( ints,               smallerThan10,     oddEvenAndCompareWith5,   square,        null,                             resultFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapMultiKeyWithPredicateAndFunctionsTestCases")
+    @DisplayName("groupMapMultiKey: with filterPredicate, discriminatorKey and valueMapper test cases")
+    public <T, K, V> void groupMapMultiKeyWithPredicateAndFunctions_testCases(Collection<? extends T> sourceCollection,
+                                                                              Predicate<? super T> filterPredicate,
+                                                                              Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                                              Function<? super T, ? extends V> valueMapper,
+                                                                              Class<? extends Exception> expectedException,
+                                                                              Map<K, List<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMapMultiKey(sourceCollection, filterPredicate, discriminatorKey, valueMapper));
+        } else {
+            assertEquals(expectedResult, groupMapMultiKey(sourceCollection, filterPredicate, discriminatorKey, valueMapper));
+        }
+    }
+
+
+    static Stream<Arguments> groupMapMultiKeyWithPredicateFunctionsAndSupplierTestCases() {
+        List<String> strings = List.of("AA", "BFF", "5TRY", "H", "B", "TYSSGT");
+        Predicate<String> sSmallerThan5 = s -> 5 > s.length();
+        Function<String, List<String>> startWithVowelAndSmallerThan3 = s -> {
+            List<String> keys = new ArrayList<>();
+            if ("AEIOUaeiou".contains(s.substring(0, 1))) {
+                keys.add("startWithVowelKey");
+            } else {
+                keys.add("notStartWithVowelKey");
+            }
+            if (3 > s.length()) {
+                keys.add("lengthSmaller3Key");
+            } else {
+                keys.add("lengthGreaterEqual3Key");
+            }
+            return keys;
+        };
+        Function<String, String> sVersion2 = s -> s + "2";
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Map<String, List<String>> resultNoFilterWithDefaultCollectionFactory = new HashMap<>() {{
+            put("startWithVowelKey", List.of("AA2"));
+            put("notStartWithVowelKey", List.of("BFF2", "5TRY2", "H2", "B2", "TYSSGT2"));
+            put("lengthSmaller3Key", List.of("AA2", "H2", "B2"));
+            put("lengthGreaterEqual3Key", List.of("BFF2", "5TRY2", "TYSSGT2"));
+        }};
+        Map<String, List<String>> resultFilterWithDefaultCollectionFactory = new HashMap<>() {{
+            put("startWithVowelKey", List.of("AA2"));
+            put("notStartWithVowelKey", List.of("BFF2", "5TRY2", "H2", "B2"));
+            put("lengthSmaller3Key", List.of("AA2", "H2", "B2"));
+            put("lengthGreaterEqual3Key", List.of("BFF2", "5TRY2"));
+        }};
+        Map<String, Set<String>> resultNoFilterWithSetCollectionFactory = new HashMap<>() {{
+            put("startWithVowelKey", new LinkedHashSet<>(List.of("AA2")));
+            put("notStartWithVowelKey", new LinkedHashSet<>(List.of("BFF2", "5TRY2", "H2", "B2", "TYSSGT2")));
+            put("lengthSmaller3Key", new LinkedHashSet<>(List.of("AA2", "H2", "B2")));
+            put("lengthGreaterEqual3Key", new LinkedHashSet<>(List.of("BFF2", "5TRY2", "TYSSGT2")));
+        }};
+        Map<String, Set<String>> resultFilterWithSetCollectionFactory = new HashMap<>() {{
+            put("startWithVowelKey", new LinkedHashSet<>(List.of("AA2")));
+            put("notStartWithVowelKey", new LinkedHashSet<>(List.of("BFF2", "5TRY2", "H2", "B2")));
+            put("lengthSmaller3Key", new LinkedHashSet<>(List.of("AA2", "H2", "B2")));
+            put("lengthGreaterEqual3Key", new LinkedHashSet<>(List.of("BFF2", "5TRY2")));
+
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   discriminatorKey,                valueMapper,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,              null,                            null,          null,                null,                             Map.of() ),
+                Arguments.of( null,               null,              null,                            null,          setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,                            null,          null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,                            null,          setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(1),         null,              null,                            null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     null,                            null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     startWithVowelAndSmallerThan3,   null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         sSmallerThan5,     null,                            sVersion2,     null,                IllegalArgumentException.class,   null ),
+                Arguments.of( null,               null,              startWithVowelAndSmallerThan3,   sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( null,               sSmallerThan5,     startWithVowelAndSmallerThan3,   sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              startWithVowelAndSmallerThan3,   sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          sSmallerThan5,     startWithVowelAndSmallerThan3,   sVersion2,     null,                null,                             Map.of() ),
+                Arguments.of( strings,            null,              startWithVowelAndSmallerThan3,   sVersion2,     null,                null,                             resultNoFilterWithDefaultCollectionFactory ),
+                Arguments.of( strings,            sSmallerThan5,     startWithVowelAndSmallerThan3,   sVersion2,     null,                null,                             resultFilterWithDefaultCollectionFactory ),
+                Arguments.of( strings,            null,              startWithVowelAndSmallerThan3,   sVersion2,     setSupplier,         null,                             resultNoFilterWithSetCollectionFactory ),
+                Arguments.of( strings,            sSmallerThan5,     startWithVowelAndSmallerThan3,   sVersion2,     setSupplier,         null,                             resultFilterWithSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapMultiKeyWithPredicateFunctionsAndSupplierTestCases")
+    @DisplayName("groupMapMultiKey: with filterPredicate, discriminatorKey, valueMapper and collectionFactory test cases")
+    public <T, K, V> void groupMapMultiKeyWithPredicateFunctionsAndSupplier_testCases(Collection<? extends T> sourceCollection,
+                                                                                      Predicate<? super T> filterPredicate,
+                                                                                      Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                                                      Function<? super T, ? extends V> valueMapper,
+                                                                                      Supplier<Collection<V>> collectionFactory,
+                                                                                      Class<? extends Exception> expectedException,
+                                                                                      Map<K, Collection<V>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMapMultiKey(sourceCollection, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
+        } else {
+            assertEquals(expectedResult, groupMapMultiKey(sourceCollection, filterPredicate, discriminatorKey, valueMapper, collectionFactory));
+        }
+    }
+
+
     static Stream<Arguments> groupMapReduceWithFunctionsAndBinaryOperatorTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(2, 4, 5, 7, 9, 12));
         Function<Integer, Integer> mod3 = i -> i % 3;

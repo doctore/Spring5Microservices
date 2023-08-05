@@ -1208,6 +1208,126 @@ public class MapUtil {
 
 
     /**
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     *
+     * @apiNote
+     *    This method is similar to {@link MapUtil#groupBy(Map, BiFunction)} but {@code discriminatorKey} returns a
+     * {@link Collection} of related key values.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Result:
+     *    [(1, "Hi"), (2, "Hello"), (11, "World")]             [("evenKey",  [(2, "Hello")])
+     *    (k, v) -> {                                           ("oddKey",   [(1, "Hi"), (11, "World")])
+     *       List<String> keys = new ArrayList<>();             ("smaller10Key",  [(1, "Hi"), (2, "Hello")])
+     *       if (0 == k % 2) {                                  ("greaterEqual10Key",  [(11, "World")])]
+     *          keys.add("evenKey");
+     *       } else {
+     *          keys.add("oddKey");
+     *       }
+     *       if (10 > k) {
+     *          keys.add("smaller10Key");
+     *       } else {
+     *          keys.add("greaterEqual10Key");
+     *       }
+     *       return keys;
+     *    }
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} to filter
+     * @param discriminator
+     *    {@link BiFunction} used to split the elements of {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E, R> Map<R, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
+                                                              final BiFunction<? super T, ? super E, Collection<? extends R>> discriminator) {
+        return groupByMultiKey(
+                sourceMap,
+                discriminator,
+                HashMap::new,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     *
+     * @apiNote
+     *    This method is similar to {@link MapUtil#groupBy(Map, BiFunction, Supplier, Supplier)} but {@code discriminatorKey}
+     * returns a {@link Collection} of related key values.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Result:
+     *    [(1, "Hi"), (2, "Hello"), (11, "World")]             [("evenKey",  [(2, "Hello")])
+     *    (k, v) -> {                                           ("oddKey",   [(1, "Hi"), (11, "World")])
+     *       List<String> keys = new ArrayList<>();             ("smaller10Key",  [(1, "Hi"), (2, "Hello")])
+     *       if (0 == k % 2) {                                  ("greaterEqual10Key",  [(11, "World")])]
+     *          keys.add("evenKey");
+     *       } else {
+     *          keys.add("oddKey");
+     *       }
+     *       if (10 > k) {
+     *          keys.add("smaller10Key");
+     *       } else {
+     *          keys.add("greaterEqual10Key");
+     *       }
+     *       return keys;
+     *    }
+     *    HashMap::new
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} to filter
+     * @param discriminator
+     *    {@link BiFunction} used to split the elements of {@code sourceMap}
+     * @param mapResultFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements.
+     *    If {@code null} then {@link HashMap}
+     * @param mapValuesFactory
+     *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E, R> Map<R, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
+                                                              final BiFunction<? super T, ? super E, Collection<? extends R>> discriminator,
+                                                              final Supplier<Map<R, Map<T, E>>> mapResultFactory,
+                                                              final Supplier<Map<T, E>> mapValuesFactory) {
+        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
+        final Supplier<Map<T, E>> finalMapValuesFactory = getFinalMapFactory(mapValuesFactory);
+        Map<R, Map<T, E>> result = finalMapResultFactory.get();
+
+        if (!CollectionUtils.isEmpty(sourceMap) && nonNull(discriminator)) {
+            sourceMap.forEach(
+                    (k, v) -> {
+                        Collection<? extends R> discriminatorResult = ObjectUtil.getOrElse(
+                                discriminator.apply(k, v),
+                                new ArrayList<>()
+                        );
+                        discriminatorResult
+                                .forEach(r -> {
+                                    result.putIfAbsent(
+                                            r,
+                                            finalMapValuesFactory.get()
+                                    );
+                                    result.get(r)
+                                            .put(k, v);
+                                });
+                    }
+            );
+        }
+        return result;
+    }
+
+
+    /**
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
      *
@@ -1248,9 +1368,8 @@ public class MapUtil {
 
     /**
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey},
-     * only if the current element matches {@code filterPredicate}.
-     * <p>
-     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
+     * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value
+     * of type V using {@code valueMapper} {@link BiFunction}.
      *
      * <pre>
      * Example:
@@ -1293,9 +1412,8 @@ public class MapUtil {
 
     /**
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey},
-     * only if the current element matches {@code filterPredicate}.
-     * <p>
-     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
+     * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value
+     * of type V using {@code valueMapper} {@link BiFunction}.
      *
      * <pre>
      * Example:
@@ -1409,6 +1527,7 @@ public class MapUtil {
      *                         : e.getValue().length() + 1
      *                )
      *          )
+     *    ArrayList::new
      * </pre>
      *
      * @param sourceMap
@@ -1455,7 +1574,7 @@ public class MapUtil {
 
 
     /**
-     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} as values, according to {@code discriminatorKey}.
      * All the values that have the same discriminator are then transformed by {@code valueMapper} {@link BiFunction}
      * and then reduced into a single value with {@code reduceValues}.
      *
@@ -1470,18 +1589,18 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform.
+     *    Source {@link Map} with the elements to transform and reduce
      * @param discriminatorKey
      *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
      * @param valueMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap}
      * @param reduceValues
-     *    {@link BinaryOperator} used to reduces the values related with same key
+     *    {@link BinaryOperator} used to reduce the values related with same key
      *
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
-     *                                  is {@code null} with a not empty {@code sourceMap}
+     *                                  are {@code null} with a not empty {@code sourceMap}
      */
     public static <K1, K2, V1, V2> Map<K2, V2> groupMapReduce(final Map<? extends K1, ? extends V1> sourceMap,
                                                               final BiFunction<? super K1, ? super V1, ? extends K2> discriminatorKey,
@@ -1506,7 +1625,7 @@ public class MapUtil {
 
 
     /**
-     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} as values, according to {@code partialFunction}.
      * If the current element verifies {@link PartialFunction#isDefinedAt(Object)}, all the values that have the same key
      * after applying {@link PartialFunction#apply(Object)} are then reduced into a single value with {@code reduceValues}.
      *
@@ -1529,11 +1648,11 @@ public class MapUtil {
      *   Integer::sum
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform.
+     *    Source {@link Map} with the elements to filter, transform and reduce
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      * @param reduceValues
-     *    {@link BinaryOperator} used to reduces the values related with same key
+     *    {@link BinaryOperator} used to reduce the values related with same key
      *
      * @return {@link Map}
      *

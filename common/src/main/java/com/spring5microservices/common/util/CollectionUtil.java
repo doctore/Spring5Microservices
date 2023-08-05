@@ -1341,7 +1341,7 @@ public class CollectionUtil {
      *
      *   Parameters:             Result:
      *    [1, 2, 3, 6]            [(0,  [4, 7])
-     *    k -> i % 3               (1,  [2])
+     *    i -> i % 3               (1,  [2])
      *    i -> i + 1               (2,  [3])]
      * </pre>
      *
@@ -1373,9 +1373,8 @@ public class CollectionUtil {
 
     /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey},
-     * only if the current element matches {@code filterPredicate}.
-     * <p>
-     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
+     * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value of
+     * type V using {@code valueMapper} {@link Function}.
      *
      * <pre>
      * Example:
@@ -1383,9 +1382,8 @@ public class CollectionUtil {
      *   Parameters:              Result:
      *    [1, 2, 3, 6, 11]          [(0, [4, 7])
      *    i -> 10 > i                (1, [2])
-     *    k -> i % 3                 (2, [3])]
+     *    i -> i % 3                 (2, [3])]
      *    i -> i + 1
-     *    ArrayList::new
      * </pre>
      *
      * @param sourceCollection
@@ -1419,9 +1417,8 @@ public class CollectionUtil {
 
     /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey},
-     * only if the current element matches {@code filterPredicate}.
-     * <p>
-     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
+     * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value of
+     * type V using {@code valueMapper} {@link Function}.
      *
      * <pre>
      * Example:
@@ -1429,8 +1426,9 @@ public class CollectionUtil {
      *   Parameters:              Result:
      *    [1, 2, 3, 6, 11]          [(0,  [4, 7])
      *    i -> 10 > i                (1,  [2])
-     *    k -> i % 3                 (2,  [3])]
+     *    i -> i % 3                 (2,  [3])]
      *    i -> i + 1
+     *    ArrayList::new
      * </pre>
      *
      * @param sourceCollection
@@ -1574,6 +1572,216 @@ public class CollectionUtil {
 
     /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
+     *
+     * @apiNote
+     *    This method is similar to {@link CollectionUtil#groupMap(Collection, Function, Function)} but {@code discriminatorKey}
+     * returns a {@link Collection} of related key values.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Result:
+     *    [1, 2, 3, 6, 11, 12]                                 [("even",  [2, 6, 12])
+     *    i -> {                                                ("odd",   [1, 3, 11])
+     *       List<String> keys = new ArrayList<>();             ("smaller10",  [1, 2, 3, 6])
+     *       if (0 == i % 2) {                                  ("greaterEqual10",  [11, 12])]
+     *          keys.add("even");
+     *       } else {
+     *          keys.add("odd");
+     *       }
+     *       if (10 > i) {
+     *          keys.add("smaller10");
+     *       } else {
+     *          keys.add("greaterEqual10");
+     *       }
+     *       return keys;
+     *    }
+     *    i -> i
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, K, V> Map<K, List<V>> groupMapMultiKey(final Collection<? extends T> sourceCollection,
+                                                             final Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                             final Function<? super T, ? extends V> valueMapper) {
+        return (Map) groupMapMultiKey(
+                sourceCollection,
+                alwaysTrue(),
+                discriminatorKey,
+                valueMapper,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey},
+     * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value of
+     * type V using {@code valueMapper} {@link Function}.
+     *
+     * @apiNote
+     *    This method is similar to {@link CollectionUtil#groupMap(Collection, Predicate, Function, Function)} but
+     * {@code discriminatorKey} returns a {@link Collection} of related key values.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Result:
+     *    [1, 2, 3, 6, 11, 12]                                 [("even",  [2, 6])
+     *    i -> 10 > i                                           ("odd",   [1, 3])
+     *    i -> {                                                ("smaller5",  [1, 2, 3])
+     *       List<String> keys = new ArrayList<>();             ("greaterEqual5",  [6])]
+     *       if (0 == i % 2) {
+     *          keys.add("even");
+     *       } else {
+     *          keys.add("odd");
+     *       }
+     *       if (5 > i) {
+     *          keys.add("smaller5");
+     *       } else {
+     *          keys.add("greaterEqual5");
+     *       }
+     *       return keys;
+     *    }
+     *    i -> i
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform.
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, K, V> Map<K, List<V>> groupMapMultiKey(final Collection<? extends T> sourceCollection,
+                                                             final Predicate<? super T> filterPredicate,
+                                                             final Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                             final Function<? super T, ? extends V> valueMapper) {
+        return (Map) groupMapMultiKey(
+                sourceCollection,
+                filterPredicate,
+                discriminatorKey,
+                valueMapper,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey},
+     * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value of
+     * type V using {@code valueMapper} {@link Function}.
+     *
+     * @apiNote
+     *    This method is similar to {@link CollectionUtil#groupMap(Collection, Predicate, Function, Function, Supplier)} but
+     * {@code discriminatorKey} returns a {@link Collection} of related key values.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                          Result:
+     *    [1, 2, 3, 6, 11, 12]                                 [("even",  [2, 6])
+     *    i -> 10 > i                                           ("odd",   [1, 3])
+     *    i -> {                                                ("smaller5",  [1, 2, 3])
+     *       List<String> keys = new ArrayList<>();             ("greaterEqual5",  [6])]
+     *       if (0 == i % 2) {
+     *          keys.add("even");
+     *       } else {
+     *          keys.add("odd");
+     *       }
+     *       if (5 > i) {
+     *          keys.add("smaller5");
+     *       } else {
+     *          keys.add("greaterEqual5");
+     *       }
+     *       return keys;
+     *    }
+     *    i -> i
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param valueMapper
+     *    {@link Function} to transform elements of {@code sourceCollection}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    public static <T, K, V> Map<K, Collection<V>> groupMapMultiKey(final Collection<? extends T> sourceCollection,
+                                                                   final Predicate<? super T> filterPredicate,
+                                                                   final Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                                   final Function<? super T, ? extends V> valueMapper,
+                                                                   final Supplier<Collection<V>> collectionFactory) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        Assert.notNull(valueMapper, "valueMapper must be not null");
+        final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        final Predicate<? super T> finalFilterPredicate = getOrElse(
+                filterPredicate,
+                alwaysTrue()
+        );
+        Map<K, Collection<V>> result = new HashMap<>();
+        sourceCollection
+                .stream()
+                .filter(finalFilterPredicate)
+                .forEach(
+                        e -> {
+                            V valueMapperResult = valueMapper.apply(e);
+                            Collection<? extends K> discriminatorKeyResult = getOrElse(
+                                    discriminatorKey.apply(e),
+                                    new ArrayList<>()
+                            );
+                            discriminatorKeyResult
+                                    .forEach(
+                                            k -> {
+                                                result.putIfAbsent(
+                                                        k,
+                                                        finalCollectionFactory.get()
+                                                );
+                                                result.get(k)
+                                                        .add(valueMapperResult);
+                                            }
+                                    );
+                        }
+                );
+        return result;
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} as values, according to {@code discriminatorKey}.
      * All the values that have the same discriminator are then transformed by the {@code valueMapper} {@link Function} and
      * then reduced into a single value with {@code reduceValues}.
      *
@@ -1582,24 +1790,24 @@ public class CollectionUtil {
      *
      *   Parameters:              Intermediate Map:          Result:
      *    [1, 2, 3, 6]             [(0,  [4, 7])              [(0, 11), (1, 2), (2, 3)]
-     *    k -> i % 3                (1,  [2])
+     *    i -> i % 3                (1,  [2])
      *    i -> i + 1                (2,  [3])]
      *    Integer::sum
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform and reduce.
+     *    Source {@link Collection} with the elements to transform and reduce
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection}
      * @param reduceValues
-     *    {@link BinaryOperator} used to reduces the values related with same key
+     *    {@link BinaryOperator} used to reduce the values related with same key
      *
      * @return {@link Map}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
-     *                                  is {@code null} with a not empty {@code sourceCollection}
+     *                                  are {@code null} with a not empty {@code sourceCollection}
      */
     public static <T, K, V> Map<K, V> groupMapReduce(final Collection<? extends T> sourceCollection,
                                                      final Function<? super T, ? extends K> discriminatorKey,
@@ -1624,7 +1832,7 @@ public class CollectionUtil {
 
 
     /**
-     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} as values, according to {@code partialFunction}.
      * If the current element verifies {@link PartialFunction#isDefinedAt(Object)}, all the values that have the same key
      * after applying {@link PartialFunction#apply(Object)} are then reduced into a single value with {@code reduceValues}.
      *
@@ -1646,15 +1854,15 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform and reduce.
+     *    Source {@link Collection} with the elements to filter, transform and reduce
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      * @param reduceValues
-     *    {@link BinaryOperator} used to reduces the values related with same key
+     *    {@link BinaryOperator} used to reduce the values related with same key
      *
      * @return {@link Map}
      *
-     * @throws IllegalArgumentException if {@code partialFunction} or {@code reduceValues} is {@code null} with a not
+     * @throws IllegalArgumentException if {@code partialFunction} or {@code reduceValues} are {@code null} with a not
      *                                  empty {@code sourceCollection}
      */
     public static <T, K, V> Map<K, V> groupMapReduce(final Collection<? extends T> sourceCollection,
