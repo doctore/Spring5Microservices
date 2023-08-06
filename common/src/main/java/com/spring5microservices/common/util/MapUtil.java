@@ -1144,6 +1144,9 @@ public class MapUtil {
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      *
      * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
+     *                                  {@code sourceMap}
      */
     public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator) {
@@ -1181,28 +1184,34 @@ public class MapUtil {
      *    If {@code null} then {@link HashMap}
      *
      * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
+     *                                  {@code sourceMap}
      */
     public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
                                                       final BiFunction<? super T, ? super E, ? extends R> discriminator,
                                                       final Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                       final Supplier<Map<T, E>> mapValuesFactory) {
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(discriminator, "discriminator must be not null");
+
         final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
         final Supplier<Map<T, E>> finalMapValuesFactory = getFinalMapFactory(mapValuesFactory);
-        Map<R, Map<T, E>> result = finalMapResultFactory.get();
 
-        if (!CollectionUtils.isEmpty(sourceMap) && nonNull(discriminator)) {
-            sourceMap.forEach(
-                    (k, v) -> {
-                        R discriminatorResult = discriminator.apply(k, v);
-                        result.putIfAbsent(
-                                discriminatorResult,
-                                finalMapValuesFactory.get()
-                        );
-                        result.get(discriminatorResult)
-                                .put(k, v);
-                    }
-            );
-        }
+        Map<R, Map<T, E>> result = finalMapResultFactory.get();
+        sourceMap.forEach(
+                (k, v) -> {
+                    R discriminatorResult = discriminator.apply(k, v);
+                    result.putIfAbsent(
+                            discriminatorResult,
+                            finalMapValuesFactory.get()
+                    );
+                    result.get(discriminatorResult)
+                            .put(k, v);
+                }
+        );
         return result;
     }
 
@@ -1241,6 +1250,9 @@ public class MapUtil {
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      *
      * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
+     *                                  {@code sourceMap}
      */
     public static <T, E, R> Map<R, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
                                                               final BiFunction<? super T, ? super E, Collection<? extends R>> discriminator) {
@@ -1257,7 +1269,7 @@ public class MapUtil {
      * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
      *
      * @apiNote
-     *    This method is similar to {@link MapUtil#groupBy(Map, BiFunction, Supplier, Supplier)} but {@code discriminatorKey}
+     *    This method is similar to {@link MapUtil#groupBy(Map, BiFunction, Supplier, Supplier)} but {@code discriminator}
      * returns a {@link Collection} of related key values.
      *
      * <pre>
@@ -1295,34 +1307,40 @@ public class MapUtil {
      *    If {@code null} then {@link HashMap}
      *
      * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
+     *                                  {@code sourceMap}
      */
     public static <T, E, R> Map<R, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
                                                               final BiFunction<? super T, ? super E, Collection<? extends R>> discriminator,
                                                               final Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                               final Supplier<Map<T, E>> mapValuesFactory) {
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(discriminator, "discriminator must be not null");
+
         final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
         final Supplier<Map<T, E>> finalMapValuesFactory = getFinalMapFactory(mapValuesFactory);
-        Map<R, Map<T, E>> result = finalMapResultFactory.get();
 
-        if (!CollectionUtils.isEmpty(sourceMap) && nonNull(discriminator)) {
-            sourceMap.forEach(
-                    (k, v) -> {
-                        Collection<? extends R> discriminatorResult = ObjectUtil.getOrElse(
-                                discriminator.apply(k, v),
-                                new ArrayList<>()
-                        );
-                        discriminatorResult
-                                .forEach(r -> {
-                                    result.putIfAbsent(
-                                            r,
-                                            finalMapValuesFactory.get()
-                                    );
-                                    result.get(r)
-                                            .put(k, v);
-                                });
-                    }
-            );
-        }
+        Map<R, Map<T, E>> result = finalMapResultFactory.get();
+        sourceMap.forEach(
+                (k, v) -> {
+                    Collection<? extends R> discriminatorResult = ObjectUtil.getOrElse(
+                            discriminator.apply(k, v),
+                            new ArrayList<>()
+                    );
+                    discriminatorResult
+                            .forEach(r -> {
+                                result.putIfAbsent(
+                                        r,
+                                        finalMapValuesFactory.get()
+                                );
+                                result.get(r)
+                                        .put(k, v);
+                            });
+                }
+        );
         return result;
     }
 

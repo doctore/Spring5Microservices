@@ -1562,13 +1562,14 @@ public class MapUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,         discriminator,      expectedResult
-                Arguments.of( null,              null,               Map.of() ),
-                Arguments.of( null,              keyMod2,            Map.of() ),
-                Arguments.of( Map.of(),          null,               Map.of() ),
-                Arguments.of( Map.of(),          keyMod2,            Map.of() ),
-                Arguments.of( intsAndStrings,    keyMod2,            intsAndStringsResult ),
-                Arguments.of( intsAndLongs,      keyPlusValueMod3,   intsAndLongsResult )
+                //            sourceMap,         discriminator,      expectedException,                expectedResult
+                Arguments.of( null,              null,               null,                             Map.of() ),
+                Arguments.of( null,              keyMod2,            null,                             Map.of() ),
+                Arguments.of( Map.of(),          null,               null,                             Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,            null,                             Map.of() ),
+                Arguments.of( intsAndStrings,    null,               IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    keyMod2,            null,                             intsAndStringsResult ),
+                Arguments.of( intsAndLongs,      keyPlusValueMod3,   null,                             intsAndLongsResult )
         ); //@formatter:on
     }
 
@@ -1577,8 +1578,13 @@ public class MapUtilTest {
     @DisplayName("groupBy: without map factory test cases")
     public <T, E, R> void groupByNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
                                                         BiFunction<? super T, ? super E, ? extends R> discriminator,
+                                                        Class<? extends Exception> expectedException,
                                                         Map<R, Map<T, E>> expectedResult) {
-        assertEquals(expectedResult, groupBy(sourceMap, discriminator));
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupBy(sourceMap, discriminator));
+        } else {
+            assertEquals(expectedResult, groupBy(sourceMap, discriminator));
+        }
     }
 
 
@@ -1619,19 +1625,22 @@ public class MapUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,         discriminator,    mapResultFactory,    mapValuesFactory,    expectedResult
-                Arguments.of( null,              null,             null,                null,                Map.of() ),
-                Arguments.of( null,              keyMod2,          null,                null,                Map.of() ),
-                Arguments.of( null,              keyMod2,          linkedMapSupplier,   null,                new LinkedHashMap<>() ),
-                Arguments.of( null,              keyMod2,          null,                linkedMapSupplier,   Map.of() ),
-                Arguments.of( null,              keyMod2,          linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
-                Arguments.of( Map.of(),          null,             null,                null,                Map.of() ),
-                Arguments.of( Map.of(),          keyMod2,          null,                null,                Map.of() ),
-                Arguments.of( Map.of(),          keyMod2,          linkedMapSupplier,   null,                new LinkedHashMap<>() ),
-                Arguments.of( Map.of(),          keyMod2,          null,                linkedMapSupplier,   Map.of() ),
-                Arguments.of( Map.of(),          keyMod2,          linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
-                Arguments.of( intsAndStrings,    keyMod2,          null,                null,                intsAndStringsResult ),
-                Arguments.of( intsAndStrings,    keyMod2,          linkedMapSupplier,   linkedMapSupplier,   intsAndStringsLinkedMapResult )
+                //            sourceMap,         discriminator,    mapResultFactory,    mapValuesFactory,    expectedException,                expectedResult
+                Arguments.of( null,              null,             null,                null,                null,                             Map.of() ),
+                Arguments.of( null,              keyMod2,          null,                null,                null,                             Map.of() ),
+                Arguments.of( null,              keyMod2,          linkedMapSupplier,   null,                null,                             new LinkedHashMap<>() ),
+                Arguments.of( null,              keyMod2,          null,                linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( null,              keyMod2,          linkedMapSupplier,   linkedMapSupplier,   null,                             new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),          null,             null,                null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,          null,                null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,          linkedMapSupplier,   null,                null,                             new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),          keyMod2,          null,                linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( Map.of(),          keyMod2,          linkedMapSupplier,   linkedMapSupplier,   null,                             new LinkedHashMap<>() ),
+                Arguments.of( intsAndStrings,    null,             null,                null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    null,             linkedMapSupplier,   null,                IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    null,             linkedMapSupplier,   linkedMapSupplier,   IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,    keyMod2,          null,                null,                null,                             intsAndStringsResult ),
+                Arguments.of( intsAndStrings,    keyMod2,          linkedMapSupplier,   linkedMapSupplier,   null,                             intsAndStringsLinkedMapResult )
         ); //@formatter:on
     }
 
@@ -1642,8 +1651,13 @@ public class MapUtilTest {
                                                          BiFunction<? super T, ? super E, ? extends R> discriminator,
                                                          Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                          Supplier<Map<T, E>> mapValuesFactory,
+                                                         Class<? extends Exception> expectedException,
                                                          Map<R, Map<T, E>> expectedResult) {
-        assertEquals(expectedResult, groupBy(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupBy(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
+        } else {
+            assertEquals(expectedResult, groupBy(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
+        }
     }
 
 
@@ -1694,12 +1708,13 @@ public class MapUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,   discriminator,                expectedResult
-                Arguments.of( null,        null,                         Map.of() ),
-                Arguments.of( null,        oddEvenAndCompareWith10Key,   Map.of() ),
-                Arguments.of( Map.of(),    null,                         Map.of() ),
-                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   Map.of() ),
-                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   expectedResult )
+                //            sourceMap,   discriminator,                expectedException,                expectedResult
+                Arguments.of( null,        null,                         null,                             Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   null,                             Map.of() ),
+                Arguments.of( Map.of(),    null,                         null,                             Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   null,                             Map.of() ),
+                Arguments.of( sourceMap,   null,                         IllegalArgumentException.class,   null ),
+                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   null,                             expectedResult )
         ); //@formatter:on
     }
 
@@ -1708,8 +1723,13 @@ public class MapUtilTest {
     @DisplayName("groupByMultiKey: without map factory test cases")
     public <T, E, R> void groupByMultiKeyNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
                                                                 BiFunction<? super T, ? super E, Collection<? extends R>> discriminator,
+                                                                Class<? extends Exception> expectedException,
                                                                 Map<R, Map<T, E>> expectedResult) {
-        assertEquals(expectedResult, groupByMultiKey(sourceMap, discriminator));
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupByMultiKey(sourceMap, discriminator));
+        } else {
+            assertEquals(expectedResult, groupByMultiKey(sourceMap, discriminator));
+        }
     }
 
 
@@ -1785,19 +1805,22 @@ public class MapUtilTest {
         }};
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,   discriminator,                mapResultFactory,    mapValuesFactory,    expectedResult
-                Arguments.of( null,        null,                         null,                null,                Map.of() ),
-                Arguments.of( null,        oddEvenAndCompareWith10Key,   null,                null,                Map.of() ),
-                Arguments.of( null,        oddEvenAndCompareWith10Key,   linkedMapSupplier,   null,                new LinkedHashMap<>() ),
-                Arguments.of( null,        oddEvenAndCompareWith10Key,   null,                linkedMapSupplier,   Map.of() ),
-                Arguments.of( null,        oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
-                Arguments.of( Map.of(),    null,                         null,                null,                Map.of() ),
-                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   null,                null,                Map.of() ),
-                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   linkedMapSupplier,   null,                new LinkedHashMap<>() ),
-                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   null,                linkedMapSupplier,   Map.of() ),
-                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   new LinkedHashMap<>() ),
-                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   null,                null,                expectedResultWithoutMapFactories ),
-                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   expectedResultWithMapFactories )
+                //            sourceMap,   discriminator,                mapResultFactory,    mapValuesFactory,    expectedException,                expectedResult
+                Arguments.of( null,        null,                         null,                null,                null,                             Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   null,                null,                null,                             Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   linkedMapSupplier,   null,                null,                             new LinkedHashMap<>() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   null,                linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( null,        oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   null,                             new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),    null,                         null,                null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   null,                null,                null,                             Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   linkedMapSupplier,   null,                null,                             new LinkedHashMap<>() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   null,                linkedMapSupplier,   null,                             Map.of() ),
+                Arguments.of( Map.of(),    oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   null,                             new LinkedHashMap<>() ),
+                Arguments.of( sourceMap,   null,                         null,                null,                IllegalArgumentException.class,   expectedResultWithoutMapFactories ),
+                Arguments.of( sourceMap,   null,                         linkedMapSupplier,   null,                IllegalArgumentException.class,   expectedResultWithoutMapFactories ),
+                Arguments.of( sourceMap,   null,                         linkedMapSupplier,   linkedMapSupplier,   IllegalArgumentException.class,   expectedResultWithoutMapFactories ),
+                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   null,                null,                null,                             expectedResultWithoutMapFactories ),
+                Arguments.of( sourceMap,   oddEvenAndCompareWith10Key,   linkedMapSupplier,   linkedMapSupplier,   null,                             expectedResultWithMapFactories )
         ); //@formatter:on
     }
 
@@ -1808,8 +1831,13 @@ public class MapUtilTest {
                                                                  BiFunction<? super T, ? super E, Collection<? extends R>> discriminator,
                                                                  Supplier<Map<R, Map<T, E>>> mapResultFactory,
                                                                  Supplier<Map<T, E>> mapValuesFactory,
+                                                                 Class<? extends Exception> expectedException,
                                                                  Map<R, Map<T, E>> expectedResult) {
-        assertEquals(expectedResult, groupByMultiKey(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupByMultiKey(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
+        } else {
+            assertEquals(expectedResult, groupByMultiKey(sourceMap, discriminator, mapResultFactory, mapValuesFactory));
+        }
     }
 
 
