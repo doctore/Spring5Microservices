@@ -1196,23 +1196,15 @@ public class MapUtil {
             return new HashMap<>();
         }
         Assert.notNull(discriminator, "discriminator must be not null");
-
-        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
-        final Supplier<Map<T, E>> finalMapValuesFactory = getFinalMapFactory(mapValuesFactory);
-
-        Map<R, Map<T, E>> result = finalMapResultFactory.get();
-        sourceMap.forEach(
-                (k, v) -> {
-                    R discriminatorResult = discriminator.apply(k, v);
-                    result.putIfAbsent(
-                            discriminatorResult,
-                            finalMapValuesFactory.get()
-                    );
-                    result.get(discriminatorResult)
-                            .put(k, v);
-                }
+        return groupByMultiKey(
+                sourceMap,
+                (T t, E e) ->
+                    List.of(
+                            discriminator.apply(t, e)
+                    ),
+                mapResultFactory,
+                mapValuesFactory
         );
-        return result;
     }
 
 
