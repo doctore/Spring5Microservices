@@ -293,9 +293,8 @@ public abstract class Validation<E, T> implements Serializable {
                             get()
                     )
             );
-        } else {
-            return invalid(getErrors());
         }
+        return invalid(getErrors());
     }
 
 
@@ -330,14 +329,13 @@ public abstract class Validation<E, T> implements Serializable {
                             get()
                     )
             );
-        } else {
-            Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
-            return invalid(
-                    mapperInvalid.apply(
-                            getErrors()
-                    )
-            );
         }
+        Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
+        return invalid(
+                mapperInvalid.apply(
+                        getErrors()
+                )
+        );
     }
 
 
@@ -360,11 +358,10 @@ public abstract class Validation<E, T> implements Serializable {
                             getErrors()
                     )
             );
-        } else {
-            return valid(
-                    get()
-            );
         }
+        return valid(
+                get()
+        );
     }
 
 
@@ -415,10 +412,10 @@ public abstract class Validation<E, T> implements Serializable {
                 return valid(validation.get());
             }
             // This is Valid but validation is Invalid
-            else {
-                final Collection<E> errors = validation.getErrors();
-                return invalid(errors);
-            }
+            final Collection<E> errors = validation.getErrors();
+            return invalid(errors);
+
+        // This is an Invalid instance
         } else {
             // Due to only this is Invalid, return only its errors
             if (validation.isValid()) {
@@ -426,11 +423,9 @@ public abstract class Validation<E, T> implements Serializable {
                 return invalid(errors);
             }
             // Add both errors of this and validation
-            else {
-                final Collection<E> errors = new ArrayList<>(this.getErrors());
-                errors.addAll(validation.getErrors());
-                return invalid(errors);
-            }
+            final Collection<E> errors = new ArrayList<>(this.getErrors());
+            errors.addAll(validation.getErrors());
+            return invalid(errors);
         }
     }
 

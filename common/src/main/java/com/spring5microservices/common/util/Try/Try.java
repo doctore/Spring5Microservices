@@ -479,10 +479,9 @@ public abstract class Try<T> implements Serializable {
         if (isSuccess()) {
             Assert.notNull(mapperSuccess, "mapperSuccess must be not null");
             return mapTry(mapperSuccess);
-        } else {
-            Assert.notNull(mapperFailure, "mapperFailure must be not null");
-            return (Try<U>) mapFailureTry(mapperFailure);
         }
+        Assert.notNull(mapperFailure, "mapperFailure must be not null");
+        return (Try<U>) mapFailureTry(mapperFailure);
     }
 
 
@@ -547,22 +546,20 @@ public abstract class Try<T> implements Serializable {
                 );
             }
             // This is Success but t is Failure
-            else {
-                return failure(t.getException());
-            }
+            return failure(t.getException());
+
+        // This is a Failure instance
         } else {
             // Due to only this is Failure, returns this
             if (t.isSuccess()) {
                 return failure(getException());
             }
             // Current and given t are Failure, a new merged Failure instance will be returned
-            else {
-                Assert.notNull(mapperFailure, "mapperFailure must be not null");
-                return mapFailureTry(
-                        t,
-                        mapperFailure
-                );
-            }
+            Assert.notNull(mapperFailure, "mapperFailure must be not null");
+            return mapFailureTry(
+                    t,
+                    mapperFailure
+            );
         }
     }
 

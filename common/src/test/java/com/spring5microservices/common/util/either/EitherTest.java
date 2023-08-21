@@ -225,7 +225,7 @@ public class EitherTest {
         Either<String, Integer> leftResult = Either.left("error");
 
         Predicate<Integer> isOdd = i -> i % 2 == 1;
-        Function<Integer, String> errorString = i -> "error";
+        Supplier<String> errorString = () -> "error";
         return Stream.of(
                 //@formatter:off
                 //            either,                     predicate,   zero,          expectedException,                expectedResult
@@ -245,7 +245,7 @@ public class EitherTest {
     @DisplayName("filterOrElse: test cases")
     public <L, R> void filterOrElse_testCases(Either<L, R> either,
                                               Predicate<? super R> predicate,
-                                              Function<? super R, ? extends L> zero,
+                                              Supplier<? extends L> zero,
                                               Class<? extends Exception> expectedException,
                                               Either<L, R> expectedResult) {
         if (null != expectedException) {

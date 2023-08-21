@@ -85,7 +85,7 @@ public final class Left<L, R> extends Either<L, R> implements Serializable {
 
     @Override
     public R get() {
-        throw new NoSuchElementException("Is not possible to get right value of a 'left' Either");
+        throw new NoSuchElementException("Is not possible to get right value of a 'Left' Either");
     }
 
 

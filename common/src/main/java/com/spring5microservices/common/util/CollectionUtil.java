@@ -1789,9 +1789,9 @@ public class CollectionUtil {
      * Example:
      *
      *   Parameters:              Intermediate Map:          Result:
-     *    [1, 2, 3, 6]             [(0,  [4, 7])              [(0, 11), (1, 2), (2, 3)]
-     *    i -> i % 3                (1,  [2])
-     *    i -> i + 1                (2,  [3])]
+     *    [1, 2, 3, 6]             [(0,  [4, 7])              [(0, 11),
+     *    i -> i % 3                (1,  [2])                  (1, 2),
+     *    i -> i + 1                (2,  [3])]                 (2, 3)]
      *    Integer::sum
      * </pre>
      *
@@ -1840,9 +1840,9 @@ public class CollectionUtil {
      * Example:
      *
      *   Parameters:                                          Intermediate Map:          Result:
-     *    [1, 2, 3, 6, 7, 11, 12]                              [(0,  [4, 7])               [(0, 11), (1, 10), (2, 3)]
-     *    PartialFunction.of(                                   (1,  [2, 8])
-     *      i -> null != i && 10 > i,                           (2,  [3])]
+     *    [1, 2, 3, 6, 7, 11, 12]                              [(0,  [4, 7])               [(0, 11),
+     *    PartialFunction.of(                                   (1,  [2, 8])                (1, 10),
+     *      i -> null != i && 10 > i,                           (2,  [3])]                  (2, 3)]
      *      i -> null == i
      *             ? null
      *             : new AbstractMap.SimpleEntry<>(

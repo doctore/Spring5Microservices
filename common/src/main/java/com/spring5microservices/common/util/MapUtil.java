@@ -1592,9 +1592,9 @@ public class MapUtil {
      * Example:
      *
      *   Parameters:                                              Intermediate Map:          Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]        [(0,  [1])                 [(0, 1), (1, 2), (2, 10)]
-     *    (k, v) -> k % 3                                           (1,  [2])
-     *    (k, v) -> v.length()                                      (2,  [5, 5])]
+     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]        [(0,  [1])                 [(0, 1),
+     *    (k, v) -> k % 3                                           (1,  [2])                  (1, 2),
+     *    (k, v) -> v.length()                                      (2,  [5, 5])]              (2, 10)]
      *    Integer::sum
      * </pre>
      *
@@ -1642,10 +1642,10 @@ public class MapUtil {
      * <pre>
      * Example:
      *
-     *   Parameters:                                                                   Intermediate Map:         Result:
-     *    [(1, "Hi"), (2, "Hola"), (4, ""), (5, "World"), (6, "!"), (11, "ABC")]        [(0,  [2])                [(0, 2), (1, 4), (2, 11)]
-     *    PartialFunction.of(                                                            (1,  [3, 1])
-     *      e -> null != e && 10 > e.getKey(),                                           (2,  [5, 6])]
+     *   Parameters:                                                                   Intermediate Map:          Result:
+     *    [(1, "Hi"), (2, "Hola"), (4, ""), (5, "World"), (6, "!"), (11, "ABC")]        [(0,  [2])                 [(0, 2),
+     *    PartialFunction.of(                                                            (1,  [3, 1])               (1, 4),
+     *      e -> null != e && 10 > e.getKey(),                                           (2,  [5, 6])]              (2, 11)]
      *      e -> null == e
      *             ? null
      *             : new AbstractMap.SimpleEntry<>(
