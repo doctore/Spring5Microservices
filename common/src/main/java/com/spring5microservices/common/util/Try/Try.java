@@ -427,28 +427,6 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Try} if this is a {@link Failure}.
-     * Otherwise, does nothing if this is a {@link Success}.
-     * <p>
-     * If given {@code mapper} invocation returns an {@link Exception}, then returned {@link Try} will {@link Failure}.
-     *
-     * @param mapper
-     *    The mapping function to apply to a value of a {@link Failure} instance.
-     *
-     * @return new {@link Try}
-     *
-     * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Failure} one
-     */
-    public final Try<T> mapFailure(final Function<? super Throwable, ? extends Throwable> mapper) {
-        if (!isSuccess()) {
-            Assert.notNull(mapper, "mapper must be not null");
-            return mapFailureTry(mapper);
-        }
-        return success(get());
-    }
-
-
-    /**
      *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Success} {@link Try},
      * and {@code mapFailure} performs a mapping on an {@link Failure} {@link Try}, {@code map} with two {@link Function}
      * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
@@ -482,6 +460,28 @@ public abstract class Try<T> implements Serializable {
         }
         Assert.notNull(mapperFailure, "mapperFailure must be not null");
         return (Try<U>) mapFailureTry(mapperFailure);
+    }
+
+
+    /**
+     *    Applies a {@link Function} {@code mapper} to the stored value of this {@link Try} if this is a {@link Failure}.
+     * Otherwise, does nothing if this is a {@link Success}.
+     * <p>
+     * If given {@code mapper} invocation returns an {@link Exception}, then returned {@link Try} will {@link Failure}.
+     *
+     * @param mapper
+     *    The mapping function to apply to a value of a {@link Failure} instance.
+     *
+     * @return new {@link Try}
+     *
+     * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Failure} one
+     */
+    public final Try<T> mapFailure(final Function<? super Throwable, ? extends Throwable> mapper) {
+        if (!isSuccess()) {
+            Assert.notNull(mapper, "mapper must be not null");
+            return mapFailureTry(mapper);
+        }
+        return success(get());
     }
 
 
@@ -572,8 +572,13 @@ public abstract class Try<T> implements Serializable {
      * <pre>
      * Example:
      *
-     *   Try<Integer> t = ...
-     *   String s = t.fold(Throwable::getMessage, Object::toString);
+     *   // Return "98"
+     *   Try.success(98)
+     *      .fold(Throwable::getMessage, Object::toString);
+     *
+     *   // Return "Array index out of bound error"
+     *   Try.failure(new ArrayIndexOutOfBoundsException("Array index out of bound error")
+     *      .fold(Throwable::getMessage, Object::toString);
      * </pre>
      *
      * @param mapperFailure
@@ -619,22 +624,6 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     * Performs the given {@code action} to the stored value if the current {@link Try} is a {@link Failure} one.
-     *
-     * @param action
-     *    {@link Consumer} invoked for the stored value of the current {@link Failure} instance.
-     *
-     * @return {@link Try}
-     */
-    public final Try<T> peekFailure(final Consumer<? super Throwable> action) {
-        if (!isSuccess() && nonNull(action)) {
-            action.accept(getException());
-        }
-        return this;
-    }
-
-
-    /**
      *    Performs the given {@code actionSuccess} to the stored value if the current {@link Try} is a {@link Success}
      * one. If the current instance is a {@link Failure}, performs {@code actionFailure}.
      *
@@ -658,6 +647,22 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
+     * Performs the given {@code action} to the stored value if the current {@link Try} is a {@link Failure} one.
+     *
+     * @param action
+     *    {@link Consumer} invoked for the stored value of the current {@link Failure} instance.
+     *
+     * @return {@link Try}
+     */
+    public final Try<T> peekFailure(final Consumer<? super Throwable> action) {
+        if (!isSuccess() && nonNull(action)) {
+            action.accept(getException());
+        }
+        return this;
+    }
+
+
+    /**
      *    Returns the stored value if the underline instance is {@link Success}, otherwise returns {@code other}. This
      * will throw an {@link Exception} if it is not a {@link Success} and {@code other} throws an {@link Exception}.
      *
@@ -675,12 +680,12 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     * Returns this {@link Try} if it is {@link Success}, otherwise return the alternative.
+     * Returns this {@link Try} if it is {@link Success}, otherwise returns {@code other}.
      *
      * @param other
      *    An alternative {@link Try}
      *
-     * @return {@link Try}
+     * @return current {@link Try} if {@link Success}, {@code other} otherwise.
      */
     @SuppressWarnings("unchecked")
     public final Try<T> orElse(final Try<? extends T> other) {
@@ -691,12 +696,12 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     * Returns this {@link Try} if it is {@link Success}, otherwise return the result of evaluating {@link Supplier}.
+     * Returns this {@link Try} if it is {@link Success}, otherwise returns the result of evaluating {@link Supplier}.
      *
      * @param supplier
-     *    An alternative {@link Try} supplier
+     *    {@link Supplier} returning an alternative {@link Try}
      *
-     * @return {@link Try}
+     * @return current {@link Try} if {@link Success}, {@code supplier} result otherwise.
      *
      * @throws IllegalArgumentException if {@code supplier} is {@code null} and the current instance is a {@link Failure} one
      */

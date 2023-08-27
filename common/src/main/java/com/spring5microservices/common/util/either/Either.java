@@ -507,11 +507,13 @@ public abstract class Either<L, R> implements Serializable {
      * <pre>
      * Example:
      *
-     *   Either<String, Integer> either = ...
-     *   int i = either.fold(
-     *              String::length,
-     *              Function.identity()
-     *           );
+     *   // Return 99
+     *   Either.right(99)
+     *         .fold(String::length, Function.identity());
+     *
+     *   // Return 3
+     *   Either.left("abc")
+     *         .fold(String::length, Function.identity());
      * </pre>
      *
      * @param mapperLeft
@@ -519,7 +521,7 @@ public abstract class Either<L, R> implements Serializable {
      * @param mapperRight
      *    The mapping {@link Function} to apply the value of a {@link Right} instance
      *
-     * @return the result of applying the right {@link Function}
+     * @return the result of applying the suitable {@link Function}
      *
      * @throws IllegalArgumentException if {@code mapperRight} is {@code null} and the current instance is a {@link Right} one
      *                                  or {@code mapperLeft} is {@code null} and the current instance is a {@link Left} one
@@ -663,12 +665,12 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Returns this {@link Either} if it is {@link Right}, otherwise return the alternative.
+     * Returns this {@link Either} if it is {@link Right}, otherwise returns {@code other}.
      *
      * @param other
      *    An alternative {@link Either}
      *
-     * @return {@link Either}
+     * @return current {@link Either} if {@link Right}, {@code other} otherwise
      */
     @SuppressWarnings("unchecked")
     public final Either<L, R> orElse(final Either<? extends L, ? extends R> other) {
@@ -684,7 +686,7 @@ public abstract class Either<L, R> implements Serializable {
      * @param supplier
      *    An alternative {@link Either} supplier
      *
-     * @return {@link Either}
+     * @return current {@link Either} if {@link Right}, {@code supplier} result otherwise.
      *
      * @throws IllegalArgumentException if {@code supplier} is {@code null} and the current instance is a {@link Left} one
      */
@@ -699,7 +701,7 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * If this is a {@link Left}, then return the left value in {@link} or vice versa.
+     * If this is a {@link Left}, then return the left value in a new {@link Right} instance or vice versa.
      *
      * @return new {@link Either}
      */

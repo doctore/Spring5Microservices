@@ -497,50 +497,6 @@ public class TryTest {
     }
 
 
-    static Stream<Arguments> mapFailureTestCases() {
-        Try<String> success = Try.success("There was no problem");
-        Try<String> failure = Try.failure(new IOException("IO error"));
-
-        Function<Throwable, Throwable> fromIoToOutOfBoundsException = e -> new ArrayIndexOutOfBoundsException(e.getMessage());
-        Function<Throwable, Throwable> functionThrowsAnException = e -> {
-            throw new RuntimeException("There was a problem");
-        };
-
-        Try<String> expectedFromFailure = Try.failure(
-                new ArrayIndexOutOfBoundsException(
-                        failure.getException().getMessage()
-                )
-        );
-        Try<String> expectedFromMapperThrowsAnException = Try.failure(
-                new RuntimeException("There was a problem")
-        );
-        return Stream.of(
-                //@formatter:off
-                //            try,       mapper,                         expectedException,                expectedResult
-                Arguments.of( failure,   null,                           IllegalArgumentException.class,   null ),
-                Arguments.of( failure,   fromIoToOutOfBoundsException,   null,                             expectedFromFailure ),
-                Arguments.of( failure,   functionThrowsAnException,      null,                             expectedFromMapperThrowsAnException ),
-                Arguments.of( success,   null,                           null,                             success ),
-                Arguments.of( success,   fromIoToOutOfBoundsException,   null,                             success )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("mapFailureTestCases")
-    @DisplayName("mapFailure: test cases")
-    public <T> void mapFailure_testCases(Try<T> t,
-                                         Function<? super Throwable, ? extends Throwable> mapper,
-                                         Class<? extends Exception> expectedException,
-                                         Try<T> expectedResult) {
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> t.mapFailure((mapper)));
-        } else {
-            Try<T> result = t.mapFailure(mapper);
-            compareTry(expectedResult, result);
-        }
-    }
-
-
     static Stream<Arguments> mapWithBothMappersTestCases() {
         Try<Integer> success = Try.success(21);
         Try<Integer> failure = Try.failure(new IllegalAccessException("Illegal access error"));
@@ -595,6 +551,50 @@ public class TryTest {
             assertThrows(expectedException, () -> t.map(mapperFailure, mapperSuccess));
         } else {
             Try<U> result = t.map(mapperFailure, mapperSuccess);
+            compareTry(expectedResult, result);
+        }
+    }
+
+
+    static Stream<Arguments> mapFailureTestCases() {
+        Try<String> success = Try.success("There was no problem");
+        Try<String> failure = Try.failure(new IOException("IO error"));
+
+        Function<Throwable, Throwable> fromIoToOutOfBoundsException = e -> new ArrayIndexOutOfBoundsException(e.getMessage());
+        Function<Throwable, Throwable> functionThrowsAnException = e -> {
+            throw new RuntimeException("There was a problem");
+        };
+
+        Try<String> expectedFromFailure = Try.failure(
+                new ArrayIndexOutOfBoundsException(
+                        failure.getException().getMessage()
+                )
+        );
+        Try<String> expectedFromMapperThrowsAnException = Try.failure(
+                new RuntimeException("There was a problem")
+        );
+        return Stream.of(
+                //@formatter:off
+                //            try,       mapper,                         expectedException,                expectedResult
+                Arguments.of( failure,   null,                           IllegalArgumentException.class,   null ),
+                Arguments.of( failure,   fromIoToOutOfBoundsException,   null,                             expectedFromFailure ),
+                Arguments.of( failure,   functionThrowsAnException,      null,                             expectedFromMapperThrowsAnException ),
+                Arguments.of( success,   null,                           null,                             success ),
+                Arguments.of( success,   fromIoToOutOfBoundsException,   null,                             success )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapFailureTestCases")
+    @DisplayName("mapFailure: test cases")
+    public <T> void mapFailure_testCases(Try<T> t,
+                                         Function<? super Throwable, ? extends Throwable> mapper,
+                                         Class<? extends Exception> expectedException,
+                                         Try<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> t.mapFailure((mapper)));
+        } else {
+            Try<T> result = t.mapFailure(mapper);
             compareTry(expectedResult, result);
         }
     }
@@ -772,31 +772,6 @@ public class TryTest {
     }
 
 
-    static Stream<Arguments> peekFailureTestCases() {
-        Try<Integer> success = Try.success(23);
-        Try<Integer> failure = Try.failure(new IndexOutOfBoundsException("Index out of bound error"));
-        Consumer<Throwable> action = System.out::println;
-        return Stream.of(
-                //@formatter:off
-                //            try,       action,   expectedResult
-                Arguments.of( failure,   null,     failure ),
-                Arguments.of( failure,   action,   failure ),
-                Arguments.of( success,   null,     success ),
-                Arguments.of( success,   action,   success )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("peekFailureTestCases")
-    @DisplayName("peekFailure: test cases")
-    public <T> void peekFailure_testCases(Try<T> t,
-                                          Consumer<? super Throwable> action,
-                                          Try<T> expectedResult) {
-        Try<T> result = t.peekFailure(action);
-        compareTry(expectedResult, result);
-    }
-
-
     static Stream<Arguments> peekWithBothConsumersTestCases() {
         Try<Integer> success = Try.success(33);
         Try<Integer> failure = Try.failure(new IOException("IO error"));
@@ -822,6 +797,31 @@ public class TryTest {
                                                     Consumer<? super T> actionSuccess,
                                                     Try<T> expectedResult) {
         Try<T> result = t.peek(actionFailure, actionSuccess);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> peekFailureTestCases() {
+        Try<Integer> success = Try.success(23);
+        Try<Integer> failure = Try.failure(new IndexOutOfBoundsException("Index out of bound error"));
+        Consumer<Throwable> action = System.out::println;
+        return Stream.of(
+                //@formatter:off
+                //            try,       action,   expectedResult
+                Arguments.of( failure,   null,     failure ),
+                Arguments.of( failure,   action,   failure ),
+                Arguments.of( success,   null,     success ),
+                Arguments.of( success,   action,   success )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("peekFailureTestCases")
+    @DisplayName("peekFailure: test cases")
+    public <T> void peekFailure_testCases(Try<T> t,
+                                          Consumer<? super Throwable> action,
+                                          Try<T> expectedResult) {
+        Try<T> result = t.peekFailure(action);
         compareTry(expectedResult, result);
     }
 
