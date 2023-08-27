@@ -2629,6 +2629,54 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> toMapWithKeyMapperTestCases() {
+        List<Integer> ints = asList(1, null, 2, 3);
+
+        Function<Integer, String> multiply2String =
+                i -> null == i
+                        ? ""
+                        : String.valueOf(i * 2);
+        Map<String, Integer> expectedResult = new HashMap<>() {{
+            put("2", 1);
+            put("", null);
+            put("4", 2);
+            put("6", 3);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   keyMapper,         expectedException,                expectedResult
+                Arguments.of( null,               null,              null,                             Map.of() ),
+                Arguments.of( null,               multiply2String,   null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,                             Map.of() ),
+                Arguments.of( List.of(),          multiply2String,   null,                             Map.of() ),
+                Arguments.of( ints,               null,              IllegalArgumentException.class,   null ),
+                Arguments.of( ints,               multiply2String,   null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toMapWithKeyMapperTestCases")
+    @DisplayName("toMap: with keyMapper test cases")
+    public <T, K> void toMapWithKeyMapper_testCases(Collection<? extends T> sourceCollection,
+                                                    Function<? super T, ? extends K> keyMapper,
+                                                    Class<? extends Exception> expectedException,
+                                                    Map<K, T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException,
+                    () -> toMap(
+                            sourceCollection, keyMapper
+                    )
+            );
+        } else {
+            assertEquals(expectedResult,
+                    toMap(
+                            sourceCollection, keyMapper
+                    )
+            );
+        }
+    }
+
+
     static Stream<Arguments> toMapWithKeyAndValueMapperTestCases() {
         List<Integer> ints = asList(1, null, 2, 3);
 
@@ -2653,10 +2701,12 @@ public class CollectionUtilTest {
                 Arguments.of( null,               null,              null,          null,                             Map.of() ),
                 Arguments.of( null,               multiply2String,   null,          null,                             Map.of() ),
                 Arguments.of( null,               multiply2String,   plus10,        null,                             Map.of() ),
+                Arguments.of( List.of(),          null,              null,          null,                             Map.of() ),
+                Arguments.of( List.of(),          multiply2String,   null,          null,                             Map.of() ),
+                Arguments.of( List.of(),          multiply2String,   plus10,        null,                             Map.of() ),
                 Arguments.of( ints,               null,              null,          IllegalArgumentException.class,   null ),
                 Arguments.of( ints,               multiply2String,   null,          IllegalArgumentException.class,   null ),
                 Arguments.of( ints,               null,              plus10,        IllegalArgumentException.class,   null ),
-                Arguments.of( List.of(),          multiply2String,   plus10,        null,                             Map.of() ),
                 Arguments.of( ints,               multiply2String,   plus10,        null,                             expectedResult )
         ); //@formatter:on
     }

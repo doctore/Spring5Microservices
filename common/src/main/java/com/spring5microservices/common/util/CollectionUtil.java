@@ -2581,7 +2581,41 @@ public class CollectionUtil {
 
 
     /**
-     * Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
+     *    Converts the given {@link Collection} to a {@link Map} using provided {@code keyMapper} and {@link Function#identity()}
+     * as values of returned {@link Map}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:              Result:
+     *    [1, 2, 3, 6]             [("1", 1), ("2", 2), ("3", 3), ("6", 6)]
+     *    i -> i.toString()
+     * </pre>
+     *
+     * @param sourceCollection
+     *    {@link Collection} with the elements to transform and include in the returned {@link Map}
+     * @param keyMapper
+     *    {@link Function} to transform elements of {@code sourceCollection} into keys of the returned {@link Map}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} is {@code null}
+     */
+    public static <T, K> Map<K, T> toMap(final Collection<? extends T> sourceCollection,
+                                         final Function<? super T, ? extends K> keyMapper) {
+        return toMap(
+                sourceCollection,
+                keyMapper,
+                Function.identity(),
+                alwaysTrue(),
+                overwriteWithNew(),
+                HashMap::new
+        );
+    }
+
+
+    /**
+     * Converts the given {@link Collection} to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
      *
      * <pre>
      * Example:
@@ -2618,7 +2652,7 @@ public class CollectionUtil {
 
 
     /**
-     *    Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper},
+     *    Converts the given {@link Collection} to a {@link Map} using provided {@code keyMapper} and {@code valueMapper},
      * only with the elements that satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * <pre>
@@ -2660,7 +2694,7 @@ public class CollectionUtil {
 
 
     /**
-     *    Converts the given {@link Collection} in to a {@link Map} using provided {@code keyMapper} and {@code valueMapper},
+     *    Converts the given {@link Collection} to a {@link Map} using provided {@code keyMapper} and {@code valueMapper},
      * only with the elements that satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * <pre>
@@ -2726,7 +2760,7 @@ public class CollectionUtil {
 
 
     /**
-     * Converts the given {@link Collection} in to a {@link Map} using provided {@code partialFunction}.
+     * Converts the given {@link Collection} to a {@link Map} using provided {@code partialFunction}.
      *
      * <pre>
      * Example:
