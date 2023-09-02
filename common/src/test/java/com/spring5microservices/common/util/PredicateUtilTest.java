@@ -24,11 +24,14 @@ import static com.spring5microservices.common.util.PredicateUtil.biAllOf;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysFalse;
 import static com.spring5microservices.common.util.PredicateUtil.biAlwaysTrue;
 import static com.spring5microservices.common.util.PredicateUtil.biAnyOf;
+import static com.spring5microservices.common.util.PredicateUtil.biIsNull;
+import static com.spring5microservices.common.util.PredicateUtil.biNonNull;
 import static com.spring5microservices.common.util.PredicateUtil.distinctByKey;
 import static com.spring5microservices.common.util.PredicateUtil.fromBiPredicateToMapEntryPredicate;
 import static com.spring5microservices.common.util.PredicateUtil.getOrAlwaysFalse;
 import static com.spring5microservices.common.util.PredicateUtil.getOrAlwaysTrue;
-import static java.util.Objects.isNull;
+import static com.spring5microservices.common.util.PredicateUtil.isNull;
+import static com.spring5microservices.common.util.PredicateUtil.nonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -62,42 +65,9 @@ public class PredicateUtilTest {
                                     Predicate<? super T> predicate2,
                                     boolean expectedResult) {
         Predicate<T> finalPredicate =
-                isNull(predicate1) && isNull(predicate2)
+                null == predicate1 && null == predicate2
                         ? allOf()
                         : allOf(predicate1, predicate2);
-
-        assertEquals(expectedResult, finalPredicate.test(t));
-    }
-
-
-    static Stream<Arguments> anyOfTestCases() {
-        Predicate<Integer> isGreaterThanTen = i -> 10 < i;
-        Predicate<Integer> isGreaterThanTwenty = i -> 20 < i;
-        return Stream.of(
-                //@formatter:off
-                //            t,    predicate1,         predicate2,            expectedResult
-                Arguments.of( 1,    null,               null,                  false ),
-                Arguments.of( 1,    null,               isGreaterThanTwenty,   false ),
-                Arguments.of( 1,    isGreaterThanTen,   null,                  false ),
-                Arguments.of( 1,    isGreaterThanTen,   isGreaterThanTwenty,   false ),
-                Arguments.of( 11,   isGreaterThanTen,   isGreaterThanTwenty,   true ),
-                Arguments.of( 21,   isGreaterThanTen,   isGreaterThanTwenty,   true )
-
-        ); //@formatter:on
-    }
-
-
-    @ParameterizedTest
-    @MethodSource("anyOfTestCases")
-    @DisplayName("anyOf: test cases")
-    public <T> void anyOf_testCases(T t,
-                                    Predicate<? super T> predicate1,
-                                    Predicate<? super T> predicate2,
-                                    boolean expectedResult) {
-        Predicate<T> finalPredicate =
-                isNull(predicate1) && isNull(predicate2)
-                        ? anyOf()
-                        : anyOf(predicate1, predicate2);
 
         assertEquals(expectedResult, finalPredicate.test(t));
     }
@@ -145,6 +115,39 @@ public class PredicateUtilTest {
     }
 
 
+    static Stream<Arguments> anyOfTestCases() {
+        Predicate<Integer> isGreaterThanTen = i -> 10 < i;
+        Predicate<Integer> isGreaterThanTwenty = i -> 20 < i;
+        return Stream.of(
+                //@formatter:off
+                //            t,    predicate1,         predicate2,            expectedResult
+                Arguments.of( 1,    null,               null,                  false ),
+                Arguments.of( 1,    null,               isGreaterThanTwenty,   false ),
+                Arguments.of( 1,    isGreaterThanTen,   null,                  false ),
+                Arguments.of( 1,    isGreaterThanTen,   isGreaterThanTwenty,   false ),
+                Arguments.of( 11,   isGreaterThanTen,   isGreaterThanTwenty,   true ),
+                Arguments.of( 21,   isGreaterThanTen,   isGreaterThanTwenty,   true )
+
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("anyOfTestCases")
+    @DisplayName("anyOf: test cases")
+    public <T> void anyOf_testCases(T t,
+                                    Predicate<? super T> predicate1,
+                                    Predicate<? super T> predicate2,
+                                    boolean expectedResult) {
+        Predicate<T> finalPredicate =
+                null == predicate1 && null == predicate2
+                        ? anyOf()
+                        : anyOf(predicate1, predicate2);
+
+        assertEquals(expectedResult, finalPredicate.test(t));
+    }
+
+
     static Stream<Arguments> biAllOfTestCases() {
         BiPredicate<Integer, String> isIntegerGreaterThanTenAndStringLongerThan2 = (i, s) -> (10 < i) && (2 < s.length());
         BiPredicate<Integer, String> isGreaterThanTwentyAndStringLongerThan5 = (i, s) -> (20 < i) && (5 < s.length());
@@ -169,41 +172,9 @@ public class PredicateUtilTest {
                                          BiPredicate<? super T, ? super E> predicate2,
                                          boolean expectedResult) {
         BiPredicate<? super T, ? super E> finalPredicate =
-                isNull(predicate1) && isNull(predicate2)
+                null == predicate1 && null == predicate2
                         ? biAllOf()
                         : biAllOf(predicate1, predicate2);
-
-        assertEquals(expectedResult, finalPredicate.test(t, e));
-    }
-
-
-    static Stream<Arguments> biAnyOfTestCases() {
-        BiPredicate<Integer, String> isIntegerGreaterThanTenAndStringLongerThan2 = (i, s) -> (10 < i) && (2 < s.length());
-        BiPredicate<Integer, String> isLowerThanTwentyAndStringShorterThan5 = (i, s) -> (20 > i) && (5 > s.length());
-        return Stream.of(
-                //@formatter:off
-                //            t,    e,          predicate1,                                    predicate2,                               expectedResult
-                Arguments.of( 1,    "s",        null,                                          null,                                     false ),
-                Arguments.of( 1,    "s",        null,                                          isLowerThanTwentyAndStringShorterThan5,   true ),
-                Arguments.of( 1,    "s",        isIntegerGreaterThanTenAndStringLongerThan2,   null,                                     false ),
-                Arguments.of( 11,   "abc",      isIntegerGreaterThanTenAndStringLongerThan2,   isLowerThanTwentyAndStringShorterThan5,   true ),
-                Arguments.of( 8,    "abc",      isIntegerGreaterThanTenAndStringLongerThan2,   isLowerThanTwentyAndStringShorterThan5,   true ),
-                Arguments.of( 5,    "abcdef",   isIntegerGreaterThanTenAndStringLongerThan2,   isLowerThanTwentyAndStringShorterThan5,   false )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("biAnyOfTestCases")
-    @DisplayName("biAnyOf: test cases")
-    public <T, E> void biAnyOf_testCases(T t,
-                                         E e,
-                                         BiPredicate<? super T, ? super E> predicate1,
-                                         BiPredicate<? super T, ? super E> predicate2,
-                                         boolean expectedResult) {
-        BiPredicate<? super T, ? super E> finalPredicate =
-                isNull(predicate1) && isNull(predicate2)
-                        ? biAnyOf()
-                        : biAnyOf(predicate1, predicate2);
 
         assertEquals(expectedResult, finalPredicate.test(t, e));
     }
@@ -250,6 +221,100 @@ public class PredicateUtilTest {
                                                E secondSourceInstance,
                                                boolean expectedResult) {
         assertEquals(expectedResult, biAlwaysTrue().test(firstSourceInstance, secondSourceInstance));
+    }
+
+
+    static Stream<Arguments> biAnyOfTestCases() {
+        BiPredicate<Integer, String> isIntegerGreaterThanTenAndStringLongerThan2 = (i, s) -> (10 < i) && (2 < s.length());
+        BiPredicate<Integer, String> isLowerThanTwentyAndStringShorterThan5 = (i, s) -> (20 > i) && (5 > s.length());
+        return Stream.of(
+                //@formatter:off
+                //            t,    e,          predicate1,                                    predicate2,                               expectedResult
+                Arguments.of( 1,    "s",        null,                                          null,                                     false ),
+                Arguments.of( 1,    "s",        null,                                          isLowerThanTwentyAndStringShorterThan5,   true ),
+                Arguments.of( 1,    "s",        isIntegerGreaterThanTenAndStringLongerThan2,   null,                                     false ),
+                Arguments.of( 11,   "abc",      isIntegerGreaterThanTenAndStringLongerThan2,   isLowerThanTwentyAndStringShorterThan5,   true ),
+                Arguments.of( 8,    "abc",      isIntegerGreaterThanTenAndStringLongerThan2,   isLowerThanTwentyAndStringShorterThan5,   true ),
+                Arguments.of( 5,    "abcdef",   isIntegerGreaterThanTenAndStringLongerThan2,   isLowerThanTwentyAndStringShorterThan5,   false )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("biAnyOfTestCases")
+    @DisplayName("biAnyOf: test cases")
+    public <T, E> void biAnyOf_testCases(T t,
+                                         E e,
+                                         BiPredicate<? super T, ? super E> predicate1,
+                                         BiPredicate<? super T, ? super E> predicate2,
+                                         boolean expectedResult) {
+        BiPredicate<? super T, ? super E> finalPredicate =
+                null == predicate1 && null == predicate2
+                        ? biAnyOf()
+                        : biAnyOf(predicate1, predicate2);
+
+        assertEquals(expectedResult, finalPredicate.test(t, e));
+    }
+
+
+    static Stream<Arguments> biIsNullTestCases() {
+        Integer nullInt = null;
+        PizzaDto carbonara = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
+        return Stream.of(
+                //@formatter:off
+                //            t,                  e,                  expectedResult
+                Arguments.of( null,               null,               true ),
+                Arguments.of( nullInt,            null,               true),
+                Arguments.of( null,               nullInt,            true),
+                Arguments.of( "noMatterString",   null,               false ),
+                Arguments.of( null,               "noMatterString",   false ),
+                Arguments.of( 12,                 null,               false ),
+                Arguments.of( null,               12,                 false ),
+                Arguments.of( null,               carbonara,          false ),
+                Arguments.of( carbonara,          null,               false ),
+                Arguments.of( nullInt,            carbonara,          false ),
+                Arguments.of( carbonara,          12,                 false ),
+                Arguments.of( "noMatterString",   carbonara,          false )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("biIsNullTestCases")
+    @DisplayName("biIsNull: test cases")
+    public <T, E> void biIsNull_testCases(T t,
+                                          E e,
+                                          boolean expectedResult) {
+        assertEquals(expectedResult, biIsNull().test(t, e));
+    }
+
+
+    static Stream<Arguments> biNonNullTestCases() {
+        Integer nullInt = null;
+        PizzaDto carbonara = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
+        return Stream.of(
+                //@formatter:off
+                //            t,                  e,                  expectedResult
+                Arguments.of( null,               null,               false ),
+                Arguments.of( nullInt,            null,               false),
+                Arguments.of( null,               nullInt,            false),
+                Arguments.of( "noMatterString",   null,               false ),
+                Arguments.of( null,               "noMatterString",   false ),
+                Arguments.of( 12,                 null,               false ),
+                Arguments.of( null,               12,                 false ),
+                Arguments.of( null,               carbonara,          false ),
+                Arguments.of( carbonara,          null,               false ),
+                Arguments.of( nullInt,            carbonara,          false ),
+                Arguments.of( carbonara,          12,                 true ),
+                Arguments.of( "noMatterString",   carbonara,          true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("biNonNullTestCases")
+    @DisplayName("biNonNull: test cases")
+    public <T, E> void biNonNull_testCases(T t,
+                                           E e,
+                                           boolean expectedResult) {
+        assertEquals(expectedResult, biNonNull().test(t, e));
     }
 
 
@@ -428,6 +493,52 @@ public class PredicateUtilTest {
         );
         assertNotNull(predicateToApply);
         assertEquals(expectedResult, predicateToApply.test(t, e));
+    }
+
+
+    static Stream<Arguments> isNullTestCases() {
+        Integer nullInt = null;
+        PizzaDto carbonara = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
+        return Stream.of(
+                //@formatter:off
+                //            t,                  expectedResult
+                Arguments.of( null,               true ),
+                Arguments.of( nullInt,            true),
+                Arguments.of( "noMatterString",   false ),
+                Arguments.of( 12,                 false ),
+                Arguments.of( carbonara,          false )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("isNullTestCases")
+    @DisplayName("isNull: test cases")
+    public <T> void isNull_testCases(T t,
+                                     boolean expectedResult) {
+        assertEquals(expectedResult, isNull().test(t));
+    }
+
+
+    static Stream<Arguments> nonNullTestCases() {
+        Integer nullInt = null;
+        PizzaDto carbonara = new PizzaDto(CARBONARA.getInternalPropertyValue(), 5D);
+        return Stream.of(
+                //@formatter:off
+                //            t,                  expectedResult
+                Arguments.of( null,               false ),
+                Arguments.of( nullInt,            false),
+                Arguments.of( "noMatterString",   true ),
+                Arguments.of( 12,                 true ),
+                Arguments.of( carbonara,          true )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("nonNullTestCases")
+    @DisplayName("nonNull: test cases")
+    public <T> void nonNull_testCases(T t,
+                                      boolean expectedResult) {
+        assertEquals(expectedResult, nonNull().test(t));
     }
 
 }

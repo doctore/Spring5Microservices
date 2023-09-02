@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
@@ -12,8 +13,6 @@ import java.util.function.Predicate;
 
 import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static java.util.Arrays.asList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @UtilityClass
 public class PredicateUtil {
@@ -46,10 +45,30 @@ public class PredicateUtil {
                         asList(predicates),
                         true,
                         (previousBoolean, currentPred) -> {
-                            boolean currentPredResult = isNull(currentPred) || currentPred.test(t);
+                            boolean currentPredResult = Objects.isNull(currentPred) || currentPred.test(t);
                             return previousBoolean && currentPredResult;
                         }
                 );
+    }
+
+
+    /**
+     * Returns a {@link Predicate} with {@code false} as result.
+     *
+     * @return {@link Predicate} always returning {@code false}
+     */
+    public static <T> Predicate<T> alwaysFalse() {
+        return t -> false;
+    }
+
+
+    /**
+     * Returns a {@link Predicate} with {@code true} as result.
+     *
+     * @return {@link Predicate} always returning {@code true}
+     */
+    public static <T> Predicate<T> alwaysTrue() {
+        return t -> true;
     }
 
 
@@ -70,7 +89,8 @@ public class PredicateUtil {
      * @param predicates
      *    {@link Predicate} to verify
      *
-     * @return {@link Predicate}
+     * @return {@link Predicate} returning {@code true} if at least one of provided {@code predicates} returns {@code true},
+     *         {@link Predicate} returning {@code false} otherwise
      */
     @SafeVarargs
     public static <T> Predicate<T> anyOf(Predicate<? super T>... predicates) {
@@ -79,32 +99,13 @@ public class PredicateUtil {
         }
         return t -> {
             for (Predicate<? super T> predicate: predicates) {
-                if (nonNull(predicate) && predicate.test(t)) {
+                if (Objects.nonNull(predicate) &&
+                        predicate.test(t)) {
                     return true;
                 }
             }
             return false;
         };
-    }
-
-
-    /**
-     * Returns a {@link Predicate} with {@code false} as result.
-     *
-     * @return {@link Predicate}
-     */
-    public static <T> Predicate<T> alwaysFalse() {
-        return t -> false;
-    }
-
-
-    /**
-     * Returns a {@link Predicate} with {@code true} as result.
-     *
-     * @return {@link Predicate}
-     */
-    public static <T> Predicate<T> alwaysTrue() {
-        return t -> true;
     }
 
 
@@ -136,10 +137,30 @@ public class PredicateUtil {
                         asList(predicates),
                         true,
                         (previousBoolean, currentPred) -> {
-                            boolean currentPredResult = isNull(currentPred) || currentPred.test(t, e);
+                            boolean currentPredResult = Objects.isNull(currentPred) || currentPred.test(t, e);
                             return previousBoolean && currentPredResult;
                         }
                 );
+    }
+
+
+    /**
+     * Returns a {@link BiPredicate} with {@code false} as result.
+     *
+     * @return {@link BiPredicate} always returning {@code false}
+     */
+    public static <T, E> BiPredicate<T, E> biAlwaysFalse() {
+        return (t, e) -> false;
+    }
+
+
+    /**
+     * Returns a {@link BiPredicate} with {@code true} as result.
+     *
+     * @return {@link BiPredicate} always returning {@code true}
+     */
+    public static <T, E> BiPredicate<T, E> biAlwaysTrue() {
+        return (t, e) -> true;
     }
 
 
@@ -160,7 +181,8 @@ public class PredicateUtil {
      * @param predicates
      *    {@link BiPredicate} to verify
      *
-     * @return {@link BiPredicate}
+     * @return {@link BiPredicate} returning {@code true} if at least one of provided {@code predicates} returns {@code true},
+     *          {@link BiPredicate} returning {@code false} otherwise
      */
     @SafeVarargs
     public static <T, E> BiPredicate<T, E> biAnyOf(BiPredicate<? super T, ? super E>... predicates) {
@@ -169,7 +191,8 @@ public class PredicateUtil {
         }
         return (t, e) -> {
             for (BiPredicate<? super T, ? super E> predicate: predicates) {
-                if (nonNull(predicate) && predicate.test(t, e)) {
+                if (Objects.nonNull(predicate) &&
+                        predicate.test(t, e)) {
                     return true;
                 }
             }
@@ -179,22 +202,26 @@ public class PredicateUtil {
 
 
     /**
-     * Returns a {@link BiPredicate} with {@code false} as result.
+     * Returns a {@link BiPredicate} that verifies if provided parameters are {@code null}.
      *
-     * @return {@link BiPredicate}
+     * @return {@link BiPredicate} returning {@code true} if given parameters are {@code null}, {@code false} otherwise
      */
-    public static <T, E> BiPredicate<T, E> biAlwaysFalse() {
-        return (t, e) -> false;
+    public static <T, E> BiPredicate<T, E> biIsNull() {
+        return (t, e) ->
+                null == t &&
+                        null == e;
     }
 
 
     /**
-     * Returns a {@link BiPredicate} with {@code true} as result.
+     * Returns a {@link BiPredicate} that verifies if provided parameters are not {@code null}.
      *
-     * @return {@link BiPredicate}
+     * @return {@link BiPredicate} returning {@code true} if given parameters are not {@code null}, {@code false} otherwise
      */
-    public static <T, E> BiPredicate<T, E> biAlwaysTrue() {
-        return (t, e) -> true;
+    public static <T, E> BiPredicate<T, E> biNonNull() {
+        return (t, e) ->
+                null != t &&
+                        null != e;
     }
 
 
@@ -222,11 +249,11 @@ public class PredicateUtil {
      * @return {@link Predicate} to verify {@link Map#entry(Object, Object)} instances
      */
     public static <K, V> Predicate<Map.Entry<K, V>> fromBiPredicateToMapEntryPredicate(BiPredicate<? super K, ? super V> predicate) {
-        if (isNull(predicate)) {
+        if (Objects.isNull(predicate)) {
             return alwaysTrue();
         }
         return (entry) ->
-                isNull(entry) ||
+                Objects.isNull(entry) ||
                         predicate.test(
                                 entry.getKey(),
                                 entry.getValue()
@@ -243,6 +270,7 @@ public class PredicateUtil {
      * @return {@code predicate} if not {@code null},
      *         {@link PredicateUtil#alwaysFalse()} otherwise.
      */
+    @SuppressWarnings("unchecked")
     public static <T> Predicate<T> getOrAlwaysFalse(final Predicate<? super T> predicate) {
         return (Predicate<T>) getOrElse(
                 predicate,
@@ -260,6 +288,7 @@ public class PredicateUtil {
      * @return {@code predicate} if not {@code null},
      *         {@link PredicateUtil#biAlwaysFalse()} otherwise.
      */
+    @SuppressWarnings("unchecked")
     public static <T, E> BiPredicate<T, E> getOrAlwaysFalse(final BiPredicate<? super T, ? super E> predicate) {
         return (BiPredicate<T, E>) getOrElse(
                 predicate,
@@ -277,6 +306,7 @@ public class PredicateUtil {
      * @return {@code predicate} if not {@code null},
      *         {@link PredicateUtil#alwaysTrue()} otherwise.
      */
+    @SuppressWarnings("unchecked")
     public static <T> Predicate<T> getOrAlwaysTrue(final Predicate<? super T> predicate) {
         return (Predicate<T>) getOrElse(
                 predicate,
@@ -294,11 +324,32 @@ public class PredicateUtil {
      * @return {@code predicate} if not {@code null},
      *         {@link PredicateUtil#biAlwaysTrue()} otherwise.
      */
+    @SuppressWarnings("unchecked")
     public static <T, E> BiPredicate<T, E> getOrAlwaysTrue(final BiPredicate<? super T, ? super E> predicate) {
         return (BiPredicate<T, E>) getOrElse(
                 predicate,
                 biAlwaysTrue()
         );
+    }
+
+
+    /**
+     * Returns a {@link Predicate} that verifies if provided parameter is {@code null}.
+     *
+     * @return {@link Predicate} returning {@code true} if given parameter is {@code null}, {@code false} otherwise
+     */
+    public static <T> Predicate<T> isNull() {
+        return Objects::isNull;
+    }
+
+
+    /**
+     * Returns a {@link Predicate} that verifies if provided parameter is not {@code null}.
+     *
+     * @return {@link Predicate} returning {@code true} if given parameter is not {@code null}, {@code false} otherwise
+     */
+    public static <T> Predicate<T> nonNull() {
+        return Objects::nonNull;
     }
 
 }
