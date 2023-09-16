@@ -2431,7 +2431,7 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         comparator,             expectedException,                expectedResult
-                Arguments.of( null,              null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( null,              null,                   null,                             empty() ),
                 Arguments.of( intsAndStrings,    null,                   IllegalArgumentException.class,   null ),
                 Arguments.of( null,              comparatorOnlyKeys,     null,                             empty() ),
                 Arguments.of( new HashMap<>(),   comparatorOnlyKeys,     null,                             empty() ),
@@ -2541,7 +2541,7 @@ public class MapUtilTest {
         return Stream.of(
                 //@formatter:off
                 //            sourceMap,         comparator,             expectedException,                expectedResult
-                Arguments.of( null,              null,                   IllegalArgumentException.class,   null ),
+                Arguments.of( null,              null,                   null,                             empty() ),
                 Arguments.of( intsAndStrings,    null,                   IllegalArgumentException.class,   null ),
                 Arguments.of( null,              comparatorOnlyKeys,     null,                             empty() ),
                 Arguments.of( new HashMap<>(),   comparatorOnlyKeys,     null,                             empty() ),
@@ -2765,6 +2765,51 @@ public class MapUtilTest {
                                                         Supplier<Map<T, E>> mapFactory,
                                                         Map<Boolean, Map<T, E>> expectedResult) {
         assertEquals(expectedResult, partition(sourceMap, discriminator, mapFactory));
+    }
+
+
+    static Stream<Arguments> reduceTestCases() {
+        Map<Integer, String> intsAndStrings = new LinkedHashMap<>() {{
+            put(1, "Hi");
+            put(2, "Hello");
+            put(3, "World");
+        }};
+
+        BinaryOperator<Map.Entry<Integer, String>> sumKeysConcatValues = (oldEntry, newEntry) ->
+                new AbstractMap.SimpleEntry<>(
+                        oldEntry.getKey() + newEntry.getKey(),
+                        ofNullable(oldEntry.getValue()).orElse("") + ofNullable(newEntry.getValue()).orElse("")
+                );
+        BinaryOperator<Map.Entry<Integer, String>> lastKeyAndValue = (oldEntry, newEntry) ->
+                new AbstractMap.SimpleEntry<>(
+                        newEntry.getKey(),
+                        newEntry.getValue()
+                );
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,         accumulator,           expectedException,                expectedResult
+                Arguments.of( null,              null,                  null,                             empty() ),
+                Arguments.of( new HashMap<>(),   null,                  null,                             empty() ),
+                Arguments.of( intsAndStrings,    null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( null,              sumKeysConcatValues,   null,                             empty() ),
+                Arguments.of( new HashMap<>(),   sumKeysConcatValues,   null,                             empty() ),
+                Arguments.of( intsAndStrings,    sumKeysConcatValues,   null,                             of(Map.entry(6, "HiHelloWorld")) ),
+                Arguments.of( intsAndStrings,    lastKeyAndValue,       null,                             of(Map.entry(3, "World")) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("reduceTestCases")
+    @DisplayName("reduce: test cases")
+    public <T, E> void reduce_testCases(Map<T, E> sourceMap,
+                                        BinaryOperator<Map.Entry<T, E>> accumulator,
+                                        Class<? extends Exception> expectedException,
+                                        Optional<Map.Entry<T, E>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> reduce(sourceMap, accumulator));
+        } else {
+            assertEquals(expectedResult, reduce(sourceMap, accumulator));
+        }
     }
 
 

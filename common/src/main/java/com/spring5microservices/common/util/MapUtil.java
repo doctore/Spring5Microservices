@@ -1870,14 +1870,15 @@ public class MapUtil {
      * @return {@link Optional} of {@link Map.Entry} containing the largest element using {@code comparator},
      *         {@link Optional#empty()} if {@code sourceMap} has no elements.
      *
-     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code sourceMap} is not
      */
     @SuppressWarnings("unchecked")
     public static <T, E> Optional<Map.Entry<T, E>> max(final Map<? extends T, ? extends E> sourceMap,
                                                        final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
-        Assert.notNull(comparator, "comparator must be not null");
         return ofNullable(sourceMap)
                 .map(m -> {
+                    Assert.notNull(comparator, "comparator must be not null");
+
                     Map.Entry<T, E> largestElement = null;
                     for (var entry: m.entrySet()) {
                         Map.Entry<T, E> currentElement = (Map.Entry<T, E>) entry;
@@ -1990,14 +1991,14 @@ public class MapUtil {
      * @return {@link Optional} of {@link Map.Entry} containing the smallest value using {@code comparator},
      *         {@link Optional#empty()} if {@code sourceMap} has no elements.
      *
-     * @throws IllegalArgumentException if {@code comparator} is {@code null}
+     * @throws IllegalArgumentException if {@code comparator} is {@code null} and {@code sourceMap} is not
      */
     @SuppressWarnings("unchecked")
     public static <T, E> Optional<Map.Entry<T, E>> min(final Map<? extends T, ? extends E> sourceMap,
                                                        final Comparator<Map.Entry<? extends T, ? extends E>> comparator) {
-        Assert.notNull(comparator, "comparator must be not null");
         return ofNullable(sourceMap)
                 .map(m -> {
+                    Assert.notNull(comparator, "comparator must be not null");
                     Map.Entry<T, E> smallestElement = null;
                     for (var entry: m.entrySet()) {
                         Map.Entry<T, E> currentElement = (Map.Entry<T, E>) entry;
@@ -2159,6 +2160,49 @@ public class MapUtil {
             );
         }
         return result;
+    }
+
+
+    /**
+     *   Performs a reduction on the elements of {@code sourceMap}, using an associative accumulation {@link BinaryOperator},
+     * and returns a value describing the reduced elements, if any.
+     *
+     * @apiNote
+     *    This method is similar to {@link MapUtil#foldLeft(Map, Object, TriFunction)} but {@code accumulator} works with
+     * the same type that {@code sourceMap} and only uses contained elements of provided {@link Map}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                       Result:
+     *    [(1, "Hi"), (2, "Hello")]                                         (3, 'Hi Hello')
+     *    (oldEntry, newEntry) ->
+     *       new AbstractMap.SimpleEntry<>(
+     *          oldEntry.getKey() + newEntry.getKey(),
+     *          oldEntry.getValue() + newEntry.getValue()
+     *       );
+     * </pre>
+     *
+     * @param sourceMap
+     *    {@link Map} with elements to combine
+     * @param accumulator
+     *    A {@link BinaryOperator} which combines elements
+     *
+     * @return {@link Optional} with result of inserting {@code accumulator} between consecutive elements {@code sourceMap}, going left to right,
+     *         {@link Optional#empty()} if {@code sourceMap} has no elements or the final result is {@code null}.
+     *
+     * @throws IllegalArgumentException if {@code accumulator} is {@code null} and {@code sourceMap} is not empty
+     */
+    public static <T, E> Optional<Map.Entry<T, E>> reduce(final Map<T, E> sourceMap,
+                                                          final BinaryOperator<Map.Entry<T, E>> accumulator) {
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return empty();
+        }
+        Assert.notNull(accumulator, "accumulator must be not null");
+        return sourceMap
+                .entrySet()
+                .stream()
+                .reduce(accumulator);
     }
 
 

@@ -294,7 +294,9 @@ public abstract class Validation<E, T> implements Serializable {
                     )
             );
         }
-        return invalid(getErrors());
+        return invalid(
+                getErrors()
+        );
     }
 
 
@@ -382,7 +384,9 @@ public abstract class Validation<E, T> implements Serializable {
             Assert.notNull(mapper, "mapper must be not null");
             return (Validation<E, U>) mapper.apply(get());
         }
-        return invalid(getErrors());
+        return invalid(
+                getErrors()
+        );
     }
 
 
