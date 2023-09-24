@@ -1334,6 +1334,42 @@ public class CollectionUtil {
 
     /**
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Elements added as values of returned {@link Map} will be the same as original {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 3, 5, 6]            [(0,  [3, 6])
+     *    i -> i % 3               (1,  [1])
+     *                             (2,  [5])]
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     *
+     * @return {@link Map}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     *                                  with a not empty {@code sourceCollection}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, K> Map<K, List<T>> groupMap(final Collection<? extends T> sourceCollection,
+                                                  final Function<? super T, ? extends K> discriminatorKey) {
+        return (Map) groupMap(
+                sourceCollection,
+                alwaysTrue(),
+                discriminatorKey,
+                Function.identity(),
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
      *
      * <pre>

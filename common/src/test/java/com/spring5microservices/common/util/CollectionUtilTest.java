@@ -779,7 +779,7 @@ public class CollectionUtilTest {
         Function<UserDto, Integer> getAge = UserDto::getAge;
         Function<UserDto, String> getBirthday = UserDto::getBirthday;
         List<Function<UserDto, ?>> allPropertyExtractors = List.of(getId, getName, getAddress, getAge, getBirthday);
-        List<Function<UserDto, ?>> allPropertyExtractorsPlusOne = List.of(getId, getName, getAddress, getAge, getBirthday, getId);
+        List<Function<UserDto, ?>> allPropertyExtractorsPlusOne = List.of(getId, getName, getAddress, getAge, getBirthday, getId, getName);
 
         List<Tuple1<Long>> expectedResultOnePropertyExtractor = List.of(
                 Tuple.of(1L),
@@ -846,7 +846,7 @@ public class CollectionUtilTest {
         Function<UserDto, Integer> getAge = UserDto::getAge;
         Function<UserDto, String> getBirthday = UserDto::getBirthday;
         List<Function<UserDto, ?>> allPropertyExtractors = List.of(getId, getName, getAddress, getAge, getBirthday);
-        List<Function<UserDto, ?>> allPropertyExtractorsPlusOne = List.of(getId, getName, getAddress, getAge, getBirthday, getId);
+        List<Function<UserDto, ?>> allPropertyExtractorsPlusTwo = List.of(getId, getName, getAddress, getAge, getBirthday, getId, getName);
 
         Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
 
@@ -877,8 +877,8 @@ public class CollectionUtilTest {
                 Arguments.of( null,               null,                                          setSupplier,         null,                             new LinkedHashSet<>() ),
                 Arguments.of( allUsers,           null,                                          null,                null,                             List.of() ),
                 Arguments.of( allUsers,           null,                                          setSupplier,         null,                             new LinkedHashSet<>() ),
-                Arguments.of( allUsers,           allPropertyExtractorsPlusOne,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( allUsers,           allPropertyExtractorsPlusOne,                  setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           allPropertyExtractorsPlusTwo,                  null,                IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           allPropertyExtractorsPlusTwo,                  setSupplier,         IllegalArgumentException.class,   null ),
                 Arguments.of( allUsers,           List.of(getId),                                setSupplier,         null,                             expectedResultOnePropertyExtractor ),
                 Arguments.of( allUsers,           List.of(getId, getName),                       setSupplier,         null,                             expectedResultTwoPropertyExtractors ),
                 Arguments.of( allUsers,           List.of(getId, getName, getAddress),           setSupplier,         null,                             expectedResultThreePropertyExtractors ),
@@ -1510,6 +1510,41 @@ public class CollectionUtilTest {
                                                         Supplier<Collection<T>> collectionFactory,
                                                         Collection<T> expectedResult) {
         assertEquals(expectedResult, fromIterator(sourceIterator, collectionFactory));
+    }
+
+
+    static Stream<Arguments> groupMapWithDiscriminatorKeyTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(List.of(1, 3, 5, 6));
+        Function<Integer, Integer> mod3 = i -> i % 3;
+        Map<Integer, List<Integer>> usingMod3AsDiscriminatorKey = new HashMap<>() {{
+            put(0, List.of(3, 6));
+            put(1, List.of(1));
+            put(2, List.of(5));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,   expectedException,                expectedResult
+                Arguments.of( null,               null,               null,                             Map.of() ),
+                Arguments.of( List.of(),          null,               null,                             Map.of() ),
+                Arguments.of( List.of(1),         null,               IllegalArgumentException.class,   null ),
+                Arguments.of( null,               mod3,               null,                             Map.of() ),
+                Arguments.of( List.of(),          mod3,               null,                             Map.of() ),
+                Arguments.of( ints,               mod3,               null,                             usingMod3AsDiscriminatorKey )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupMapWithDiscriminatorKeyTestCases")
+    @DisplayName("groupMap: with discriminatorKey test cases")
+    public <T, K> void groupMapWithDiscriminatorKey_testCases(Collection<? extends T> sourceCollection,
+                                                              Function<? super T, ? extends K> discriminatorKey,
+                                                              Class<? extends Exception> expectedException,
+                                                              Map<K, List<T>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey));
+        } else {
+            assertEquals(expectedResult, groupMap(sourceCollection, discriminatorKey));
+        }
     }
 
 
