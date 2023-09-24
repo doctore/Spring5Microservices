@@ -26,6 +26,7 @@ public class TupleTest {
         Tuple3<String, Long, Boolean> tuple3 = tuple2.append(FALSE);
         Tuple4<String, Long, Boolean, Integer> tuple4 = tuple3.append(11);
         Tuple5<String, Long, Boolean, Integer, String> tuple5 = tuple4.append("t5_last_value");
+        Tuple6<String, Long, Boolean, Integer, String, Double> tuple6 = tuple5.append(23.8d);
         return Stream.of(
                 //@formatter:off
                 //            tuple,    value,             expectedException,                     expectedResult
@@ -34,7 +35,8 @@ public class TupleTest {
                 Arguments.of( tuple2,   FALSE,             null,                                  tuple3 ),
                 Arguments.of( tuple3,   11,                null,                                  tuple4 ),
                 Arguments.of( tuple4,   "t5_last_value",   null,                                  tuple5 ),
-                Arguments.of( tuple5,   "Does not care",   UnsupportedOperationException.class,   null )
+                Arguments.of( tuple5,   23.8d,             null,                                  tuple6 ),
+                Arguments.of( tuple6,   "Does not care",   UnsupportedOperationException.class,   null )
         ); //@formatter:on
     }
 
@@ -215,6 +217,44 @@ public class TupleTest {
                                                         T5 t5,
                                                         Tuple5<T1, T2, T3, T4, T5> expectedResult) {
         assertEquals(expectedResult, Tuple.of(t1, t2, t3, t4, t5));
+    }
+
+
+    static Stream<Arguments> ofTuple6TestCases() {
+        String stringValue = "ABC";
+        Integer integerValue = 25;
+        Long longValue = 33L;
+        Boolean booleanValue = Boolean.TRUE;
+        Double doubleValue = 23.2d;
+        Float floatValue = 19.0f;
+        return Stream.of(
+                //@formatter:off
+                //            t1,             t2,             t3,             t4,             t5,            t6,            expectedResult
+                Arguments.of( null,           null,           null,           null,           null,          null,          Tuple6.of(null, null, null, null, null, null) ),
+                Arguments.of( stringValue,    null,           null,           null,           null,          null,          Tuple6.of(stringValue, null, null, null, null, null) ),
+                Arguments.of( null,           stringValue,    null,           null,           null,          null,          Tuple6.of(null, stringValue, null, null, null, null) ),
+                Arguments.of( null,           null,           stringValue,    null,           null,          null,          Tuple6.of(null, null, stringValue, null, null, null) ),
+                Arguments.of( null,           null,           null,           stringValue,    null,          null,          Tuple6.of(null, null, null, stringValue, null, null) ),
+                Arguments.of( null,           null,           null,           null,           stringValue,   null,          Tuple6.of(null, null, null, null, stringValue, null) ),
+                Arguments.of( null,           null,           null,           null,           null,          stringValue,   Tuple6.of(null, null, null, null, null, stringValue) ),
+                Arguments.of( null,           stringValue,    integerValue,   null,           null,          null,          Tuple6.of(null, stringValue, integerValue, null, null, null) ),
+                Arguments.of( stringValue,    integerValue,   null,           null,           null,          null,          Tuple6.of(stringValue, integerValue, null, null, null, null) ),
+                Arguments.of( null,           null,           stringValue,    integerValue,   doubleValue,   floatValue,    Tuple6.of(null, null, stringValue, integerValue, doubleValue, floatValue) ),
+                Arguments.of( stringValue,    integerValue,   longValue,      booleanValue,   doubleValue,   floatValue,    Tuple6.of(stringValue, integerValue, longValue, booleanValue, doubleValue, floatValue) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofTuple6TestCases")
+    @DisplayName("of: returning Tuple6 test cases")
+    public <T1, T2, T3, T4, T5, T6> void ofTuple6_testCases(T1 t1,
+                                                            T2 t2,
+                                                            T3 t3,
+                                                            T4 t4,
+                                                            T5 t5,
+                                                            T6 t6,
+                                                            Tuple6<T1, T2, T3, T4, T5, T6> expectedResult) {
+        assertEquals(expectedResult, Tuple.of(t1, t2, t3, t4, t5, t6));
     }
 
 }

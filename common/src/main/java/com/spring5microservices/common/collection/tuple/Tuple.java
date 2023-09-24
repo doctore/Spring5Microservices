@@ -12,9 +12,9 @@ import static java.util.Optional.ofNullable;
 public interface Tuple {
 
     /**
-     * The maximum {@link this#arity()} developed. Currently {@code 5} related with {@link Tuple5}.
+     * The maximum {@link this#arity()} developed. Currently {@code 6} related with {@link Tuple5}.
      */
-    int MAX_ALLOWED_TUPLE_ARITY = 5;
+    int MAX_ALLOWED_TUPLE_ARITY = 6;
 
 
     /**
@@ -42,6 +42,7 @@ public interface Tuple {
             case 2 -> ((Tuple2<?, ?>) this).append(t);
             case 3 -> ((Tuple3<?, ?, ?>) this).append(t);
             case 4 -> ((Tuple4<?, ?, ?, ?>) this).append(t);
+            case 5 -> ((Tuple5<?, ?, ?, ?, ?>) this).append(t);
             default ->
                     throw new UnsupportedOperationException(
                             format("Append is not allowed for Tuples with arity equals or greater than %s",
@@ -173,6 +174,34 @@ public interface Tuple {
                                                               final T4 t4,
                                                               final T5 t5) {
         return Tuple5.of(t1, t2, t3, t4, t5);
+    }
+
+
+    /**
+     * Creates a {@link Tuple} of six elements.
+     *
+     * @param t1
+     *    The 1st element
+     * @param t2
+     *    The 2nd element
+     * @param t3
+     *    The 3rd element
+     * @param t4
+     *    The 4th element
+     * @param t5
+     *    The 5th element
+     * @param t6
+     *    The 6th element
+     *
+     * @return a {@link Tuple} of six elements.
+     */
+    static <T1, T2, T3, T4, T5, T6> Tuple6<T1, T2, T3, T4, T5, T6> of(final T1 t1,
+                                                                      final T2 t2,
+                                                                      final T3 t3,
+                                                                      final T4 t4,
+                                                                      final T5 t5,
+                                                                      final T6 t6) {
+        return Tuple6.of(t1, t2, t3, t4, t5, t6);
     }
 
 }

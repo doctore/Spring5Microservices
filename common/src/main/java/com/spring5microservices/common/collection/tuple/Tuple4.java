@@ -47,7 +47,10 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple, Serializable {
     public final T4 _4;
 
 
-    private Tuple4(T1 t1, T2 t2, T3 t3, T4 t4) {
+    private Tuple4(T1 t1,
+                   T2 t2,
+                   T3 t3,
+                   T4 t4) {
         this._1 = t1;
         this._2 = t2;
         this._3 = t3;
@@ -408,6 +411,21 @@ public final class Tuple4<T1, T2, T3, T4> implements Tuple, Serializable {
         return ofNullable(tuple)
                 .map(t -> Tuple.of(_1, _2, _3, _4, t._1))
                 .orElseGet(() -> Tuple.of(_1, _2, _3, _4, null));
+    }
+
+
+    /**
+     * Concat a {@link Tuple2}'s values to this {@link Tuple4}.
+     *
+     * @param tuple
+     *    The {@link Tuple1} to concat
+     *
+     * @return a new {@link Tuple6} with the tuple values appended
+     */
+    public <T5, T6> Tuple6<T1, T2, T3, T4, T5, T6> concat(final Tuple2<T5, T6> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, _3, _4, t._1, t._2))
+                .orElseGet(() -> Tuple.of(_1, _2, _3, _4, null, null));
     }
 
 }

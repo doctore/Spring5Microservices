@@ -12,13 +12,13 @@ import static java.util.Objects.requireNonNull;
  * <p>This is a <a href="package-summary.html">functional interface</a>
  * whose functional method is {@link #apply(Object, Object, Object, Object)}.
  *
- * @param <T>
+ * @param <T1>
  *    The type of the first argument to the {@link QuadFunction}
- * @param <U>
+ * @param <T2>
  *    The type of the second argument to the {@link QuadFunction}
- * @param <V>
+ * @param <T3>
  *    The type of the third argument to the {@link QuadFunction}
- * @param <W>
+ * @param <T4>
  *    The type of the fourth argument to the {@link QuadFunction}
  * @param <R>
  *    The type of the result of the {@link QuadFunction}
@@ -26,26 +26,26 @@ import static java.util.Objects.requireNonNull;
  * @see {@link Function} and {@link BiFunction}
  */
 @FunctionalInterface
-public interface QuadFunction<T, U, V, W, R> {
+public interface QuadFunction<T1, T2, T3, T4, R> {
 
     /**
      * Applies this {@link QuadFunction} to the given arguments.
      *
-     * @param t
+     * @param t1
      *    The first {@link QuadFunction} argument
-     * @param u
+     * @param t2
      *    The second {@link QuadFunction} argument
-     * @param v
+     * @param t3
      *    The third {@link QuadFunction} argument
-     * @param w
+     * @param t4
      *    The fourth {@link QuadFunction} argument
      *
      * @return the {@link QuadFunction} result
      */
-    R apply(final T t,
-            final U u,
-            final V v,
-            final W w);
+    R apply(final T1 t1,
+            final T2 t2,
+            final T3 t3,
+            final T4 t4);
 
 
     /**
@@ -63,9 +63,15 @@ public interface QuadFunction<T, U, V, W, R> {
      *
      * @throws NullPointerException if {@code after} is {@code null}
      */
-    default <Z> QuadFunction<T, U, V, W, Z> andThen(final Function<? super R, ? extends Z> after) {
+    default <Z> QuadFunction<T1, T2, T3, T4, Z> andThen(final Function<? super R, ? extends Z> after) {
         requireNonNull(after, "after must be not null");
-        return (T t, U u, V v, W w) -> after.apply(apply(t, u, v, w));
+        return (T1 t1,
+                T2 t2,
+                T3 t3,
+                T4 t4) ->
+                   after.apply(
+                           apply(t1, t2, t3, t4)
+                   );
     }
 
 }

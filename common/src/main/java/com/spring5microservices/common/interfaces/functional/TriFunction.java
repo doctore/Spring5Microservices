@@ -12,11 +12,11 @@ import static java.util.Objects.requireNonNull;
  * <p>This is a <a href="package-summary.html">functional interface</a>
  * whose functional method is {@link #apply(Object, Object, Object)}.
  *
- * @param <T>
+ * @param <T1>
  *    The type of the first argument to the {@link TriFunction}
- * @param <U>
+ * @param <T2>
  *    The type of the second argument to the {@link TriFunction}
- * @param <V>
+ * @param <T3>
  *    The type of the third argument to the {@link TriFunction}
  * @param <R>
  *    The type of the result of the {@link TriFunction}
@@ -24,23 +24,23 @@ import static java.util.Objects.requireNonNull;
  * @see {@link Function} and {@link BiFunction}
  */
 @FunctionalInterface
-public interface TriFunction<T, U, V, R> {
+public interface TriFunction<T1, T2, T3, R> {
 
     /**
      * Applies this {@link TriFunction} to the given arguments.
      *
-     * @param t
+     * @param t1
      *    The first {@link TriFunction} argument
-     * @param u
+     * @param t2
      *    The second {@link TriFunction} argument
-     * @param v
+     * @param t3
      *    The third {@link TriFunction} argument
      *
      * @return the {@link TriFunction} result
      */
-    R apply(final T t,
-            final U u,
-            final V v);
+    R apply(final T1 t1,
+            final T2 t2,
+            final T3 t3);
 
 
     /**
@@ -58,9 +58,14 @@ public interface TriFunction<T, U, V, R> {
      *
      * @throws NullPointerException if {@code after} is {@code null}
      */
-    default <Z> TriFunction<T, U, V, Z> andThen(final Function<? super R, ? extends Z> after) {
+    default <Z> TriFunction<T1, T2, T3, Z> andThen(final Function<? super R, ? extends Z> after) {
         requireNonNull(after, "after must be not null");
-        return (T t, U u, V v) -> after.apply(apply(t, u, v));
+        return (T1 t1,
+                T2 t2,
+                T3 t3) ->
+                   after.apply(
+                           apply(t1, t2, t3)
+                   );
     }
 
 }

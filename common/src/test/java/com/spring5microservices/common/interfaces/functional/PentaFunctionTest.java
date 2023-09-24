@@ -14,12 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class PentaFunctionTest {
 
     static Stream<Arguments> applyTestCases() {
-        PentaFunction<Integer, Integer, Integer, Integer, Integer, Integer> sumAllIntegers = (t, u, v, w, x) -> t + u + v + w + x;
-        PentaFunction<String, String, String, String, String, Integer> sumAllStringLength = (t, u, v, w, x) -> t.length() + u.length() + v.length() + w.length() + x.length();
-        PentaFunction<Integer, String, Integer, String, Integer, Long> multiplyIntegerAndStringLength = (t, u, v, w, x) -> (long) t * u.length() * v * w.length() * x;
+        PentaFunction<Integer, Integer, Integer, Integer, Integer, Integer> sumAllIntegers =
+                (t1, t2, t3, t4, t5) -> t1 + t2 + t3 + t4 + t5;
+        PentaFunction<String, String, String, String, String, Integer> sumAllStringLength =
+                (t1, t2, t3, t4, t5) -> t1.length() + t2.length() + t3.length() + t4.length() + t5.length();
+        PentaFunction<Integer, String, Integer, String, Integer, Long> multiplyIntegerAndStringLength =
+                (t1, t2, t3, t4, t5) -> (long) t1 * t2.length() * t3 * t4.length() * t5;
         return Stream.of(
                 //@formatter:off
-                //            t,     u,      v,     w,       x,    pentaFunction,                    expectedResult
+                //            t1,    t2,     t3,    t4,      t5,   pentaFunction,                    expectedResult
                 Arguments.of( 0,     5,      4,     3,       9,    sumAllIntegers,                   21 ),
                 Arguments.of( "A",   "Bb",   "C",   "FFF",   "",   sumAllStringLength,               7 ),
                 Arguments.of( 3,     "x",    7,     "RT",    2,    multiplyIntegerAndStringLength,   84L )
@@ -29,27 +32,30 @@ public class PentaFunctionTest {
     @ParameterizedTest
     @MethodSource("applyTestCases")
     @DisplayName("apply: test cases")
-    public <T, U, V, W, X, R> void apply_testCases(T t,
-                                                   U u,
-                                                   V v,
-                                                   W w,
-                                                   X x,
-                                                   PentaFunction<T, U, V, W, X, R> pentaFunction,
-                                                   R expectedResult) {
-        assertEquals(expectedResult, pentaFunction.apply(t, u, v, w, x));
+    public <T1, T2, T3, T4, T5, R> void apply_testCases(T1 t1,
+                                                        T2 t2,
+                                                        T3 t3,
+                                                        T4 t4,
+                                                        T5 t5,
+                                                        PentaFunction<T1, T2, T3, T4, T5, R> pentaFunction,
+                                                        R expectedResult) {
+        assertEquals(expectedResult, pentaFunction.apply(t1, t2, t3, t4, t5));
     }
 
 
     static Stream<Arguments> andThenTestCases() {
-        PentaFunction<Integer, Integer, Integer, Integer, Integer, Integer> sumAllIntegers = (t, u, v, w, x) -> t + u + v + w + x;
-        PentaFunction<String, String, String, String, String, Integer> sumAllStringLength = (t, u, v, w, x) -> t.length() + u.length() + v.length() + w.length() + x.length();
-        PentaFunction<String, String, String, String, String, String> joinAllStrings = (t, u, v, w, x) -> t + u + v + w + x;
+        PentaFunction<Integer, Integer, Integer, Integer, Integer, Integer> sumAllIntegers =
+                (t1, t2, t3, t4, t5) -> t1 + t2 + t3 + t4 + t5;
+        PentaFunction<String, String, String, String, String, Integer> sumAllStringLength =
+                (t1, t2, t3, t4, t5) -> t1.length() + t2.length() + t3.length() + t4.length() + t5.length();
+        PentaFunction<String, String, String, String, String, String> joinAllStrings =
+                (t1, t2, t3, t4, t5) -> t1 + t2 + t3 + t4 + t5;
 
         Function<Integer, Integer> multiply2 = i -> i * 2;
         Function<String, Integer> stringLength = String::length;
         return Stream.of(
                 //@formatter:off
-                //            t,       u,      v,      w,      x,      pentaFunction,        afterFunction,       expectedException,            expectedResult
+                //            t1,      t2,     t3,     t4,     t5,     pentaFunction,        afterFunction,       expectedException,            expectedResult
                 Arguments.of( 0,       0,      0,      0,      0,      null,                 null,                NullPointerException.class,   null ),
                 Arguments.of( 3,       3,      3,      3,      3,      sumAllIntegers,       null,                NullPointerException.class,   null ),
                 Arguments.of( 2,       5,      1,      4,      7,      sumAllIntegers,       multiply2,           null,                         38 ),
@@ -61,19 +67,19 @@ public class PentaFunctionTest {
     @ParameterizedTest
     @MethodSource("andThenTestCases")
     @DisplayName("andThen: test cases")
-    public <T, U, V, W, X, R, Z> void andThen_testCases(T t,
-                                                        U u,
-                                                        V v,
-                                                        W w,
-                                                        X x,
-                                                        PentaFunction<T, U, V, W, X, R> pentaFunction,
-                                                        Function<? super R, ? extends Z> afterFunction,
-                                                        Class<? extends Exception> expectedException,
-                                                        Z expectedResult) {
+    public <T1, T2, T3, T4, T5, R, Z> void andThen_testCases(T1 t1,
+                                                             T2 t2,
+                                                             T3 t3,
+                                                             T4 t4,
+                                                             T5 t5,
+                                                             PentaFunction<T1, T2, T3, T4, T5, R> pentaFunction,
+                                                             Function<? super R, ? extends Z> afterFunction,
+                                                             Class<? extends Exception> expectedException,
+                                                             Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> pentaFunction.andThen(afterFunction).apply(t, u, v, w, x));
+            assertThrows(expectedException, () -> pentaFunction.andThen(afterFunction).apply(t1, t2, t3, t4, t5));
         } else {
-            assertEquals(expectedResult, pentaFunction.andThen(afterFunction).apply(t, u, v, w, x));
+            assertEquals(expectedResult, pentaFunction.andThen(afterFunction).apply(t1, t2, t3, t4, t5));
         }
     }
 

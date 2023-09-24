@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * A {@link Tuple} of five elements.
  *
@@ -52,7 +54,11 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
     public final T5 _5;
 
 
-    private Tuple5(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5) {
+    private Tuple5(T1 t1,
+                   T2 t2,
+                   T3 t3,
+                   T4 t4,
+                   T5 t5) {
         this._1 = t1;
         this._2 = t2;
         this._3 = t3;
@@ -430,6 +436,47 @@ public class Tuple5<T1, T2, T3, T4, T5> implements Tuple, Serializable {
     public <U> U apply(final PentaFunction<? super T1, ? super T2, ? super T3, ? super T4, ? super T5, ? extends U> f) {
         Assert.notNull(f, "f must be not null");
         return f.apply(_1, _2, _3, _4, _5);
+    }
+
+
+    /**
+     * Prepend a value to this {@link Tuple5}.
+     *
+     * @param t
+     *    The value to prepend
+     *
+     * @return a new {@link Tuple6} with the value prepended
+     */
+    public <T> Tuple6<T, T1, T2, T3, T4, T5> prepend(final T t) {
+        return Tuple.of(t, _1, _2, _3, _4, _5);
+    }
+
+
+    /**
+     * Append a value to this {@link Tuple5}.
+     *
+     * @param t
+     *    The value to append
+     *
+     * @return a new {@link Tuple6} with the value appended
+     */
+    public <T> Tuple6<T1, T2, T3, T4, T5, T> append(final T t) {
+        return Tuple.of(_1, _2, _3, _4, _5, t);
+    }
+
+
+    /**
+     * Concat a {@link Tuple1}'s values to this {@link Tuple5}.
+     *
+     * @param tuple
+     *    The {@link Tuple1} to concat
+     *
+     * @return a new {@link Tuple6} with the tuple values appended
+     */
+    public <T6> Tuple6<T1, T2, T3, T4, T5, T6> concat(final Tuple1<T6> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, _3, _4, _5, t._1))
+                .orElseGet(() -> Tuple.of(_1, _2, _3, _4, _5, null));
     }
 
 }

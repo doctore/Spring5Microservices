@@ -417,8 +417,11 @@ public class Tuple3Test {
 
     static Stream<Arguments> applyTestCases() {
         Tuple3<Long, Integer, String> tuple = Tuple3.of(12L, 93, "THC");
-        TriFunction<Long, Integer, String, Long> fromLongIntegerStringToLong = (l, i, s) -> l + i - s.length();
-        TriFunction<Long, Integer, String, String> fromLongIntegerStringToString = (l, i, s) -> i + l + s;
+        TriFunction<Long, Integer, String, Long> fromLongIntegerStringToLong =
+                (l, i, s) -> l + i - s.length();
+        TriFunction<Long, Integer, String, String> fromLongIntegerStringToString =
+                (l, i, s) -> i + l + s;
+
         Long appliedLong = 102L;
         String appliedString = "105THC";
         return Stream.of(
@@ -534,6 +537,29 @@ public class Tuple3Test {
     public <T1, T2, T3, T4, T5> void concatTuple2_testCases(Tuple3<T1, T2, T3> tuple,
                                                             Tuple2<T4, T5> tupleToConcat,
                                                             Tuple5<T1, T2, T3, T4, T5> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
+    }
+
+
+    static Stream<Arguments> concatTuple3TestCases() {
+        Tuple3<String, Integer, Boolean> t1 = Tuple3.of("YHG", 33, TRUE);
+        Tuple3<Long, Integer, Double> t2 = Tuple3.of(21L, 11, 55.7d);
+        Tuple3<Integer, Integer, Float> nullValueTuple = Tuple3.of(null, null, null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple6.of(t1._1, t1._2, t1._3, null, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple6.of(t1._1, t1._2, t1._3, null, null, null) ),
+                Arguments.of( t1,      t2,               Tuple6.of(t1._1, t1._2, t1._3, t2._1, t2._2, t2._3) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple3TestCases")
+    @DisplayName("concat: using Tuple3 test cases")
+    public <T1, T2, T3, T4, T5, T6> void concatTuple3_testCases(Tuple3<T1, T2, T3> tuple,
+                                                                Tuple3<T4, T5, T6> tupleToConcat,
+                                                                Tuple6<T1, T2, T3, T4, T5, T6> expectedResult) {
         assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 

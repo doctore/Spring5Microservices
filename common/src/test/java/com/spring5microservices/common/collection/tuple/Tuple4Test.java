@@ -1,7 +1,6 @@
 package com.spring5microservices.common.collection.tuple;
 
 import com.spring5microservices.common.interfaces.functional.QuadFunction;
-import com.spring5microservices.common.interfaces.functional.TriFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -486,8 +485,11 @@ public class Tuple4Test {
 
     static Stream<Arguments> applyTestCases() {
         Tuple4<Long, Integer, String, Integer> tuple = Tuple4.of(12L, 93, "THC", 11);
-        QuadFunction<Long, Integer, String, Integer, Long> fromLongIntegerStringIntegerToLong = (l, i1, s, i2) -> l + i1 - s.length() + i2;
-        QuadFunction<Long, Integer, String, Integer, String> fromLongIntegerStringIntegerToString = (l, i1, s, i2) -> i1 + l + s + i2;
+        QuadFunction<Long, Integer, String, Integer, Long> fromLongIntegerStringIntegerToLong =
+                (l, i1, s, i2) -> l + i1 - s.length() + i2;
+        QuadFunction<Long, Integer, String, Integer, String> fromLongIntegerStringIntegerToString =
+                (l, i1, s, i2) -> i1 + l + s + i2;
+
         Long appliedLong = 113L;
         String appliedString = "105THC11";
         return Stream.of(
@@ -577,8 +579,31 @@ public class Tuple4Test {
     @MethodSource("concatTuple1TestCases")
     @DisplayName("concat: using Tuple1 test cases")
     public <T1, T2, T3, T4, T5> void concatTuple1_testCases(Tuple4<T1, T2, T3, T4> tuple,
-                                                            Tuple1<T4> tupleToConcat,
+                                                            Tuple1<T5> tupleToConcat,
                                                             Tuple5<T1, T2, T3, T4, T5> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
+    }
+
+
+    static Stream<Arguments> concatTuple2TestCases() {
+        Tuple4<String, Integer, Boolean, Long> t1 = Tuple4.of("YHG", 33, TRUE, 89L);
+        Tuple2<Long, Double> t2 = Tuple2.of(21L, 99.9d);
+        Tuple2<Integer, Float> nullValueTuple = Tuple2.of(null, null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple6.of(t1._1, t1._2, t1._3, t1._4, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple6.of(t1._1, t1._2, t1._3, t1._4, null, null) ),
+                Arguments.of( t1,      t2,               Tuple6.of(t1._1, t1._2, t1._3, t1._4, t2._1, t2._2) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple2TestCases")
+    @DisplayName("concat: using Tuple2 test cases")
+    public <T1, T2, T3, T4, T5, T6> void concatTuple2_testCases(Tuple4<T1, T2, T3, T4> tuple,
+                                                                Tuple2<T5, T6> tupleToConcat,
+                                                                Tuple6<T1, T2, T3, T4, T5, T6> expectedResult) {
         assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 

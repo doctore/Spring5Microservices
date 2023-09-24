@@ -14,12 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class TriFunctionTest {
 
     static Stream<Arguments> applyTestCases() {
-        TriFunction<Integer, Integer, Integer, Integer> sumAllIntegers = (t, u, v) -> t + u + v;
-        TriFunction<String, String, String, Integer> sumAllStringLength = (t, u, v) -> t.length() + u.length() + v.length();
-        TriFunction<Integer, String, Integer, Long> multiplyIntegerAndStringLength = (t, u, v) -> (long) t * u.length() * v;
+        TriFunction<Integer, Integer, Integer, Integer> sumAllIntegers =
+                (t1, t2, t3) -> t1 + t2 + t3;
+        TriFunction<String, String, String, Integer> sumAllStringLength =
+                (t1, t2, t3) -> t1.length() + t2.length() + t3.length();
+        TriFunction<Integer, String, Integer, Long> multiplyIntegerAndStringLength =
+                (t1, t2, t3) -> (long) t1 * t2.length() * t3;
         return Stream.of(
                 //@formatter:off
-                //            t,     u,      v,     triFunction,                      expectedResult
+                //            t1,    t2,     t3,    triFunction,                      expectedResult
                 Arguments.of( 0,     5,      4,     sumAllIntegers,                   9 ),
                 Arguments.of( "A",   "Bb",   "C",   sumAllStringLength,               4 ),
                 Arguments.of( 3,     "x",    7,     multiplyIntegerAndStringLength,   21L )
@@ -29,25 +32,28 @@ public class TriFunctionTest {
     @ParameterizedTest
     @MethodSource("applyTestCases")
     @DisplayName("apply: test cases")
-    public <T, U, V, R> void apply_testCases(T t,
-                                             U u,
-                                             V v,
-                                             TriFunction<T, U, V, R> triFunction,
-                                             R expectedResult) {
-        assertEquals(expectedResult, triFunction.apply(t, u, v));
+    public <T1, T2, T3, R> void apply_testCases(T1 t1,
+                                                T2 t2,
+                                                T3 t3,
+                                                TriFunction<T1, T2, T3, R> triFunction,
+                                                R expectedResult) {
+        assertEquals(expectedResult, triFunction.apply(t1, t2, t3));
     }
 
 
     static Stream<Arguments> andThenTestCases() {
-        TriFunction<Integer, Integer, Integer, Integer> sumAllIntegers = (t, u, v) -> t + u + v;
-        TriFunction<String, String, String, Integer> sumAllStringLength = (t, u, v) -> t.length() + u.length() + v.length();
-        TriFunction<String, String, String, String> joinAllStrings = (t, u, v) -> t + u + v;
+        TriFunction<Integer, Integer, Integer, Integer> sumAllIntegers =
+                (t1, t2, t3) -> t1 + t2 + t3;
+        TriFunction<String, String, String, Integer> sumAllStringLength =
+                (t1, t2, t3) -> t1.length() + t2.length() + t3.length();
+        TriFunction<String, String, String, String> joinAllStrings =
+                (t1, t2, t3) -> t1 + t2 + t3;
 
         Function<Integer, Integer> multiply2 = i -> i * 2;
         Function<String, Integer> stringLength = String::length;
         return Stream.of(
                 //@formatter:off
-                //            t,       u,      v,      triFunction,          afterFunction,       expectedException,            expectedResult
+                //            t1,      t2,     t3,     triFunction,          afterFunction,       expectedException,            expectedResult
                 Arguments.of( 0,       0,      0,      null,                 null,                NullPointerException.class,   null ),
                 Arguments.of( 3,       3,      3,      sumAllIntegers,       null,                NullPointerException.class,   null ),
                 Arguments.of( 2,       5,      1,      sumAllIntegers,       multiply2,           null,                         16 ),
@@ -59,17 +65,17 @@ public class TriFunctionTest {
     @ParameterizedTest
     @MethodSource("andThenTestCases")
     @DisplayName("andThen: test cases")
-    public <T, U, V, R, Z> void andThen_testCases(T t,
-                                                  U u,
-                                                  V v,
-                                                  TriFunction<T, U, V, R> triFunction,
-                                                  Function<? super R, ? extends Z> afterFunction,
-                                                  Class<? extends Exception> expectedException,
-                                                  Z expectedResult) {
+    public <T1, T2, T3, R, Z> void andThen_testCases(T1 t1,
+                                                     T2 t2,
+                                                     T3 t3,
+                                                     TriFunction<T1, T2, T3, R> triFunction,
+                                                     Function<? super R, ? extends Z> afterFunction,
+                                                     Class<? extends Exception> expectedException,
+                                                     Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> triFunction.andThen(afterFunction).apply(t, u, v));
+            assertThrows(expectedException, () -> triFunction.andThen(afterFunction).apply(t1, t2, t3));
         } else {
-            assertEquals(expectedResult, triFunction.andThen(afterFunction).apply(t, u, v));
+            assertEquals(expectedResult, triFunction.andThen(afterFunction).apply(t1, t2, t3));
         }
     }
 

@@ -31,7 +31,7 @@ public class Tuple5Test {
                 //@formatter:off
                 //            t1,             t2,             t3,             t4,             t5,            expectedResult
                 Arguments.of( null,           null,           null,           null,           null,          Tuple5.of(null, null, null, null, null) ),
-                Arguments.of( stringValue,    null,           null,           null,           null,          Tuple5.of(stringValue, null, null, null, null ) ),
+                Arguments.of( stringValue,    null,           null,           null,           null,          Tuple5.of(stringValue, null, null, null, null) ),
                 Arguments.of( null,           stringValue,    null,           null,           null,          Tuple5.of(null, stringValue, null, null, null) ),
                 Arguments.of( null,           null,           stringValue,    null,           null,          Tuple5.of(null, null, stringValue, null, null) ),
                 Arguments.of( null,           null,           null,           stringValue,    null,          Tuple5.of(null, null, null, stringValue, null) ),
@@ -559,8 +559,11 @@ public class Tuple5Test {
 
     static Stream<Arguments> applyTestCases() {
         Tuple5<Long, Integer, String, Integer, Double> tuple = Tuple5.of(12L, 93, "THC", 11, 99.8d);
-        PentaFunction<Long, Integer, String, Integer, Double, Long> fromLongIntegerStringIntegerDoubleToLong = (l, i1, s, i2, d) -> l + i1 - s.length() + i2 + d.longValue();
-        PentaFunction<Long, Integer, String, Integer, Double, String> fromLongIntegerStringIntegerDoubleToString = (l, i1, s, i2, d) -> i1 + l + s + i2 + d.toString();
+        PentaFunction<Long, Integer, String, Integer, Double, Long> fromLongIntegerStringIntegerDoubleToLong =
+                (l, i1, s, i2, d) -> l + i1 - s.length() + i2 + d.longValue();
+        PentaFunction<Long, Integer, String, Integer, Double, String> fromLongIntegerStringIntegerDoubleToString =
+                (l, i1, s, i2, d) -> i1 + l + s + i2 + d.toString();
+
         Long appliedLong = 212L;
         String appliedString = "105THC1199.8";
         return Stream.of(
@@ -585,6 +588,75 @@ public class Tuple5Test {
         else {
             assertEquals(expectedResult, tuple.apply(f));
         }
+    }
+
+
+    static Stream<Arguments> prependTestCases() {
+        Tuple5<String, Integer, Boolean, Long, Double> tuple = Tuple5.of("ZZ", 77, TRUE, 45L, 67.9d);
+        Long longValue = 34L;
+        Integer integerValue = 55;
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   value,          expectedResult
+                Arguments.of( tuple,   null,           Tuple6.of(null, tuple._1, tuple._2, tuple._3, tuple._4, tuple._5) ),
+                Arguments.of( tuple,   longValue,      Tuple6.of(longValue, tuple._1, tuple._2, tuple._3, tuple._4, tuple._5) ),
+                Arguments.of( tuple,   integerValue,   Tuple6.of(integerValue, tuple._1, tuple._2, tuple._3, tuple._4, tuple._5) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("prependTestCases")
+    @DisplayName("prepend: test cases")
+    public <T, T1, T2, T3, T4, T5> void prepend_testCases(Tuple5<T1, T2, T3, T4, T5> tuple,
+                                                          T value,
+                                                          Tuple6<T, T1, T2, T3, T4, T5> expectedResult) {
+        assertEquals(expectedResult, tuple.prepend(value));
+    }
+
+
+    static Stream<Arguments> appendTestCases() {
+        Tuple5<String, Integer, Boolean, Long, Double> tuple = Tuple5.of("ABC", 41, FALSE, 67L, 34.2d);
+        Long longValue = 11L;
+        Integer integerValue = 66;
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   value,          expectedResult
+                Arguments.of( tuple,   null,           Tuple6.of(tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, null) ),
+                Arguments.of( tuple,   longValue,      Tuple6.of(tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, longValue) ),
+                Arguments.of( tuple,   integerValue,   Tuple6.of(tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, integerValue) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("appendTestCases")
+    @DisplayName("append: test cases")
+    public <T, T1, T2, T3, T4, T5> void append_testCases(Tuple5<T1, T2, T3, T4, T5> tuple,
+                                                         T value,
+                                                         Tuple6<T1, T2, T3, T4, T5, T> expectedResult) {
+        assertEquals(expectedResult, tuple.append(value));
+    }
+
+
+    static Stream<Arguments> concatTuple1TestCases() {
+        Tuple5<String, Integer, Boolean, Long, Double> t1 = Tuple5.of("YHG", 33, TRUE, 89L, 77.8d);
+        Tuple1<Long> t2 = Tuple1.of(21L);
+        Tuple1<Integer> nullValueTuple = Tuple1.of(null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple6.of(t1._1, t1._2, t1._3, t1._4, t1._5, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple6.of(t1._1, t1._2, t1._3, t1._4, t1._5, null) ),
+                Arguments.of( t1,      t2,               Tuple6.of(t1._1, t1._2, t1._3, t1._4, t1._5, t2._1) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple1TestCases")
+    @DisplayName("concat: using Tuple1 test cases")
+    public <T1, T2, T3, T4, T5, T6> void concatTuple1_testCases(Tuple5<T1, T2, T3, T4, T5> tuple,
+                                                                Tuple1<T6> tupleToConcat,
+                                                                Tuple6<T1, T2, T3, T4, T5, T6> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 
 }
