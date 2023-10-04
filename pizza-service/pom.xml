@@ -25,8 +25,8 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
         <springdoc.version>1.7.0</springdoc.version>
-        <spring5-microservices-common.version>3.3.0</spring5-microservices-common.version>
-        <spring5-microservices-grpc.version>1.0.5</spring5-microservices-grpc.version>
+        <spring5-microservices-common.version>3.3.1</spring5-microservices-common.version>
+        <spring5-microservices-grpc.version>1.0.6</spring5-microservices-grpc.version>
     </properties>
 
     <dependencies>

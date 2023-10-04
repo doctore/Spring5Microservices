@@ -238,7 +238,7 @@ public class ValidationTest {
         Function<Integer, String> errorString = i -> "error";
         return Stream.of(
                 //@formatter:off
-                //            validation,                 predicate,   zero,          expectedException,                expectedResult
+                //            validation,                 predicate,   mapper,        expectedException,                expectedResult
                 Arguments.of( validVerifyFilter,          null,        null,          null,                             validVerifyFilter ),
                 Arguments.of( validDoesNotVerifyFilter,   null,        null,          null,                             validDoesNotVerifyFilter ),
                 Arguments.of( invalid,                    null,        null,          null,                             invalid ),
@@ -255,13 +255,13 @@ public class ValidationTest {
     @DisplayName("filterOrElse: test cases")
     public <E, T> void filterOrElse_testCases(Validation<E, T> validation,
                                               Predicate<? super T> predicate,
-                                              Function<? super T, ? extends E> zero,
+                                              Function<? super T, ? extends E> mapper,
                                               Class<? extends Exception> expectedException,
                                               Validation<E, T> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> validation.filterOrElse(predicate, zero));
+            assertThrows(expectedException, () -> validation.filterOrElse(predicate, mapper));
         } else {
-            assertEquals(expectedResult, validation.filterOrElse(predicate, zero));
+            assertEquals(expectedResult, validation.filterOrElse(predicate, mapper));
         }
     }
 

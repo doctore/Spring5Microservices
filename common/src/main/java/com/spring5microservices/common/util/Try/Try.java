@@ -413,7 +413,8 @@ public abstract class Try<T> implements Serializable {
      * @param mapper
      *    The mapping function to apply to a value of a {@link Success} instance.
      *
-     * @return new {@link Try}
+     * @return new {@link Success} applying {@code mapperSuccess} if current is {@link Success},
+     *         current {@link Failure} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Success} one
      */
@@ -422,15 +423,18 @@ public abstract class Try<T> implements Serializable {
             Assert.notNull(mapper, "mapper must be not null");
             return mapTry(mapper);
         }
-        return failure(getException());
+        return failure(
+                getException()
+        );
     }
 
 
     /**
-     *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Success} {@link Try},
-     * and {@code mapFailure} performs a mapping on an {@link Failure} {@link Try}, {@code map} with two {@link Function}
-     * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
-     * type of {@link Try} this is. Without this, you would have to do something like:
+     *    Whereas {@link Try#map(Function)} with {@code mapper} argument only performs a mapping on a {@link Success} {@link Try},
+     * and {@link Try#mapFailure(Function)} performs a mapping on an {@link Failure} {@link Try}, {@link Try#map(Function, Function)}
+     * allows you to provide mapping actions for both, and will give you the result based on what type of {@link Try} this is.
+     * <p>
+     * Without this, you would have to do something like:
      *
      * <pre>
      * Example:
@@ -446,7 +450,8 @@ public abstract class Try<T> implements Serializable {
      * @param mapperSuccess
      *    {@link Function} with the success mapping operation
      *
-     * @return {@link Try}
+     * @return {@link Success} applying {@code mapperSuccess} if current is {@link Success},
+     *         {@link Failure} applying {@code mapperFailure} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapperFailure} is {@code null} and the current instance is a {@link Success} one
      *                                  or {@code mapperSuccess} is {@code null} and the current instance is a {@link Failure} one
@@ -472,7 +477,7 @@ public abstract class Try<T> implements Serializable {
      * @param mapper
      *    The mapping function to apply to a value of a {@link Failure} instance.
      *
-     * @return new {@link Try}
+     * @return new {@link Failure} applying {@code mapper}, current {@link Success} otherwise
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Failure} one
      */
@@ -481,7 +486,9 @@ public abstract class Try<T> implements Serializable {
             Assert.notNull(mapper, "mapper must be not null");
             return mapFailureTry(mapper);
         }
-        return success(get());
+        return success(
+                get()
+        );
     }
 
 
@@ -823,7 +830,7 @@ public abstract class Try<T> implements Serializable {
 
 
     /**
-     * when current {@link Try} is a {@link Success} instance, manages in a safe way the {@link Predicate} invocation.
+     * When current {@link Try} is a {@link Success} instance, manages in a safe way the {@link Predicate} invocation.
      *
      * @param predicate
      *    {@link Predicate} to apply the stored value if the current instance is a {@link Success} one
@@ -838,7 +845,9 @@ public abstract class Try<T> implements Serializable {
             if (isNull(predicate) || predicate.test(get())) {
                 return this;
             } else {
-                return failure(throwableSupplier.get());
+                return failure(
+                        throwableSupplier.get()
+                );
             }
         } catch (Throwable t) {
             return failure(t);

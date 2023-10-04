@@ -165,7 +165,7 @@ public class EitherTest {
     }
 
 
-    static Stream<Arguments> containsTestCases() {
+    static Stream<Arguments> containTestCases() {
         Either<String, Long> rightEmpty = Either.right(null);
         Either<String, Long> rightNotEmpty = Either.right(65L);
         Either<String, Long> left = Either.left("problem");
@@ -183,12 +183,12 @@ public class EitherTest {
     }
 
     @ParameterizedTest
-    @MethodSource("containsTestCases")
-    @DisplayName("contains: test cases")
-    public <L, R> void contains_testCases(Either<L, R> either,
+    @MethodSource("containTestCases")
+    @DisplayName("contain: test cases")
+    public <L, R> void contain_testCases(Either<L, R> either,
                                           R value,
                                           boolean expectedResult) {
-        assertEquals(expectedResult, either.contains(value));
+        assertEquals(expectedResult, either.contain(value));
     }
 
 

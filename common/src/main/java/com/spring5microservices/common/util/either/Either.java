@@ -201,14 +201,14 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Returns {@code true} if this is a {@link Right} and its value is equal to {@code value}, {@code false} otherwise.
+     * Verifies if the current {@link Either} is a {@link Right} instance containing given {@code value}.
      *
      * @param value
      *    Element to test
      *
      * @return {@code true} if this is a {@link Right} and its value is equal to {@code value}
      */
-    public final boolean contains(final R value) {
+    public final boolean contain(final R value) {
         if (isRight()) {
             return (
                     isNull(value) &&
@@ -225,10 +225,10 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     * Filters the current {@link Either} returning {@code Optional.of(this)} if:
+     * Filters the current {@link Either} returning {@link Optional#of(Object)} of this if:
      * <p>
      *   1. Current instance is {@link Left}
-     *   2. Current instance is {@link Right} and stored value verifies given {@link Predicate} (or {@code predicate} is {@code null})
+     *   2. Current instance is {@link Right} and stored value verifies given {@link Predicate} (or it is {@code null})
      * <p>
      * {@link Optional#empty()} otherwise.
      *
@@ -271,7 +271,7 @@ public abstract class Either<L, R> implements Serializable {
      * @throws IllegalArgumentException if {@code zero} is {@code null}, this is a {@link Right} but does not match given {@link Predicate}
      *
      * @return {@link Right} if this is {@link Right} and {@code predicate} matches,
-     *         {@link Left} with {@code zero} otherwise.
+     *         {@link Left} applying {@code zero} otherwise.
      */
     public final Either<L, R> filterOrElse(final Predicate<? super R> predicate,
                                            final Supplier<? extends L> zero) {
@@ -295,7 +295,8 @@ public abstract class Either<L, R> implements Serializable {
      * @param mapper
      *    The mapping function to apply to a value of a {@link Right} instance.
      *
-     * @return {@link Right} applying {@code mapper} if current is {@link Right}, {@link Left} otherwise.
+     * @return new {@link Right} applying {@code mapper} if current is {@link Right},
+     *         current {@link Left} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Right} one
      */
@@ -315,10 +316,12 @@ public abstract class Either<L, R> implements Serializable {
 
 
     /**
-     *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Right} {@link Either},
-     * and {@code mapLeft} performs a mapping on a {@link Left} {@link Either}, {@code map} with two {@link Function}
-     * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
-     * type of {@link Either} this is. Without this, you would have to do something like:
+     *    Whereas {@link Either#map(Function)} with {@code mapper} argument only performs a mapping on a {@link Right}
+     * {@link Either}, and {@link Either#mapLeft(Function)} performs a mapping on a {@link Left} {@link Either},
+     * this function allows you to provide mapping actions for both, and will give you the result based on what type
+     * of {@link Either} this is.
+     * <p>
+     * Without this, you would have to do something like:
      *
      * <pre>
      * Example:
@@ -332,7 +335,7 @@ public abstract class Either<L, R> implements Serializable {
      *    {@link Function} with the right mapping operation
      *
      * @return {@link Right} applying {@code mapperRight} if current is {@link Right},
-     *         {@link Left} {@code mapperLeft} otherwise.
+     *         {@link Left} applying {@code mapperLeft} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapperRight} is {@code null} and the current instance is a {@link Right} one
      *                                  or {@code mapperLeft} is {@code null} and the current instance is a {@link Left} one
@@ -363,7 +366,8 @@ public abstract class Either<L, R> implements Serializable {
      * @param mapper
      *    The mapping function to apply to a value of a {@link Left} instance.
      *
-     * @return {@link Left} applying {@code mapper} if current is {@link Left}, {@link Right} otherwise.
+     * @return {@link Left} applying {@code mapper} if current is {@link Left},
+     *         current {@link Right} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Left} one
      */
@@ -389,7 +393,7 @@ public abstract class Either<L, R> implements Serializable {
      * @param mapper
      *    The mapping {@link Function} to apply the value of a {@link Right} instance
      *
-     * @return {@link Right} applying {@code mapper} if current is {@link Right}, {@link Left} otherwise
+     * @return new {@link Right} applying {@code mapper} if current is {@link Right}, {@link Left} otherwise
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Right} one
      */
@@ -730,7 +734,9 @@ public abstract class Either<L, R> implements Serializable {
      *    Transforms this {@link Either} into a {@link Optional} instance. If the current {@link Either} is an instance
      * of {@link Right} wraps the stored value into an {@link Optional} object, {@link Optional#empty()} otherwise.
      *
-     * @return {@link Optional}
+     * @return {@link Optional} if is this {@link Either} is a {@link Right} and its value is non-`null`,
+     *         {@link Optional#empty} if is this {@link Either} is a {@link Right} and its value is {@code null},
+     *         {@link Optional#empty} if this is an {@link Left}
      */
     public final Optional<R> toOptional() {
         return isEmpty()
@@ -746,7 +752,7 @@ public abstract class Either<L, R> implements Serializable {
      * @param mapperLeft
      *   {@link Function} that maps the {@link Left} value to a {@link Throwable} instance
      *
-     * @return {@link Try}
+     * @return {@link Success} if this is {@link Right}, {@link Failure} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapperLeft} is {@code null} and the current instance is a {@link Left} one
      */
@@ -763,8 +769,7 @@ public abstract class Either<L, R> implements Serializable {
      *    Transforms current {@link Either} into a {@link Validation}. If the current {@link Either} is an instance of
      * {@link Right} wraps the stored value into a {@link Valid} one, {@link Invalid} otherwise.
      *
-     * @return {@link Valid} instance if this is {@link Right},
-     *         otherwise {@link Invalid}.
+     * @return {@link Valid} instance if this is {@link Right}, {@link Invalid} otherwise.
      */
     public final Validation<L, R> toValidation() {
         return isRight()

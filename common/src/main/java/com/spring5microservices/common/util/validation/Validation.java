@@ -213,7 +213,8 @@ public abstract class Validation<E, T> implements Serializable {
      * <p>
      *   1. Current instance is {@link Invalid}
      *   2. Current instance is {@link Valid} and stored value verifies given {@link Predicate} (or {@code predicate} is {@code null})
-     *      {@link Optional#empty()} otherwise.
+     * <p>
+     * {@link Optional#empty()} otherwise.
      *
      * @param predicate
      *    {@link Predicate} to apply the stored value if the current instance is a {@link Valid} one
@@ -234,39 +235,40 @@ public abstract class Validation<E, T> implements Serializable {
      * Filters the current {@link Validation} returning:
      * <p>
      *   1. {@link Valid} if this is a {@link Valid} and its value matches given {@link Predicate} (or {@code predicate} is {@code null})
-     *   2. {@link Invalid} applying {@code zero} if this is {@link Valid} but its value does not match given {@link Predicate}
+     *   2. {@link Invalid} applying {@code mapper} if this is {@link Valid} but its value does not match given {@link Predicate}
      *   3. {@link Invalid} with the existing value if this is a {@link Invalid}
      *
      * <pre>
      * Examples:
      *
-     *   Validation.valid(11).filterOrElse(i -> i > 10, "error");                    // Valid(11)
-     *   Validation.valid(7).filterOrElse(i -> i > 10, "error");                     // Invalid(List("error"))
-     *   Validation.invalid(asList("warning")).filterOrElse(i -> i > 10, "error");   // Invalid(List("warning"))
+     *   Validation.valid(11).filterOrElse(i -> i > 10, i -> "error");                       // Valid(11)
+     *   Validation.valid(7).filterOrElse(i -> i > 10, i -> "error");                        // Invalid(List("error"))
+     *   Validation.invalid(asList("warning")).filterOrElse(i -> i > 10, i -> "error");      // Invalid(List("warning"))
      * </pre>
      *
      * @param predicate
      *    {@link Predicate} to apply the stored value if the current instance is a {@link Valid} one
-     * @param zero
+     * @param mapper
      *    {@link Function} that turns a {@link Valid} value into a {@link Invalid} one if this is {@link Valid}
      *    but its value does not match given {@link Predicate}
      *
-     * @throws IllegalArgumentException if {@code zero} is {@code null}, this is a {@link Valid} but does not match given {@link Predicate}
+     * @throws IllegalArgumentException if {@code mapper} is {@code null}, this is a {@link Valid} but does not match given {@link Predicate}
      *
-     * @return {@link Validation}
+     * @return {@link Valid} if this is {@link Valid} and {@code predicate} matches,
+     *         {@link Invalid} applying {@code mapper} otherwise.
      */
     public final Validation<E, T> filterOrElse(final Predicate<? super T> predicate,
-                                               final Function<? super T, ? extends E> zero) {
+                                               final Function<? super T, ? extends E> mapper) {
         if (!isValid()) {
             return this;
         }
         if (isNull(predicate) || predicate.test(get())) {
             return this;
         }
-        Assert.notNull(zero, "zero must be not null");
+        Assert.notNull(mapper, "mapper must be not null");
         return invalid(
                 asList(
-                        zero.apply(
+                        mapper.apply(
                                 get()
                         )
                 )
@@ -281,7 +283,8 @@ public abstract class Validation<E, T> implements Serializable {
      * @param mapper
      *    The mapping function to apply to a value of a {@link Valid} instance.
      *
-     * @return new {@link Validation}
+     * @return new {@link Valid} applying {@code mapper} if current is {@link Valid},
+     *         current {@link Invalid} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Valid} one
      */
@@ -302,9 +305,10 @@ public abstract class Validation<E, T> implements Serializable {
 
     /**
      *    Whereas {@code map} with {@code mapper} argument only performs a mapping on a {@link Valid} {@link Validation},
-     * and {@code mapError} performs a mapping on an {@link Invalid} {@link Validation}, {@code map} with two {@link Function}
-     * mappers as arguments, allows you to provide mapping actions for both, and will give you the result based on what
-     * type of {@link Validation} this is. Without this, you would have to do something like:
+     * and {@code mapError} performs a mapping on an {@link Invalid} {@link Validation}, this function allows you to provide
+     * mapping actions for both, and will give you the result based on what type of {@link Validation} this is.
+     * <p>
+     * Without this, you would have to do something like:
      *
      * <pre>
      * Example:
@@ -317,7 +321,8 @@ public abstract class Validation<E, T> implements Serializable {
      * @param mapperValid
      *    {@link Function} with the valid mapping operation
      *
-     * @return {@link Validation}
+     * @return {@link Valid} applying {@code mapperValid} if current is {@link Valid},
+     *         {@link Invalid} applying {@code mapperInvalid} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapperValid} is {@code null} and the current instance is a {@link Valid} one
      *                                  or {@code mapperInvalid} is {@code null} and the current instance is a {@link Invalid} one
@@ -348,7 +353,8 @@ public abstract class Validation<E, T> implements Serializable {
      * @param mapper
      *    A {@link Function} that maps the errors in this {@link Invalid}
      *
-     * @return new {@link Validation}
+     * @return {@link Invalid} applying {@code mapper} if current is {@link Invalid},
+     *         current {@link Valid} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Invalid} one
      */
@@ -374,7 +380,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @param mapper
      *    The mapping {@link Function} to apply the value of a {@link Valid} instance
      *
-     * @return new {@link Validation}
+     * @return new {@link Valid} applying {@code mapper} if current is {@link Valid}, {@link Invalid} otherwise
      *
      * @throws IllegalArgumentException if {@code mapper} is {@code null} and the current instance is a {@link Valid} one
      */
@@ -493,12 +499,11 @@ public abstract class Validation<E, T> implements Serializable {
             return mapperValid.apply(
                     get()
             );
-        } else {
-            Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
-            return mapperInvalid.apply(
-                    getErrors()
-            );
         }
+        Assert.notNull(mapperInvalid, "mapperInvalid must be not null");
+        return mapperInvalid.apply(
+                getErrors()
+        );
     }
 
 
@@ -628,7 +633,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @param other
      *    An alternative {@link Validation}
      *
-     * @return {@link Validation}
+     * @return current {@link Validation} if {@link Invalid}, {@code other} otherwise.
      */
     @SuppressWarnings("unchecked")
     public final Validation<E, T> orElse(final Validation<? extends E, ? extends T> other) {
@@ -644,7 +649,7 @@ public abstract class Validation<E, T> implements Serializable {
      * @param supplier
      *    An alternative {@link Validation} supplier
      *
-     * @return {@link Validation}
+     * @return current {@link Validation} if {@link Valid}, {@code supplier} result otherwise.
      *
      * @throws IllegalArgumentException if {@code supplier} is {@code null} and the current instance is a {@link Invalid} one
      */
@@ -675,7 +680,9 @@ public abstract class Validation<E, T> implements Serializable {
      *    If the current {@link Validation} is an instance of {@link Valid} wraps the stored value into an {@link Optional} object.
      * Otherwise return {@link Optional#empty()}
      *
-     * @return {@link Optional}
+     * @return {@link Optional} if is this {@link Either} is a {@link Right} and its value is non-`null`,
+     *         {@link Optional#empty} if is this {@link Either} is a {@link Right} and its value is {@code null},
+     *         {@link Optional#empty} if this is an {@link Left}
      */
     public final Optional<T> toOptional() {
         return isEmpty()
@@ -718,9 +725,9 @@ public abstract class Validation<E, T> implements Serializable {
      * of {@link Valid} wraps the stored value into a {@link Success} one, {@link Failure} otherwise.
      *
      * @param mapperInvalid
-     *   {@link Function} that maps the {@link Left} value to a {@link Throwable} instance
+     *   {@link Function} that maps the {@link Invalid} value to a {@link Throwable} instance
      *
-     * @return {@link Try}
+     * @return {@link Success} if this is {@link Valid}, {@link Failure} otherwise.
      *
      * @throws IllegalArgumentException if {@code mapperInvalid} is {@code null} and the current instance is an {@link Invalid} one
      */
@@ -732,11 +739,10 @@ public abstract class Validation<E, T> implements Serializable {
                             getErrors()
                     )
             );
-        } else {
-            return Try.success(
-                    get()
-            );
         }
+        return Try.success(
+                get()
+        );
     }
 
 }
