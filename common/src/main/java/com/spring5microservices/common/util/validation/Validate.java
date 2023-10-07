@@ -19,8 +19,8 @@ public interface Validate<T> {
      * @param instanceToValidate
      *    Instance to validate
      *
-     * @return {@link Valid} if all rules were verifies,
-     *         {@link Invalid} with a a {@link ValidationError} {@link Collection} otherwise.
+     * @return {@link Valid} if all rules were verified,
+     *         {@link Invalid} with a {@link ValidationError} {@link Collection} otherwise.
      */
     Validation<ValidationError, T> validate(final T instanceToValidate);
 
