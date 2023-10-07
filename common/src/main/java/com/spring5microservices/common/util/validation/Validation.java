@@ -584,6 +584,27 @@ public abstract class Validation<E, T> implements Serializable {
 
 
     /**
+     *    Returns the stored value if the underline instance is {@link Valid}, otherwise returns the result after
+     * invoking provided {@link Supplier}. This will throw an {@link Exception} if it is not a {@link Valid} and
+     * {@code supplier} throws an {@link Exception}.
+     *
+     * @param supplier
+     *    {@link Supplier} that produces a value to be returned if current instance is an {@link Invalid} one
+     *
+     * @return {@code T} value stored in {@link Valid} instance, otherwise the result of {@code supplier}
+     *
+     * @throws IllegalArgumentException if {@code supplier} is {@code null} and the current instance is a {@link Valid} one
+     */
+    public final T getOrElse(final Supplier<? extends T> supplier) {
+        if (isValid()) {
+            return get();
+        }
+        Assert.notNull(supplier, "supplier must be not null");
+        return supplier.get();
+    }
+
+
+    /**
      *    Returns the stored value if the underline instance is {@link Valid}, otherwise throws an {@link Exception} using
      * provided {@link Supplier}.
      *

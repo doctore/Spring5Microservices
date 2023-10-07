@@ -568,7 +568,7 @@ public class EitherTest {
     }
 
 
-    static Stream<Arguments> getOrElseTestCases() {
+    static Stream<Arguments> getOrElseWithValueTestCases() {
         Either<String, Integer> rightEmpty = Either.right(null);
         Either<String, Integer> rightNotEmpty = Either.right(11);
         Either<String, Integer> leftNotEmpty = Either.left("problem");
@@ -586,12 +586,44 @@ public class EitherTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getOrElseTestCases")
-    @DisplayName("getOrElse: test cases")
-    public <L, R> void getOrElse_testCases(Either<L, R> either,
-                                           R other,
-                                           R expectedResult) {
+    @MethodSource("getOrElseWithValueTestCases")
+    @DisplayName("getOrElse: with value as parameter test cases")
+    public <L, R> void getOrElseWithValue_testCases(Either<L, R> either,
+                                                    R other,
+                                                    R expectedResult) {
         assertEquals(expectedResult, either.getOrElse(other));
+    }
+
+
+    static Stream<Arguments> getOrElseWithSupplierTestCases() {
+        Either<String, Integer> rightEmpty = Either.right(null);
+        Either<String, Integer> rightNotEmpty = Either.right(44);
+        Either<String, Integer> leftNotEmpty = Either.left("There was a problem");
+        Supplier<Integer> supplier = () -> 33;
+        return Stream.of(
+                //@formatter:off
+                //            either,          supplier,   expectedException,                expectedResult
+                Arguments.of( rightEmpty,      null,       null,                             rightEmpty.get() ),
+                Arguments.of( rightEmpty,      supplier,   null,                             rightEmpty.get() ),
+                Arguments.of( rightNotEmpty,   null,       null,                             rightNotEmpty.get() ),
+                Arguments.of( rightNotEmpty,   supplier,   null,                             rightNotEmpty.get() ),
+                Arguments.of( leftNotEmpty,    null,       IllegalArgumentException.class,   null ),
+                Arguments.of( leftNotEmpty,    supplier,   null,                             supplier.get() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElseWithSupplierTestCases")
+    @DisplayName("getOrElse: with Supplier as parameter test cases")
+    public <L, R> void getOrElseWithSupplier_testCases(Either<L, R> either,
+                                                       Supplier<? extends R> supplier,
+                                                       Class<? extends Exception> expectedException,
+                                                       R expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> either.getOrElse(supplier));
+        } else {
+            assertEquals(expectedResult, either.getOrElse(supplier));
+        }
     }
 
 

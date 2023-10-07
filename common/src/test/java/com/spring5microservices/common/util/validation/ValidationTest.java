@@ -570,7 +570,7 @@ public class ValidationTest {
     }
 
 
-    static Stream<Arguments> getOrElseTestCases() {
+    static Stream<Arguments> getOrElseWithValueTestCases() {
         Validation<String, Integer> validEmpty = Validation.valid(null);
         Validation<String, Integer> validNotEmpty = Validation.valid(1);
         Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
@@ -588,12 +588,44 @@ public class ValidationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getOrElseTestCases")
-    @DisplayName("getOrElse: test cases")
-    public <E, T> void getOrElse_testCases(Validation<E, T> validation,
-                                           T other,
-                                           T expectedResult) {
+    @MethodSource("getOrElseWithValueTestCases")
+    @DisplayName("getOrElse: with value as parameter test cases")
+    public <E, T> void getOrElseWithValue_testCases(Validation<E, T> validation,
+                                                    T other,
+                                                    T expectedResult) {
         assertEquals(expectedResult, validation.getOrElse(other));
+    }
+
+
+    static Stream<Arguments> getOrElseWithSupplierTestCases() {
+        Validation<String, Integer> validEmpty = Validation.valid(null);
+        Validation<String, Integer> validNotEmpty = Validation.valid(1);
+        Validation<String, Integer> invalid = Validation.invalid(List.of("problem"));
+        Supplier<Integer> supplier = () -> 4;
+        return Stream.of(
+                //@formatter:off
+                //            validation,      supplier,   expectedException,                expectedResult
+                Arguments.of( validEmpty,      null,       null,                             validEmpty.get() ),
+                Arguments.of( validEmpty,      supplier,   null,                             validEmpty.get() ),
+                Arguments.of( validNotEmpty,   null,       null,                             validNotEmpty.get() ),
+                Arguments.of( validNotEmpty,   supplier,   null,                             validNotEmpty.get() ),
+                Arguments.of( invalid,         null,       IllegalArgumentException.class,   null ),
+                Arguments.of( invalid,         supplier,   null,                             supplier.get() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElseWithSupplierTestCases")
+    @DisplayName("getOrElse: with Supplier as parameter test cases")
+    public <E, T> void getOrElseWithSupplier_testCases(Validation<E, T> validation,
+                                                       Supplier<? extends T> supplier,
+                                                       Class<? extends Exception> expectedException,
+                                                       T expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> validation.getOrElse(supplier));
+        } else {
+            assertEquals(expectedResult, validation.getOrElse(supplier));
+        }
     }
 
 

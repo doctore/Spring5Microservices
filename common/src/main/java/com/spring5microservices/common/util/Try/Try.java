@@ -431,8 +431,8 @@ public abstract class Try<T> implements Serializable {
 
     /**
      *    Whereas {@link Try#map(Function)} with {@code mapper} argument only performs a mapping on a {@link Success} {@link Try},
-     * and {@link Try#mapFailure(Function)} performs a mapping on an {@link Failure} {@link Try}, {@link Try#map(Function, Function)}
-     * allows you to provide mapping actions for both, and will give you the result based on what type of {@link Try} this is.
+     * and {@link Try#mapFailure(Function)} performs a mapping on an {@link Failure} {@link Try}, this function allows you
+     * to provide mapping actions for both, and will give you the result based on what type of {@link Try} this is.
      * <p>
      * Without this, you would have to do something like:
      *
@@ -679,10 +679,30 @@ public abstract class Try<T> implements Serializable {
      * @return {@code T} value stored in {@link Success} instance, {@code other} otherwise
      */
     public final T getOrElse(final T other) {
+        return isSuccess()
+                ? get()
+                : other;
+    }
+
+
+    /**
+     *    Returns the stored value if the underline instance is {@link Success}, otherwise returns the result after
+     * invoking provided {@link Supplier}. This will throw an {@link Exception} if it is not a {@link Success} and
+     * {@code supplier} throws an {@link Exception}.
+     *
+     * @param supplier
+     *    {@link Supplier} that produces a value to be returned if current instance is a {@link Failure} one
+     *
+     * @return {@code T} value stored in {@link Success} instance, otherwise the result of {@code supplier}
+     *
+     * @throws IllegalArgumentException if {@code supplier} is {@code null} and the current instance is a {@link Failure} one
+     */
+    public final T getOrElse(final Supplier<? extends T> supplier) {
         if (isSuccess()) {
             return get();
         }
-        return other;
+        Assert.notNull(supplier, "supplier must be not null");
+        return supplier.get();
     }
 
 

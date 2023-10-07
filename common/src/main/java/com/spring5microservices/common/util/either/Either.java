@@ -617,10 +617,30 @@ public abstract class Either<L, R> implements Serializable {
      * @return {@code R} value stored in {@link Right} instance, {@code other} otherwise
      */
     public final R getOrElse(final R other) {
+        return isRight()
+                ? get()
+                : other;
+    }
+
+
+    /**
+     *    Returns the stored value if the underline instance is {@link Right}, otherwise returns the result after
+     * invoking provided {@link Supplier}. This will throw an {@link Exception} if it is not a {@link Right} and
+     * {@code supplier} throws an {@link Exception}.
+     *
+     * @param supplier
+     *    {@link Supplier} that produces a value to be returned if current instance is a {@link Left} one
+     *
+     * @return {@code R} value stored in {@link Right} instance, otherwise the result of {@code supplier}
+     *
+     * @throws IllegalArgumentException if {@code supplier} is {@code null} and the current instance is a {@link Left} one
+     */
+    public final R getOrElse(final Supplier<? extends R> supplier) {
         if (isRight()) {
             return get();
         }
-        return other;
+        Assert.notNull(supplier, "supplier must be not null");
+        return supplier.get();
     }
 
 

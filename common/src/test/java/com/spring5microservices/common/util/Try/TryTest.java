@@ -826,7 +826,7 @@ public class TryTest {
     }
 
 
-    static Stream<Arguments> getOrElseTestCases() {
+    static Stream<Arguments> getOrElseWithValueTestCases() {
         Try<Long> successEmpty = Try.success(null);
         Try<Long> successNotEmpty = Try.success(15L);
         Try<Long> failure = Try.failure(new IOException("IO error"));
@@ -844,12 +844,44 @@ public class TryTest {
     }
 
     @ParameterizedTest
-    @MethodSource("getOrElseTestCases")
-    @DisplayName("getOrElse: test cases")
-    public <T> void getOrElse_testCases(Try<T> t,
-                                        T other,
-                                        T expectedResult) {
+    @MethodSource("getOrElseWithValueTestCases")
+    @DisplayName("getOrElse: with value as parameter test cases")
+    public <T> void getOrElseWithValue_testCases(Try<T> t,
+                                                 T other,
+                                                 T expectedResult) {
         assertEquals(expectedResult, t.getOrElse(other));
+    }
+
+
+    static Stream<Arguments> getOrElseWithSupplierTestCases() {
+        Try<String> successEmpty = Try.success(null);
+        Try<String> successNotEmpty = Try.success("Expected result");
+        Try<String> failure = Try.failure(new FileNotFoundException("File not found error"));
+        Supplier<Long> supplier = () -> 22L;
+        return Stream.of(
+                //@formatter:off
+                //            try,               supplier,   expectedException,                expectedResult
+                Arguments.of( successEmpty,      null,       null,                             successEmpty.get() ),
+                Arguments.of( successEmpty,      supplier,   null,                             successEmpty.get() ),
+                Arguments.of( successNotEmpty,   null,       null,                             successNotEmpty.get() ),
+                Arguments.of( successNotEmpty,   supplier,   null,                             successNotEmpty.get() ),
+                Arguments.of( failure,           null,       IllegalArgumentException.class,   null ),
+                Arguments.of( failure,           supplier,   null,                             supplier.get() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getOrElseWithSupplierTestCases")
+    @DisplayName("getOrElse: with Supplier as parameter test cases")
+    public <T> void getOrElseWithSupplier_testCases(Try<T> t,
+                                                    Supplier<? extends T> other,
+                                                    Class<? extends Exception> expectedException,
+                                                    T expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> t.getOrElse(other));
+        } else {
+            assertEquals(expectedResult, t.getOrElse(other));
+        }
     }
 
 
