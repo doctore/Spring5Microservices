@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.16</version>
+        <version>2.7.17</version>
         <relativePath/>
     </parent>
     <groupId>com.configserver</groupId>
     <artifactId>config-server</artifactId>
-    <version>1.1.5</version>
+    <version>1.1.6</version>
     <name>config-server</name>
     <description>Configuration server for Spring 5 with microservices</description>
 

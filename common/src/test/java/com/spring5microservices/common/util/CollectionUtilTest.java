@@ -7,7 +7,7 @@ import com.spring5microservices.common.collection.tuple.Tuple1;
 import com.spring5microservices.common.collection.tuple.Tuple2;
 import com.spring5microservices.common.collection.tuple.Tuple3;
 import com.spring5microservices.common.collection.tuple.Tuple4;
-import com.spring5microservices.common.collection.tuple.Tuple5;
+import com.spring5microservices.common.collection.tuple.Tuple6;
 import com.spring5microservices.common.interfaces.functional.PartialFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -706,204 +706,6 @@ public class CollectionUtilTest {
             assertThrows(expectedException, () -> collectFirst(sourceCollection, partialFunction));
         } else {
             assertEquals(expectedResult, collectFirst(sourceCollection, partialFunction));
-        }
-    }
-
-
-    static Stream<Arguments> collectPropertyNoCollectionFactoryTestCases() {
-        PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
-        PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
-        List<PizzaDto> allPizzas = List.of(carbonaraCheap, carbonaraExpense);
-
-        Function<PizzaDto, String> getName = PizzaDto::getName;
-        Function<PizzaDto, Double> getCost = PizzaDto::getCost;
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   propertyExtractor,   expectedResult
-                Arguments.of( null,               null,                List.of() ),
-                Arguments.of( allPizzas,          null,                List.of() ),
-                Arguments.of( allPizzas,          getName,             List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
-                Arguments.of( allPizzas,          getCost,             List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("collectPropertyNoCollectionFactoryTestCases")
-    @DisplayName("collectProperty: without collection factory test cases")
-    public void collectPropertyNoCollectionFactory_testCases(List<PizzaDto> sourceCollection,
-                                                             Function<PizzaDto, String> keyExtractor,
-                                                             List<String> expectedResult) {
-        assertEquals(expectedResult, collectProperty(sourceCollection, keyExtractor));
-    }
-
-
-    static Stream<Arguments> collectPropertyAllParametersTestCases() {
-        PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
-        PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
-        List<PizzaDto> allPizzas = List.of(carbonaraCheap, carbonaraExpense);
-
-        Function<PizzaDto, String> getName = PizzaDto::getName;
-        Function<PizzaDto, Double> getCost = PizzaDto::getCost;
-        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   propertyExtractor,   collectionFactory,   expectedResult
-                Arguments.of( null,               null,                null,                List.of() ),
-                Arguments.of( null,               null,                setSupplier,         new LinkedHashSet<>() ),
-                Arguments.of( allPizzas,          getName,             null,                List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
-                Arguments.of( allPizzas,          getName,             setSupplier,         Set.of(carbonaraCheap.getName()) ),
-                Arguments.of( allPizzas,          getCost,             null,                List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) ),
-                Arguments.of( allPizzas,          getCost,             setSupplier,         Set.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("collectPropertyAllParametersTestCases")
-    @DisplayName("collectProperty: with all parameters test cases")
-    public void collectPropertyAllParameters_testCases(List<PizzaDto> sourceCollection,
-                                                       Function<PizzaDto, String> keyExtractor,
-                                                       Supplier<Collection<String>> collectionFactory,
-                                                       Collection<String> expectedResult) {
-        assertEquals(expectedResult, collectProperty(sourceCollection, keyExtractor, collectionFactory));
-    }
-
-
-    static Stream<Arguments> collectPropertiesNoCollectionFactoryTestCases() {
-        UserDto user1 = new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05");
-        UserDto user2 = new UserDto(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25");
-        List<UserDto> allUsers = List.of(user1, user2);
-
-        Function<UserDto, Long> getId = UserDto::getId;
-        Function<UserDto, String> getName = UserDto::getName;
-        Function<UserDto, String> getAddress = UserDto::getAddress;
-        Function<UserDto, Integer> getAge = UserDto::getAge;
-        Function<UserDto, String> getBirthday = UserDto::getBirthday;
-        List<Function<UserDto, ?>> allPropertyExtractors = List.of(getId, getName, getAddress, getAge, getBirthday);
-        List<Function<UserDto, ?>> allPropertyExtractorsPlusOne = List.of(getId, getName, getAddress, getAge, getBirthday, getId, getName);
-
-        List<Tuple1<Long>> expectedResultOnePropertyExtractor = List.of(
-                Tuple.of(1L),
-                Tuple.of(2L)
-        );
-        List<Tuple2<Long, String>> expectedResultTwoPropertyExtractors = List.of(
-                Tuple.of(1L, "user1 name"),
-                Tuple.of(2L, "user2 name")
-        );
-        List<Tuple3<Long, String, String>> expectedResultThreePropertyExtractors = List.of(
-                Tuple.of(1L, "user1 name", "user1 address"),
-                Tuple.of(2L, "user2 name", "user2 address")
-        );
-        List<Tuple4<Long, String, String, Integer>> expectedResultFourPropertyExtractors = List.of(
-                Tuple.of(1L, "user1 name", "user1 address", 11),
-                Tuple.of(2L, "user2 name", "user2 address", 16)
-        );
-        List<Tuple5<Long, String, String, Integer, String>> expectedResultFivePropertyExtractors = List.of(
-                Tuple.of(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05"),
-                Tuple.of(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25")
-        );
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   propertyExtractors,                            expectedException,                expectedResult
-                Arguments.of( null,               null,                                          null,                             List.of() ),
-                Arguments.of( allUsers,           null,                                          null,                             List.of() ),
-                Arguments.of( allUsers,           allPropertyExtractorsPlusOne,                  IllegalArgumentException.class,   null ),
-                Arguments.of( allUsers,           List.of(getId),                                null,                             expectedResultOnePropertyExtractor ),
-                Arguments.of( allUsers,           List.of(getId, getName),                       null,                             expectedResultTwoPropertyExtractors ),
-                Arguments.of( allUsers,           List.of(getId, getName, getAddress),           null,                             expectedResultThreePropertyExtractors ),
-                Arguments.of( allUsers,           List.of(getId, getName, getAddress, getAge),   null,                             expectedResultFourPropertyExtractors ),
-                Arguments.of( allUsers,           allPropertyExtractors,                         null,                             expectedResultFivePropertyExtractors )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("collectPropertiesNoCollectionFactoryTestCases")
-    @DisplayName("collectProperties: without collection factory test cases")
-    public <T> void collectPropertiesNoCollectionFactory_testCases(Collection<? extends T> sourceCollection,
-                                                                   List<Function<? super T, ?>> propertyExtractors,
-                                                                   Class<? extends Exception> expectedException,
-                                                                   List<Tuple> expectedResult) {
-        Function<? super T, ?>[] finalPropertyExtractors =
-                null == propertyExtractors
-                        ? null
-                        : propertyExtractors.toArray(new Function[0]);
-
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> collectProperties(sourceCollection, finalPropertyExtractors));
-        } else {
-            assertEquals(expectedResult, collectProperties(sourceCollection, finalPropertyExtractors));
-        }
-    }
-
-
-    static Stream<Arguments> collectPropertiesAllParametersTestCases() {
-        UserDto user1 = new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05");
-        UserDto user2 = new UserDto(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25");
-        List<UserDto> allUsers = List.of(user1, user2);
-
-        Function<UserDto, Long> getId = UserDto::getId;
-        Function<UserDto, String> getName = UserDto::getName;
-        Function<UserDto, String> getAddress = UserDto::getAddress;
-        Function<UserDto, Integer> getAge = UserDto::getAge;
-        Function<UserDto, String> getBirthday = UserDto::getBirthday;
-        List<Function<UserDto, ?>> allPropertyExtractors = List.of(getId, getName, getAddress, getAge, getBirthday);
-        List<Function<UserDto, ?>> allPropertyExtractorsPlusTwo = List.of(getId, getName, getAddress, getAge, getBirthday, getId, getName);
-
-        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
-
-        Set<Tuple1<Long>> expectedResultOnePropertyExtractor = Set.of(
-                Tuple.of(1L),
-                Tuple.of(2L)
-        );
-        Set<Tuple2<Long, String>> expectedResultTwoPropertyExtractors = Set.of(
-                Tuple.of(1L, "user1 name"),
-                Tuple.of(2L, "user2 name")
-        );
-        Set<Tuple3<Long, String, String>> expectedResultThreePropertyExtractors = Set.of(
-                Tuple.of(1L, "user1 name", "user1 address"),
-                Tuple.of(2L, "user2 name", "user2 address")
-        );
-        Set<Tuple4<Long, String, String, Integer>> expectedResultFourPropertyExtractors = Set.of(
-                Tuple.of(1L, "user1 name", "user1 address", 11),
-                Tuple.of(2L, "user2 name", "user2 address", 16)
-        );
-        Set<Tuple5<Long, String, String, Integer, String>> expectedResultFivePropertyExtractors = Set.of(
-                Tuple.of(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05"),
-                Tuple.of(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25")
-        );
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   propertyExtractors,                            collectionFactory,   expectedException,                expectedResult
-                Arguments.of( null,               null,                                          null,                null,                             List.of() ),
-                Arguments.of( null,               null,                                          setSupplier,         null,                             new LinkedHashSet<>() ),
-                Arguments.of( allUsers,           null,                                          null,                null,                             List.of() ),
-                Arguments.of( allUsers,           null,                                          setSupplier,         null,                             new LinkedHashSet<>() ),
-                Arguments.of( allUsers,           allPropertyExtractorsPlusTwo,                  null,                IllegalArgumentException.class,   null ),
-                Arguments.of( allUsers,           allPropertyExtractorsPlusTwo,                  setSupplier,         IllegalArgumentException.class,   null ),
-                Arguments.of( allUsers,           List.of(getId),                                setSupplier,         null,                             expectedResultOnePropertyExtractor ),
-                Arguments.of( allUsers,           List.of(getId, getName),                       setSupplier,         null,                             expectedResultTwoPropertyExtractors ),
-                Arguments.of( allUsers,           List.of(getId, getName, getAddress),           setSupplier,         null,                             expectedResultThreePropertyExtractors ),
-                Arguments.of( allUsers,           List.of(getId, getName, getAddress, getAge),   setSupplier,         null,                             expectedResultFourPropertyExtractors ),
-                Arguments.of( allUsers,           allPropertyExtractors,                         setSupplier,         null,                             expectedResultFivePropertyExtractors )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("collectPropertiesAllParametersTestCases")
-    @DisplayName("collectProperties: with all parameters test cases")
-    public <T> void collectPropertiesAllParameters_testCases(Collection<? extends T> sourceCollection,
-                                                             List<Function<? super T, ?>> propertyExtractors,
-                                                             Supplier<Collection<Tuple>> collectionFactory,
-                                                             Class<? extends Exception> expectedException,
-                                                             Collection<Tuple> expectedResult) {
-        Function<? super T, ?>[] finalPropertyExtractors =
-                null == propertyExtractors
-                        ? null
-                        : propertyExtractors.toArray(new Function[0]);
-
-        if (null != expectedException) {
-            assertThrows(expectedException, () -> collectProperties(sourceCollection, collectionFactory, finalPropertyExtractors));
-        } else {
-            assertEquals(expectedResult, collectProperties(sourceCollection, collectionFactory, finalPropertyExtractors));
         }
     }
 
@@ -2119,6 +1921,217 @@ public class CollectionUtilTest {
             assertThrows(expectedException, () -> iterate(initialValue, applyFunction, untilPredicate));
         } else {
             assertEquals(expectedResult, iterate(initialValue, applyFunction, untilPredicate));
+        }
+    }
+
+
+    static Stream<Arguments> mapNoCollectionFactoryTestCases() {
+        PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
+        PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
+        List<PizzaDto> allPizzas = List.of(carbonaraCheap, carbonaraExpense);
+
+        Function<PizzaDto, String> getName = PizzaDto::getName;
+        Function<PizzaDto, Double> getCost = PizzaDto::getCost;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   mapFunction,   expectedException,                expectedResult
+                Arguments.of( null,               null,          null,                             List.of() ),
+                Arguments.of( List.of(),          null,          null,                             List.of() ),
+                Arguments.of( allPizzas,          null,          IllegalArgumentException.class,   null ),
+                Arguments.of( allPizzas,          getName,       null,                             List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
+                Arguments.of( allPizzas,          getCost,       null,                             List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapNoCollectionFactoryTestCases")
+    @DisplayName("map: without collection factory test cases")
+    public <T, E> void mapNoCollectionFactory_testCases(List<? extends T> sourceCollection,
+                                                        Function<? super T, ? extends E> mapFunction,
+                                                        Class<? extends Exception> expectedException,
+                                                        List<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> map(sourceCollection, mapFunction));
+        } else {
+            assertEquals(expectedResult, map(sourceCollection, mapFunction));
+        }
+    }
+
+
+    static Stream<Arguments> mapAllParametersTestCases() {
+        PizzaDto carbonaraCheap = new PizzaDto("Carbonara", 5D);
+        PizzaDto carbonaraExpense = new PizzaDto("Carbonara", 10D);
+        List<PizzaDto> allPizzas = List.of(carbonaraCheap, carbonaraExpense);
+
+        Function<PizzaDto, String> getName = PizzaDto::getName;
+        Function<PizzaDto, Double> getCost = PizzaDto::getCost;
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   mapFunction,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,          null,                null,                             List.of() ),
+                Arguments.of( null,               null,          setSupplier,         null,                             new LinkedHashSet<>() ),
+                Arguments.of( List.of(),          null,          null,                null,                             List.of() ),
+                Arguments.of( List.of(),          null,          setSupplier,         null,                             new LinkedHashSet<>() ),
+                Arguments.of( allPizzas,          null,          null,                IllegalArgumentException.class,   null ),
+                Arguments.of( allPizzas,          null,          setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( allPizzas,          getName,       null,                null,                             List.of(carbonaraCheap.getName(), carbonaraExpense.getName()) ),
+                Arguments.of( allPizzas,          getName,       setSupplier,         null,                             Set.of(carbonaraCheap.getName()) ),
+                Arguments.of( allPizzas,          getCost,       null,                null,                             List.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) ),
+                Arguments.of( allPizzas,          getCost,       setSupplier,         null,                             Set.of(carbonaraCheap.getCost(), carbonaraExpense.getCost()) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapAllParametersTestCases")
+    @DisplayName("map: with all parameters test cases")
+    public <T, E> void mapAllParameters_testCases(List<? extends T> sourceCollection,
+                                                  Function<? super T, ? extends E> mapFunction,
+                                                  Supplier<Collection<E>> collectionFactory,
+                                                  Class<? extends Exception> expectedException,
+                                                  Collection<T> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> map(sourceCollection, mapFunction, collectionFactory));
+        } else {
+            assertEquals(expectedResult, map(sourceCollection, mapFunction, collectionFactory));
+        }
+    }
+
+
+    static Stream<Arguments> mapMultiNoCollectionFactoryTestCases() {
+        UserDto user1 = new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05", "test1@test.es");
+        UserDto user2 = new UserDto(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25", "test2@test.es");
+        List<UserDto> allUsers = List.of(user1, user2);
+
+        Function<UserDto, Long> getId = UserDto::getId;
+        Function<UserDto, String> getName = UserDto::getName;
+        Function<UserDto, String> getAddress = UserDto::getAddress;
+        Function<UserDto, Integer> getAge = UserDto::getAge;
+        Function<UserDto, String> getBirthday = UserDto::getBirthday;
+        Function<UserDto, String> getEmail = UserDto::getEmail;
+        List<Function<UserDto, ?>> allPropertyExtractors = List.of(getId, getName, getAddress, getAge, getBirthday, getEmail);
+        List<Function<UserDto, ?>> allPropertyExtractorsPlusOne = List.of(getId, getName, getAddress, getAge, getBirthday, getId, getName, getId);
+
+        List<Tuple1<Long>> expectedResultOnePropertyExtractor = List.of(
+                Tuple.of(1L),
+                Tuple.of(2L)
+        );
+        List<Tuple2<Long, String>> expectedResultTwoPropertyExtractors = List.of(
+                Tuple.of(1L, "user1 name"),
+                Tuple.of(2L, "user2 name")
+        );
+        List<Tuple3<Long, String, String>> expectedResultThreePropertyExtractors = List.of(
+                Tuple.of(1L, "user1 name", "user1 address"),
+                Tuple.of(2L, "user2 name", "user2 address")
+        );
+        List<Tuple4<Long, String, String, Integer>> expectedResultFourPropertyExtractors = List.of(
+                Tuple.of(1L, "user1 name", "user1 address", 11),
+                Tuple.of(2L, "user2 name", "user2 address", 16)
+        );
+        List<Tuple6<Long, String, String, Integer, String, String>> expectedResultSixPropertyExtractors = List.of(
+                Tuple.of(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05", "test1@test.es"),
+                Tuple.of(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25", "test2@test.es")
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   mapFunctions,                                  expectedException,                expectedResult
+                Arguments.of( null,               null,                                          null,                             List.of() ),
+                Arguments.of( List.of(),          null,                                          null,                             List.of() ),
+                Arguments.of( allUsers,           null,                                          IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           allPropertyExtractorsPlusOne,                  IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           List.of(getId),                                null,                             expectedResultOnePropertyExtractor ),
+                Arguments.of( allUsers,           List.of(getId, getName),                       null,                             expectedResultTwoPropertyExtractors ),
+                Arguments.of( allUsers,           List.of(getId, getName, getAddress),           null,                             expectedResultThreePropertyExtractors ),
+                Arguments.of( allUsers,           List.of(getId, getName, getAddress, getAge),   null,                             expectedResultFourPropertyExtractors ),
+                Arguments.of( allUsers,           allPropertyExtractors,                         null,                             expectedResultSixPropertyExtractors )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapMultiNoCollectionFactoryTestCases")
+    @DisplayName("mapMulti: without collection factory test cases")
+    public <T> void mapMultiNoCollectionFactory_testCases(Collection<? extends T> sourceCollection,
+                                                          List<Function<? super T, ?>> mapFunctions,
+                                                          Class<? extends Exception> expectedException,
+                                                          List<Tuple> expectedResult) {
+        Function<? super T, ?>[] finalMapFunctions =
+                null == mapFunctions
+                        ? null
+                        : mapFunctions.toArray(new Function[0]);
+
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> mapMulti(sourceCollection, finalMapFunctions));
+        } else {
+            assertEquals(expectedResult, mapMulti(sourceCollection, finalMapFunctions));
+        }
+    }
+
+
+    static Stream<Arguments> mapMultiAllParametersTestCases() {
+        UserDto user1 = new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05", "test1@test.es");
+        UserDto user2 = new UserDto(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25", "test2@test.es");
+        List<UserDto> allUsers = List.of(user1, user2);
+
+        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
+
+        Function<UserDto, Long> getId = UserDto::getId;
+        Function<UserDto, String> getName = UserDto::getName;
+        Function<UserDto, String> getAddress = UserDto::getAddress;
+        Function<UserDto, Integer> getAge = UserDto::getAge;
+        Function<UserDto, String> getBirthday = UserDto::getBirthday;
+        Function<UserDto, String> getEmail = UserDto::getEmail;
+        List<Function<UserDto, ?>> allPropertyExtractors = List.of(getId, getName, getAddress, getAge, getBirthday, getEmail);
+        List<Function<UserDto, ?>> allPropertyExtractorsPlusOne = List.of(getId, getName, getAddress, getAge, getBirthday, getId, getName, getId);
+
+        List<Tuple1<Long>> expectedResultOnePropertyExtractor = List.of(
+                Tuple.of(1L),
+                Tuple.of(2L)
+        );
+        List<Tuple3<Long, String, Integer>> expectedResultThreePropertyExtractors = List.of(
+                Tuple.of(1L, "user1 name", 11),
+                Tuple.of(2L, "user2 name", 16)
+        );
+        List<Tuple6<Long, String, String, Integer, String, String>> expectedResultSixPropertyExtractors = List.of(
+                Tuple.of(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05", "test1@test.es"),
+                Tuple.of(2L, "user2 name", "user2 address", 16, "2006-11-15 14:10:25", "test2@test.es")
+        );
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   collectionFactory,   mapFunctions,                      expectedException,                expectedResult
+                Arguments.of( null,               null,                null,                              null,                             List.of() ),
+                Arguments.of( null,               setSupplier,         null,                              null,                             Set.of() ),
+                Arguments.of( List.of(),          null,                null,                              null,                             List.of() ),
+                Arguments.of( List.of(),          setSupplier,         null,                              null,                             Set.of() ),
+                Arguments.of( allUsers,           null,                null,                              IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           setSupplier,         null,                              IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           null,                allPropertyExtractorsPlusOne,      IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           setSupplier,         allPropertyExtractorsPlusOne,      IllegalArgumentException.class,   null ),
+                Arguments.of( allUsers,           null,                List.of(getId),                    null,                             expectedResultOnePropertyExtractor ),
+                Arguments.of( allUsers,           setSupplier,         List.of(getId),                    null,                             new LinkedHashSet<>(expectedResultOnePropertyExtractor) ),
+                Arguments.of( allUsers,           null,                List.of(getId, getName, getAge),   null,                             expectedResultThreePropertyExtractors ),
+                Arguments.of( allUsers,           setSupplier,         List.of(getId, getName, getAge),   null,                             new LinkedHashSet<>(expectedResultThreePropertyExtractors) ),
+                Arguments.of( allUsers,           null,                allPropertyExtractors,             null,                             expectedResultSixPropertyExtractors ),
+                Arguments.of( allUsers,           setSupplier,         allPropertyExtractors,             null,                             new LinkedHashSet<>(expectedResultSixPropertyExtractors) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapMultiAllParametersTestCases")
+    @DisplayName("mapMulti: with all parameters test cases")
+    public <T> void mapMultiAllParameters_testCases(Collection<? extends T> sourceCollection,
+                                                    Supplier<Collection<Tuple>> collectionFactory,
+                                                    List<Function<? super T, ?>> mapFunctions,
+                                                    Class<? extends Exception> expectedException,
+                                                    Collection<Tuple> expectedResult) {
+        Function<? super T, ?>[] finalMapFunctions =
+                null == mapFunctions
+                        ? null
+                        : mapFunctions.toArray(new Function[0]);
+
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> mapMulti(sourceCollection, collectionFactory, finalMapFunctions));
+        } else {
+            assertEquals(expectedResult, mapMulti(sourceCollection, collectionFactory, finalMapFunctions));
         }
     }
 

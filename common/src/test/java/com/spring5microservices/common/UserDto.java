@@ -16,5 +16,6 @@ public class UserDto {
     private String address;
     private Integer age;
     private String birthday;
+    private String email;
 
 }

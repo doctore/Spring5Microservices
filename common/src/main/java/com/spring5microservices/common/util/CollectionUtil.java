@@ -610,8 +610,7 @@ public class CollectionUtil {
 
 
     /**
-     *    Returns a {@link List} with the extracted property of the given {@code sourceCollection} using provided
-     *  {@code propertyExtractor}.
+     * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
      *
      * <pre>
      * Example:
@@ -623,25 +622,26 @@ public class CollectionUtil {
      *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract.
-     * @param propertyExtractor
-     *    {@link Function} used to get the property value we want to use to include in returned {@link Collection}.
+     * @param mapFunction
+     *    {@link Function} to apply to {@code sourceCollection}'s elements
      *
-     * @return {@link List}
+     * @return {@link List} after applying {@code mapFunction} to {@code sourceCollection}'s elements
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceCollection} is not empty.
      */
     @SuppressWarnings("unchecked")
-    public static <T, E> List<E> collectProperty(final Collection<? extends T> sourceCollection,
-                                                 final Function<? super T, ? extends E> propertyExtractor) {
-        return (List<E>) collectProperty(
+    public static <T, E> List<E> map(final Collection<? extends T> sourceCollection,
+                                     final Function<? super T, ? extends E> mapFunction) {
+        return (List<E>) map(
                 sourceCollection,
-                propertyExtractor,
+                mapFunction,
                 ArrayList::new
         );
     }
 
 
     /**
-     *    Returns a {@link Collection} with the extracted property of the given {@code sourceCollection} using provided
-     * {@code propertyExtractor}.
+     * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
      *
      * <pre>
      * Example:
@@ -654,36 +654,35 @@ public class CollectionUtil {
      *
      * @param sourceCollection
      *    Source {@link Collection} with the property to extract
-     * @param propertyExtractor
-     *    {@link Function} used to get the property value we want to use to include in returned {@link Collection}
+     * @param mapFunction
+     *    {@link Function} to apply to {@code sourceCollection}'s elements
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Collection}
+     * @return {@link Collection} after applying {@code mapFunction} to {@code sourceCollection}'s elements
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceCollection} is not empty.
      */
-    public static <T, E> Collection<E> collectProperty(final Collection<? extends T> sourceCollection,
-                                                       final Function<? super T, ? extends E> propertyExtractor,
-                                                       final Supplier<Collection<E>> collectionFactory) {
+    public static <T, E> Collection<E> map(final Collection<? extends T> sourceCollection,
+                                           final Function<? super T, ? extends E> mapFunction,
+                                           final Supplier<Collection<E>> collectionFactory) {
         final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        return ofNullable(sourceCollection)
-                .map(c -> {
-                    if (isNull(propertyExtractor)) {
-                        return null;
-                    }
-                    return sourceCollection.stream()
-                            .map(propertyExtractor)
-                            .collect(
-                                    toCollection(finalCollectionFactory)
-                            );
-                })
-                .orElseGet(finalCollectionFactory);
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        return sourceCollection.stream()
+                .map(mapFunction)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
     }
 
 
     /**
-     *    Returns a {@link List} of {@link Tuple} with the extracted properties of the given {@code sourceCollection}
-     * using provided {@code propertyExtractors}.
+     *    Returns a {@link List} of {@link Tuple} applying provided {@code mapFunction}s to every element of the given
+     * {@code sourceCollection}.
      *
      * <pre>
      * Example:
@@ -695,28 +694,28 @@ public class CollectionUtil {
      *
      * @param sourceCollection
      *    Source {@link Collection} with the properties to extract
-     * @param propertyExtractors
-     *    Array of {@link Function} used to get the properties values we want to use to include in returned {@link List}
+     * @param mapFunctions
+     *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
      *
-     * @return {@link List}
+     * @return {@link List} of {@link Tuple} after applying {@code mapFunction}s to {@code sourceCollection}'s elements
      *
-     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and
-     *                                  its length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
+     * @throws IllegalArgumentException if {@code mapFunctions} is {@code null} and {@code sourceCollection} is not empty
+     *                                  or {@code mapFunctions}'s length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
      */
     @SafeVarargs
-    public static <T> List<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
-                                                    final Function<? super T, ?> ...propertyExtractors) {
-        return (List<Tuple>) collectProperties(
+    public static <T> List<Tuple> mapMulti(final Collection<? extends T> sourceCollection,
+                                           final Function<? super T, ?> ...mapFunctions) {
+        return (List<Tuple>) mapMulti(
                 sourceCollection,
                 ArrayList::new,
-                propertyExtractors
+                mapFunctions
         );
     }
 
 
     /**
-     *    Returns a {@link Collection} of {@link Tuple} with the extracted properties of the given {@code sourceCollection}
-     * using provided {@code propertyExtractors}.
+     *    Returns a {@link Collection} of {@link Tuple} applying provided {@code mapFunction}s to every element of the given
+     * {@code sourceCollection}.
      *
      * <pre>
      * Example:
@@ -729,49 +728,45 @@ public class CollectionUtil {
      *
      * @param sourceCollection
      *    Source {@link Collection} with the properties to extract
-     * @param propertyExtractors
-     *    Array of {@link Function} used to get the properties values we want to use to include in returned {@link Collection}
+     * @param mapFunctions
+     *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
      * @param collectionFactory
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Collection}
+     * @return {@link Collection} of {@link Tuple} after applying {@code mapFunction}s to {@code sourceCollection}'s elements
      *
-     * @throws IllegalArgumentException if {@code propertyExtractors} is not {@code null} and
-     *                                  its length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
+     * @throws IllegalArgumentException if {@code mapFunctions} is {@code null} and {@code sourceCollection} is not empty
+     *                                  or {@code mapFunctions}'s length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
      */
     @SafeVarargs
-    public static <T> Collection<Tuple> collectProperties(final Collection<? extends T> sourceCollection,
-                                                          final Supplier<Collection<Tuple>> collectionFactory,
-                                                          final Function<? super T, ?> ...propertyExtractors) {
+    public static <T> Collection<Tuple> mapMulti(final Collection<? extends T> sourceCollection,
+                                                 final Supplier<Collection<Tuple>> collectionFactory,
+                                                 final Function<? super T, ?> ...mapFunctions) {
         final Supplier<Collection<Tuple>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        if (nonNull(propertyExtractors)) {
-            Assert.isTrue(
-                    Tuple.MAX_ALLOWED_TUPLE_ARITY >= propertyExtractors.length,
-                    format("If propertyExtractors is not null then its size should be <= %d",
-                            Tuple.MAX_ALLOWED_TUPLE_ARITY
-                    )
-            );
-        } else {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
             return finalCollectionFactory.get();
         }
-        return ofNullable(sourceCollection)
-                .map(c ->
-                        c.stream()
-                            .map(elto -> {
-                                Tuple result = Tuple.empty();
-                                for (Function<? super T, ?> propertyExtractor: propertyExtractors) {
-                                    result = result.globalAppend(
-                                            propertyExtractor.apply(elto)
-                                    );
-                                }
-                                return result;
-                            })
-                            .collect(
-                                    toCollection(finalCollectionFactory)
-                            )
+        Assert.notNull(mapFunctions, "mapFunction must be not null");
+        Assert.isTrue(
+                Tuple.MAX_ALLOWED_TUPLE_ARITY >= mapFunctions.length,
+                format("The length of mapFunctions should be <= %d",
+                        Tuple.MAX_ALLOWED_TUPLE_ARITY
                 )
-                .orElseGet(finalCollectionFactory);
+        );
+        return sourceCollection.stream()
+                .map(elto -> {
+                    Tuple result = Tuple.empty();
+                    for (Function<? super T, ?> mapper: mapFunctions) {
+                        result = result.globalAppend(
+                                mapper.apply(elto)
+                        );
+                    }
+                    return result;
+                })
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
     }
 
 
