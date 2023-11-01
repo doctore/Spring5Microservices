@@ -361,4 +361,19 @@ public final class Tuple2<T1, T2> implements Tuple, Serializable {
                 .orElseGet(() -> Tuple.of(_1, _2, null, null, null, null));
     }
 
+
+    /**
+     * Concat a {@link Tuple5}'s values to this {@link Tuple2}.
+     *
+     * @param tuple
+     *    The {@link Tuple5} to concat
+     *
+     * @return a new {@link Tuple7} with the tuple values appended
+     */
+    public <T3, T4, T5, T6, T7> Tuple7<T1, T2, T3, T4, T5, T6, T7> concat(final Tuple5<T3, T4, T5, T6, T7> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, t._1, t._2, t._3, t._4, t._5))
+                .orElseGet(() -> Tuple.of(_1, _2, null, null, null, null, null));
+    }
+
 }

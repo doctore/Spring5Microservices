@@ -197,4 +197,19 @@ public final class Tuple0 implements Tuple, Serializable {
                 .orElseGet(Tuple6::empty);
     }
 
+
+    /**
+     * Concat a {@link Tuple7}'s values to this {@link Tuple0}.
+     *
+     * @param tuple
+     *   The {@link Tuple7} to concat
+     *
+     * @return a new {@link Tuple7} with the tuple values appended
+     */
+    public <T1, T2, T3, T4, T5, T6, T7> Tuple7<T1, T2, T3, T4, T5, T6, T7> concat(final Tuple7<T1, T2, T3, T4, T5, T6, T7> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(t._1, t._2, t._3, t._4, t._5, t._6, t._7))
+                .orElseGet(Tuple7::empty);
+    }
+
 }

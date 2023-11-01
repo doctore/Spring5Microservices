@@ -628,6 +628,7 @@ public class Tuple6Test {
 
     static Stream<Arguments> applyTestCases() {
         Tuple6<Long, Integer, String, Integer, Double, Float> tuple = Tuple6.of(12L, 93, "THC", 11, 99.8d, 11.19f);
+
         HexaFunction<Long, Integer, String, Integer, Double, Float, Long> fromLongIntegerStringIntegerDoubleToLong =
                 (l, i1, s, i2, d, f) -> l + i1 - s.length() + i2 + d.longValue() + f.longValue();
         HexaFunction<Long, Integer, String, Integer, Double, Float, String> fromLongIntegerStringIntegerDoubleToString =
@@ -657,6 +658,75 @@ public class Tuple6Test {
         else {
             assertEquals(expectedResult, tuple.apply(f));
         }
+    }
+
+
+    static Stream<Arguments> prependTestCases() {
+        Tuple6<String, Integer, Boolean, Long, Double, Float> tuple = Tuple6.of("ZZ", 77, TRUE, 45L, 67.9d, 54.1f);
+        Long longValue = 34L;
+        Integer integerValue = 55;
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   value,          expectedResult
+                Arguments.of( tuple,   null,           Tuple7.of(null, tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, tuple._6) ),
+                Arguments.of( tuple,   longValue,      Tuple7.of(longValue, tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, tuple._6) ),
+                Arguments.of( tuple,   integerValue,   Tuple7.of(integerValue, tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, tuple._6) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("prependTestCases")
+    @DisplayName("prepend: test cases")
+    public <T, T1, T2, T3, T4, T5, T6> void prepend_testCases(Tuple6<T1, T2, T3, T4, T5, T6> tuple,
+                                                              T value,
+                                                              Tuple7<T, T1, T2, T3, T4, T5, T6> expectedResult) {
+        assertEquals(expectedResult, tuple.prepend(value));
+    }
+
+
+    static Stream<Arguments> appendTestCases() {
+        Tuple6<String, Integer, Boolean, Long, Double, Float> tuple = Tuple6.of("ABC", 41, FALSE, 67L, 34.2d, 0.01f);
+        Long longValue = 11L;
+        Integer integerValue = 66;
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   value,          expectedResult
+                Arguments.of( tuple,   null,           Tuple7.of(tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, tuple._6, null) ),
+                Arguments.of( tuple,   longValue,      Tuple7.of(tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, tuple._6, longValue) ),
+                Arguments.of( tuple,   integerValue,   Tuple7.of(tuple._1, tuple._2, tuple._3, tuple._4, tuple._5, tuple._6, integerValue) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("appendTestCases")
+    @DisplayName("append: test cases")
+    public <T, T1, T2, T3, T4, T5, T6> void append_testCases(Tuple6<T1, T2, T3, T4, T5, T6> tuple,
+                                                             T value,
+                                                             Tuple7<T1, T2, T3, T4, T5, T6, T> expectedResult) {
+        assertEquals(expectedResult, tuple.append(value));
+    }
+
+
+    static Stream<Arguments> concatTuple1TestCases() {
+        Tuple6<String, Integer, Boolean, Long, Double, Float> t1 = Tuple6.of("YHG", 33, TRUE, 89L, 77.8d, 1.12f);
+        Tuple1<Long> t2 = Tuple1.of(21L);
+        Tuple1<Integer> nullValueTuple = Tuple1.of(null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple7.of(t1._1, t1._2, t1._3, t1._4, t1._5, t1._6, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple7.of(t1._1, t1._2, t1._3, t1._4, t1._5, t1._6, null) ),
+                Arguments.of( t1,      t2,               Tuple7.of(t1._1, t1._2, t1._3, t1._4, t1._5, t1._6, t2._1) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple1TestCases")
+    @DisplayName("concat: using Tuple1 test cases")
+    public <T1, T2, T3, T4, T5, T6, T7> void concatTuple1_testCases(Tuple6<T1, T2, T3, T4, T5, T6> tuple,
+                                                                    Tuple1<T7> tupleToConcat,
+                                                                    Tuple7<T1, T2, T3, T4, T5, T6, T7> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 
 }

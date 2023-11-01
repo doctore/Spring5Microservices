@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * A {@link Tuple} of six elements.
  *
@@ -500,6 +502,47 @@ public class Tuple6<T1, T2, T3, T4, T5, T6> implements Tuple, Serializable {
     public <U> U apply(final HexaFunction<? super T1, ? super T2, ? super T3, ? super T4, ? super T5, ? super T6, ? extends U> f) {
         Assert.notNull(f, "f must be not null");
         return f.apply(_1, _2, _3, _4, _5, _6);
+    }
+
+
+    /**
+     * Prepend a value to this {@link Tuple6}.
+     *
+     * @param t
+     *    The value to prepend
+     *
+     * @return a new {@link Tuple7} with the value prepended
+     */
+    public <T> Tuple7<T, T1, T2, T3, T4, T5, T6> prepend(final T t) {
+        return Tuple.of(t, _1, _2, _3, _4, _5, _6);
+    }
+
+
+    /**
+     * Append a value to this {@link Tuple6}.
+     *
+     * @param t
+     *    The value to append
+     *
+     * @return a new {@link Tuple7} with the value appended
+     */
+    public <T> Tuple7<T1, T2, T3, T4, T5, T6, T> append(final T t) {
+        return Tuple.of(_1, _2, _3, _4, _5, _6, t);
+    }
+
+
+    /**
+     * Concat a {@link Tuple1}'s values to this {@link Tuple6}.
+     *
+     * @param tuple
+     *    The {@link Tuple1} to concat
+     *
+     * @return a new {@link Tuple7} with the tuple values appended
+     */
+    public <T7> Tuple7<T1, T2, T3, T4, T5, T6, T7> concat(final Tuple1<T7> tuple) {
+        return ofNullable(tuple)
+                .map(t -> Tuple.of(_1, _2, _3, _4, _5, _6, t._1))
+                .orElseGet(() -> Tuple.of(_1, _2, _3, _4, _5, _6, null));
     }
 
 }

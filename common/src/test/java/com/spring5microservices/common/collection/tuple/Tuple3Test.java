@@ -417,6 +417,7 @@ public class Tuple3Test {
 
     static Stream<Arguments> applyTestCases() {
         Tuple3<Long, Integer, String> tuple = Tuple3.of(12L, 93, "THC");
+
         TriFunction<Long, Integer, String, Long> fromLongIntegerStringToLong =
                 (l, i, s) -> l + i - s.length();
         TriFunction<Long, Integer, String, String> fromLongIntegerStringToString =
@@ -560,6 +561,29 @@ public class Tuple3Test {
     public <T1, T2, T3, T4, T5, T6> void concatTuple3_testCases(Tuple3<T1, T2, T3> tuple,
                                                                 Tuple3<T4, T5, T6> tupleToConcat,
                                                                 Tuple6<T1, T2, T3, T4, T5, T6> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
+    }
+
+
+    static Stream<Arguments> concatTuple4TestCases() {
+        Tuple3<String, Integer, Boolean> t1 = Tuple3.of("YHG", 33, TRUE);
+        Tuple4<Long, Integer, Double, String> t2 = Tuple4.of(21L, 11, 55.7d, "ABC");
+        Tuple4<Integer, Integer, Float, Short> nullValueTuple = Tuple4.of(null, null, null, null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple7.of(t1._1, t1._2, t1._3, null, null, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple7.of(t1._1, t1._2, t1._3, null, null, null, null) ),
+                Arguments.of( t1,      t2,               Tuple7.of(t1._1, t1._2, t1._3, t2._1, t2._2, t2._3, t2._4) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple4TestCases")
+    @DisplayName("concat: using Tuple4 test cases")
+    public <T1, T2, T3, T4, T5, T6, T7> void concatTuple4_testCases(Tuple3<T1, T2, T3> tuple,
+                                                                    Tuple4<T4, T5, T6, T7> tupleToConcat,
+                                                                    Tuple7<T1, T2, T3, T4, T5, T6, T7> expectedResult) {
         assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 

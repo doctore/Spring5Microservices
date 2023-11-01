@@ -403,4 +403,27 @@ public class Tuple1Test {
         assertEquals(expectedResult, tuple.concat(tupleToConcat));
     }
 
+
+    static Stream<Arguments> concatTuple6TestCases() {
+        Tuple1<String> t1 = Tuple1.of("TYHG");
+        Tuple6<Long, Integer, Boolean, String, Double, Short> t2 = Tuple6.of(17L, 87, TRUE, "AbC", 45.1d, (short)16);
+        Tuple6<Integer, Integer, Integer, Long, Float, Double> nullValueTuple = Tuple6.of(null, null, null, null, null, null);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   tupleToConcat,    expectedResult
+                Arguments.of( t1,      null,             Tuple7.of(t1._1, null, null, null, null, null, null) ),
+                Arguments.of( t1,      nullValueTuple,   Tuple7.of(t1._1, null, null, null, null, null, null) ),
+                Arguments.of( t1,      t2,               Tuple7.of(t1._1, t2._1, t2._2, t2._3, t2._4, t2._5, t2._6) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple6TestCases")
+    @DisplayName("concat: using Tuple6 test cases")
+    public <T1, T2, T3, T4, T5, T6, T7> void concatTuple6_testCases(Tuple1<T1> tuple,
+                                                                    Tuple6<T2, T3, T4, T5, T6, T7> tupleToConcat,
+                                                                    Tuple7<T1, T2, T3, T4, T5, T6, T7> expectedResult) {
+        assertEquals(expectedResult, tuple.concat(tupleToConcat));
+    }
+
 }

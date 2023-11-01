@@ -272,4 +272,25 @@ public class Tuple0Test {
         assertEquals(expectedResult, instance().concat(tuple));
     }
 
+
+    static Stream<Arguments> concatTuple7TestCases() {
+        Tuple7<String, Integer, Integer, Integer, Boolean, Long, Short> t1 = Tuple7.of("TYHG", 534, 999, 1, TRUE, 11L, (short)69);
+        Tuple7<Long, Integer, Boolean, Boolean, String, Float, Integer> t2 = Tuple7.of(21L, 677, FALSE, TRUE, "POL", 45.3f, 14);
+        return Stream.of(
+                //@formatter:off
+                //            tuple,   expectedResult
+                Arguments.of( null,    Tuple7.empty() ),
+                Arguments.of( t1,      t1 ),
+                Arguments.of( t2,      t2 )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("concatTuple7TestCases")
+    @DisplayName("concat: using Tuple7 test cases")
+    public <T1, T2, T3, T4, T5, T6, T7> void concatTuple7_testCases(Tuple7<T1, T2, T3, T4, T5, T6, T7> tuple,
+                                                                    Tuple7<T1, T2, T3, T4, T5, T6, T7> expectedResult) {
+        assertEquals(expectedResult, instance().concat(tuple));
+    }
+
 }
