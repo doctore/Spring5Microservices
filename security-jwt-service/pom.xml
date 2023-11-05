@@ -23,7 +23,7 @@
         <nimbus-jose-jwt.version>9.37</nimbus-jose-jwt.version>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
         <springdoc.version>1.7.0</springdoc.version>
-        <spring5-microservices-common.version>3.4.0</spring5-microservices-common.version>
+        <spring5-microservices-common.version>3.4.1</spring5-microservices-common.version>
     </properties>
 
     <dependencies>

@@ -3260,7 +3260,7 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> toListWithKeyValueMapperTestCases() {
+    static Stream<Arguments> toCollectionWithKeyValueMapperTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -3287,21 +3287,21 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("toListWithKeyValueMapperTestCases")
-    @DisplayName("toList: with keyValueMapper test cases")
-    public <K, V, R> void toListWithKeyValueMapper_testCases(Map<? extends K, ? extends V> sourceMap,
-                                                             BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
-                                                             Class<? extends Exception> expectedException,
-                                                             List<R> expectedResult) {
+    @MethodSource("toCollectionWithKeyValueMapperTestCases")
+    @DisplayName("toCollection: with keyValueMapper test cases")
+    public <K, V, R> void toCollectionWithKeyValueMapper_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                                   BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                                   Class<? extends Exception> expectedException,
+                                                                   List<R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
-                    () -> toList(
+                    () -> toCollection(
                             sourceMap, keyValueMapper
                     )
             );
         } else {
             assertEquals(expectedResult,
-                    toList(
+                    toCollection(
                             sourceMap, keyValueMapper
                     )
             );
@@ -3309,11 +3309,12 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> toListWithKeyValueMapperAndBiPredicateTestCases() {
+    static Stream<Arguments> toCollectionWithKeyValueMapperAndSupplierTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
             put(4, "o");
+            put(5, "");
             put(6, null);
         }};
         BiFunction<Integer, String, Integer> sumIntegerAndStringLength =
@@ -3322,47 +3323,44 @@ public class MapUtilTest {
                     final int sLength = null == s ? 0 : s.length();
                     return sLength + finalI;
                 };
-        BiPredicate<Integer, String> filterPredicate =
-                (i, s) ->
-                        null != i &&
-                        0 == i % 2;
+        Supplier<Set<Integer>> setSupplier = HashSet::new;
 
-        List<Integer> expectedResultWithoutFilter = asList(2, 3, 5, 6);
-        List<Integer> expectedResultWithFilter = asList(3, 5, 6);
+        List<Integer> expectedResultWithoutSupplier = asList(2, 3, 5, 5, 6);
+        Set<Integer> expectedResultWithSupplier = new HashSet<>(expectedResultWithoutSupplier);
         return Stream.of(
                 //@formatter:off
-                //            sourceMap,        keyValueMapper,              filterPredicate,   expectedException,                expectedResult
+                //            sourceMap,        keyValueMapper,              collectionFactory,   expectedException,                expectedResult
                 Arguments.of( null,             null,                        null,              null,                             List.of() ),
                 Arguments.of( null,             sumIntegerAndStringLength,   null,              null,                             List.of() ),
-                Arguments.of( null,             sumIntegerAndStringLength,   filterPredicate,   null,                             List.of() ),
+                Arguments.of( null,             sumIntegerAndStringLength,   setSupplier,       null,                             Set.of() ),
                 Arguments.of( Map.of(),         null,                        null,              null,                             List.of() ),
                 Arguments.of( Map.of(),         sumIntegerAndStringLength,   null,              null,                             List.of() ),
-                Arguments.of( Map.of(),         sumIntegerAndStringLength,   filterPredicate,   null,                             List.of() ),
+                Arguments.of( Map.of(),         sumIntegerAndStringLength,   setSupplier,       null,                             Set.of() ),
                 Arguments.of( intsAndStrings,   null,                        null,              IllegalArgumentException.class,   null ),
-                Arguments.of( intsAndStrings,   null,                        filterPredicate,   IllegalArgumentException.class,   null ),
-                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   null,              null,                             expectedResultWithoutFilter ),
-                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   filterPredicate,   null,                             expectedResultWithFilter )
+                Arguments.of( intsAndStrings,   null,                        setSupplier,       IllegalArgumentException.class,   null ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   null,              null,                             expectedResultWithoutSupplier ),
+                Arguments.of( intsAndStrings,   sumIntegerAndStringLength,   setSupplier,       null,                             expectedResultWithSupplier )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("toListWithKeyValueMapperAndBiPredicateTestCases")
-    @DisplayName("toList: with keyValueMapper and filterPredicate test cases")
-    public <K, V, R> void toListWithKeyValueMapperAndBiPredicate_testCases(Map<? extends K, ? extends V> sourceMap,
-                                                                           BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
-                                                                           BiPredicate<? super K, ? super V> filterPredicate,
-                                                                           Class<? extends Exception> expectedException,
-                                                                           List<R> expectedResult) {
+    @MethodSource("toCollectionWithKeyValueMapperAndSupplierTestCases")
+    @DisplayName("toCollection: with keyValueMapper and collectionFactory test cases")
+    public <K, V, R> void toCollectionWithKeyValueMapperAndSupplier_testCases(Map<? extends K, ? extends V> sourceMap,
+                                                                              BiFunction<? super K, ? super V, ? extends R> keyValueMapper,
+                                                                              Supplier<Collection<R>> collectionFactory,
+                                                                              Class<? extends Exception> expectedException,
+                                                                              Collection<R> expectedResult) {
         if (null != expectedException) {
             assertThrows(expectedException,
-                    () -> toList(
-                            sourceMap, keyValueMapper, filterPredicate
+                    () -> toCollection(
+                            sourceMap, keyValueMapper, collectionFactory
                     )
             );
         } else {
             assertEquals(expectedResult,
-                    toList(
-                            sourceMap, keyValueMapper, filterPredicate
+                    toCollection(
+                            sourceMap, keyValueMapper, collectionFactory
                     )
             );
         }
