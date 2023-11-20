@@ -1126,7 +1126,79 @@ public class MapUtilTest {
     }
 
 
-    static Stream<Arguments> dropWhileNoMapFactoryTestCases() {
+    static Stream<Arguments> filterNoMapFactoryTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
+        Map<Integer, String> intsAndStringsResult = new HashMap<>() {{
+            put(4, "o");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,          expectedResult
+                Arguments.of( null,             null,                     Map.of() ),
+                Arguments.of( Map.of(),         null,                     Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     intsAndStrings ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterNoMapFactoryTestCases")
+    @DisplayName("filter: without map factory test cases")
+    public <T, E> void filterNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                    BiPredicate<? super T, ? super E> filterPredicate,
+                                                    Map<T, E> expectedResult) {
+        assertEquals(expectedResult, filter(sourceMap, filterPredicate));
+    }
+
+
+    static Stream<Arguments> filterAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+            put(6, null);
+        }};
+        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) ->
+                k % 2 == 0 &&
+                        (
+                                null == v ||
+                                        "AEIOUaeiou".contains(v)
+                        );
+        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
+        Map<Integer, String> intsAndStringsResult = new LinkedHashMap<>() {{
+            put(4, "o");
+            put(6, null);
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        filterPredicate,          mapFactory,          expectedResult
+                Arguments.of( null,             null,                     null,                Map.of() ),
+                Arguments.of( Map.of(),         null,                     null,                Map.of() ),
+                Arguments.of( null,             isKeyEvenAndValueVowel,   null,                Map.of() ),
+                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                Map.of() ),
+                Arguments.of( intsAndStrings,   null,                     linkedMapSupplier,   intsAndStrings ),
+                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   linkedMapSupplier,   intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterAllParametersTestCases")
+    @DisplayName("filter: with all parameters test cases")
+    public <T, E> void filterAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                     BiPredicate<? super T, ? super E> filterPredicate,
+                                                     Supplier<Map<T, E>> mapFactory,
+                                                     Map<T, E> expectedResult) {
+        assertEquals(expectedResult, filter(sourceMap, filterPredicate, mapFactory));
+    }
+
+
+    static Stream<Arguments> filterNotNoMapFactoryTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, "B");
@@ -1149,16 +1221,16 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("dropWhileNoMapFactoryTestCases")
-    @DisplayName("dropWhile: without map factory test cases")
-    public <T, E> void dropWhileNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+    @MethodSource("filterNotNoMapFactoryTestCases")
+    @DisplayName("filterNot: without map factory test cases")
+    public <T, E> void filterNotNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
                                                        BiPredicate<? super T, ? super E> filterPredicate,
                                                        Map<T, E> expectedResult) {
-        assertEquals(expectedResult, dropWhile(sourceMap, filterPredicate));
+        assertEquals(expectedResult, filterNot(sourceMap, filterPredicate));
     }
 
 
-    static Stream<Arguments> dropWhileAllParametersTestCases() {
+    static Stream<Arguments> filterNotAllParametersTestCases() {
         Map<Integer, String> intsAndStrings = new HashMap<>() {{
             put(1, "A");
             put(2, null);
@@ -1188,13 +1260,13 @@ public class MapUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("dropWhileAllParametersTestCases")
-    @DisplayName("dropWhile: with all parameters test cases")
-    public <T, E> void dropWhileAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+    @MethodSource("filterNotAllParametersTestCases")
+    @DisplayName("filterNot: with all parameters test cases")
+    public <T, E> void filterNotAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
                                                         BiPredicate<? super T, ? super E> filterPredicate,
                                                         Supplier<Map<T, E>> mapFactory,
                                                         Map<T, E> expectedResult) {
-        assertEquals(expectedResult, dropWhile(sourceMap, filterPredicate, mapFactory));
+        assertEquals(expectedResult, filterNot(sourceMap, filterPredicate, mapFactory));
     }
 
 
@@ -3185,78 +3257,6 @@ public class MapUtilTest {
         else {
             assertEquals(expectedResult, split(sourceMap, size));
         }
-    }
-
-
-    static Stream<Arguments> takeWhileNoMapFactoryTestCases() {
-        Map<Integer, String> intsAndStrings = new HashMap<>() {{
-            put(1, "A");
-            put(2, "B");
-            put(4, "o");
-        }};
-        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) -> k % 2 == 0 && "AEIOUaeiou".contains(v);
-        Map<Integer, String> intsAndStringsResult = new HashMap<>() {{
-            put(4, "o");
-        }};
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,        filterPredicate,          expectedResult
-                Arguments.of( null,             null,                     Map.of() ),
-                Arguments.of( Map.of(),         null,                     Map.of() ),
-                Arguments.of( null,             isKeyEvenAndValueVowel,   Map.of() ),
-                Arguments.of( intsAndStrings,   null,                     intsAndStrings ),
-                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   intsAndStringsResult )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("takeWhileNoMapFactoryTestCases")
-    @DisplayName("takeWhile: without map factory test cases")
-    public <T, E> void takeWhileNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                       BiPredicate<? super T, ? super E> filterPredicate,
-                                                       Map<T, E> expectedResult) {
-        assertEquals(expectedResult, takeWhile(sourceMap, filterPredicate));
-    }
-
-
-    static Stream<Arguments> takeWhileAllParametersTestCases() {
-        Map<Integer, String> intsAndStrings = new HashMap<>() {{
-            put(1, "A");
-            put(2, "B");
-            put(4, "o");
-            put(6, null);
-        }};
-        BiPredicate<Integer, String> isKeyEvenAndValueVowel = (k, v) ->
-                k % 2 == 0 &&
-                (
-                    null == v ||
-                    "AEIOUaeiou".contains(v)
-                );
-        Supplier<Map<Integer, Long>> linkedMapSupplier = LinkedHashMap::new;
-        Map<Integer, String> intsAndStringsResult = new LinkedHashMap<>() {{
-            put(4, "o");
-            put(6, null);
-        }};
-        return Stream.of(
-                //@formatter:off
-                //            sourceMap,        filterPredicate,          mapFactory,          expectedResult
-                Arguments.of( null,             null,                     null,                Map.of() ),
-                Arguments.of( Map.of(),         null,                     null,                Map.of() ),
-                Arguments.of( null,             isKeyEvenAndValueVowel,   null,                Map.of() ),
-                Arguments.of( Map.of(),         isKeyEvenAndValueVowel,   null,                Map.of() ),
-                Arguments.of( intsAndStrings,   null,                     linkedMapSupplier,   intsAndStrings ),
-                Arguments.of( intsAndStrings,   isKeyEvenAndValueVowel,   linkedMapSupplier,   intsAndStringsResult )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("takeWhileAllParametersTestCases")
-    @DisplayName("takeWhile: with all parameters test cases")
-    public <T, E> void takeWhileAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
-                                                        BiPredicate<? super T, ? super E> filterPredicate,
-                                                        Supplier<Map<T, E>> mapFactory,
-                                                        Map<T, E> expectedResult) {
-        assertEquals(expectedResult, takeWhile(sourceMap, filterPredicate, mapFactory));
     }
 
 

@@ -758,6 +758,81 @@ public class MapUtil {
 
 
     /**
+     *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
+     *    (k, v) -> k % 2 == 0
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<T, E> filter(final Map<? extends T, ? extends E> sourceMap,
+                                          final BiPredicate<? super T, ? super E> filterPredicate) {
+        return filter(
+                sourceMap,
+                filterPredicate,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                    Result:
+     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
+     *    (k, v) -> k % 2 == 0
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return {@link Map}
+     */
+    public static <T, E> Map<T, E> filter(final Map<? extends T, ? extends E> sourceMap,
+                                          final BiPredicate<? super T, ? super E> filterPredicate,
+                                          final Supplier<Map<T, E>> mapFactory) {
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
+        if (CollectionUtils.isEmpty(sourceMap)) {
+            return finalMapFactory.get();
+        }
+        final BiPredicate<? super T, ? super E> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+        return sourceMap.entrySet()
+                .stream()
+                .filter(entry ->
+                        finalFilterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
+                .collect(
+                        toMapNullableValues(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                finalMapFactory
+                        )
+                );
+    }
+
+
+    /**
      *    Returns a {@link Map} removing the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
      * {@code filterPredicate}.
      *
@@ -776,9 +851,9 @@ public class MapUtil {
      *
      * @return {@link Map}
      */
-    public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
+    public static <T, E> Map<T, E> filterNot(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate) {
-        return dropWhile(
+        return filterNot(
                 sourceMap,
                 filterPredicate,
                 HashMap::new
@@ -806,7 +881,7 @@ public class MapUtil {
      *
      * @return {@link Map}
      */
-    public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
+    public static <T, E> Map<T, E> filterNot(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate,
                                              final Supplier<Map<T, E>> mapFactory) {
         final BiPredicate<? super T, ? super E> finalFilterPredicate =
@@ -814,7 +889,7 @@ public class MapUtil {
                         ? biAlwaysTrue()
                         : filterPredicate.negate();
 
-        return takeWhile(
+        return filter(
                 sourceMap,
                 finalFilterPredicate,
                 mapFactory
@@ -2501,81 +2576,6 @@ public class MapUtil {
             }
         }
         return splits;
-    }
-
-
-    /**
-     *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
-     * {@code filterPredicate}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
-     *    (k, v) -> k % 2 == 0
-     * </pre>
-     *
-     * @param sourceMap
-     *    Source {@link Map} with the elements to filter
-     * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}
-     *
-     * @return {@link Map}
-     */
-    public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
-                                             final BiPredicate<? super T, ? super E> filterPredicate) {
-        return takeWhile(
-                sourceMap,
-                filterPredicate,
-                HashMap::new
-        );
-    }
-
-
-    /**
-     *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
-     * {@code filterPredicate}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
-     *    (k, v) -> k % 2 == 0
-     *    HashMap::new
-     * </pre>
-     *
-     * @param sourceMap
-     *    Source {@link Map} with the elements to filter
-     * @param filterPredicate
-     *    {@link BiPredicate} to filter elements from {@code sourceMap}
-     *
-     * @return {@link Map}
-     */
-    public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
-                                             final BiPredicate<? super T, ? super E> filterPredicate,
-                                             final Supplier<Map<T, E>> mapFactory) {
-        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
-        if (CollectionUtils.isEmpty(sourceMap)) {
-            return finalMapFactory.get();
-        }
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
-        return sourceMap.entrySet()
-                .stream()
-                .filter(entry ->
-                        finalFilterPredicate.test(
-                                entry.getKey(),
-                                entry.getValue()
-                        )
-                )
-                .collect(
-                        toMapNullableValues(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                finalMapFactory
-                        )
-                );
     }
 
 

@@ -610,167 +610,6 @@ public class CollectionUtil {
 
 
     /**
-     * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                                             Result:
-     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
-     *    PizzaDto::getName
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the property to extract.
-     * @param mapFunction
-     *    {@link Function} to apply to {@code sourceCollection}'s elements
-     *
-     * @return {@link List} after applying {@code mapFunction} to {@code sourceCollection}'s elements
-     *
-     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceCollection} is not empty.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T, E> List<E> map(final Collection<? extends T> sourceCollection,
-                                     final Function<? super T, ? extends E> mapFunction) {
-        return (List<E>) map(
-                sourceCollection,
-                mapFunction,
-                ArrayList::new
-        );
-    }
-
-
-    /**
-     * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                                             Result:
-     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
-     *    PizzaDto::getName
-     *    ArrayList::new
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the property to extract
-     * @param mapFunction
-     *    {@link Function} to apply to {@code sourceCollection}'s elements
-     * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
-     *    If {@code null} then {@link ArrayList}
-     *
-     * @return {@link Collection} after applying {@code mapFunction} to {@code sourceCollection}'s elements
-     *
-     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceCollection} is not empty.
-     */
-    public static <T, E> Collection<E> map(final Collection<? extends T> sourceCollection,
-                                           final Function<? super T, ? extends E> mapFunction,
-                                           final Supplier<Collection<E>> collectionFactory) {
-        final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return finalCollectionFactory.get();
-        }
-        Assert.notNull(mapFunction, "mapFunction must be not null");
-        return sourceCollection.stream()
-                .map(mapFunction)
-                .collect(
-                        toCollection(finalCollectionFactory)
-                );
-    }
-
-
-    /**
-     *    Returns a {@link List} of {@link Tuple} applying provided {@code mapFunction}s to every element of the given
-     * {@code sourceCollection}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                                                       Result:
-     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
-     *    [UserDto::getName, UserDto::getAge]
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the properties to extract
-     * @param mapFunctions
-     *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
-     *
-     * @return {@link List} of {@link Tuple} after applying {@code mapFunction}s to {@code sourceCollection}'s elements
-     *
-     * @throws IllegalArgumentException if {@code mapFunctions} is {@code null} and {@code sourceCollection} is not empty
-     *                                  or {@code mapFunctions}'s length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
-     */
-    @SafeVarargs
-    public static <T> List<Tuple> mapMulti(final Collection<? extends T> sourceCollection,
-                                           final Function<? super T, ?> ...mapFunctions) {
-        return (List<Tuple>) mapMulti(
-                sourceCollection,
-                ArrayList::new,
-                mapFunctions
-        );
-    }
-
-
-    /**
-     *    Returns a {@link Collection} of {@link Tuple} applying provided {@code mapFunction}s to every element of the given
-     * {@code sourceCollection}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                                                       Result:
-     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
-     *    ArrayList::new
-     *    [UserDto::getName, UserDto::getAge]
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the properties to extract
-     * @param mapFunctions
-     *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
-     * @param collectionFactory
-     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
-     *    If {@code null} then {@link ArrayList}
-     *
-     * @return {@link Collection} of {@link Tuple} after applying {@code mapFunction}s to {@code sourceCollection}'s elements
-     *
-     * @throws IllegalArgumentException if {@code mapFunctions} is {@code null} and {@code sourceCollection} is not empty
-     *                                  or {@code mapFunctions}'s length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
-     */
-    @SafeVarargs
-    public static <T> Collection<Tuple> mapMulti(final Collection<? extends T> sourceCollection,
-                                                 final Supplier<Collection<Tuple>> collectionFactory,
-                                                 final Function<? super T, ?> ...mapFunctions) {
-        final Supplier<Collection<Tuple>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return finalCollectionFactory.get();
-        }
-        Assert.notNull(mapFunctions, "mapFunction must be not null");
-        Assert.isTrue(
-                Tuple.MAX_ALLOWED_TUPLE_ARITY >= mapFunctions.length,
-                format("The length of mapFunctions should be <= %d",
-                        Tuple.MAX_ALLOWED_TUPLE_ARITY
-                )
-        );
-        return sourceCollection.stream()
-                .map(elto -> {
-                    Tuple result = Tuple.empty();
-                    for (Function<? super T, ?> mapper: mapFunctions) {
-                        result = result.globalAppend(
-                                mapper.apply(elto)
-                        );
-                    }
-                    return result;
-                })
-                .collect(
-                        toCollection(finalCollectionFactory)
-                );
-    }
-
-
-    /**
      * Returns a new {@link List} containing the elements of provided {@link Collection}s {@code collections}.
      *
      * <pre>
@@ -866,6 +705,75 @@ public class CollectionUtil {
 
 
     /**
+     *    Returns a {@link List} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [1, 3]
+     *    i -> i % 2 == 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *
+     * @return {@link List}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> filter(final Collection<? extends T> sourceCollection,
+                                     final Predicate<? super T> filterPredicate) {
+        return (List<T>) filter(
+                sourceCollection,
+                filterPredicate,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Collection} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
+     * {@code filterPredicate}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [1, 3]
+     *    i -> i % 2 == 1
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection}
+     */
+    public static <T> Collection<T> filter(final Collection<? extends T> sourceCollection,
+                                           final Predicate<? super T> filterPredicate,
+                                           final Supplier<Collection<T>> collectionFactory) {
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+        return sourceCollection
+                .stream()
+                .filter(finalFilterPredicate)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
      *    Returns a {@link List} removing the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
      * {@code filterPredicate}.
      *
@@ -885,9 +793,9 @@ public class CollectionUtil {
      * @return {@link List}
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<T> dropWhile(final Collection<? extends T> sourceCollection,
+    public static <T> List<T> filterNot(final Collection<? extends T> sourceCollection,
                                         final Predicate<? super T> filterPredicate) {
-        return (List<T>) dropWhile(
+        return (List<T>) filterNot(
                 sourceCollection,
                 filterPredicate,
                 ArrayList::new
@@ -917,7 +825,7 @@ public class CollectionUtil {
      *
      * @return {@link Collection}
      */
-    public static <T> Collection<T> dropWhile(final Collection<? extends T> sourceCollection,
+    public static <T> Collection<T> filterNot(final Collection<? extends T> sourceCollection,
                                               final Predicate<? super T> filterPredicate,
                                               final Supplier<Collection<T>> collectionFactory) {
         final Predicate<? super T> finalFilterPredicate =
@@ -925,7 +833,7 @@ public class CollectionUtil {
                         ? alwaysTrue()
                         : filterPredicate.negate();
 
-        return takeWhile(
+        return filter(
                 sourceCollection,
                 finalFilterPredicate,
                 collectionFactory
@@ -1975,6 +1883,167 @@ public class CollectionUtil {
 
 
     /**
+     * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                             Result:
+     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
+     *    PizzaDto::getName
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the property to extract.
+     * @param mapFunction
+     *    {@link Function} to apply to {@code sourceCollection}'s elements
+     *
+     * @return {@link List} after applying {@code mapFunction} to {@code sourceCollection}'s elements
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceCollection} is not empty.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, E> List<E> map(final Collection<? extends T> sourceCollection,
+                                     final Function<? super T, ? extends E> mapFunction) {
+        return (List<E>) map(
+                sourceCollection,
+                mapFunction,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                             Result:
+     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
+     *    PizzaDto::getName
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the property to extract
+     * @param mapFunction
+     *    {@link Function} to apply to {@code sourceCollection}'s elements
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Collection} after applying {@code mapFunction} to {@code sourceCollection}'s elements
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceCollection} is not empty.
+     */
+    public static <T, E> Collection<E> map(final Collection<? extends T> sourceCollection,
+                                           final Function<? super T, ? extends E> mapFunction,
+                                           final Supplier<Collection<E>> collectionFactory) {
+        final Supplier<Collection<E>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        return sourceCollection.stream()
+                .map(mapFunction)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
+     *    Returns a {@link List} of {@link Tuple} applying provided {@code mapFunction}s to every element of the given
+     * {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                       Result:
+     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
+     *    [UserDto::getName, UserDto::getAge]
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the properties to extract
+     * @param mapFunctions
+     *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
+     *
+     * @return {@link List} of {@link Tuple} after applying {@code mapFunction}s to {@code sourceCollection}'s elements
+     *
+     * @throws IllegalArgumentException if {@code mapFunctions} is {@code null} and {@code sourceCollection} is not empty
+     *                                  or {@code mapFunctions}'s length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
+     */
+    @SafeVarargs
+    public static <T> List<Tuple> mapMulti(final Collection<? extends T> sourceCollection,
+                                           final Function<? super T, ?> ...mapFunctions) {
+        return (List<Tuple>) mapMulti(
+                sourceCollection,
+                ArrayList::new,
+                mapFunctions
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Collection} of {@link Tuple} applying provided {@code mapFunction}s to every element of the given
+     * {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                                                       Result:
+     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
+     *    ArrayList::new
+     *    [UserDto::getName, UserDto::getAge]
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the properties to extract
+     * @param mapFunctions
+     *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return {@link Collection} of {@link Tuple} after applying {@code mapFunction}s to {@code sourceCollection}'s elements
+     *
+     * @throws IllegalArgumentException if {@code mapFunctions} is {@code null} and {@code sourceCollection} is not empty
+     *                                  or {@code mapFunctions}'s length > {@link Tuple#MAX_ALLOWED_TUPLE_ARITY}
+     */
+    @SafeVarargs
+    public static <T> Collection<Tuple> mapMulti(final Collection<? extends T> sourceCollection,
+                                                 final Supplier<Collection<Tuple>> collectionFactory,
+                                                 final Function<? super T, ?> ...mapFunctions) {
+        final Supplier<Collection<Tuple>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return finalCollectionFactory.get();
+        }
+        Assert.notNull(mapFunctions, "mapFunction must be not null");
+        Assert.isTrue(
+                Tuple.MAX_ALLOWED_TUPLE_ARITY >= mapFunctions.length,
+                format("The length of mapFunctions should be <= %d",
+                        Tuple.MAX_ALLOWED_TUPLE_ARITY
+                )
+        );
+        return sourceCollection.stream()
+                .map(elto -> {
+                    Tuple result = Tuple.empty();
+                    for (Function<? super T, ?> mapper: mapFunctions) {
+                        result = result.globalAppend(
+                                mapper.apply(elto)
+                        );
+                    }
+                    return result;
+                })
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
      *    Finds the largest element of the given {@code sourceCollection}. To avoid {@link NullPointerException},
      * {@link Comparable} implementation required in the type T, will be overwritten by:
      *
@@ -2539,75 +2608,6 @@ public class CollectionUtil {
             );
         }
         return splits;
-    }
-
-
-    /**
-     *    Returns a {@link List} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
-     * {@code filterPredicate}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [1, 3]
-     *    i -> i % 2 == 1
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the elements to filter
-     * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}
-     *
-     * @return {@link List}
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> List<T> takeWhile(final Collection<? extends T> sourceCollection,
-                                        final Predicate<? super T> filterPredicate) {
-        return (List<T>) takeWhile(
-                sourceCollection,
-                filterPredicate,
-                ArrayList::new
-        );
-    }
-
-
-    /**
-     *    Returns a {@link Collection} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
-     * {@code filterPredicate}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [1, 3]
-     *    i -> i % 2 == 1
-     *    ArrayList::new
-     * </pre>
-     *
-     * @param sourceCollection
-     *    Source {@link Collection} with the elements to filter
-     * @param filterPredicate
-     *    {@link Predicate} to filter elements from {@code sourceCollection}
-     * @param collectionFactory
-     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
-     *
-     * @return {@link Collection}
-     */
-    public static <T> Collection<T> takeWhile(final Collection<? extends T> sourceCollection,
-                                              final Predicate<? super T> filterPredicate,
-                                              final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return finalCollectionFactory.get();
-        }
-        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
-        return sourceCollection
-                .stream()
-                .filter(finalFilterPredicate)
-                .collect(
-                        toCollection(finalCollectionFactory)
-                );
     }
 
 

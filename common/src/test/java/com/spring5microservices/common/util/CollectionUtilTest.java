@@ -820,6 +820,120 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> filterNoCollectionFactoryTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6);
+        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   expectedResult
+                Arguments.of( null,               null,              List.of() ),
+                Arguments.of( List.of(),          null,              List.of() ),
+                Arguments.of( null,               isEven,            List.of() ),
+                Arguments.of( intsSet,            null,              intsList ),
+                Arguments.of( intsSet,            isEven,            List.of(2, 6) )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("filterNoCollectionFactoryTestCases")
+    @DisplayName("filter: without collection factory test cases")
+    public <T> void filterNoCollectionFactory_testCases(Collection<T> sourceCollection,
+                                                        Predicate<? super T> filterPredicate,
+                                                        List<T> expectedResult) {
+        assertEquals(expectedResult, filter(sourceCollection, filterPredicate));
+    }
+
+
+    static Stream<Arguments> filterAllParametersTestCases() {
+        List<Integer> ints = List.of(1, 2, 3, 6);
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
+
+        List<Integer> expectedIntsResultList = List.of(2, 6);
+        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
+        Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   collectionFactory,   expectedResult
+                Arguments.of( null,               null,              null,                List.of() ),
+                Arguments.of( List.of(),          null,              null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            setSupplier,         Set.of() ),
+                Arguments.of( ints,               null,              setSupplier,         expectedAllIntsResultSet ),
+                Arguments.of( ints,               isEven,            setSupplier,         expectedIsEvenIntsResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterAllParametersTestCases")
+    @DisplayName("filter: with all parameters test cases")
+    public <T> void filterAllParameters_testCases(Collection<T> sourceCollection,
+                                                  Predicate<? super T> filterPredicate,
+                                                  Supplier<Collection<T>> collectionFactory,
+                                                  Collection<T> expectedResult) {
+        assertEquals(expectedResult, filter(sourceCollection, filterPredicate, collectionFactory));
+    }
+
+
+    static Stream<Arguments> filterNotNoCollectionFactoryTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6);
+        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   expectedResult
+                Arguments.of( null,               null,              List.of() ),
+                Arguments.of( List.of(),          null,              List.of() ),
+                Arguments.of( null,               isEven,            List.of() ),
+                Arguments.of( intsSet,            null,              intsList ),
+                Arguments.of( intsSet,            isEven,            List.of(1, 3) )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("filterNotNoCollectionFactoryTestCases")
+    @DisplayName("filterNot: without collection factory test cases")
+    public <T> void filterNotNoCollectionFactory_testCases(Collection<T> sourceCollection,
+                                                           Predicate<? super T> filterPredicate,
+                                                           List<T> expectedResult) {
+        assertEquals(expectedResult, filterNot(sourceCollection, filterPredicate));
+    }
+
+
+    static Stream<Arguments> filterNotAllParametersTestCases() {
+        List<Integer> ints = List.of(1, 2, 3, 6);
+        Predicate<Integer> isEven = i -> i % 2 == 0;
+        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
+
+        List<Integer> expectedIntsResultList = List.of(1, 3);
+        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
+        Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   filterPredicate,   collectionFactory,   expectedResult
+                Arguments.of( null,               null,              null,                List.of() ),
+                Arguments.of( List.of(),          null,              null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            null,                List.of() ),
+                Arguments.of( List.of(),          isEven,            setSupplier,         Set.of() ),
+                Arguments.of( ints,               null,              setSupplier,         expectedAllIntsResultSet ),
+                Arguments.of( ints,               isEven,            setSupplier,         expectedIsEvenIntsResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterNotAllParametersTestCases")
+    @DisplayName("filterNot: with all parameters test cases")
+    public <T> void filterNotAllParameters_testCases(Collection<T> sourceCollection,
+                                                     Predicate<? super T> filterPredicate,
+                                                     Supplier<Collection<T>> collectionFactory,
+                                                     Collection<T> expectedResult) {
+        assertEquals(expectedResult, filterNot(sourceCollection, filterPredicate, collectionFactory));
+    }
+
+
     static Stream<Arguments> findTestCases() {
         List<Integer> integers = List.of(3, 7, 9, 11, 15);
         Set<String> strings = new LinkedHashSet<>(List.of("A", "BT", "YTGH", "IOP"));
@@ -853,63 +967,6 @@ public class CollectionUtilTest {
                                    Predicate<? super T> filterPredicate,
                                    Optional<T> expectedResult) {
         assertEquals(expectedResult, find(sourceCollection, filterPredicate));
-    }
-
-
-    static Stream<Arguments> dropWhileNoCollectionFactoryTestCases() {
-        List<Integer> intsList = List.of(1, 2, 3, 6);
-        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
-        Predicate<Integer> isEven = i -> i % 2 == 0;
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   filterPredicate,   expectedResult
-                Arguments.of( null,               null,              List.of() ),
-                Arguments.of( List.of(),          null,              List.of() ),
-                Arguments.of( null,               isEven,            List.of() ),
-                Arguments.of( intsSet,            null,              intsList ),
-                Arguments.of( intsSet,            isEven,            List.of(1, 3) )
-        ); //@formatter:on
-    }
-
-
-    @ParameterizedTest
-    @MethodSource("dropWhileNoCollectionFactoryTestCases")
-    @DisplayName("dropWhile: without collection factory test cases")
-    public <T> void dropWhileNoCollectionFactory_testCases(Collection<T> sourceCollection,
-                                                           Predicate<? super T> filterPredicate,
-                                                           List<T> expectedResult) {
-        assertEquals(expectedResult, dropWhile(sourceCollection, filterPredicate));
-    }
-
-
-    static Stream<Arguments> dropWhileAllParametersTestCases() {
-        List<Integer> ints = List.of(1, 2, 3, 6);
-        Predicate<Integer> isEven = i -> i % 2 == 0;
-        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
-
-        List<Integer> expectedIntsResultList = List.of(1, 3);
-        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
-        Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   filterPredicate,   collectionFactory,   expectedResult
-                Arguments.of( null,               null,              null,                List.of() ),
-                Arguments.of( List.of(),          null,              null,                List.of() ),
-                Arguments.of( List.of(),          isEven,            null,                List.of() ),
-                Arguments.of( List.of(),          isEven,            setSupplier,         Set.of() ),
-                Arguments.of( ints,               null,              setSupplier,         expectedAllIntsResultSet ),
-                Arguments.of( ints,               isEven,            setSupplier,         expectedIsEvenIntsResultSet )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("dropWhileAllParametersTestCases")
-    @DisplayName("dropWhile: with all parameters test cases")
-    public <T> void dropWhileAllParameters_testCases(Collection<T> sourceCollection,
-                                                     Predicate<? super T> filterPredicate,
-                                                     Supplier<Collection<T>> collectionFactory,
-                                                     Collection<T> expectedResult) {
-        assertEquals(expectedResult, dropWhile(sourceCollection, filterPredicate, collectionFactory));
     }
 
 
@@ -2617,63 +2674,6 @@ public class CollectionUtilTest {
         } else {
             assertEquals(expectedResult, split(sourceCollection, size));
         }
-    }
-
-
-    static Stream<Arguments> takeWhileNoCollectionFactoryTestCases() {
-        List<Integer> intsList = List.of(1, 2, 3, 6);
-        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
-        Predicate<Integer> isEven = i -> i % 2 == 0;
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   filterPredicate,   expectedResult
-                Arguments.of( null,               null,              List.of() ),
-                Arguments.of( List.of(),          null,              List.of() ),
-                Arguments.of( null,               isEven,            List.of() ),
-                Arguments.of( intsSet,            null,              intsList ),
-                Arguments.of( intsSet,            isEven,            List.of(2, 6) )
-        ); //@formatter:on
-    }
-
-
-    @ParameterizedTest
-    @MethodSource("takeWhileNoCollectionFactoryTestCases")
-    @DisplayName("takeWhile: without collection factory test cases")
-    public <T> void takeWhileNoCollectionFactory_testCases(Collection<T> sourceCollection,
-                                                           Predicate<? super T> filterPredicate,
-                                                           List<T> expectedResult) {
-        assertEquals(expectedResult, takeWhile(sourceCollection, filterPredicate));
-    }
-
-
-    static Stream<Arguments> takeWhileAllParametersTestCases() {
-        List<Integer> ints = List.of(1, 2, 3, 6);
-        Predicate<Integer> isEven = i -> i % 2 == 0;
-        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
-
-        List<Integer> expectedIntsResultList = List.of(2, 6);
-        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(ints);
-        Set<Integer> expectedIsEvenIntsResultSet = new LinkedHashSet<>(expectedIntsResultList);
-        return Stream.of(
-                //@formatter:off
-                //            sourceCollection,   filterPredicate,   collectionFactory,   expectedResult
-                Arguments.of( null,               null,              null,                List.of() ),
-                Arguments.of( List.of(),          null,              null,                List.of() ),
-                Arguments.of( List.of(),          isEven,            null,                List.of() ),
-                Arguments.of( List.of(),          isEven,            setSupplier,         Set.of() ),
-                Arguments.of( ints,               null,              setSupplier,         expectedAllIntsResultSet ),
-                Arguments.of( ints,               isEven,            setSupplier,         expectedIsEvenIntsResultSet )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("takeWhileAllParametersTestCases")
-    @DisplayName("takeWhile: with all parameters test cases")
-    public <T> void takeWhileAllParameters_testCases(Collection<T> sourceCollection,
-                                                     Predicate<? super T> filterPredicate,
-                                                     Supplier<Collection<T>> collectionFactory,
-                                                     Collection<T> expectedResult) {
-        assertEquals(expectedResult, takeWhile(sourceCollection, filterPredicate, collectionFactory));
     }
 
 
