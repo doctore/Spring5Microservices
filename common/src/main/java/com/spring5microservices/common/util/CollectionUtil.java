@@ -757,6 +757,83 @@ public class CollectionUtil {
 
 
     /**
+     *    Returns a {@link List} removing the longest prefix of elements included in {@code sourceCollection} that satisfy
+     * the {@link Predicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:               Result:
+     *    [1, 3, 4, 5, 6]           [4, 5, 6]
+     *    i -> i % 2 == 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *
+     * @return the longest suffix of provided {@code sourceCollection} whose first element does not satisfy {@code filterPredicate}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> dropWhile(final Collection<? extends T> sourceCollection,
+                                        final Predicate<? super T> filterPredicate) {
+        return (List<T>) dropWhile(
+                sourceCollection,
+                filterPredicate,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link List} removing the longest prefix of elements included in {@code sourceCollection} that satisfy
+     * the {@link Predicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:               Result:
+     *    [1, 3, 4, 5, 6]           [1, 3]
+     *    i -> i % 2 == 1
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return the longest suffix of provided {@code sourceCollection} whose first element does not satisfy {@code filterPredicate}
+     */
+    public static <T> Collection<T> dropWhile(final Collection<? extends T> sourceCollection,
+                                              final Predicate<? super T> filterPredicate,
+                                              final Supplier<Collection<T>> collectionFactory) {
+        if (CollectionUtils.isEmpty(sourceCollection) || isNull(filterPredicate)) {
+            return copy(
+                    sourceCollection,
+                    collectionFactory
+            );
+        }
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        return sourceCollection
+                .stream()
+                .dropWhile(filterPredicate)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
+    }
+
+
+    /**
      *    Returns a {@link List} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
      * {@code filterPredicate}.
      *
@@ -2678,6 +2755,83 @@ public class CollectionUtil {
             );
         }
         return splits;
+    }
+
+
+    /**
+     *    Returns a {@link List} with the longest prefix of elements included in {@code sourceCollection} that satisfy
+     * the {@link Predicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:               Result:
+     *    [1, 3, 4, 5, 6]           [1, 3]
+     *    i -> i % 2 == 1
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     *
+     * @return the longest prefix of provided {@code sourceCollection} whose elements all satisfy {@code filterPredicate}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> takeWhile(final Collection<? extends T> sourceCollection,
+                                        final Predicate<? super T> filterPredicate) {
+        return (List<T>) takeWhile(
+                sourceCollection,
+                filterPredicate,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link List} with the longest prefix of elements included in {@code sourceCollection} that satisfy
+     * the {@link Predicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:               Result:
+     *    [1, 3, 4, 5, 6]           [1, 3]
+     *    i -> i % 2 == 1
+     *    ArrayList::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter elements from {@code sourceCollection}
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return the longest prefix of provided {@code sourceCollection} whose elements all satisfy {@code filterPredicate}
+     */
+    public static <T> Collection<T> takeWhile(final Collection<? extends T> sourceCollection,
+                                              final Predicate<? super T> filterPredicate,
+                                              final Supplier<Collection<T>> collectionFactory) {
+        if (CollectionUtils.isEmpty(sourceCollection) || isNull(filterPredicate)) {
+            return copy(
+                    sourceCollection,
+                    collectionFactory
+            );
+        }
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        return sourceCollection
+                .stream()
+                .takeWhile(filterPredicate)
+                .collect(
+                        toCollection(finalCollectionFactory)
+                );
     }
 
 

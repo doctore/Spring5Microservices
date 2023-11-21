@@ -810,6 +810,92 @@ public class MapUtil {
 
 
     /**
+     *    Returns a {@link Map} removing the longest prefix of elements included in {@code sourceMap} that satisfy
+     * the {@link BiPredicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                    Result:
+     *    [(1, "Hi"), (2, "Hello"), (3, "World")]        [(2, "Hello"), (3, "World")]
+     *    (k, v) -> k % 2 == 1
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return the longest suffix of provided {@code sourceMap} whose first element does not satisfy {@code filterPredicate}
+     */
+    public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate) {
+        return dropWhile(
+                sourceMap,
+                filterPredicate,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Map} removing the longest prefix of elements included in {@code sourceMap} that satisfy
+     * the {@link BiPredicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                    Result:
+     *    [(1, "Hi"), (2, "Hello"), (3, "World")]        [(2, "Hello"), (3, "World")]
+     *    (k, v) -> k % 2 == 1
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return the longest suffix of provided {@code sourceMap} whose first element does not satisfy {@code filterPredicate}
+     */
+    public static <T, E> Map<T, E> dropWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate,
+                                             final Supplier<Map<T, E>> mapFactory) {
+        if (CollectionUtils.isEmpty(sourceMap) || isNull(filterPredicate)) {
+            return copy(
+                    sourceMap,
+                    mapFactory
+            );
+        }
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
+        return sourceMap.entrySet()
+                .stream()
+                .dropWhile(entry ->
+                        filterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
+                .collect(
+                        toMapNullableValues(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                finalMapFactory
+                        )
+                );
+    }
+
+
+    /**
      *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
      * {@code filterPredicate}.
      *
@@ -2652,6 +2738,92 @@ public class MapUtil {
             }
         }
         return splits;
+    }
+
+
+    /**
+     *    Returns a {@link Map} with the longest prefix of elements included in {@code sourceMap} that satisfy the
+     * {@link BiPredicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                    Result:
+     *    [(2, "Hi"), (4, "Hello"), (5, "World")]        [(2, "Hi"), (4, "Hello")]
+     *    (k, v) -> k % 2 == 0
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     *
+     * @return the longest prefix of provided {@code sourceMap} whose first element does not satisfy {@code filterPredicate}
+     */
+    public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate) {
+        return takeWhile(
+                sourceMap,
+                filterPredicate,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Map} with the longest prefix of elements included in {@code sourceMap} that satisfy the
+     * {@link BiPredicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                                    Result:
+     *    [(2, "Hi"), (4, "Hello"), (5, "World")]        [(2, "Hi"), (4, "Hello")]
+     *    (k, v) -> k % 2 == 0
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param filterPredicate
+     *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return the longest prefix of provided {@code sourceMap} whose first element does not satisfy {@code filterPredicate}
+     */
+    public static <T, E> Map<T, E> takeWhile(final Map<? extends T, ? extends E> sourceMap,
+                                             final BiPredicate<? super T, ? super E> filterPredicate,
+                                             final Supplier<Map<T, E>> mapFactory) {
+        if (CollectionUtils.isEmpty(sourceMap) || isNull(filterPredicate)) {
+            return copy(
+                    sourceMap,
+                    mapFactory
+            );
+        }
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
+        return sourceMap.entrySet()
+                .stream()
+                .takeWhile(entry ->
+                        filterPredicate.test(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
+                .collect(
+                        toMapNullableValues(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                finalMapFactory
+                        )
+                );
     }
 
 
