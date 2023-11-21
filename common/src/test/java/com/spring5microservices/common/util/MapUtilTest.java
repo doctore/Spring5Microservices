@@ -36,6 +36,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MapUtilTest {
 
@@ -1081,6 +1082,75 @@ public class MapUtilTest {
                                                      BinaryOperator<E> mergeValueFunction,
                                                      Map<T, E> expectedResult) {
         assertEquals(expectedResult, concat(mapFactory, mergeValueFunction, mapToConcat1, mapToConcat2, mapToConcat3));
+    }
+
+
+    static Stream<Arguments> copyNoMapFactoryTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+        }};
+        Map<Integer, String> intsAndStringsResult = new HashMap<>(intsAndStrings);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        expectedResult
+                Arguments.of( null,             Map.of() ),
+                Arguments.of( Map.of(),         Map.of() ),
+                Arguments.of( intsAndStrings,   intsAndStringsResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("copyNoMapFactoryTestCases")
+    @DisplayName("copy: without map factory test cases")
+    public <T, E> void copyNoMapFactory_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                  Map<T, E> expectedResult) {
+        Map<T, E> result = copy(sourceMap);
+        assertEquals(expectedResult, result);
+        if (null != expectedResult && !expectedResult.isEmpty()) {
+            expectedResult.clear();
+            assertEquals(0, expectedResult.size());
+            assertTrue(0 < result.size());
+        }
+    }
+
+
+    static Stream<Arguments> copyAllParametersTestCases() {
+        Map<Integer, String> intsAndStrings = new HashMap<>() {{
+            put(1, "A");
+            put(2, "B");
+            put(4, "o");
+            put(6, null);
+        }};
+        Supplier<Map<Integer, Long>> treeMapSupplier = TreeMap::new;
+        Map<Integer, String> intsAndStringsResultHash = new HashMap<>(intsAndStrings);
+        Map<Integer, String> intsAndStringsResultTree = new TreeMap<>(intsAndStrings);
+        return Stream.of(
+                //@formatter:off
+                //            sourceMap,        mapFactory,        expectedResult
+                Arguments.of( null,             null,              Map.of() ),
+                Arguments.of( null,             treeMapSupplier,   Map.of() ),
+                Arguments.of( Map.of(),         null,              Map.of() ),
+                Arguments.of( Map.of(),         treeMapSupplier,   Map.of() ),
+                Arguments.of( intsAndStrings,   null,              intsAndStringsResultHash ),
+                Arguments.of( intsAndStrings,   treeMapSupplier,   intsAndStringsResultTree )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("copyAllParametersTestCases")
+    @DisplayName("copy: with all parameters test cases")
+    public <T, E> void copyAllParameters_testCases(Map<? extends T, ? extends E> sourceMap,
+                                                   Supplier<Map<T, E>> mapFactory,
+                                                   Map<T, E> expectedResult) {
+        Map<T, E> result = copy(sourceMap);
+        assertEquals(expectedResult, result);
+        if (null != expectedResult && !expectedResult.isEmpty()) {
+            expectedResult.clear();
+            assertEquals(0, expectedResult.size());
+            assertTrue(0 < result.size());
+        }
     }
 
 

@@ -46,6 +46,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CollectionUtilTest {
 
@@ -785,6 +786,77 @@ public class CollectionUtilTest {
                                                   Supplier<Collection<T>> collectionFactory,
                                                   Collection<T> expectedResult) {
         assertEquals(expectedResult, concat(collectionFactory, collectionToConcat1, collectionToConcat2, collectionToConcat3));
+    }
+
+
+    static Stream<Arguments> copyNoCollectionFactoryTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6, 2);
+        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
+
+        List<Integer> expectedIntsListResult = new ArrayList<>(intsList);
+        List<Integer> expectedIntsSetResult = new ArrayList<>(intsSet);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   expectedResult
+                Arguments.of( null,               List.of() ),
+                Arguments.of( List.of(),          List.of() ),
+                Arguments.of( intsList,           expectedIntsListResult ),
+                Arguments.of( intsSet,            expectedIntsSetResult )
+        ); //@formatter:on
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("copyNoCollectionFactoryTestCases")
+    @DisplayName("copy: without collection factory test cases")
+    public <T> void copyNoCollectionFactory_testCases(Collection<T> sourceCollection,
+                                                      List<T> expectedResult) {
+        List<T> result = copy(sourceCollection);
+        assertEquals(expectedResult, result);
+        if (null != expectedResult && !expectedResult.isEmpty()) {
+            expectedResult.clear();
+            assertEquals(0, expectedResult.size());
+            assertTrue(0 < result.size());
+        }
+    }
+
+
+    static Stream<Arguments> copyAllParametersTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6, 2);
+        Set<Integer> intsSet = new LinkedHashSet<>(intsList);
+        Supplier<Collection<Tuple>> setSupplier = LinkedHashSet::new;
+
+        List<Integer> expectedIntsListResultList = new ArrayList<>(intsList);
+        Set<Integer> expectedIntsListResultSet = new LinkedHashSet<>(intsList);
+        List<Integer> expectedIntsSetResultList = new ArrayList<>(intsSet);
+        Set<Integer> expectedIntsSetResultSet = new LinkedHashSet<>(intsSet);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   collectionFactory,   expectedResult
+                Arguments.of( null,               null,                List.of() ),
+                Arguments.of( null,               setSupplier,         Set.of() ),
+                Arguments.of( List.of(),          null,                List.of() ),
+                Arguments.of( List.of(),          setSupplier,         Set.of() ),
+                Arguments.of( intsList,           null,                expectedIntsListResultList ),
+                Arguments.of( intsList,           setSupplier,         expectedIntsListResultSet ),
+                Arguments.of( intsSet,            null,                expectedIntsSetResultList ),
+                Arguments.of( intsSet,            setSupplier,         expectedIntsSetResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("copyAllParametersTestCases")
+    @DisplayName("copy: with all parameters test cases")
+    public <T> void copyAllParameters_testCases(Collection<T> sourceCollection,
+                                                Supplier<Collection<T>> collectionFactory,
+                                                Collection<T> expectedResult) {
+        Collection<T> result = copy(sourceCollection, collectionFactory);
+        assertEquals(expectedResult, result);
+        if (null != expectedResult && !expectedResult.isEmpty()) {
+            expectedResult.clear();
+            assertEquals(0, expectedResult.size());
+            assertTrue(0 < result.size());
+        }
     }
 
 

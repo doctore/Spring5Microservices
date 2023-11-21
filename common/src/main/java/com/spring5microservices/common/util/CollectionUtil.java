@@ -671,6 +671,58 @@ public class CollectionUtil {
 
 
     /**
+     * Returns a new {@link List} containing the elements of provided {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 6]            [1, 2, 3, 6]
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to copy
+     *
+     * @return {@link List} containing all elements included in {@code sourceCollection}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> copy(final Collection<? extends T> sourceCollection) {
+        return (List<T>) copy(
+                sourceCollection,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     * Returns a new {@link Collection} containing the elements of provided {@code sourceCollection}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:             Result:
+     *    [1, 2, 3, 2]            [1, 2, 3]
+     *    HashSet::new
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to copy
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *
+     * @return {@link Collection} containing all elements included in {@code sourceCollection}
+     */
+    public static <T> Collection<T> copy(final Collection<? extends T> sourceCollection,
+                                         final Supplier<Collection<T>> collectionFactory) {
+        final Collection<T> result = getFinalCollectionFactory(collectionFactory).get();
+        if (!CollectionUtils.isEmpty(sourceCollection)) {
+            result.addAll(sourceCollection);
+        }
+        return result;
+    }
+
+
+    /**
      * Counts the number of elements in the {@code sourceCollection} which satisfy the {@code filterPredicate}.
      *
      * <pre>
@@ -708,6 +760,9 @@ public class CollectionUtil {
      *    Returns a {@link List} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
      * {@code filterPredicate}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
      * <pre>
      * Example:
      *
@@ -721,7 +776,8 @@ public class CollectionUtil {
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      *
-     * @return {@link List}
+     * @return empty {@link List} if {@code sourceCollection} has no elements or no one verifies provided {@code filterPredicate},
+     *         otherwise a new {@link List} with the elements of {@code sourceCollection} which verify {@code filterPredicate}
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> filter(final Collection<? extends T> sourceCollection,
@@ -737,6 +793,9 @@ public class CollectionUtil {
     /**
      *    Returns a {@link Collection} with the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
      * {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
      * Example:
@@ -754,19 +813,22 @@ public class CollectionUtil {
      * @param collectionFactory
      *   {@link Supplier} of the {@link Collection} used to store the returned elements.
      *
-     * @return {@link Collection}
+     * @return empty {@link Collection} if {@code sourceCollection} has no elements or no one verifies provided {@code filterPredicate},
+     *         otherwise a new {@link Collection} with the elements of {@code sourceCollection} which verify {@code filterPredicate}
      */
     public static <T> Collection<T> filter(final Collection<? extends T> sourceCollection,
                                            final Predicate<? super T> filterPredicate,
                                            final Supplier<Collection<T>> collectionFactory) {
-        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        if (CollectionUtils.isEmpty(sourceCollection)) {
-            return finalCollectionFactory.get();
+        if (CollectionUtils.isEmpty(sourceCollection) || isNull(filterPredicate)) {
+            return copy(
+                    sourceCollection,
+                    collectionFactory
+            );
         }
-        final Predicate<? super T> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
         return sourceCollection
                 .stream()
-                .filter(finalFilterPredicate)
+                .filter(filterPredicate)
                 .collect(
                         toCollection(finalCollectionFactory)
                 );
@@ -776,6 +838,9 @@ public class CollectionUtil {
     /**
      *    Returns a {@link List} removing the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
      * {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
      * Example:
@@ -790,7 +855,8 @@ public class CollectionUtil {
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      *
-     * @return {@link List}
+     * @return empty {@link List} if {@code sourceCollection} has no elements,
+     *         otherwise a new {@link List} with the elements of {@code sourceCollection} which do not verify {@code filterPredicate}
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> filterNot(final Collection<? extends T> sourceCollection,
@@ -806,6 +872,9 @@ public class CollectionUtil {
     /**
      *    Returns a {@link Collection} removing the elements of provided {@code sourceCollection} that satisfy the {@link Predicate}
      * {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
      * Example:
@@ -823,7 +892,8 @@ public class CollectionUtil {
      * @param collectionFactory
      *   {@link Supplier} of the {@link Collection} used to store the returned elements
      *
-     * @return {@link Collection}
+     * @return empty {@link Collection} if {@code sourceCollection} has no elements,
+     *         otherwise a new {@link Collection} with the elements of {@code sourceCollection} which do not verify {@code filterPredicate}
      */
     public static <T> Collection<T> filterNot(final Collection<? extends T> sourceCollection,
                                               final Predicate<? super T> filterPredicate,

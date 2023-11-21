@@ -719,6 +719,58 @@ public class MapUtil {
 
 
     /**
+     * Returns a new {@link Map} containing the elements of provided {@code sourceMap}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Hello")]
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to copy
+     *
+     * @return {@link Map} containing all elements included in {@code sourceMap}
+     */
+    public static <T, E> Map<T, E> copy(final Map<? extends T, ? extends E> sourceMap) {
+        return copy(
+                sourceMap,
+                HashMap::new
+        );
+    }
+
+
+    /**
+     * Returns a new {@link Map} containing the elements of provided {@code sourceMap}.
+     *
+     * <pre>
+     * Example:
+     *
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Hello")]
+     *    HashMap::new
+     * </pre>
+     *
+     * @param sourceMap
+     *    Source {@link Map} with the elements to filter
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
+     *
+     * @return {@link Map} containing all elements included in {@code sourceMap}
+     */
+    public static <T, E> Map<T, E> copy(final Map<? extends T, ? extends E> sourceMap,
+                                        final Supplier<Map<T, E>> mapFactory) {
+        final Map<T, E> result =  getFinalMapFactory(mapFactory).get();
+        if (!CollectionUtils.isEmpty(sourceMap)) {
+            result.putAll(sourceMap);
+        }
+        return result;
+    }
+
+
+    /**
      * Counts the number of elements in the {@code sourceMap} which satisfy the {@code filterPredicate}.
      *
      * <pre>
@@ -761,11 +813,14 @@ public class MapUtil {
      *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
      * {@code filterPredicate}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      * </pre>
      *
@@ -774,7 +829,8 @@ public class MapUtil {
      * @param filterPredicate
      *    {@link BiPredicate} to filter elements from {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return empty {@link Map} if {@code sourceMap} has no elements or no one verifies provided {@code filterPredicate},
+     *         otherwise a new {@link Map} with the elements of {@code sourceMap} which verify {@code filterPredicate}
      */
     public static <T, E> Map<T, E> filter(final Map<? extends T, ? extends E> sourceMap,
                                           final BiPredicate<? super T, ? super E> filterPredicate) {
@@ -790,11 +846,14 @@ public class MapUtil {
      *    Returns a {@link Map} with the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
      * {@code filterPredicate}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
      * <pre>
      * Example:
      *
-     *   Parameters:                    Result:
-     *    [(1, "Hi"), (2, "Hello")]      [(1, "Hi")]
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      *    HashMap::new
      * </pre>
@@ -803,21 +862,27 @@ public class MapUtil {
      *    Source {@link Map} with the elements to filter
      * @param filterPredicate
      *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return empty {@link Map} if {@code sourceMap} has no elements or no one verifies provided {@code filterPredicate},
+     *         otherwise a new {@link Map} with the elements of {@code sourceMap} which verify {@code filterPredicate}
      */
     public static <T, E> Map<T, E> filter(final Map<? extends T, ? extends E> sourceMap,
                                           final BiPredicate<? super T, ? super E> filterPredicate,
                                           final Supplier<Map<T, E>> mapFactory) {
-        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
-        if (CollectionUtils.isEmpty(sourceMap)) {
-            return finalMapFactory.get();
+        if (CollectionUtils.isEmpty(sourceMap) || isNull(filterPredicate)) {
+            return copy(
+                    sourceMap,
+                    mapFactory
+            );
         }
-        final BiPredicate<? super T, ? super E> finalFilterPredicate = getOrAlwaysTrue(filterPredicate);
+        final Supplier<Map<T, E>> finalMapFactory = getFinalMapFactory(mapFactory);
         return sourceMap.entrySet()
                 .stream()
                 .filter(entry ->
-                        finalFilterPredicate.test(
+                        filterPredicate.test(
                                 entry.getKey(),
                                 entry.getValue()
                         )
@@ -836,11 +901,14 @@ public class MapUtil {
      *    Returns a {@link Map} removing the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
      * {@code filterPredicate}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
      * <pre>
      * Example:
      *
-     *   Parameters:                     Result:
-     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi")]
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      * </pre>
      *
@@ -849,7 +917,8 @@ public class MapUtil {
      * @param filterPredicate
      *    {@link BiPredicate} to filter elements from {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return empty {@link Map} if {@code sourceMap} has no elements,
+     *         otherwise a new {@link Map} with the elements of {@code sourceMap} which do not verify {@code filterPredicate}
      */
     public static <T, E> Map<T, E> filterNot(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate) {
@@ -865,11 +934,14 @@ public class MapUtil {
      *    Returns a {@link Map} removing the elements of provided {@code sourceMap} that satisfy the {@link BiPredicate}
      * {@code filterPredicate}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *
      * <pre>
      * Example:
      *
-     *   Parameters:                     Result:
-     *    [(1, "Hi"), (2, "Hello")]       [(1, "Hi")]
+     *   Parameters:                      Result:
+     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
      *    (k, v) -> k % 2 == 0
      *    HashMap::new
      * </pre>
@@ -878,8 +950,12 @@ public class MapUtil {
      *    Source {@link Map} with the elements to filter
      * @param filterPredicate
      *    {@link BiPredicate} to filter elements from {@code sourceMap}
+     * @param mapFactory
+     *    {@link Supplier} of the {@link Map} used to store the returned elements
+     *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return empty {@link Map} if {@code sourceMap} has no elements,
+     *         otherwise a new {@link Map} with the elements of {@code sourceMap} which do not verify {@code filterPredicate}
      */
     public static <T, E> Map<T, E> filterNot(final Map<? extends T, ? extends E> sourceMap,
                                              final BiPredicate<? super T, ? super E> filterPredicate,
