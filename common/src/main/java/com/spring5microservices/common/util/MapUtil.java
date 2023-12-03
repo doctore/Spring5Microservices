@@ -43,7 +43,7 @@ import static java.util.Optional.ofNullable;
 public class MapUtil {
 
     /**
-     *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the compose
+     *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the composed
      * {@link BiFunction} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
@@ -80,7 +80,7 @@ public class MapUtil {
 
 
     /**
-     *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the compose
+     *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the composed
      * {@link BiFunction} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
@@ -157,7 +157,8 @@ public class MapUtil {
      * @param orElseMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@code filterPredicate}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code defaultMapper} to each element of {@code sourceMap} that
+     *         verifies {@code filterPredicate} and collecting the results or {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
@@ -203,7 +204,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code defaultMapper} to each element of {@code sourceMap} that
+     *         verifies {@code filterPredicate} and collecting the results or {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
@@ -261,7 +263,8 @@ public class MapUtil {
      * @param orElseMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap} do not verify {@link PartialFunction#isDefinedAt(Object)}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceMap}
+     *         on which it is defined and collecting the results, {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
@@ -312,7 +315,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceMap}
+     *         on which it is defined and collecting the results, {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
@@ -373,7 +377,8 @@ public class MapUtil {
      * @param mapFunction
      *    {@link BiFunction} to transform filtered elements of {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap}
+     *         on which {@link BiPredicate} returns {@code true} and collecting the results
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceMap}
      */
@@ -415,7 +420,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the returned elements
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap}
+     *         on which {@link BiPredicate} returns {@code true} and collecting the results
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceMap}
      */
@@ -468,7 +474,8 @@ public class MapUtil {
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements from {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceMap}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
@@ -515,7 +522,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the returned elements
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceMap}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
@@ -1209,7 +1217,8 @@ public class MapUtil {
      * @param accumulator
      *    A {@link TriFunction} which combines elements
      *
-     * @return a folded value
+     * @return result of inserting {code accumulator} between consecutive elements of {@code sourceMap}, going
+     *         left to right with the start value {@code initialValue} on the left
      */
     public static <T, E, R> R foldLeft(final Map<? extends T, ? extends E> sourceMap,
                                        final R initialValue,
@@ -1246,7 +1255,8 @@ public class MapUtil {
      * @param accumulator
      *    A {@link TriFunction} which combines elements
      *
-     * @return a folded value
+     * @return result of inserting {code accumulator} between consecutive elements of {@code sourceMap}, going
+     *         left to right with the start value {@code initialValue} on the left
      */
     public static <T, E, R> R foldLeft(final Map<? extends T, ? extends E> sourceMap,
                                        final BiPredicate<? super T, ? super E> filterPredicate,
@@ -1380,7 +1390,8 @@ public class MapUtil {
      * @param discriminator
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
+     *         the keys of the returned one
      *
      * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
      *                                  {@code sourceMap}
@@ -1420,7 +1431,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
+     *        the keys of the returned one
      *
      * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
      *                                  {@code sourceMap}
@@ -1478,7 +1490,8 @@ public class MapUtil {
      * @param discriminator
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
+     *         the keys of the returned one
      *
      * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
      *                                  {@code sourceMap}
@@ -1535,7 +1548,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
+     *         the keys of the returned one
      *
      * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
      *                                  {@code sourceMap}
@@ -1594,7 +1608,8 @@ public class MapUtil {
      * @param valueMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceMap}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
@@ -1618,6 +1633,9 @@ public class MapUtil {
      * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value
      * of type V using {@code valueMapper} {@link BiFunction}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#biAlwaysTrue} will be applied.
+     *
      * <pre>
      * Example:
      *
@@ -1637,7 +1655,8 @@ public class MapUtil {
      * @param valueMapper
      *    {@link BiFunction} to transform elements of {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceMap} that verifies {@code filterPredicate}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
@@ -1662,6 +1681,9 @@ public class MapUtil {
      * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value
      * of type V using {@code valueMapper} {@link BiFunction}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#biAlwaysTrue} will be applied.
+     *
      * <pre>
      * Example:
      *
@@ -1685,7 +1707,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceMap} that verifies {@code filterPredicate}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceMap}
@@ -1739,7 +1762,8 @@ public class MapUtil {
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceMap}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
@@ -1785,7 +1809,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceMap}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceMap}
      */
@@ -1844,7 +1869,8 @@ public class MapUtil {
      * @param reduceValues
      *    {@link BinaryOperator} used to reduce the values related with same key
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceMap}, collecting the results and reduce them using provided {@code reduceValues}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
      *                                  are {@code null} with a not empty {@code sourceMap}
@@ -1901,7 +1927,8 @@ public class MapUtil {
      * @param reduceValues
      *    {@link BinaryOperator} used to reduce the values related with same key
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceMap}
+     *         on which it is defined, collecting the results and reduce them using provided {@code reduceValues}
      *
      * @throws IllegalArgumentException if {@code partialFunction} or {@code reduceValues} are {@code null} with a not empty
      *                                  {@code sourceMap}
@@ -1946,7 +1973,7 @@ public class MapUtil {
      * @param mapFunction
      *    {@link BiFunction} used to transform given {@code sourceMap} elements
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap}
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceMap} is not empty.
      */
@@ -1980,7 +2007,7 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap}
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceMap} is not empty.
      */
@@ -2011,7 +2038,8 @@ public class MapUtil {
 
 
     /**
-     * Builds a new {@link Map} by applying a function to all values of {@code sourceMap}.
+     *    Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}, adding the results
+     * as new values of returned {@link Map}, keeping existing keys.
      *
      * <pre>
      * Example:
@@ -2026,7 +2054,8 @@ public class MapUtil {
      * @param mapFunction
      *    {@link BiFunction} used to transform given {@code sourceMap} values
      *
-     * @return updated {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap}, adding
+     *         as new values of returned one
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null}
      */
@@ -2041,7 +2070,8 @@ public class MapUtil {
 
 
     /**
-     * Builds a new {@link Map} by applying a function to all values of {@code sourceMap}.
+     *    Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}, adding the results
+     * as new values of returned {@link Map}, keeping existing keys.
      *
      * <pre>
      * Example:
@@ -2060,7 +2090,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
      *    If {@code null} then {@link HashMap}
      *
-     * @return updated {@link Map}
+     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap}, adding
+     *         as new values of returned one
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} and {@code sourceMap} is not empty.
      */
@@ -2346,7 +2377,8 @@ public class MapUtil {
      * @param discriminator
      *    {@link BiPredicate} used to split the elements of {@code sourceMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} with two keys: {@code true}, {@code false} based on elements in {@code sourceMap} that
+     *         satisfy given {@code discriminator}
      */
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator) {
@@ -2379,7 +2411,8 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
      *    If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} with two keys: {@code true}, {@code false} based on elements in {@code sourceMap} that
+     *         satisfy given {@code discriminator}
      */
     public static <T, E> Map<Boolean, Map<T, E>> partition(final Map<? extends T, ? extends E> sourceMap,
                                                            final BiPredicate<? super T, ? super E> discriminator,
@@ -2444,7 +2477,7 @@ public class MapUtil {
 
 
     /**
-     *    Using the provided {@code sourceMap}, return all elements beginning at index {@code from} and afterwards,
+     *    Using the provided {@code sourceMap}, return all elements beginning at index {@code from} and afterward,
      * up to index {@code until} (excluding this one).
      *
      * <pre>

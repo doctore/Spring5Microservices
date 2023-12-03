@@ -54,7 +54,7 @@ import static java.util.stream.Collectors.toList;
 public class CollectionUtil {
 
     /**
-     *    Returns a new {@link List} using the given {@code sourceCollection}, applying to its elements the compose
+     *    Returns a new {@link List} using the given {@code sourceCollection}, applying to its elements the composed
      * {@link Function} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
@@ -93,7 +93,7 @@ public class CollectionUtil {
 
     /**
      *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying to its elements the
-     * compose {@link Function} {@code secondMapper}({@code firstMapper}(x))
+     * composed {@link Function} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
      * Example:
@@ -163,7 +163,8 @@ public class CollectionUtil {
      * @param orElseMapper
      *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@code filterPredicate}
      *
-     * @return {@link List}
+     * @return new {@link List} from applying the given {@code defaultMapper} to each element of {@code sourceCollection}
+     *         that verifies {@code filterPredicate} and collecting the results or {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -209,7 +210,8 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Collection}
+     * @return new {@link Collection} from applying the given {@code defaultMapper} to each element of {@code sourceCollection}
+     *         that verifies {@code filterPredicate} and collecting the results or {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code defaultMapper} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -262,7 +264,8 @@ public class CollectionUtil {
      * @param orElseMapper
      *    {@link Function} to transform elements of {@code sourceCollection} do not verify {@link PartialFunction#isDefinedAt(Object)}
      *
-     * @return {@link List}
+     * @return new {@link List} from applying the given {@link PartialFunction} to each element of {@code sourceCollection}
+     *         on which it is defined and collecting the results, {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -308,7 +311,8 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Collection}
+     * @return new {@link Collection} from applying the given {@link PartialFunction} to each element of {@code sourceCollection}
+     *         on which it is defined and collecting the results, {@code orElseMapper} otherwise
      *
      * @throws IllegalArgumentException if {@code partialFunction} or {@code orElseMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -341,7 +345,7 @@ public class CollectionUtil {
      * @param elements
      *    Elements to include
      *
-     * @return {@link LinkedHashSet}
+     * @return {@link LinkedHashSet} keeping the ordering of the given {@code elements}
      */
     @SafeVarargs
     public static <T> Set<T> asSet(final T ...elements) {
@@ -370,7 +374,7 @@ public class CollectionUtil {
      * @param elements
      *    Elements to include
      *
-     * @return {@link Set}
+     * @return {@link Set} based on provided {@link Supplier} containing the given {@code elements}
      */
     @SafeVarargs
     public static <T> Set<T> asSet(final Supplier<Set<T>> setFactory,
@@ -412,7 +416,8 @@ public class CollectionUtil {
      * @param mapFunction
      *    {@link Function} to transform filtered elements of {@code sourceCollection}
      *
-     * @return {@link List}
+     * @return new {@link List} from applying the given {@link Function} to each element of {@code sourceCollection}
+     *         on which {@link Predicate} returns {@code true} and collecting the results
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceCollection}
      */
@@ -455,7 +460,8 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Collection}
+     * @return new {@link Collection} from applying the given {@link Function} to each element of {@code sourceCollection}
+     *         on which {@link Predicate} returns {@code true} and collecting the results
      *
      * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceCollection}
      */
@@ -503,7 +509,8 @@ public class CollectionUtil {
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      *
-     * @return {@link List}
+     * @return new {@link List} from applying the given {@link PartialFunction} to each element of {@code sourceCollection}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
      */
@@ -546,7 +553,8 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Collection}
+     * @return new {@link Collection} from applying the given {@link PartialFunction} to each element of {@code sourceCollection}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
      */
@@ -800,7 +808,7 @@ public class CollectionUtil {
      * Example:
      *
      *   Parameters:               Result:
-     *    [1, 3, 4, 5, 6]           [1, 3]
+     *    [1, 3, 4, 5, 6]           [4, 5, 6]
      *    i -> i % 2 == 1
      *    ArrayList::new
      * </pre>
@@ -1090,7 +1098,7 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link List} resulting from concatenating all element of {@code sourceCollection}
+     * @return {@link Collection} resulting from concatenating all element of {@code sourceCollection}
      */
     @SuppressWarnings("unchecked")
     public static <T> Collection<T> flatten(final Collection<Object> sourceCollection,
@@ -1136,7 +1144,7 @@ public class CollectionUtil {
      * @param accumulator
      *    A {@link BiFunction} which combines elements
      *
-     * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
+     * @return result of inserting {@code accumulator} between consecutive elements of {@code sourceCollection}, going
      *         left to right with the start value {@code initialValue} on the left.
      */
     public static <T, E> E foldLeft(final Collection<? extends T> sourceCollection,
@@ -1174,7 +1182,7 @@ public class CollectionUtil {
      * @param accumulator
      *    A {@link BiFunction} which combines elements
      *
-     * @return result of inserting {@code accumulator} between consecutive elements {@code sourceCollection}, going
+     * @return result of inserting {@code accumulator} between consecutive elements of {@code sourceCollection}, going
      *         left to right with the start value {@code initialValue} on the left.
      */
     public static <T, E> E foldLeft(final Collection<? extends T> sourceCollection,
@@ -1342,7 +1350,7 @@ public class CollectionUtil {
      * @param sourceIterator
      *    {@link Iterator} with the elements to add in the returned {@link List}
      *
-     * @return {@link List}
+     * @return {@link List} containing the elements accessible using {@code sourceIterator}
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> fromIterator(final Iterator<? extends T> sourceIterator) {
@@ -1361,7 +1369,7 @@ public class CollectionUtil {
      * @param collectionFactory
      *   {@link Supplier} of the {@link Collection} used to store the returned elements
      *
-     * @return {@link Collection}
+     * @return {@link Collection} containing the elements accessible using {@code sourceIterator}
      */
     public static <T> Collection<T> fromIterator(final Iterator<? extends T> sourceIterator,
                                                  final Supplier<Collection<T>> collectionFactory) {
@@ -1400,7 +1408,7 @@ public class CollectionUtil {
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceCollection}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -1438,7 +1446,8 @@ public class CollectionUtil {
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceCollection}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -1462,6 +1471,9 @@ public class CollectionUtil {
      * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value of
      * type V using {@code valueMapper} {@link Function}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
+     *
      * <pre>
      * Example:
      *
@@ -1481,7 +1493,8 @@ public class CollectionUtil {
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceCollection} that verifies {@code filterPredicate}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -1506,6 +1519,9 @@ public class CollectionUtil {
      * only if the current element matches {@code filterPredicate}. Each element in a group is transformed into a value of
      * type V using {@code valueMapper} {@link Function}.
      *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
+     *
      * <pre>
      * Example:
      *
@@ -1529,7 +1545,8 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceCollection} that verifies {@code filterPredicate}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -1581,7 +1598,8 @@ public class CollectionUtil {
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceCollection}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
      */
@@ -1625,7 +1643,8 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceCollection}
+     *         on which it is defined and collecting the results
      *
      * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCollection}
      */
@@ -1693,7 +1712,8 @@ public class CollectionUtil {
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceCollection}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -1720,6 +1740,8 @@ public class CollectionUtil {
      * @apiNote
      *    This method is similar to {@link CollectionUtil#groupMap(Collection, Predicate, Function, Function)} but
      * {@code discriminatorKey} returns a {@link Collection} of related key values.
+     * <p>
+     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
      *
      * <pre>
      * Example:
@@ -1753,7 +1775,8 @@ public class CollectionUtil {
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceCollection} that verifies {@code filterPredicate}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -1781,6 +1804,8 @@ public class CollectionUtil {
      * @apiNote
      *    This method is similar to {@link CollectionUtil#groupMap(Collection, Predicate, Function, Function, Supplier)} but
      * {@code discriminatorKey} returns a {@link Collection} of related key values.
+     * <p>
+     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
      *
      * <pre>
      * Example:
@@ -1818,7 +1843,8 @@ public class CollectionUtil {
      *    {@link Supplier} of the {@link Collection} used to store the returned elements.
      *    If {@code null} then {@link ArrayList}
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceCollection} that verifies {@code filterPredicate}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
      *                                  with a not empty {@code sourceCollection}
@@ -1890,7 +1916,8 @@ public class CollectionUtil {
      * @param reduceValues
      *    {@link BinaryOperator} used to reduce the values related with same key
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
+     *         of {@code sourceCollection}, collecting the results and reduce them using provided {@code reduceValues}
      *
      * @throws IllegalArgumentException if {@code discriminatorKey}, {@code valueMapper} or {@code reduceValues}
      *                                  are {@code null} with a not empty {@code sourceCollection}
@@ -1946,7 +1973,8 @@ public class CollectionUtil {
      * @param reduceValues
      *    {@link BinaryOperator} used to reduce the values related with same key
      *
-     * @return {@link Map}
+     * @return new {@link Map} from applying the given {@link PartialFunction} to each element of {@code sourceCollection}
+     *         on which it is defined, collecting the results and reduce them using provided {@code reduceValues}
      *
      * @throws IllegalArgumentException if {@code partialFunction} or {@code reduceValues} are {@code null} with a not
      *                                  empty {@code sourceCollection}
@@ -2352,7 +2380,7 @@ public class CollectionUtil {
      * @param sourceCollection
      *    {@link Collection} to get elements in reverse order.
      *
-     * @return {@link List}
+     * @return new {@link List} with the elements included in {@code sourceCollection} in reverse order
      */
     public static <T> List<T> reverseList(final Collection<? extends T> sourceCollection) {
         return ofNullable(sourceCollection)
@@ -2367,7 +2395,7 @@ public class CollectionUtil {
 
 
     /**
-     *    Using the provided {@code sourceCollection}, return all elements beginning at index {@code from} and afterwards,
+     *    Using the provided {@code sourceCollection}, return all elements beginning at index {@code from} and afterward,
      * up to index {@code until} (excluding this one).
      *
      * <pre>
@@ -2404,7 +2432,8 @@ public class CollectionUtil {
      * @param until
      *    Upper limit of the chunk to extract from provided {@link Collection} (up to {@link Collection#size()})
      *
-     * @return {@link List}
+     * @return {@link List} containing the elements greater than or equal to index {@code from} extending up to (but not including)
+     *         index {@code until} of this {@code sourceCollection}.
      *
      * @throws IllegalArgumentException if {@code from} is greater than {@code until} or {@code zero}
      */
@@ -2852,7 +2881,7 @@ public class CollectionUtil {
      * @param keyMapper
      *    {@link Function} to transform elements of {@code sourceCollection} into keys of the returned {@link Map}
      *
-     * @return {@link Map}
+     * @return new {@link Map} using provided {@code keyMapper} to create included keys
      *
      * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} is {@code null}
      */
@@ -2888,7 +2917,7 @@ public class CollectionUtil {
      * @param valueMapper
      *    {@link Function} to transform elements of {@code sourceCollection} into values of the returned {@link Map}
      *
-     * @return {@link Map}
+     * @return new {@link Map} using provided {@code keyMapper} and {@code valueMapper} to create included keys and values
      *
      * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} or {@code valueMapper} are {@code null}
      */
@@ -2929,7 +2958,7 @@ public class CollectionUtil {
      * @param filterPredicate
      *    {@link Predicate} used to filter values from {@code sourceCollection} that will be added in the returned {@link Map}
      *
-     * @return {@link Map}
+     * @return new {@link Map} using provided {@code keyMapper} and {@code valueMapper} to create included keys and values
      *
      * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} or {@code valueMapper} are {@code null}
      */
@@ -2979,7 +3008,7 @@ public class CollectionUtil {
      *      {@link Supplier} of the {@link Map} used to store the returned elements.
      *      If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} using provided {@code keyMapper} and {@code valueMapper} to create included keys and values
      *
      * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code keyMapper} or {@code valueMapper} are {@code null}
      */
@@ -3049,7 +3078,7 @@ public class CollectionUtil {
      *      {@link Supplier} of the {@link Map} used to store the returned elements.
      *      If {@code null} then {@link HashMap}
      *
-     * @return {@link Map}
+     * @return new {@link Map} using provided {@code partialFunction} to create included keys and values
      *
      * @throws IllegalArgumentException if {@code sourceCollection} is not empty and {@code partialFunction} is {@code null}
      */

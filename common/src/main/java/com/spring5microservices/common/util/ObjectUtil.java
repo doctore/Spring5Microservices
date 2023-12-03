@@ -30,6 +30,7 @@ public class ObjectUtil {
      * @return {@link Optional} containing the first not {@code null} value included in {@code valuesToVerify},
      *         {@link Optional#empty()} otherwise.
      */
+    @SafeVarargs
     public static <T> Optional<T> coalesce(T ...valuesToVerify) {
         return ofNullable(valuesToVerify)
                 .flatMap(values ->

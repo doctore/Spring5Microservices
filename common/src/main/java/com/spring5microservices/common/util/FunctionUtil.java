@@ -52,7 +52,7 @@ public class FunctionUtil {
         Assert.notNull(keyMapper, "keyMapper must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
         return (entryMap) ->
-                new AbstractMap.SimpleEntry(
+                new AbstractMap.SimpleEntry<>(
                         keyMapper.apply(
                                 entryMap.getKey(),
                                 entryMap.getValue()

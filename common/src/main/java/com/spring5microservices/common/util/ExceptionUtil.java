@@ -32,7 +32,7 @@ public class ExceptionUtil {
     public static Optional<Throwable> getRootCause(final Throwable sourceThrowable) {
         return ofNullable(sourceThrowable)
                 .map(ExceptionUtil::getThrowableList)
-                .filter(l -> 0 < l.size())
+                .filter(l -> !l.isEmpty())
                 .map(l -> l.get(l.size() - 1));
     }
 
