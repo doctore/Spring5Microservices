@@ -31,15 +31,11 @@ import static java.util.stream.Collectors.toList;
 public class SecurityManager {
 
     @Lazy
-    private final SecurityConfiguration securityConfiguration;
-
-    @Lazy
     private final SecurityServerRestClient securityServerRestClient;
 
 
     public Optional<Authentication> authenticate(final String authToken) {
         return getAuthenticationInformation(
-                securityConfiguration.getAuthenticationInformationWebService(),
                 authToken
         )
         .map(this::getFromUsernameAuthoritiesDto);
@@ -49,15 +45,12 @@ public class SecurityManager {
     /**
      * Using the given token gets the authentication information related with the logged user.
      *
-     * @param authenticationInformationWebService
-     *    Web service used to get authentication information
      * @param token
      *    Token (included Http authentication scheme)
      *
      * @return {@link Optional} of {@link UsernameAuthoritiesDto}
      */
-    private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(final String authenticationInformationWebService,
-                                                                          final String token) {
+    private Optional<UsernameAuthoritiesDto> getAuthenticationInformation(final String token) {
         try {
             return of(
                     securityServerRestClient.checkToken(token)
