@@ -20,9 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -39,11 +39,17 @@ public class RequestFilter implements GlobalFilter {
     private final String NO_VALUE_FOUND = "no value found";
     private final String ALLOW_ORIGIN_VALUE = "*";
 
-    private final List<String> ROUTE_ID_TO_LOG_BODY_REQUEST = List.of(
+    private final Set<String> ROUTE_ID_TO_LOG_BODY_REQUEST = Set.of(
             "order-service",
             "pizza-service",
             "security-jwt-service",
             "security-oauth-service"
+    );
+
+    private final Set<HttpMethod> REST_METHODS_TO_LOG_BODY_REQUEST = Set.of(
+            HttpMethod.PATCH,
+            HttpMethod.POST,
+            HttpMethod.PUT
     );
 
 
@@ -80,13 +86,14 @@ public class RequestFilter implements GlobalFilter {
      * @return {@code true} if request's body must be added to the logs, {@code false} otherwise
      */
     private boolean shouldLogRequestBody(final ServerWebExchange exchange) {
-        final String routeId = getRouteId(exchange);
-        final boolean isPostMethod = getRequestMethod(exchange)
-                .map(HttpMethod.POST::equals)
+        final boolean isRestMethodWithBody = getRequestMethod(exchange)
+                .map(REST_METHODS_TO_LOG_BODY_REQUEST::contains)
                 .orElse(false);
 
-        return ROUTE_ID_TO_LOG_BODY_REQUEST.contains(routeId) &&
-                isPostMethod;
+        return ROUTE_ID_TO_LOG_BODY_REQUEST.contains(
+                getRouteId(exchange)
+        ) &&
+        isRestMethodWithBody;
     }
 
 
