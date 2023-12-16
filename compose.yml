@@ -13,8 +13,8 @@ services:
       SERVER_PORT: 8888
     healthcheck:
       test: wget --no-verbose --tries=1 --spider config-server:8888/actuator/health || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 12s
+      timeout: 6s
       retries: 5
     image: config-server:latest
     networks:
@@ -38,8 +38,8 @@ services:
         condition: service_healthy
     healthcheck:
       test: wget --no-verbose --tries=1 --spider gateway-server:5555/actuator/health || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 12s
+      timeout: 6s
       retries: 5
     image: gateway-server:latest
     networks:
@@ -69,8 +69,8 @@ services:
         condition: service_healthy
     healthcheck:
       test: wget --no-verbose --tries=1 --spider order-service:8081/actuator/health || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 12s
+      timeout: 6s
       retries: 10
     image: order-service:latest
     networks:
@@ -100,8 +100,8 @@ services:
       - "host.docker.internal:host-gateway"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider pizza-service:8080/actuator/health || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 12s
+      timeout: 6s
       retries: 10        
     image: pizza-service:latest
     networks:
@@ -120,8 +120,8 @@ services:
       SERVER_PORT: 8761
     healthcheck:
       test: wget --no-verbose --tries=1 --spider registry-server:8761/actuator/health || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 12s
+      timeout: 6s
       retries: 5
     image: registry-server:latest
     networks:
@@ -149,8 +149,8 @@ services:
       - "host.docker.internal:host-gateway"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider security-jwt-service:8180/actuator/health || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 12s
+      timeout: 6s
       retries: 10
     image: security-jwt-service:latest
     networks:
@@ -178,8 +178,8 @@ services:
       - "host.docker.internal:host-gateway"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider security-oauth-service:8181/actuator/health || exit 1
-      interval: 10s
-      timeout: 5s
+      interval: 12s
+      timeout: 6s
       retries: 10
     image: security-oauth-service:latest
     networks:
