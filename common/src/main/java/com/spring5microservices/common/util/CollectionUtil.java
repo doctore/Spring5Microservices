@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -47,8 +48,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
 
 @UtilityClass
 public class CollectionUtil {
@@ -58,12 +57,11 @@ public class CollectionUtil {
      * {@link Function} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            ["2", "3", "4", "7"]
-     *    i -> i + 1
-     *    Object::toString
+     *    andThen(                       Result:
+     *       [1, 2, 3, 6],                ["2", "3", "4", "7"]
+     *       i -> i + 1,
+     *       Object::toString
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -95,14 +93,16 @@ public class CollectionUtil {
      *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying to its elements the
      * composed {@link Function} {@code secondMapper}({@code firstMapper}(x))
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            ["2", "3", "4", "7"]
-     *    i -> i + 1
-     *    Object::toString
-     *    ArrayList::new
+     * <pre>
+     *    andThen(                       Result:
+     *       [1, 2, 3, 6],                ["2", "3", "4", "7"]
+     *       i -> i + 1,
+     *       Object::toString,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -135,7 +135,7 @@ public class CollectionUtil {
         return sourceCollection.stream()
                 .map(finalMapper)
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -144,14 +144,17 @@ public class CollectionUtil {
      *    Returns a new {@link List} using the given {@code sourceCollection}, applying {@code defaultMapper} if the
      * current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be updated using
+     * {@code defaultMapper}.
      *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [2, 4, 4, 12]
-     *    i -> i % 2 == 1
-     *    i -> i + 1
-     *    i -> i * 2
+     * <pre>
+     *    applyOrElse(                   Result:
+     *       [1, 2, 3, 6],                [2, 4, 4, 12]
+     *       i -> i % 2 == 1,
+     *       i -> i + 1,
+     *       i -> i * 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -187,15 +190,18 @@ public class CollectionUtil {
      *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying {@code defaultMapper} if
      * the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be updated using
+     * {@code defaultMapper}. If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [2, 4, 4, 12]
-     *    i -> i % 2 == 1
-     *    i -> i + 1
-     *    i -> i * 2
-     *    ArrayList::new
+     * <pre>
+     *    applyOrElse(                   Result:
+     *       [1, 2, 3, 6],                [2, 4, 4, 12]
+     *       i -> i % 2 == 1,
+     *       i -> i + 1,
+     *       i -> i * 2,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -244,17 +250,16 @@ public class CollectionUtil {
      * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                  Result:
-     *    [1, 2, 3, 6]                                 [2, 4, 4, 12]
-     *    PartialFunction.of(
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
+     *    applyOrElse(                                Result:
+     *       [1, 2, 3, 6],                             [2, 4, 4, 12]
+     *       PartialFunction.of(
+     *          i -> null != i && 1 == i % 2,
+     *          i -> null == i
      *             ? null
      *             : i + 1
+     *       ),
+     *       i -> i * 2
      *    )
-     *    i -> i * 2
      * </pre>
      *
      * @param sourceCollection
@@ -286,19 +291,21 @@ public class CollectionUtil {
      *    Returns a new {@link Collection} using the given {@code sourceCollection}, applying {@link PartialFunction#apply(Object)}
      * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:                                  Result:
-     *    [1, 2, 3, 6]                                 [2, 4, 4, 12]
-     *    PartialFunction.of(
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
+     * <pre>
+     *    applyOrElse(                                Result:
+     *       [1, 2, 3, 6],                             [2, 4, 4, 12]
+     *       PartialFunction.of(
+     *          i -> null != i && 1 == i % 2,
+     *          i -> null == i
      *             ? null
      *             : i + 1
+     *       ),
+     *       i -> i * 2,
+     *       ArrayList::new
      *    )
-     *    i -> i * 2
-     *    ArrayList::new
      * </pre>
      *
      * @param sourceCollection
@@ -334,63 +341,8 @@ public class CollectionUtil {
                                 : orElseMapper.apply(elto)
                 )
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
-    }
-
-
-    /**
-     * Returns a {@link Set} with the provided {@code elements}.
-     *
-     * @param elements
-     *    Elements to include
-     *
-     * @return {@link LinkedHashSet} keeping the ordering of the given {@code elements}
-     */
-    @SafeVarargs
-    public static <T> Set<T> asSet(final T ...elements) {
-        return asSet(
-                LinkedHashSet::new,
-                elements
-        );
-    }
-
-
-    /**
-     * Returns a {@link Set} with the provided {@code elements}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    LinkedHashSet::new       [2, 1]
-     *    2
-     *    1
-     *    2
-     * </pre>
-     *
-     * @param setFactory
-     *   {@link Supplier} of the {@link Set} used to store the returned elements
-     * @param elements
-     *    Elements to include
-     *
-     * @return {@link Set} based on provided {@link Supplier} containing the given {@code elements}
-     */
-    @SafeVarargs
-    public static <T> Set<T> asSet(final Supplier<Set<T>> setFactory,
-                                   final T ...elements) {
-        final Supplier<Set<T>> finalSetFactory = getOrElse(
-                setFactory,
-                LinkedHashSet::new
-        );
-        return ofNullable(elements)
-                .map(e ->
-                        Arrays.stream(e)
-                                .collect(
-                                        toCollection(finalSetFactory)
-                                )
-                )
-                .orElseGet(finalSetFactory);
     }
 
 
@@ -400,13 +352,15 @@ public class CollectionUtil {
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be transformed.
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             ["1", "3"]
-     *    i -> 1 == i % 2
-     *    i -> i.toString()
+     * <pre>
+     *    collect(                       Result:
+     *       [1, 2, 3, 6],                ["1", "3"]
+     *       i -> 1 == i % 2,
+     *       Object::toString
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -440,14 +394,17 @@ public class CollectionUtil {
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be transformed. If {@code collectionFactory}
+     * is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             ["1", "3"]
-     *    i -> 1 == i % 2
-     *    i -> i.toString()
-     *    ArrayList::new
+     * <pre>
+     *    collect(                       Result:
+     *       [1, 2, 3, 6],                ["1", "3"]
+     *       i -> 1 == i % 2,
+     *       Object::toString,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -492,15 +449,14 @@ public class CollectionUtil {
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                  Result:
-     *    [1, 2, 3, 6]                                 ["1", "3"]
-     *    PartialFunction.of(
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
+     *    collect(                                    Result:
+     *       [1, 2, 3, 6],                             ["1", "3"]
+     *       PartialFunction.of(
+     *          i -> null != i && 1 == i % 2,
+     *          i -> null == i
      *             ? null
      *             : i.toString()
+     *       )
      *    )
      * </pre>
      *
@@ -531,18 +487,20 @@ public class CollectionUtil {
      *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:                                  Result:
-     *    [1, 2, 3, 6]                                 ["1", "3"]
-     *    PartialFunction.of(
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
+     * <pre>
+     *    collect(                                    Result:
+     *       [1, 2, 3, 6],                             ["1", "3"]
+     *       PartialFunction.of(
+     *          i -> null != i && 1 == i % 2,
+     *          i -> null == i
      *             ? null
      *             : i.toString()
+     *       ),
+     *       ArrayList::new
      *    )
-     *    ArrayList::new
      * </pre>
      *
      * @param sourceCollection
@@ -571,7 +529,7 @@ public class CollectionUtil {
                 .filter(partialFunction::isDefinedAt)
                 .map(partialFunction)
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -581,15 +539,14 @@ public class CollectionUtil {
      * and applies the {@link PartialFunction} to it.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                  Result:
-     *    [1, 2, 3, 6]                                 Optional("2")
-     *    PartialFunction.of(
-     *      i -> null != i && 0 == i % 2,
-     *      i -> null == i
+     *    collectFirst(                               Result:
+     *       [1, 2, 3, 6],                             Optional("2")
+     *       PartialFunction.of(
+     *          i -> null != i && 0 == i % 2,
+     *          i -> null == i
      *             ? null
      *             : i.toString()
+     *       )
      *    )
      * </pre>
      *
@@ -621,11 +578,10 @@ public class CollectionUtil {
      * Returns a new {@link List} containing the elements of provided {@link Collection}s {@code collections}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2]                  [1, 2, 1, 4]
-     *    [1, 4]
+     *    concat(                        Result:
+     *       [1, 2],                      [1, 2, 1, 4]
+     *       [1, 4]
+     *    )
      * </pre>
      *
      * @param collections
@@ -645,13 +601,15 @@ public class CollectionUtil {
     /**
      * Returns a new {@link Collection} containing the elements of provided {@link Collection}s {@code collections}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:             Result:
-     *    ArrayList::new          [1, 2, 1, 4]
-     *    [1, 2]
-     *    [1, 4]
+     * <pre>
+     *    concat(                        Result:
+     *       ArrayList::new,              [1, 2, 1, 4]
+     *       [1, 2],
+     *       [1, 4]
+     *    )
      * </pre>
      *
      * @param collectionFactory
@@ -671,7 +629,7 @@ public class CollectionUtil {
                                 .filter(Objects::nonNull)
                                 .flatMap(Collection::stream)
                                 .collect(
-                                        toCollection(finalCollectionFactory)
+                                        Collectors.toCollection(finalCollectionFactory)
                                 )
                 )
                 .orElseGet(finalCollectionFactory);
@@ -680,13 +638,6 @@ public class CollectionUtil {
 
     /**
      * Returns a new {@link List} containing the elements of provided {@code sourceCollection}.
-     *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [1, 2, 3, 6]
-     * </pre>
      *
      * @param sourceCollection
      *    Source {@link Collection} with the elements to copy
@@ -705,12 +656,14 @@ public class CollectionUtil {
     /**
      * Returns a new {@link Collection} containing the elements of provided {@code sourceCollection}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 2]            [1, 2, 3]
-     *    HashSet::new
+     * <pre>
+     *    copy(                          Result:
+     *       [1, 2, 3, 2],                [1, 2, 3]
+     *       HashSet::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -734,11 +687,10 @@ public class CollectionUtil {
      * Counts the number of elements in the {@code sourceCollection} which satisfy the {@code filterPredicate}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            2
-     *    i -> i % 2 == 1
+     *    count(                         Result:
+     *       [1, 2, 3, 6],                2
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -772,11 +724,10 @@ public class CollectionUtil {
      *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:               Result:
-     *    [1, 3, 4, 5, 6]           [4, 5, 6]
-     *    i -> i % 2 == 1
+     *    dropWhile(                     Result:
+     *       [1, 3, 4, 5, 6],             [4, 5, 6]
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -802,15 +753,15 @@ public class CollectionUtil {
      * the {@link Predicate} {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned. If
+     * {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:               Result:
-     *    [1, 3, 4, 5, 6]           [4, 5, 6]
-     *    i -> i % 2 == 1
-     *    ArrayList::new
+     *    dropWhile(                     Result:
+     *       [1, 3, 4, 5, 6],             [4, 5, 6]
+     *       i -> 1 == i % 2,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -836,7 +787,7 @@ public class CollectionUtil {
                 .stream()
                 .dropWhile(filterPredicate)
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -849,11 +800,10 @@ public class CollectionUtil {
      *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [1, 3]
-     *    i -> i % 2 == 1
+     *    filter(                        Result:
+     *       [1, 2, 3, 6],                [1, 3]
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -880,15 +830,15 @@ public class CollectionUtil {
      * {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned. If
+     * {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [1, 3]
-     *    i -> i % 2 == 1
-     *    ArrayList::new
+     *    filter(                        Result:
+     *       [1, 2, 3, 6],                [1, 3]
+     *       i -> 1 == i % 2,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -915,7 +865,7 @@ public class CollectionUtil {
                 .stream()
                 .filter(filterPredicate)
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -928,11 +878,10 @@ public class CollectionUtil {
      *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [2, 6]
-     *    i -> i % 2 == 1
+     *    filterNot(                     Result:
+     *       [1, 2, 3, 6],                [2, 6]
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -959,15 +908,15 @@ public class CollectionUtil {
      * {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned. If
+     * {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [2, 6]
-     *    i -> i % 2 == 1
-     *    ArrayList::new
+     *    filterNot(                     Result:
+     *       [1, 2, 3, 6],                [2, 6]
+     *       i -> 1 == i % 2,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1000,11 +949,10 @@ public class CollectionUtil {
      * Finds the first element of the given {@link Collection} satisfying the provided {@link Predicate}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            Optional(2)
-     *    i -> i % 2 == 0
+     *    find(                          Result:
+     *       [1, 2, 3, 6],                Optional(2)
+     *       i -> 0 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1031,11 +979,10 @@ public class CollectionUtil {
      * Finds the last element of the given {@link Collection} satisfying the provided {@link Predicate}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            Optional(6)
-     *    i -> i % 2 == 0
+     *    findLast(                      Result:
+     *       [1, 2, 3, 6],                Optional(6)
+     *       i -> 0 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1062,10 +1009,9 @@ public class CollectionUtil {
      * Converts given {@code sourceCollection} into a {@link List} formed by the elements of these iterable collections.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [5, [3, 2], 9]           [5, 3, 2, 9]
+     *    flatten(                       Result:
+     *       [5, [3, 2], 9]               [5, 3, 2, 9]
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1073,6 +1019,7 @@ public class CollectionUtil {
      *
      * @return {@link List} resulting from concatenating all element of {@code sourceCollection}
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> flatten(final Collection<Object> sourceCollection) {
         return (List<T>) flatten(
                 sourceCollection,
@@ -1084,12 +1031,14 @@ public class CollectionUtil {
     /**
      * Converts given {@code sourceCollection} into a {@link List} formed by the elements of these iterable collections.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:              Result:
-     *    [5, [3, 2], 5]           [5, 3, 2]
-     *    HashSet::new
+     * <pre>
+     *    flatten(                       Result:
+     *       [5, [3, 2], 5],              [5, 3, 2]
+     *       HashSet::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1129,12 +1078,11 @@ public class CollectionUtil {
      * elements of {@code sourceCollection}, going left to right.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [5, 7, 9]                315
-     *    1
-     *    (a, b) -> a * b
+     *    foldLeft(                      Result:
+     *       [5, 7, 9],                   315
+     *       1,
+     *       (a, b) -> a * b
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1163,14 +1111,16 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to elements
      * of {@code sourceCollection} that verify {@code filterPredicate}, going left to right.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
      *
-     *   Parameters:              Result:
-     *    [5, 7, 8, 9]             315
-     *    1
-     *    (a, b) -> a * b
-     *    i -> 1 == i % 2
+     * <pre>
+     *    foldLeft(                      Result:
+     *       [5, 7, 8, 9],                315
+     *       1,
+     *       (a, b) -> a * b,
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1212,12 +1162,11 @@ public class CollectionUtil {
      * elements of {@code sourceCollection}, going right to left.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [5, 7, 9]                315
-     *    1
-     *    (a, b) -> a * b
+     *    foldRight(                     Result:
+     *       [5, 7, 9],                   315
+     *       1,
+     *       (a, b) -> a * b
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1246,14 +1195,16 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to elements
      * of {@code sourceCollection} that verify {@code filterPredicate}, going right to left.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
      *
-     *   Parameters:              Result:
-     *    [5, 7, 8, 9]             315
-     *    1
-     *    (a, b) -> a * b
-     *    i -> 1 == i % 2
+     * <pre>
+     *    foldRight(                     Result:
+     *       [5, 7, 8, 9],                315
+     *       1,
+     *       (a, b) -> a * b,
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1285,10 +1236,9 @@ public class CollectionUtil {
      * Returns the number of occurrences of each element contained in {@code sourceCollection}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                Result:
-     *    ["a", "b", "c", "c"]       [("a", 1), ("b", 1), ("c", 2)]
+     *    frequency(                     Result:
+     *       ["a", "b", "c", "c"]         [("a", 1), ("b", 1), ("c", 2)]
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1310,11 +1260,10 @@ public class CollectionUtil {
      * Returns the number of occurrences of {@code objectToSearch} in {@code sourceCollection}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                Result:
-     *    ["a", "b", "c", "c"]       2
-     *    "c"
+     *    frequency(                     Result:
+     *       ["a", "b", "c", "c"],        2
+     *       "c"
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1364,6 +1313,9 @@ public class CollectionUtil {
     /**
      * Returns a {@link Collection} with the elements included in the given {@link Iterator}.
      *
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
+     *
      * @param sourceIterator
      *    {@link Iterator} with the elements to add in the returned {@link List}
      * @param collectionFactory
@@ -1385,7 +1337,7 @@ public class CollectionUtil {
                         false
                 )
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -1395,12 +1347,10 @@ public class CollectionUtil {
      * Elements added as values of returned {@link Map} will be the same as original {@code sourceCollection}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 3, 5, 6]            [(0,  [3, 6])
-     *    i -> i % 3               (1,  [1])
-     *                             (2,  [5])]
+     *    groupMap(                      Result:
+     *       [1, 3, 5, 6],                [(0,  [3, 6])
+     *       i -> i % 3                    (1,  [1])
+     *    )                                (2,  [5])]
      * </pre>
      *
      * @param sourceCollection
@@ -1431,12 +1381,11 @@ public class CollectionUtil {
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link Function}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 6]            [(0,  [4, 7])
-     *    i -> i % 3               (1,  [2])
-     *    i -> i + 1               (2,  [3])]
+     *    groupMap(                      Result:
+     *       [1, 2, 3, 6],                [(0,  [4, 7])
+     *       i -> i % 3,                   (1,  [2])
+     *       i -> i + 1                    (2,  [3])]
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1472,16 +1421,15 @@ public class CollectionUtil {
      * type V using {@code valueMapper} {@link Function}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
+     *    If {@code filterPredicate} is {@code null} then all elements will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6, 11]          [(0, [4, 7])
-     *    i -> 10 > i                (1, [2])
-     *    i -> i % 3                 (2, [3])]
-     *    i -> i + 1
+     *    groupMap(                      Result:
+     *       [1, 2, 3, 6, 11],            [(0, [4, 7])
+     *       i -> 10 > i,                  (1, [2])
+     *       i -> i % 3,                   (2, [3])]
+     *       i -> i + 1
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1520,17 +1468,17 @@ public class CollectionUtil {
      * type V using {@code valueMapper} {@link Function}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
+     *    If {@code filterPredicate} is {@code null} then all elements will be used. If {@code collectionFactory} is
+     * {@code null} then an {@link ArrayList} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6, 11]          [(0,  [4, 7])
-     *    i -> 10 > i                (1,  [2])
-     *    i -> i % 3                 (2,  [3])]
-     *    i -> i + 1
-     *    ArrayList::new
+     *    groupMap(                      Result:
+     *       [1, 2, 3, 6, 11],            [(0, [4, 7])
+     *       i -> 10 > i,                  (1, [2])
+     *       i -> i % 3,                   (2, [3])]
+     *       i -> i + 1,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1578,18 +1526,17 @@ public class CollectionUtil {
      * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                           Result:
-     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
-     *    PartialFunction.of(                                    (1, [2])]
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
+     *    groupMap(                                         Result:
+     *       [1, 2, 3, 6, 9],                                [(0, [4, 10])
+     *       PartialFunction.of(                              (1, [2])]
+     *          i -> null != i && 1 == i % 2,
+     *          i -> null == i
      *             ? null
      *             : new AbstractMap.SimpleEntry<>(
-     *                     i % 3,
-     *                     i + 1
+     *                 i % 3,
+     *                 i + 1
      *               )
+     *       )
      *    )
      * </pre>
      *
@@ -1618,21 +1565,23 @@ public class CollectionUtil {
      *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code partialFunction}.
      * Each element in the {@link Collection} is transformed into a {@link Map.Entry} using {@code partialFunction}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:                                           Result:
-     *    [1, 2, 3, 6, 9]                                       [(0, [4, 10])
-     *    PartialFunction.of(                                    (1, [2])]
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
+     * <pre>
+     *    groupMap(                                         Result:
+     *       [1, 2, 3, 6, 9],                                [(0, [4, 10])
+     *       PartialFunction.of(                              (1, [2])]
+     *          i -> null != i && 1 == i % 2,
+     *          i -> null == i
      *             ? null
      *             : new AbstractMap.SimpleEntry<>(
-     *                     i % 3,
-     *                     i + 1
+     *                 i % 3,
+     *                 i + 1
      *               )
+     *       ),
+     *       ArrayList::new
      *    )
-     *    ArrayList::new
      * </pre>
      *
      * @param sourceCollection
@@ -1684,25 +1633,24 @@ public class CollectionUtil {
      * returns a {@link Collection} of related key values.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                          Result:
-     *    [1, 2, 3, 6, 11, 12]                                 [("even",  [2, 6, 12])
-     *    i -> {                                                ("odd",   [1, 3, 11])
-     *       List<String> keys = new ArrayList<>();             ("smaller10",  [1, 2, 3, 6])
-     *       if (0 == i % 2) {                                  ("greaterEqual10",  [11, 12])]
-     *          keys.add("even");
-     *       } else {
-     *          keys.add("odd");
-     *       }
-     *       if (10 > i) {
-     *          keys.add("smaller10");
-     *       } else {
-     *          keys.add("greaterEqual10");
-     *       }
-     *       return keys;
-     *    }
-     *    i -> i
+     *    groupMapMultiKey(                                 Result:
+     *       [1, 2, 3, 6, 11, 12],                           [("even",  [2, 6, 12])
+     *       i -> {                                           ("odd",   [1, 3, 11])
+     *          List<String> keys = new ArrayList<>();        ("smaller10",  [1, 2, 3, 6])
+     *          if (0 == i % 2) {                             ("greaterEqual10",  [11, 12])]
+     *             keys.add("even");
+     *          } else {
+     *             keys.add("odd");
+     *          }
+     *          if (10 > i) {
+     *             keys.add("smaller10");
+     *          } else {
+     *             keys.add("greaterEqual10");
+     *          }
+     *          return keys;
+     *       },
+     *       Function.identity()
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1724,7 +1672,7 @@ public class CollectionUtil {
                                                              final Function<? super T, ? extends V> valueMapper) {
         return (Map) groupMapMultiKey(
                 sourceCollection,
-                alwaysTrue(),
+                null,
                 discriminatorKey,
                 valueMapper,
                 ArrayList::new
@@ -1740,30 +1688,27 @@ public class CollectionUtil {
      * @apiNote
      *    This method is similar to {@link CollectionUtil#groupMap(Collection, Predicate, Function, Function)} but
      * {@code discriminatorKey} returns a {@link Collection} of related key values.
-     * <p>
-     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                          Result:
-     *    [1, 2, 3, 6, 11, 12]                                 [("even",  [2, 6])
-     *    i -> 10 > i                                           ("odd",   [1, 3])
-     *    i -> {                                                ("smaller5",  [1, 2, 3])
-     *       List<String> keys = new ArrayList<>();             ("greaterEqual5",  [6])]
-     *       if (0 == i % 2) {
-     *          keys.add("even");
-     *       } else {
-     *          keys.add("odd");
-     *       }
-     *       if (5 > i) {
-     *          keys.add("smaller5");
-     *       } else {
-     *          keys.add("greaterEqual5");
-     *       }
-     *       return keys;
-     *    }
-     *    i -> i
+     *    groupMapMultiKey(                                 Result:
+     *       [1, 2, 3, 6, 11, 12],                           [("even",  [2, 6])
+     *       i -> 10 > i,                                     ("odd",   [1, 3])
+     *       i -> {                                           ("smaller5",  [1, 2, 3])
+     *          List<String> keys = new ArrayList<>();        ("greaterEqual5",  [6])]
+     *          if (0 == i % 2) {
+     *             keys.add("even");
+     *          } else {
+     *             keys.add("odd");
+     *          }
+     *          if (10 > i) {
+     *             keys.add("smaller10");
+     *          } else {
+     *             keys.add("greaterEqual10");
+     *          }
+     *          return keys;
+     *       },
+     *       Function.identity()
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1805,30 +1750,29 @@ public class CollectionUtil {
      *    This method is similar to {@link CollectionUtil#groupMap(Collection, Predicate, Function, Function, Supplier)} but
      * {@code discriminatorKey} returns a {@link Collection} of related key values.
      * <p>
-     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#alwaysTrue} will be applied.
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                          Result:
-     *    [1, 2, 3, 6, 11, 12]                                 [("even",  [2, 6])
-     *    i -> 10 > i                                           ("odd",   [1, 3])
-     *    i -> {                                                ("smaller5",  [1, 2, 3])
-     *       List<String> keys = new ArrayList<>();             ("greaterEqual5",  [6])]
-     *       if (0 == i % 2) {
-     *          keys.add("even");
-     *       } else {
-     *          keys.add("odd");
-     *       }
-     *       if (5 > i) {
-     *          keys.add("smaller5");
-     *       } else {
-     *          keys.add("greaterEqual5");
-     *       }
-     *       return keys;
-     *    }
-     *    i -> i
-     *    ArrayList::new
+     *    groupMapMultiKey(                                 Result:
+     *       [1, 2, 3, 6, 11, 12],                           [("even",  [2, 6])
+     *       i -> 10 > i,                                     ("odd",   [1, 3])
+     *       i -> {                                           ("smaller5",  [1, 2, 3])
+     *          List<String> keys = new ArrayList<>();        ("greaterEqual5",  [6])]
+     *          if (0 == i % 2) {
+     *             keys.add("even");
+     *          } else {
+     *             keys.add("odd");
+     *          }
+     *          if (10 > i) {
+     *             keys.add("smaller10");
+     *          } else {
+     *             keys.add("greaterEqual10");
+     *          }
+     *          return keys;
+     *       },
+     *       Function.identity(),
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1859,15 +1803,14 @@ public class CollectionUtil {
         }
         Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
         Assert.notNull(valueMapper, "valueMapper must be not null");
+
         final Supplier<Collection<V>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
-        final Predicate<? super T> finalFilterPredicate = getOrElse(
-                filterPredicate,
-                alwaysTrue()
-        );
+        final Stream<? extends T> sourceCollectionStream = Objects.isNull(filterPredicate)
+                ? sourceCollection.stream()
+                : sourceCollection.stream().filter(filterPredicate);
+
         Map<K, Collection<V>> result = new HashMap<>();
-        sourceCollection
-                .stream()
-                .filter(finalFilterPredicate)
+        sourceCollectionStream
                 .forEach(
                         e -> {
                             V valueMapperResult = valueMapper.apply(e);
@@ -1898,13 +1841,12 @@ public class CollectionUtil {
      * then reduced into a single value with {@code reduceValues}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Intermediate Map:          Result:
-     *    [1, 2, 3, 6]             [(0,  [4, 7])              [(0, 11),
-     *    i -> i % 3                (1,  [2])                  (1, 2),
-     *    i -> i + 1                (2,  [3])]                 (2, 3)]
-     *    Integer::sum
+     *    groupMapReduce(                Intermediate Map:          Result:
+     *       [1, 2, 3, 6],                [(0,  [4, 7])              [(0, 11),
+     *       i -> i % 3,                   (1,  [2])                  (1, 2),
+     *       i -> i + 1,                   (2,  [3])]                 (2, 3)]
+     *       Integer::sum
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -1950,20 +1892,19 @@ public class CollectionUtil {
      * after applying {@link PartialFunction#apply(Object)} are then reduced into a single value with {@code reduceValues}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                          Intermediate Map:          Result:
-     *    [1, 2, 3, 6, 7, 11, 12]                              [(0,  [4, 7])               [(0, 11),
-     *    PartialFunction.of(                                   (1,  [2, 8])                (1, 10),
-     *      i -> null != i && 10 > i,                           (2,  [3])]                  (2, 3)]
-     *      i -> null == i
+     *    groupMapReduce(                                  Intermediate Map:           Result:
+     *       [1, 2, 3, 6, 7, 11, 12],                       [(0,  [4, 7])               [(0, 11),
+     *       PartialFunction.of(                             (1,  [2, 8])                (1, 10),
+     *          i -> null != i && 10 > i,                    (2,  [3])]                  (2, 3)]
+     *          i -> null == i
      *             ? null
      *             : new AbstractMap.SimpleEntry<>(
-     *                     i % 3,
-     *                     i + 1
+     *                 i % 3,
+     *                 i + 1
      *               )
+     *       ),
+     *       Integer::sum
      *    )
-     *    Integer::sum
      * </pre>
      *
      * @param sourceCollection
@@ -2008,21 +1949,16 @@ public class CollectionUtil {
      * is {@code true}. The accumulated results are returned in a {@link List}.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:              Result:
-     *    42                       []
-     *    a -> (int) a / 10
-     *    a -> 50 >= a
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:              Result:
-     *    42                       [42, 4]
-     *    a -> (int) a / 10
-     *    a -> 0 >= a
+     *    iterate(                       Result:
+     *       42,                          []
+     *       a -> (int) a / 10,
+     *       a -> 50 >= a
+     *    )
+     *    iterate(                       Result:
+     *       42,                          [42, 4]
+     *       a -> (int) a / 10,
+     *       a -> 0 >= a
+     *    )
      * </pre>
      *
      * @param initialValue
@@ -2061,11 +1997,10 @@ public class CollectionUtil {
      * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                             Result:
-     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
-     *    PizzaDto::getName
+     *    map(                                                                      Result:
+     *       [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
+     *       PizzaDto::getName,
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2091,13 +2026,15 @@ public class CollectionUtil {
     /**
      * Returns a {@link Collection} applying provided {@code mapFunction} to every element of the given {@code sourceCollection}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:                                                             Result:
-     *    [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
-     *    PizzaDto::getName
-     *    ArrayList::new
+     * <pre>
+     *    map(                                                                      Result:
+     *       [new PizzaDto("Carbonara", 5D), new PizzaDto("Margherita", 10D)]        ["Carbonara", "Margherita"]
+     *       PizzaDto::getName,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2123,7 +2060,7 @@ public class CollectionUtil {
         return sourceCollection.stream()
                 .map(mapFunction)
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -2133,11 +2070,10 @@ public class CollectionUtil {
      * {@code sourceCollection}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                                       Result:
-     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
-     *    [UserDto::getName, UserDto::getAge]
+     *    mapMulti(                                                                              Result:
+     *       [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")],         [Tuple2.of("user1 name", 11)]
+     *       [UserDto::getName, UserDto::getAge]
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2165,13 +2101,15 @@ public class CollectionUtil {
      *    Returns a {@link Collection} of {@link Tuple} applying provided {@code mapFunction}s to every element of the given
      * {@code sourceCollection}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:                                                                       Result:
-     *    [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")]       [Tuple2.of("user1 name", 11)]
-     *    ArrayList::new
-     *    [UserDto::getName, UserDto::getAge]
+     * <pre>
+     *    mapMulti(                                                                              Result:
+     *       [new UserDto(1L, "user1 name", "user1 address", 11, "2011-11-11 13:00:05")],         [Tuple2.of("user1 name", 11)]
+     *       ArrayList::new,
+     *       [UserDto::getName, UserDto::getAge]
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2213,7 +2151,7 @@ public class CollectionUtil {
                     return result;
                 })
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -2238,13 +2176,6 @@ public class CollectionUtil {
      *          )
      *       </pre>
      *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 4, null, 2]         Optional(4)
-     * </pre>
-     *
      * @param sourceCollection
      *    {@link Collection} to get its largest element.
      *
@@ -2263,11 +2194,10 @@ public class CollectionUtil {
      * Finds the first element of the given {@code sourceCollection} which yields the largest value measured by {@code comparator}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    [1, 2, 1, 3]                    Optional(1)
-     *    Comparator.reverseOrder()
+     *    max(                                        Result:
+     *       [1, 2, 1, 3],                             Optional(1)
+     *       Comparator.reverseOrder()
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2315,13 +2245,6 @@ public class CollectionUtil {
      *          )
      *       </pre>
      *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:             Result:
-     *    [1, 4, null, 2]         Optional(1)
-     * </pre>
-     *
      * @param sourceCollection
      *    {@link Collection} to get its smallest element.
      *
@@ -2340,11 +2263,10 @@ public class CollectionUtil {
      * Finds the first element of the given {@code sourceCollection} which yields the smallest value measured by {@code comparator}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    [1, 2, 1, 3]                    Optional(3)
-     *    Comparator.reverseOrder()
+     *    min(                                        Result:
+     *       [1, 2, 1, 3],                             Optional(3)
+     *       Comparator.reverseOrder()
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2399,30 +2321,21 @@ public class CollectionUtil {
      * up to index {@code until} (excluding this one).
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:            Result:
-     *    [5, 7, 9, 6]           [7, 9]
-     *    1
-     *    3
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:            Result:
-     *    [a, b, c, d]           [d]
-     *    3
-     *    7
-     * </pre>
-     *
-     * <pre>
-     * Example 3:
-     *
-     *   Parameters:            Result:
-     *    [a, b, c, d]           [a, b]
-     *    -1
-     *    2
+     *    slice(                         Result:
+     *       [5, 7, 9, 6],                [7, 9]
+     *       1,
+     *       3
+     *    )
+     *    slice(                         Result:
+     *       [a, b, c, d],                [d]
+     *       3,
+     *       7
+     *    )
+     *    slice(                         Result:
+     *       [a, b, c, d],                [a, b]
+     *       -1,
+     *       2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2483,19 +2396,14 @@ public class CollectionUtil {
      * Loops through the provided {@link Collection} one position every time, returning sublists with {@code size}
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:            Result:
-     *    [1, 2]                 [[1, 2]]
-     *    5
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:            Result:
-     *    [7, 8, 9]              [[7, 8], [8, 9]]
-     *    2
+     *    sliding(                       Result:
+     *       [1, 2],                      [[1, 2]]
+     *       5
+     *    )
+     *    sliding(                       Result:
+     *       [7, 8, 9],                   [[7, 8], [8, 9]]
+     *       2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2526,7 +2434,9 @@ public class CollectionUtil {
                                 start + size
                         )
                 )
-                .collect(toList());
+                .collect(
+                        Collectors.toList()
+                );
     }
 
 
@@ -2554,19 +2464,14 @@ public class CollectionUtil {
      *       </pre>
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:             Result:
-     *    [1, 2]                  [1, 1, 2, 4]
-     *    [1, 4]
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, null]            [null, null, 1, 1, 2]
-     *    [1, null]
+     *    sort(                          Result:
+     *       [1, 2],                      [1, 1, 2, 4]
+     *       [1, 4]
+     *    )
+     *    sort(                          Result:
+     *       [1, 2, null],                [null, null, 1, 1, 2]
+     *       [1, null]
+     *    )
      * </pre>
      *
      * @param collections
@@ -2609,21 +2514,16 @@ public class CollectionUtil {
      *       </pre>
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:             Result:
-     *    HashSet::new            [1, 2, 4]
-     *    [1, 2]
-     *    [1, 4]
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:             Result:
-     *    HashSet::new            [null, 1, 2]
-     *    [1, 2, null]
-     *    [1, null]
+     *    sort(                          Result:
+     *       HashSet::new,                [1, 2, 4]
+     *       [1, 2],
+     *       [1, 4]
+     *    )
+     *    sort(                          Result:
+     *       HashSet::new,                [null, 1, 2]
+     *       [1, 2, null],
+     *       [1, null]
+     *    )
      * </pre>
      *
      * @param collectionFactory
@@ -2649,12 +2549,11 @@ public class CollectionUtil {
      * of the elements according to {@link Comparator} {@code comparator} is retained.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    Comparator.reverseOrder()       [4, 2, 1, 1]
-     *    [1, 2]
-     *    [1, 4]
+     *    sort(                                       Result:
+     *       Comparator.reverseOrder(),                [4, 2, 1, 1]
+     *       [1, 2],
+     *       [1, 4]
+     *    )
      * </pre>
      *
      * @param comparator
@@ -2681,14 +2580,16 @@ public class CollectionUtil {
      *    Merges provided {@link Collection}s {@code collections} into a single sorted {@link Collection} such that the
      * ordering of the elements according to {@link Comparator} {@code comparator} is retained.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
-     *   Parameters:                     Result:
-     *    Comparator.reverseOrder()       [4, 2, 1]
-     *    HashSet::new
-     *    [1, 2]
-     *    [1, 4]
+     * <pre>
+     *    sort(                                       Result:
+     *       Comparator.reverseOrder(),                [4, 2, 1]
+     *       HashSet::new,
+     *       [1, 2],
+     *       [1, 4]
+     *    )
      * </pre>
      *
      * @param comparator
@@ -2715,7 +2616,7 @@ public class CollectionUtil {
                 .stream()
                 .sorted(comparator)
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
     }
 
@@ -2724,27 +2625,18 @@ public class CollectionUtil {
      * Splits the given {@link Collection} in sublists with a size equal to the given {@code size}
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 4]            [[1, 2], [3, 4]]
-     *    2
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 4]            [[1, 2, 3], [4]]
-     *    3
-     * </pre>
-     *
-     * <pre>
-     * Example 3:
-     *
-     *   Parameters:             Result:
-     *    [1, 2, 3, 4]            [[1, 2, 3, 4]]
-     *    5
+     *    split(                         Result:
+     *       [1, 2, 3, 4],                [[1, 2], [3, 4]]
+     *       2
+     *    )
+     *    split(                         Result:
+     *       [1, 2, 3, 4],                [[1, 2, 3], [4]]
+     *       3
+     *    )
+     *    split(                         Result:
+     *       [1, 2, 3, 4],                [[1, 2, 3, 4]]
+     *       5
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2795,11 +2687,10 @@ public class CollectionUtil {
      *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:               Result:
-     *    [1, 3, 4, 5, 6]           [1, 3]
-     *    i -> i % 2 == 1
+     *    takeWhile(                     Result:
+     *       [1, 3, 4, 5, 6],             [1, 3]
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2825,15 +2716,15 @@ public class CollectionUtil {
      * the {@link Predicate} {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned. If
+     * {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:               Result:
-     *    [1, 3, 4, 5, 6]           [1, 3]
-     *    i -> i % 2 == 1
-     *    ArrayList::new
+     *    takeWhile(                     Result:
+     *       [1, 3, 4, 5, 6],             [1, 3]
+     *       i -> 1 == i % 2,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2859,8 +2750,188 @@ public class CollectionUtil {
                 .stream()
                 .takeWhile(filterPredicate)
                 .collect(
-                        toCollection(finalCollectionFactory)
+                        Collectors.toCollection(finalCollectionFactory)
                 );
+    }
+
+
+    /**
+     * Returns a {@link Collection} containing all the given {@code elements}.
+     *
+     * @apiNote
+     *   If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
+     *
+     * <pre>
+     *    toCollection(                  Result:
+     *       LinkedHashSet::new,          [2, 1]
+     *       2,
+     *       1,
+     *       2
+     *    )
+     * </pre>
+     *
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     * @param elements
+     *    Items to include in the returned {@link Collection}
+     *
+     * @return {@link Collection} which contains all the input {@code elements} in encounter order
+     */
+    @SafeVarargs
+    public static <T> Collection<T> toCollection(final Supplier<Collection<T>> collectionFactory,
+                                                 final T... elements) {
+        return toCollection(
+                collectionFactory,
+                null,
+                elements
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Collection} containing the given {@code elements} if the current item verifies
+     * {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
+     *
+     * <pre>
+     *    toCollection(                  Result:
+     *       HashSet::new,                [1]
+     *       i -> 1 == i % 2,
+     *       2,
+     *       1,
+     *       1
+     *    )
+     * </pre>
+     *
+     * @param collectionFactory
+     *   {@link Supplier} of the {@link Collection} used to store the returned elements.
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@code elements}
+     * @param elements
+     *    Items to include in the returned {@link Collection}
+     *
+     * @return {@link Collection} which contains all the input {@code elements} that verify {@code filterPredicate}
+     */
+    @SafeVarargs
+    public static <T> Collection<T> toCollection(final Supplier<Collection<T>> collectionFactory,
+                                                 final Predicate<? super T> filterPredicate,
+                                                 final T... elements) {
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+        return ofNullable(elements)
+                .map(e -> {
+                    final Stream<T> elementsStream = Objects.isNull(filterPredicate)
+                            ? Arrays.stream(e)
+                            : Arrays.stream(e).filter(filterPredicate);
+
+                    return elementsStream
+                            .collect(
+                                    Collectors.toCollection(finalCollectionFactory)
+                            );
+                })
+                .orElseGet(finalCollectionFactory);
+    }
+
+
+    /**
+     * Returns a {@link List} containing all the given {@code elements}.
+     *
+     * @param elements
+     *    Items to include in the returned {@link List}
+     *
+     * @return {@link List} which contains all the input {@code elements} in encounter order
+     */
+    @SafeVarargs
+    public static <T> List<T> toList(final T... elements) {
+        return toList(
+                ArrayList::new,
+                null,
+                elements
+        );
+    }
+
+
+    /**
+     *    Returns a {@link List} containing the given {@code elements} if the current item verifies
+     * {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then no one element will be filtered to insert in the returned {@link List}.
+     *
+     * <pre>
+     *    toList(                        Result:
+     *       i -> 1 == i % 2,             [1, 1]
+     *       2,
+     *       1,
+     *       1
+     *    )
+     * </pre>
+     *
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@code elements}
+     * @param elements
+     *    Items to include in the returned {@link List}
+     *
+     * @return {@link List} which contains all the input {@code elements} that verify {@code filterPredicate}
+     */
+    @SafeVarargs
+    public static <T> List<T> toList(final Predicate<? super T> filterPredicate,
+                                     final T... elements) {
+        return toList(
+                ArrayList::new,
+                filterPredicate,
+                elements
+        );
+    }
+
+
+    /**
+     *    Returns a {@link List} containing the given {@code elements} if the current item verifies
+     * {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link ArrayList} will be used.
+     *
+     * <pre>
+     *    toList(                        Result:
+     *       ArrayList::new,              [1, 1]
+     *       i -> 1 == i % 2,
+     *       2,
+     *       1,
+     *       1
+     *    )
+     * </pre>
+     *
+     * @param listFactory
+     *   {@link Supplier} of the {@link List} used to store the returned elements.
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@code elements}
+     * @param elements
+     *    Items to include in the returned {@link List}
+     *
+     * @return {@link List} which contains all the input {@code elements} that verify {@code filterPredicate}
+     */
+    @SafeVarargs
+    public static <T> List<T> toList(final Supplier<List<T>> listFactory,
+                                     final Predicate<? super T> filterPredicate,
+                                     final T... elements) {
+        final Supplier<List<T>> finalListFactory = getOrElse(
+                listFactory,
+                ArrayList::new
+        );
+        return ofNullable(elements)
+                .map(e -> {
+                    final Stream<T> elementsStream = Objects.isNull(filterPredicate)
+                            ? Arrays.stream(e)
+                            : Arrays.stream(e).filter(filterPredicate);
+
+                    return elementsStream
+                            .collect(
+                                    Collectors.toCollection(finalListFactory)
+                            );
+                })
+                .orElseGet(finalListFactory);
     }
 
 
@@ -2869,11 +2940,10 @@ public class CollectionUtil {
      * as values of returned {@link Map}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [("1", 1), ("2", 2), ("3", 3), ("6", 6)]
-     *    i -> i.toString()
+     *    toMap(                         Result:
+     *       [1, 2, 3, 6],                [("1", 1), ("2", 2), ("3", 3), ("6", 6)]
+     *       Object::toString
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2902,12 +2972,11 @@ public class CollectionUtil {
      * Converts the given {@link Collection} to a {@link Map} using provided {@code keyMapper} and {@code valueMapper}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [("1", 2), ("2", 3), ("3", 4), ("6", 7)]
-     *    i -> i.toString()
-     *    i -> i + 1
+     *    toMap(                         Result:
+     *       [1, 2, 3, 6],                [("1", 2), ("2", 3), ("3", 4), ("6", 7)]
+     *       Object::toString,
+     *       i -> i + 1
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2940,13 +3009,12 @@ public class CollectionUtil {
      * only with the elements that satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 6]             [("1", 2), ("3", 4)]
-     *    i -> i.toString()
-     *    i -> i + 1
-     *    i -> i % 2 == 1
+     *    toMap(                         Result:
+     *       [1, 2, 3, 6],                [("1", 2), ("3", 4)]
+     *       Object::toString,
+     *       i -> i + 1,
+     *       i -> 1 == i % 2
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -2982,15 +3050,14 @@ public class CollectionUtil {
      * only with the elements that satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    [1, 2, 3, 3]             [("1", 2), ("3", 4)]
-     *    i -> i.toString()
-     *    i -> i + 1
-     *    i -> i % 2 == 1
-     *    (old, new) -> new
-     *    HashMap::new
+     *    toMap(                         Result:
+     *       [1, 2, 3, 3],                [("1", 2), ("3", 4)]
+     *       Object::toString,
+     *       i -> i + 1,
+     *       i -> 1 == i % 2,
+     *       (old, new) -> new,
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -3047,24 +3114,23 @@ public class CollectionUtil {
      * Converts the given {@link Collection} to a {@link Map} using provided {@code partialFunction}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                            Result:
-     *    [1, 2, 3, 3]                                           [("1", 2), ("3", 4)]
-     *    PartialFunction.of(
-     *      i -> null != i && 1 == i % 2,
-     *      i -> null == i
+     *    toMap(                                            Result:
+     *       [1, 2, 3, 3],                                   [("1", 2), ("3", 4)]
+     *       PartialFunction.of(
+     *          i -> null != i && 1 == i % 2,
+     *          i -> null == i
      *             ? new AbstractMap.SimpleEntry<>(
-     *                     "",
-     *                     0
+     *                 "",
+     *                 0
      *               )
      *             : new AbstractMap.SimpleEntry<>(
-     *                     i.toString(),
-     *                     i + 1
+     *                 i.toString(),
+     *                 i + 1
      *               )
+     *       ),
+     *       (old, new) -> new,
+     *       HashMap::new
      *    )
-     *    (old, new) -> new
-     *    HashMap::new
      * </pre>
      *
      * @param sourceCollection
@@ -3114,27 +3180,119 @@ public class CollectionUtil {
 
 
     /**
+     * Returns a {@link Set} containing not duplicated given {@code elements}.
+     *
+     * @param elements
+     *    Items to include in the returned {@link Set}
+     *
+     * @return {@link Set} which contains the unique input {@code elements}
+     */
+    @SafeVarargs
+    public static <T> Set<T> toSet(final T... elements) {
+        return toSet(
+                LinkedHashSet::new,
+                null,
+                elements
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Set} containing not duplicated given {@code elements} if the current item verifies
+     * {@code filterPredicate}.
+     *
+     * @apiNote
+     *   If {@code filterPredicate} is {@code null} then no one element will be filtered to insert in the returned {@link Set}.
+     *
+     * <pre>
+     *    toSet(                         Result:
+     *       i -> 1 == i % 2,             [1]
+     *       2,
+     *       1,
+     *       1
+     *    )
+     * </pre>
+     *
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@code elements}
+     * @param elements
+     *    Items to include in the returned {@link Set}
+     *
+     * @return {@link Set} which contains the unique input {@code elements} that verify {@code filterPredicate}
+     */
+    @SafeVarargs
+    public static <T> Set<T> toSet(final Predicate<? super T> filterPredicate,
+                                   final T... elements) {
+        return toSet(
+                LinkedHashSet::new,
+                filterPredicate,
+                elements
+        );
+    }
+
+
+    /**
+     *    Returns a {@link Set} containing not duplicated given {@code elements} if the current item verifies
+     * {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then an {@link LinkedHashSet} will be used.
+     *
+     * <pre>
+     *    toSet(                         Result:
+     *       HashSet::new,                [1]
+     *       i -> 1 == i % 2,
+     *       2,
+     *       1,
+     *       1
+     *    )
+     * </pre>
+     *
+     * @param setFactory
+     *   {@link Supplier} of the {@link Set} used to store the returned elements.
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@code elements}
+     * @param elements
+     *    Items to include in the returned {@link Set}
+     *
+     * @return {@link Set} which contains the unique input {@code elements} that verify {@code filterPredicate}
+     */
+    @SafeVarargs
+    public static <T> Set<T> toSet(final Supplier<Set<T>> setFactory,
+                                   final Predicate<? super T> filterPredicate,
+                                   final T... elements) {
+        final Supplier<Set<T>> finalSetFactory = getOrElse(
+                setFactory,
+                LinkedHashSet::new
+        );
+        return ofNullable(elements)
+                .map(e -> {
+                    final Stream<T> elementsStream = Objects.isNull(filterPredicate)
+                            ? Arrays.stream(e)
+                            : Arrays.stream(e).filter(filterPredicate);
+
+                    return elementsStream
+                            .collect(
+                                    Collectors.toCollection(finalSetFactory)
+                            );
+                })
+                .orElseGet(finalSetFactory);
+    }
+
+
+    /**
      * Transposes the rows and columns of the given {@code sourceCollection}.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:                                    Result:
-     *    [[1, 2, 3], [4, 5, 6]]                         [[1, 4], [2, 5], [3, 6]]
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:                                    Result:
-     *    [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]      [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
-     * </pre>
-     *
-     * <pre>
-     * Example 3:
-     *
-     *   Parameters:                                    Result:
-     *    [[1, 2], [0], [7, 8, 9]]                       [[1, 0, 7], [2, 8], [9]]
+     *    transpose(                                       Result:
+     *       [[1, 2, 3], [4, 5, 6]]                         [1]
+     *    )
+     *    transpose(                                        Result:
+     *       [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]       [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
+     *    )
+     *    transpose(                                        Result:
+     *       [[1, 2], [0], [7, 8, 9]]                        [[1, 0, 7], [2, 8], [9]]
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -3176,10 +3334,9 @@ public class CollectionUtil {
      * second half of each pair.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                           Result:
-     *    [("d", 6), ("h", 7), ("y", 11)]       [("d", "h", "y"), (6, 7, 11)]
+     *    unzip(                                      Result:
+     *       [("d", 6), ("h", 7), ("y", 11)]           [("d", "h", "y"), (6, 7, 11)]
+     *    )
      * </pre>
      *
      * @param sourceCollection
@@ -3209,19 +3366,14 @@ public class CollectionUtil {
      * the other, its remaining elements are ignored.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:              Result:
-     *    ["d", "h", "y"]          [("d", 6), ("h", 7), ("y", 11)]
-     *    [6, 7, 11]
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:              Result:
-     *    [4, 9, 14]               [(4, 23), (9, 8)]
-     *    [23, 8]
+     *    zip(                           Result:
+     *       ["d", "h", "y"],             [("d", 6), ("h", 7), ("y", 11)]
+     *       [6, 7, 11]
+     *    )
+     *    zip(                           Result:
+     *       [4, 9, 14],                  [(4, 23), (9, 8)]
+     *       [23, 8]
+     *    )
      * </pre>
      *
      * @param sourceLeftCollection
@@ -3263,33 +3415,24 @@ public class CollectionUtil {
      * the other, placeholder elements are used to extend the shorter collection to the length of the longer.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:              Result:
-     *    ["d", "h", "y"]          [("d", 6), ("h", 7), ("y", 11)]
-     *    [6, 7, 11]
-     *    "z"
-     *    55
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:              Result:
-     *    [4, 9, 14]               [(4, 23), (9, 8), (14, 10)]
-     *    [23, 8]
-     *    17
-     *    10
-     * </pre>
-     *
-     * <pre>
-     * Example 3:
-     *
-     *   Parameters:              Result:
-     *    [4, 9]                   [(4, "f"), (9, "g"), (11, "m")]
-     *    ["f", "g", "m"]
-     *    11
-     *    "u"
+     *    zipAll(                        Result:
+     *       ["d", "h", "y"],             [("d", 6), ("h", 7), ("y", 11)]
+     *       [6, 7, 11],
+     *       "z",
+     *       55
+     *    )
+     *    zipAll(                        Result:
+     *       [4, 9, 14],                  [(4, 23), (9, 8), (14, 10)]
+     *       [23, 8],
+     *       17,
+     *       10
+     *    )
+     *    zipAll(                        Result:
+     *       [4, 9],                      [(4, "f"), (9, "g"), (11, "m")]
+     *       ["f", "g", "m"],
+     *       11,
+     *       "u"
+     *    )
      * </pre>
      *
      * @param sourceLeftCollection
@@ -3346,10 +3489,9 @@ public class CollectionUtil {
      * their index. Indices start at {@code 0}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:              Result:
-     *    ["d", "h", "y"]          [(0, "d"), (1, "h"), (2, "y")]
+     *    zipWithIndex(                  Result:
+     *       ["d", "h", "y"]              [(0, "d"), (1, "h"), (2, "y")]
+     *    )
      * </pre>
      *
      * @param sourceCollection

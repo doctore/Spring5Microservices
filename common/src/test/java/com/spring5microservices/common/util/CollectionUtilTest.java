@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,6 +46,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -450,73 +452,6 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> asSetNoSetFactoryTestCases() {
-        List<Integer> intsList = List.of(1, 2, 3, 6, 6, 2);
-        List<Integer> intsWithNullList = asList(1, null, 3, 6, null, 3);
-
-        Set<Integer> emptySet = new LinkedHashSet<>();
-        Set<Integer> expectedAllIntsResultSet = new LinkedHashSet<>(List.of(1, 2, 3, 6));
-        Set<Integer> expectedAllIntsWithNullResultSet = new LinkedHashSet<>(asList(1, null, 3, 6));
-        return Stream.of(
-                //@formatter:off
-                //            elements,           expectedResult
-                Arguments.of( null,               emptySet ),
-                Arguments.of( List.of(),          emptySet ),
-                Arguments.of( intsList,           expectedAllIntsResultSet ),
-                Arguments.of( intsWithNullList,   expectedAllIntsWithNullResultSet )
-        ); //@formatter:on
-    }
-
-
-    @ParameterizedTest
-    @MethodSource("asSetNoSetFactoryTestCases")
-    @DisplayName("asSet: without set factory test cases")
-    public void asSetNoSetFactory_testCases(List<Object> elements,
-                                            Set<Object> expectedResult) {
-        Object[] finalElements =
-                null == elements
-                        ? null
-                        : elements.toArray(new Object[0]);
-
-        assertEquals(expectedResult, asSet(finalElements));
-    }
-
-
-    static Stream<Arguments> asSetAllParametersTestCases() {
-        List<String> stringList = List.of("A", "A", "B", "C", "D", "C");
-        List<String> stringWithNullsList = asList("A", "A", null, "B", null);
-        Supplier<Set<String>> setSupplier = HashSet::new;
-
-        Set<String> emptySet = new HashSet<>();
-        Set<String> expectedAllStringResultSet = new LinkedHashSet<>(List.of("A", "B", "C", "D"));
-        Set<String> expectedAllStringWithNullResultSet = new LinkedHashSet<>(asList("A", null, "B"));
-        return Stream.of(
-                //@formatter:off
-                //            setFactory,    elements,              expectedResult
-                Arguments.of( null,          null,                  emptySet ),
-                Arguments.of( setSupplier,   null,                  emptySet ),
-                Arguments.of( null,         List.of(),              emptySet ),
-                Arguments.of( setSupplier,   stringList,            expectedAllStringResultSet ),
-                Arguments.of( setSupplier,   stringWithNullsList,   expectedAllStringWithNullResultSet )
-        ); //@formatter:on
-    }
-
-
-    @ParameterizedTest
-    @MethodSource("asSetAllParametersTestCases")
-    @DisplayName("asSet: with all parameters test cases")
-    public void asSetAllParameters_testCases(Supplier<Set<Object>> setFactory,
-                                             List<Object> elements,
-                                             Set<Object> expectedResult) {
-        Object[] finalElements =
-                null == elements
-                        ? null
-                        : elements.toArray(new Object[0]);
-
-        assertEquals(expectedResult, asSet(setFactory, finalElements));
-    }
-
-
     static Stream<Arguments> collectWithPredicateAndFunctionTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6));
         Predicate<Integer> isEven = i -> i % 2 == 0;
@@ -815,8 +750,8 @@ public class CollectionUtilTest {
         assertEquals(expectedResult, result);
         if (null != expectedResult && !expectedResult.isEmpty()) {
             expectedResult.clear();
-            assertEquals(0, expectedResult.size());
-            assertTrue(0 < result.size());
+            assertTrue(expectedResult.isEmpty());
+            assertFalse(result.isEmpty());
         }
     }
 
@@ -854,8 +789,8 @@ public class CollectionUtilTest {
         assertEquals(expectedResult, result);
         if (null != expectedResult && !expectedResult.isEmpty()) {
             expectedResult.clear();
-            assertEquals(0, expectedResult.size());
-            assertTrue(0 < result.size());
+            assertTrue(expectedResult.isEmpty());
+            assertFalse(result.isEmpty());
         }
     }
 
@@ -2243,6 +2178,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("mapMultiNoCollectionFactoryTestCases")
     @DisplayName("mapMulti: without collection factory test cases")
+    @SuppressWarnings("unchecked")
     public <T> void mapMultiNoCollectionFactory_testCases(Collection<? extends T> sourceCollection,
                                                           List<Function<? super T, ?>> mapFunctions,
                                                           Class<? extends Exception> expectedException,
@@ -2311,6 +2247,7 @@ public class CollectionUtilTest {
     @ParameterizedTest
     @MethodSource("mapMultiAllParametersTestCases")
     @DisplayName("mapMulti: with all parameters test cases")
+    @SuppressWarnings("unchecked")
     public <T> void mapMultiAllParameters_testCases(Collection<? extends T> sourceCollection,
                                                     Supplier<Collection<Tuple>> collectionFactory,
                                                     List<Function<? super T, ?>> mapFunctions,
@@ -2873,6 +2810,231 @@ public class CollectionUtilTest {
     }
 
 
+    static Stream<Arguments> toCollectionWithSupplierTestCases() {
+        List<Integer> intsList = List.of(1, 2, 3, 6, 6, 2);
+        List<Integer> intsWithNullList = asList(1, null, 3, 6, null, 3);
+
+        Supplier<Collection<Integer>> setSupplier = LinkedHashSet::new;
+        Supplier<Collection<Integer>> listSupplier = ArrayList::new;
+
+        Set<Integer> emptySet = new LinkedHashSet<>();
+        List<Integer> emptyList = new ArrayList<>();
+        Set<Integer> expectedIntsResultSet = new LinkedHashSet<>(intsList);
+        Set<Integer> expectedIntsWithNullResultSet = new LinkedHashSet<>(intsWithNullList);
+        List<Integer> expectedIntsResultList = new ArrayList<>(intsList);
+        List<Integer> expectedIntsWithNullResultList = new ArrayList<>(intsWithNullList);
+        return Stream.of(
+                //@formatter:off
+                //            collectionFactory,   elements,           expectedResult
+                Arguments.of( null,                null,               emptyList ),
+                Arguments.of( null,                List.of(),          emptyList ),
+                Arguments.of( null,                intsList,           expectedIntsResultList ),
+                Arguments.of( null,                intsWithNullList,   expectedIntsWithNullResultList ),
+                Arguments.of( setSupplier,         null,               emptySet ),
+                Arguments.of( listSupplier,        null,               emptyList ),
+                Arguments.of( setSupplier,         List.of(),          emptySet ),
+                Arguments.of( listSupplier,        intsList,           expectedIntsResultList ),
+                Arguments.of( setSupplier,         intsList,           expectedIntsResultSet ),
+                Arguments.of( listSupplier,        intsWithNullList,   expectedIntsWithNullResultList ),
+                Arguments.of( setSupplier,         intsWithNullList,   expectedIntsWithNullResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toCollectionWithSupplierTestCases")
+    @DisplayName("toCollection: with supplier test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toCollectionWithSupplier_testCases(Supplier<Collection<T>> collectionFactory,
+                                                       List<T> elements,
+                                                       Collection<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toCollection(collectionFactory, finalElements));
+    }
+
+
+    static Stream<Arguments> toCollectionAllParametersTestCases() {
+        List<String> stringList = List.of("A", "A", "B", "C", "D", "C");
+        List<String> stringWithNullsList = asList("A", "A", null, "B", null);
+
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+        Supplier<Collection<String>> listSupplier = ArrayList::new;
+
+        Predicate<String> notA = s -> !"A".equals(s);
+
+        Set<String> emptySet = new LinkedHashSet<>();
+        List<String> emptyList = new ArrayList<>();
+        Set<String> expectedStringsResultSet = new LinkedHashSet<>(stringList);
+        Set<String> expecteStringsWithFilterResultSet = new LinkedHashSet<>(List.of("B", "C", "D"));
+        Set<String> expectedStringsWithNullResultSet = new LinkedHashSet<>(stringWithNullsList);
+        Set<String> expectedStringsWithNullAndFilterResultSet = new LinkedHashSet<>(asList(null, "B"));
+
+        List<String> expectedStringsResultList = new ArrayList<>(stringList);
+        List<String> expecteStringsWithFilterResultList = new ArrayList<>(List.of("B", "C", "D", "C"));
+        List<String> expectedStringsWithNullResultList = new ArrayList<>(stringWithNullsList);
+        List<String> expectedStringsWithNullAndFilterResultList = new ArrayList<>(asList(null, "B", null));
+        return Stream.of(
+                //@formatter:off
+                //            collectionFactory,   filterPredicate,   elements,              expectedResult
+                Arguments.of( null,                null,              null,                  emptyList ),
+                Arguments.of( null,                null,              List.of(),             emptyList ),
+                Arguments.of( null,                notA,              null,                  emptyList ),
+                Arguments.of( null,                notA,              List.of(),             emptyList ),
+                Arguments.of( null,                null,              stringList,            expectedStringsResultList ),
+                Arguments.of( null,                notA,              stringList,            expecteStringsWithFilterResultList ),
+                Arguments.of( null,                null,              stringWithNullsList,   expectedStringsWithNullResultList ),
+                Arguments.of( null,                notA,              stringWithNullsList,   expectedStringsWithNullAndFilterResultList ),
+                Arguments.of( setSupplier,         null,              null,                  emptySet ),
+                Arguments.of( setSupplier,         notA,              null,                  emptySet ),
+                Arguments.of( setSupplier,         notA,              List.of(),             emptySet ),
+                Arguments.of( listSupplier,        null,              null,                  emptyList ),
+                Arguments.of( listSupplier,        notA,              null,                  emptyList ),
+                Arguments.of( listSupplier,        notA,              List.of(),             emptyList ),
+                Arguments.of( listSupplier,        null,              stringList,            expectedStringsResultList ),
+                Arguments.of( listSupplier,        notA,              stringList,            expecteStringsWithFilterResultList ),
+                Arguments.of( setSupplier,         null,              stringList,            expectedStringsResultSet ),
+                Arguments.of( setSupplier,         notA,              stringList,            expecteStringsWithFilterResultSet ),
+                Arguments.of( listSupplier,        null,              stringWithNullsList,   expectedStringsWithNullResultList ),
+                Arguments.of( listSupplier,        notA,              stringWithNullsList,   expectedStringsWithNullAndFilterResultList ),
+                Arguments.of( setSupplier,         null,              stringWithNullsList,   expectedStringsWithNullResultSet ),
+                Arguments.of( setSupplier,         notA,              stringWithNullsList,   expectedStringsWithNullAndFilterResultSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toCollectionAllParametersTestCases")
+    @DisplayName("toCollection: with all parameters test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toCollectionAllParameters_testCases(Supplier<Collection<T>> collectionFactory,
+                                                        Predicate<? super T> filterPredicate,
+                                                        List<T> elements,
+                                                        Collection<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toCollection(collectionFactory, filterPredicate, finalElements));
+    }
+
+
+    static Stream<Arguments> toListOnlyElementsTestCases() {
+        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2);
+
+        List<Integer> emptyList = new ArrayList<>();
+        List<Integer> expectedResult = new ArrayList<>(elements);
+        return Stream.of(
+                //@formatter:off
+                //            elements,    expectedResult
+                Arguments.of( null,        emptyList ),
+                Arguments.of( List.of(),   emptyList ),
+                Arguments.of( elements,    expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toListOnlyElementsTestCases")
+    @DisplayName("toList: only with array of elements test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toListOnlyElements_testCases(List<T> elements,
+                                                 List<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toList(finalElements));
+    }
+
+
+    static Stream<Arguments> toListWithFilterTestCases() {
+        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2, 7);
+
+        Predicate<Integer> isEven = i -> 0 == i % 2;
+
+        List<Integer> emptyList = new ArrayList<>();
+        List<Integer> expectedResult = new ArrayList<>(elements);
+        List<Integer> expectedResultWithFilter = List.of(2, 6, 6, 2);
+        return Stream.of(
+                //@formatter:off
+                //            filterPredicate,   elements,    expectedResult
+                Arguments.of( null,              null,        emptyList ),
+                Arguments.of( null,              List.of(),   emptyList ),
+                Arguments.of( isEven,            null,        emptyList ),
+                Arguments.of( isEven,            List.of(),   emptyList ),
+                Arguments.of( null,              elements,    expectedResult ),
+                Arguments.of( isEven,            elements,    expectedResultWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toListWithFilterTestCases")
+    @DisplayName("toList: with filter test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toListWithFilter_testCases(Predicate<? super T> filterPredicate,
+                                               List<T> elements,
+                                               List<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toList(filterPredicate, finalElements));
+    }
+
+
+    static Stream<Arguments> toListAllParametersTestCases() {
+        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2, 7);
+
+        Predicate<Integer> isOdd = i -> 1 == i % 2;
+
+        Supplier<List<Integer>> linkedListSupplier = LinkedList::new;
+
+        List<Integer> emptyArrayList = new ArrayList<>();
+        List<Integer> emptyLinkedList = new LinkedList<>();
+
+        List<Integer> expectedResultArrayList = new ArrayList<>(elements);
+        List<Integer> expectedResultLinkedList = new LinkedList<>(elements);
+        List<Integer> expectedResultWithFilterArrayList = new ArrayList<>(List.of(1, 3, 7));
+        List<Integer> expectedResultWithFilterLinkedList = new LinkedList<>(List.of(1, 3, 7));
+        return Stream.of(
+                //@formatter:off
+                //            listFactory,          filterPredicate,   elements,    expectedResult
+                Arguments.of( null,                 null,              null,        emptyArrayList ),
+                Arguments.of( null,                 null,              List.of(),   emptyArrayList ),
+                Arguments.of( null,                 null,              elements,    expectedResultArrayList ),
+                Arguments.of( null,                 isOdd,             null,        emptyArrayList ),
+                Arguments.of( null,                 isOdd,             List.of(),   emptyArrayList ),
+                Arguments.of( null,                 isOdd,             elements,    expectedResultWithFilterArrayList ),
+                Arguments.of( linkedListSupplier,   null,              null,        emptyLinkedList ),
+                Arguments.of( linkedListSupplier,   null,              List.of(),   emptyLinkedList ),
+                Arguments.of( linkedListSupplier,   null,              elements,    expectedResultLinkedList ),
+                Arguments.of( linkedListSupplier,   isOdd,             null,        emptyLinkedList ),
+                Arguments.of( linkedListSupplier,   isOdd,             List.of(),   emptyLinkedList ),
+                Arguments.of( linkedListSupplier,   isOdd,             elements,    expectedResultWithFilterLinkedList )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toListAllParametersTestCases")
+    @DisplayName("toList: with all parameters test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toListAllParameters_testCases(Supplier<List<T>> listFactory,
+                                                  Predicate<? super T> filterPredicate,
+                                                  List<T> elements,
+                                                  List<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toList(listFactory, filterPredicate, finalElements));
+    }
+
+
     static Stream<Arguments> toMapWithKeyMapperTestCases() {
         List<Integer> ints = asList(1, null, 2, 3);
 
@@ -3196,6 +3358,120 @@ public class CollectionUtilTest {
                     )
             );
         }
+    }
+
+
+    static Stream<Arguments> toSetOnlyElementsTestCases() {
+        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2);
+
+        Set<Integer> emptySet = new LinkedHashSet<>();
+        Set<Integer> expectedResult = new LinkedHashSet<>(elements);
+        return Stream.of(
+                //@formatter:off
+                //            elements,    expectedResult
+                Arguments.of( null,        emptySet ),
+                Arguments.of( List.of(),   emptySet ),
+                Arguments.of( elements,    expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toSetOnlyElementsTestCases")
+    @DisplayName("toSet: with only source elements test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toSetOnlyElements_testCases(List<T> elements,
+                                                Set<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toSet(finalElements));
+    }
+
+
+    static Stream<Arguments> toSetWithFilterTestCases() {
+        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2, 7);
+
+        Predicate<Integer> isEven = i -> 0 == i % 2;
+
+        Set<Integer> emptySet = new LinkedHashSet<>();
+        Set<Integer> expectedResult = new LinkedHashSet<>(elements);
+        Set<Integer> expectedResultWithFilter = new LinkedHashSet<>(List.of(2, 6, 6, 2));
+        return Stream.of(
+                //@formatter:off
+                //            filterPredicate,   elements,    expectedResult
+                Arguments.of( null,              null,        emptySet ),
+                Arguments.of( null,              List.of(),   emptySet ),
+                Arguments.of( isEven,            null,        emptySet ),
+                Arguments.of( isEven,            List.of(),   emptySet ),
+                Arguments.of( null,              elements,    expectedResult ),
+                Arguments.of( isEven,            elements,    expectedResultWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toSetWithFilterTestCases")
+    @DisplayName("toSet: with filter test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toSetWithFilter_testCases(Predicate<? super T> filterPredicate,
+                                              List<T> elements,
+                                              Set<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toSet(filterPredicate, finalElements));
+    }
+
+
+    static Stream<Arguments> toSetAllParametersTestCases() {
+        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2, 7);
+
+        Predicate<Integer> isOdd = i -> 1 == i % 2;
+
+        Supplier<Set<Integer>> treeSetSupplier = TreeSet::new;
+
+        Set<Integer> emptyLinkedSet = new LinkedHashSet<>();
+        Set<Integer> emptyTreeSet = new TreeSet<>();
+
+        Set<Integer> expectedResultLinkedSet = new LinkedHashSet<>(elements);
+        Set<Integer> expectedResultTreeSet = new TreeSet<>(elements);
+        Set<Integer> expectedResultWithFilterLinkedSet = new LinkedHashSet<>(List.of(1, 3, 7));
+        Set<Integer> expectedResultWithFilterTreeSet = new TreeSet<>(List.of(1, 3, 7));
+        return Stream.of(
+                //@formatter:off
+                //            setFactory,        filterPredicate,   elements,    expectedResult
+                Arguments.of( null,              null,              null,        emptyLinkedSet ),
+                Arguments.of( null,              null,              List.of(),   emptyLinkedSet ),
+                Arguments.of( null,              null,              elements,    expectedResultLinkedSet ),
+                Arguments.of( null,              isOdd,             null,        emptyLinkedSet ),
+                Arguments.of( null,              isOdd,             List.of(),   emptyLinkedSet ),
+                Arguments.of( null,              isOdd,             elements,    expectedResultWithFilterLinkedSet ),
+                Arguments.of( treeSetSupplier,   null,              null,        emptyTreeSet ),
+                Arguments.of( treeSetSupplier,   null,              List.of(),   emptyTreeSet ),
+                Arguments.of( treeSetSupplier,   null,              elements,    expectedResultTreeSet ),
+                Arguments.of( treeSetSupplier,   isOdd,             null,        emptyTreeSet ),
+                Arguments.of( treeSetSupplier,   isOdd,             List.of(),   emptyTreeSet ),
+                Arguments.of( treeSetSupplier,   isOdd,             elements,    expectedResultWithFilterTreeSet )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("toSetAllParametersTestCases")
+    @DisplayName("toSet: with all parameters test cases")
+    @SuppressWarnings("unchecked")
+    public <T> void toSetAllParameters_testCases(Supplier<Set<T>> setFactory,
+                                                 Predicate<? super T> filterPredicate,
+                                                 List<T> elements,
+                                                 Set<T> expectedResult) {
+        T[] finalElements =
+                null == elements
+                        ? null
+                        : (T[]) elements.toArray(new Object[0]);
+
+        assertEquals(expectedResult, toSet(setFactory, filterPredicate, finalElements));
     }
 
 
