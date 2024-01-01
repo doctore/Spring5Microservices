@@ -18,10 +18,11 @@ public class ObjectUtil {
      * Returns the first not {@code null} value of the provided ones.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:         Result:
-     *    null, 12, 15        Optional(12)
+     *    coalesce(                      Result:
+     *       null,                        Optional(12)
+     *       12,
+     *       15
+     *    )
      * </pre>
      *
      * @param valuesToVerify
@@ -78,12 +79,11 @@ public class ObjectUtil {
      * Otherwise, returns {@code defaultValue}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    "   "                           "other"
-     *    s -> s.trim().size() > 0
-     *    "other"
+     *    getOrElse(                                  Result:
+     *       "   ",                                    "other"
+     *       s -> s.trim().size() > 0,
+     *       "other"
+     *    )
      * </pre>
      *
      * @param sourceInstance
@@ -112,6 +112,14 @@ public class ObjectUtil {
     /**
      *    Using the provided {@link Function} {@code mapper}, transform/extract from the given {@code sourceInstance}
      * the related value. Otherwise, returns {@code defaultValue}.
+     *
+     * <pre>
+     *    getOrElse(                     Result:
+     *       23,                          "23"
+     *       Object::toString,
+     *       "other"
+     *    )
+     * </pre>
      *
      * @param sourceInstance
      *    Object used to transform/extract required information.
@@ -158,6 +166,14 @@ public class ObjectUtil {
     /**
      *    Using the provided {@link Function} {@code mapper}, transform/extract from the given {@code sourceInstance}
      * the related value, returning its {@link String} representation. Otherwise, returns {@code defaultValue}.
+     *
+     * <pre>
+     *    getOrElse(                     Result:
+     *       23,                          "24"
+     *       i -> i + 1,
+     *       "other"
+     *    )
+     * </pre>
      *
      * @param sourceInstance
      *    Object used to transform/extract required information.

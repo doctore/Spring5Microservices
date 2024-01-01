@@ -47,12 +47,11 @@ public class MapUtil {
      * {@link BiFunction} {@code secondMapper}({@code firstMapper}(x))
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                      Result:
-     *    [(1, "AGTF"), (3, "CD")]                                         [(2, "4"), (4, "2")]
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.toString())
+     *    andThen(                                                             Result:
+     *       [(1, "AGTF"), (3, "CD")],                                          [(2, "4"), (4, "2")]
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length()),
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.toString())
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -83,14 +82,16 @@ public class MapUtil {
      *    Returns a new {@link Map} using the given {@code sourceMap}, applying to its elements the composed
      * {@link BiFunction} {@code secondMapper}({@code firstMapper}(x))
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                                                      Result:
-     *    [(1, "AGTF"), (3, "CD")]                                         [(2, "4"), (4, "2")]
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.toString())
-     *    HashMap::new
+     * <pre>
+     *    andThen(                                                             Result:
+     *       [(1, "AGTF"), (3, "CD")],                                          [(2, "4"), (4, "2")]
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length()),
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.toString()),
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -138,14 +139,17 @@ public class MapUtil {
      *    Returns a new {@link HashMap} using the given {@code sourceMap}, applying {@code defaultMapper} if
      * the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceMap} will be updated using
+     * {@code defaultMapper}.
      *
-     *   Parameters:                                              Result:
-     *    [("A", 1), ("B", 2)]                                     [("A", 2), ("B", 4)]
-     *    (k, v) -> v % 2 == 1
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v + 1)
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
+     * <pre>
+     *    applyOrElse(                                               Result:
+     *       [("A", 1), ("B", 2)],                                    [("A", 2), ("B", 4)]
+     *       (k, v) -> v % 2 == 1,
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v + 1),
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -181,15 +185,18 @@ public class MapUtil {
      *    Returns a new {@link Map} using the given {@code sourceMap}, applying {@code defaultMapper} if
      * the current element verifies {@code filterPredicate}, {@code orElseMapper} otherwise.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceMap} will be updated using
+     * {@code defaultMapper}. If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                                              Result:
-     *    [("A", 1), ("B", 2)]                                     [("A", 2), ("B", 4)]
-     *    (k, v) -> v % 2 == 1
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v + 1)
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
-     *    HashMap::new
+     * <pre>
+     *    applyOrElse(                                               Result:
+     *       [("A", 1), ("B", 2)],                                    [("A", 2), ("B", 4)]
+     *       (k, v) -> v % 2 == 1,
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v + 1),
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2),
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -238,22 +245,21 @@ public class MapUtil {
      * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                      Result:
-     *    [("A", 1), ("B", 2)]                                             [("A", 2), ("B", 4)]
-     *    PartialFunction.of(
-     *      e -> null != e && 1 == e.getValue() % 2,
-     *      e -> null == e
-     *              ? null
-     *              : new AbstractMap.SimpleEntry<>(
-     *                      e.getKey(),
-     *                      null == e.getValue()
-     *                         ? 0
-     *                         : e.getValue() + 1
-     *                )
+     *    applyOrElse(                                               Result:
+     *       [("A", 1), ("B", 2)],                                    [("A", 2), ("B", 4)]
+     *       PartialFunction.of(
+     *          e -> null != e && 1 == e.getValue() % 2,
+     *          e -> null == e
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                 e.getKey(),
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue() + 1
+     *               )
+     *       ),
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      *    )
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
      * </pre>
      *
      * @param sourceMap
@@ -285,24 +291,26 @@ public class MapUtil {
      *    Returns a new {@link HashMap} using the given {@code sourceMap}, applying applying {@link PartialFunction#apply(Object)}
      * if the current element verifies {@link PartialFunction#isDefinedAt(Object)}, {@code orElseMapper} otherwise.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                                                      Result:
-     *    [("A", 1), ("B", 2)]                                             [("A", 2), ("B", 4)]
-     *    PartialFunction.of(
-     *      e -> null != e && 1 == e.getValue() % 2,
-     *      e -> null == e
-     *              ? null
-     *              : new AbstractMap.SimpleEntry<>(
-     *                      e.getKey(),
-     *                      null == e.getValue()
-     *                         ? 0
-     *                         : e.getValue() + 1
-     *                )
+     * <pre>
+     *    applyOrElse(                                               Result:
+     *       [("A", 1), ("B", 2)],                                    [("A", 2), ("B", 4)]
+     *       PartialFunction.of(
+     *          e -> null != e && 1 == e.getValue() % 2,
+     *          e -> null == e
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                 e.getKey(),
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue() + 1
+     *               )
+     *       ),
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2),
+     *       HashMap::new
      *    )
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v * 2)
-     *    HashMap::new
      * </pre>
      *
      * @param sourceMap
@@ -361,13 +369,15 @@ public class MapUtil {
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be transformed.
      *
-     *   Parameters:                                                      Result:
-     *    [(1, "Hi"), (2, "Hello")]                                        [(3, 4)]
-     *    (k, v) -> k % 2 == 0
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.length())
+     * <pre>
+     *    collect(                                                             Result:
+     *       [(1, "Hi"), (2, "Hello")],                                         [(3, 4)]
+     *       (k, v) -> k % 2 == 0,
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.length())
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -400,14 +410,17 @@ public class MapUtil {
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be transformed. If {@code mapFactory} is
+     * {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                                                     Result:
-     *    [(1, "Hi"), (2, "Hello")]                                       [(3, 4)]
-     *    (k, v) -> k % 2 == 0
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.length())
-     *    HashMap::new
+     * <pre>
+     *    collect(                                                             Result:
+     *       [(1, "Hi"), (2, "Hello")],                                         [(3, 4)]
+     *       (k, v) -> k % 2 == 0,
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k + 1, v.length()),
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -452,20 +465,19 @@ public class MapUtil {
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                      Result:
-     *    [(1, "Hi"), (2, "Hello")]                                        [(1, 2)]
-     *    PartialFunction.of(
-     *      e -> null != e && 1 == e.getKey() % 2,
-     *      e -> null == e
-     *              ? null
-     *              : new AbstractMap.SimpleEntry<>(
-     *                      e.getKey(),
-     *                      null == e.getValue()
-     *                         ? 0
-     *                         : e.getValue().length()
-     *                )
+     *    collect(                                                   Result:
+     *       [(1, "Hi"), (2, "Hello")],                               [(1, 2)]
+     *       PartialFunction.of(
+     *          e -> null != e && 1 == e.getKey() % 2,
+     *          e -> null == e
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                 e.getKey(),
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue().length()
+     *               )
+     *       )
      *    )
      * </pre>
      *
@@ -495,23 +507,25 @@ public class MapUtil {
      *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                                                      Result:
-     *    [(1, "Hi"), (2, "Hello")]                                        [(1, 2)]
-     *    PartialFunction.of(
-     *      e -> null != e && 1 == e.getKey() % 2,
-     *      e -> null == e
-     *              ? null
-     *              : new AbstractMap.SimpleEntry<>(
-     *                      e.getKey(),
-     *                      null == e.getValue()
-     *                         ? 0
-     *                         : e.getValue().length()
-     *                )
+     * <pre>
+     *    collect(                                                   Result:
+     *       [(1, "Hi"), (2, "Hello")],                               [(1, 2)]
+     *       PartialFunction.of(
+     *          e -> null != e && 1 == e.getKey() % 2,
+     *          e -> null == e
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                 e.getKey(),
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue().length()
+     *               )
+     *       ),
+     *       HashMap::new
      *    )
-     *    HashMap::new
      * </pre>
      *
      * @param sourceMap
@@ -558,20 +572,19 @@ public class MapUtil {
      * applies the {@link PartialFunction} to it.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                      Result:
-     *    [(1, "Hi"), (2, "Hello")]                                        Optional[(2, 4)]
-     *    PartialFunction.of(
-     *      e -> null != e && 0 == e.getKey() % 2,
-     *      e -> null == e
-     *              ? null
-     *              : new AbstractMap.SimpleEntry<>(
-     *                      e.getKey(),
-     *                      null == e.getValue()
-     *                         ? 0
-     *                         : e.getValue().length()
-     *                )
+     *    collectFirst(                                              Result:
+     *       [(1, "Hi"), (2, "Hello")],                               Optional[(2, 4)]
+     *       PartialFunction.of(
+     *          e -> null != e && 0 == e.getKey() % 2,
+     *          e -> null == e
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                 e.getKey(),
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue().length()
+     *               )
+     *       )
      *    )
      * </pre>
      *
@@ -619,11 +632,10 @@ public class MapUtil {
      * the maps if the key exists its value will be updated with the latest one.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Dear"), (5, "World")]
-     *    [(2, "Dear"), (5, "World")]
+     *    concat(                                          Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *       [(2, "Dear"), (5, "World")]
+     *    )
      * </pre>
      *
      * @param maps
@@ -646,12 +658,11 @@ public class MapUtil {
      * the maps, if the key exists its value will be updated with the latest one.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                      Result:
-     *    HashMap::new                     [(1, "Hi"), (2, "Dear"), (5, "World")]
-     *    [(1, "Hi"), (2, "Hello")]
-     *    [(2, "Dear"), (5, "World")]
+     *    concat(                                          Result:
+     *       HashMap::new,                                  [(1, "Hi"), (2, "Dear"), (5, "World")]
+     *       [(1, "Hi"), (2, "Hello")],
+     *       [(2, "Dear"), (5, "World")]
+     *    )
      * </pre>
      *
      * @param mapFactory
@@ -676,14 +687,16 @@ public class MapUtil {
     /**
      * Returns a new {@link Map} containing the elements of provided {@link Map}s {@code maps}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                      Result:
-     *    HashMap::new                     [(1, "Hi"), (2, "Hello"), (5, "World")]
-     *    (oldV, newV) -> oldV
-     *    [(1, "Hi"), (2, "Hello")]
-     *    [(2, "Dear"), (5, "World")]
+     * <pre>
+     *    concat(                                          Result:
+     *       HashMap::new,                                  [(1, "Hi"), (2, "Hello"), (5, "World")]
+     *       (oldV, newV) -> oldV,
+     *       [(1, "Hi"), (2, "Hello")],
+     *       [(2, "Dear"), (5, "World")]
+     *    )
      * </pre>
      *
      * @param mapFactory
@@ -729,13 +742,6 @@ public class MapUtil {
     /**
      * Returns a new {@link Map} containing the elements of provided {@code sourceMap}.
      *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Hello")]
-     * </pre>
-     *
      * @param sourceMap
      *    Source {@link Map} with the elements to copy
      *
@@ -752,12 +758,14 @@ public class MapUtil {
     /**
      * Returns a new {@link Map} containing the elements of provided {@code sourceMap}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Hello")]
-     *    HashMap::new
+     * <pre>
+     *    copy(                                            Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi"), (2, "Hello")]
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -782,11 +790,10 @@ public class MapUtil {
      * Counts the number of elements in the {@code sourceMap} which satisfy the {@code filterPredicate}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    [(1, "Hi"), (2, "Hello")]       1
-     *    (k, v) -> k % 2 == 0
+     *    count(                                           Result:
+     *       [(1, "Hi"), (2, "Hello")],                     1
+     *       (k, v) -> 0 == k % 2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -822,14 +829,13 @@ public class MapUtil {
      * the {@link BiPredicate} {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceMap} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                    Result:
-     *    [(1, "Hi"), (2, "Hello"), (3, "World")]        [(2, "Hello"), (3, "World")]
-     *    (k, v) -> k % 2 == 1
+     *    dropWhile(                                                 Result:
+     *       [(1, "Hi"), (2, "Hello"), (3, "World")],                 [(2, "Hello"), (3, "World")]
+     *       (k, v) -> 1 == k % 2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -854,15 +860,15 @@ public class MapUtil {
      * the {@link BiPredicate} {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceMap} will be returned. If
+     * {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                    Result:
-     *    [(1, "Hi"), (2, "Hello"), (3, "World")]        [(2, "Hello"), (3, "World")]
-     *    (k, v) -> k % 2 == 1
-     *    HashMap::new
+     *    dropWhile(                                                 Result:
+     *       [(1, "Hi"), (2, "Hello"), (3, "World")],                 [(2, "Hello"), (3, "World")]
+     *       (k, v) -> 1 == k % 2,
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -908,14 +914,13 @@ public class MapUtil {
      * {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceMap} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
-     *    (k, v) -> k % 2 == 0
+     *    filter(                                          Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi")]
+     *       (k, v) -> 0 == k % 2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -941,15 +946,15 @@ public class MapUtil {
      * {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceMap} will be returned. If
+     * {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
-     *    (k, v) -> k % 2 == 0
-     *    HashMap::new
+     *    filter(                                          Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi")]
+     *       (k, v) -> 0 == k % 2,
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -999,11 +1004,10 @@ public class MapUtil {
      *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
-     *    (k, v) -> k % 2 == 0
+     *    filterNot(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi")]
+     *       (k, v) -> 0 == k % 2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1029,15 +1033,15 @@ public class MapUtil {
      * {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceMap} will be returned. If
+     *  {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
-     *    (k, v) -> k % 2 == 0
-     *    HashMap::new
+     *    filterNot(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi")]
+     *       (k, v) -> 0 == k % 2,
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1071,11 +1075,10 @@ public class MapUtil {
      * Finds the first element of the given {@link Map} satisfying the provided {@link BiPredicate}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                     Result:
-     *    [(1, "Hi"), (2, "Hello")]       Optional((2, "Hello"))
-     *    (k, v) -> k % 2 == 0
+     *    find(                                            Result:
+     *       [(1, "Hi"), (2, "Hello")]                      Optional((2, "Hello"))
+     *       (k, v) -> 0 == k % 2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1113,13 +1116,12 @@ public class MapUtil {
      * Converts given {@code sourceMap} into a {@link List} formed by the elements of these iterable collections.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                        Result:
-     *     [(1, ["Hi"]), (2, ["Hello", "World"])]            [(1, "Hi"), (2, "Hello"), (2, "World")]
-     *     (i, l) -> l.stream()
-     *                .map(elto -> Tuple2.of(i, elto))
-     *                .collect(toList())
+     *    flatten(                                                   Result:
+     *       [(1, ["Hi"]), (2, ["Hello", "World"])],                  [(1, "Hi"), (2, "Hello"), (2, "World")]
+     *       (i, l) -> l.stream()
+     *                  .map(elto -> Tuple2.of(i, elto))
+     *                  .collect(toList())
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1144,15 +1146,17 @@ public class MapUtil {
     /**
      * Converts given {@code sourceMap} into a {@link Collection} formed by the elements of these iterable collections.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then {@link ArrayList} will be used.
      *
-     *   Parameters:                                        Result:
-     *     [(1, ["Hi"]), (2, ["Hello", "Hello"])]            [(1, "Hi"), (2, "Hello")]
-     *     (i, l) -> l.stream()
-     *                .map(elto -> Tuple2.of(i, elto))
-     *                .collect(toList())
-     *     HashSet::new
+     * <pre>
+     *    flatten(                                                   Result:
+     *       [(1, ["Hi"]), (2, ["Hello", "Hello"])],                  [(1, "Hi"), (2, "Hello")]
+     *       (i, l) -> l.stream()
+     *                  .map(elto -> Tuple2.of(i, elto))
+     *                  .collect(toList()),
+     *       HashSet::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1202,12 +1206,11 @@ public class MapUtil {
      * calling {@code accumulator}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                 Result:
-     *    [(1, "Hi"), (2, "Hello")]                   10
-     *    0
-     *    (prev, k, v) -> prev + k + v.length()
+     *    foldLeft(                                        Result:
+     *       [(1, "Hi"), (2, "Hello")],                     10
+     *       0,
+     *       (prev, k, v) -> prev + k + v.length()
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1236,14 +1239,16 @@ public class MapUtil {
      *    Folds given {@link Map} values from the left, starting with {@code initialValue} and successively
      * calling {@code accumulator}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
      *
-     *   Parameters:                                  Result:
-     *    [(1, "Hi"), (2, "Hola"), (3, "World")]       10
-     *    (k, v) -> 1 == k % 2
-     *    0
-     *    (prev, k, v) -> prev + k + v.length()
+     * <pre>
+     *    foldLeft(                                        Result:
+     *       [(1, "Hi"), (2, "Hola"), (3, "World")]         10
+     *       (k, v) -> 1 == k % 2,
+     *       0,
+     *       (prev, k, v) -> prev + k + v.length()
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1288,21 +1293,16 @@ public class MapUtil {
      * otherwise.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        "Hi"
-     *    1
-     *    "World"
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        "World"
-     *    5
-     *    "World"
+     *    getOrElse(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")]                      "Hi"
+     *       1,
+     *       "World"
+     *    )
+     *    getOrElse(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")]                      "World"
+     *       5,
+     *       "World"
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1331,21 +1331,16 @@ public class MapUtil {
      * of {@code defaultValue} otherwise.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        "Hi"
-     *    1
-     *    () -> "World"
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        "World"
-     *    5
-     *    () -> "World"
+     *    getOrElse(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")]                      "Hi"
+     *       1,
+     *       () -> "World"
+     *    )
+     *    getOrElse(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")]                      "World"
+     *       5,
+     *       () -> "World"
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1378,11 +1373,10 @@ public class MapUtil {
      * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                    Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World")]        [(0,  [(2, "Hello")])
-     *    (k, v) -> k % 2                                 (1,  [(1, "Hi"), (5, "World")])]
+     *    groupBy(                                                   Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World")]                  [(0,  [(2, "Hello")])
+     *       (k, v) -> k % 2                                           (1,  [(1, "Hi"), (5, "World")])]
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1411,13 +1405,12 @@ public class MapUtil {
      * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                    Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World")]        [(0,  [(2, "Hello")])
-     *    (k, v) -> k % 2                                 (1,  [(1, "Hi"), (5, "World")])]
-     *    HashMap::new
-     *    HashMap::new
+     *    groupBy(                                                   Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World")]                  [(0,  [(2, "Hello")])
+     *       (k, v) -> k % 2,                                          (1,  [(1, "Hi"), (5, "World")])]
+     *       HashMap::new,
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1465,24 +1458,23 @@ public class MapUtil {
      * {@link Collection} of related key values.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                          Result:
-     *    [(1, "Hi"), (2, "Hello"), (11, "World")]             [("evenKey",  [(2, "Hello")])
-     *    (k, v) -> {                                           ("oddKey",   [(1, "Hi"), (11, "World")])
-     *       List<String> keys = new ArrayList<>();             ("smaller10Key",  [(1, "Hi"), (2, "Hello")])
-     *       if (0 == k % 2) {                                  ("greaterEqual10Key",  [(11, "World")])]
-     *          keys.add("evenKey");
-     *       } else {
-     *          keys.add("oddKey");
+     *    groupByMultiKey(                                           Result:
+     *       [(1, "Hi"), (2, "Hello"), (11, "World")],                [("evenKey",  [(2, "Hello")])
+     *       (k, v) -> {                                               ("oddKey",   [(1, "Hi"), (11, "World")])
+     *          List<String> keys = new ArrayList<>();                 ("smaller10Key",  [(1, "Hi"), (2, "Hello")])
+     *          if (0 == k % 2) {                                      ("greaterEqual10Key",  [(11, "World")])]
+     *             keys.add("evenKey");
+     *          } else {
+     *             keys.add("oddKey");
+     *          }
+     *          if (10 > k) {
+     *             keys.add("smaller10Key");
+     *          } else {
+     *             keys.add("greaterEqual10Key");
+     *          }
+     *          return keys;
      *       }
-     *       if (10 > k) {
-     *          keys.add("smaller10Key");
-     *       } else {
-     *          keys.add("greaterEqual10Key");
-     *       }
-     *       return keys;
-     *    }
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1515,26 +1507,25 @@ public class MapUtil {
      * returns a {@link Collection} of related key values.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                          Result:
-     *    [(1, "Hi"), (2, "Hello"), (11, "World")]             [("evenKey",  [(2, "Hello")])
-     *    (k, v) -> {                                           ("oddKey",   [(1, "Hi"), (11, "World")])
-     *       List<String> keys = new ArrayList<>();             ("smaller10Key",  [(1, "Hi"), (2, "Hello")])
-     *       if (0 == k % 2) {                                  ("greaterEqual10Key",  [(11, "World")])]
-     *          keys.add("evenKey");
-     *       } else {
-     *          keys.add("oddKey");
-     *       }
-     *       if (10 > k) {
-     *          keys.add("smaller10Key");
-     *       } else {
-     *          keys.add("greaterEqual10Key");
-     *       }
-     *       return keys;
-     *    }
-     *    HashMap::new
-     *    HashMap::new
+     *    groupByMultiKey(                                           Result:
+     *       [(1, "Hi"), (2, "Hello"), (11, "World")],                [("evenKey",  [(2, "Hello")])
+     *       (k, v) -> {                                               ("oddKey",   [(1, "Hi"), (11, "World")])
+     *          List<String> keys = new ArrayList<>();                 ("smaller10Key",  [(1, "Hi"), (2, "Hello")])
+     *          if (0 == k % 2) {                                      ("greaterEqual10Key",  [(11, "World")])]
+     *             keys.add("evenKey");
+     *          } else {
+     *             keys.add("oddKey");
+     *          }
+     *          if (10 > k) {
+     *             keys.add("smaller10Key");
+     *          } else {
+     *             keys.add("greaterEqual10Key");
+     *          }
+     *          return keys;
+     *       },
+     *       HashMap::new,
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1593,12 +1584,11 @@ public class MapUtil {
      * Each element in a group is transformed into a value of type V using {@code valueMapper} {@link BiFunction}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                             Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]       [(0,  [1])
-     *    (k, v) -> k % 3                                          (1,  [2])
-     *    (k, v) -> v.length()                                     (2,  [5, 5])]
+     *    groupMap(                                                            Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")],                 [(0,  [1])
+     *       (k, v) -> k % 3,                                                    (1,  [2])
+     *       (k, v) -> v.length()                                                (2,  [5, 5])]
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1634,16 +1624,15 @@ public class MapUtil {
      * of type V using {@code valueMapper} {@link BiFunction}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#biAlwaysTrue} will be applied.
+     *    If {@code filterPredicate} is {@code null} then all elements will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                           Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!"), (11, "Not")]        [(0,  [1])
-     *    (k, v) -> 10 > k                                                       (1,  [2])
-     *    (k, v) -> k % 3                                                        (2,  [5, 5])]
-     *    (k, v) -> v.length()
+     *    groupMap(                                                                 Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!"), (11, "Not")],         [(0,  [1])
+     *       (k, v) -> 10 > k,                                                        (1,  [2])
+     *       (k, v) -> k % 3,                                                         (2,  [5, 5])]
+     *       (k, v) -> v.length()
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1682,17 +1671,17 @@ public class MapUtil {
      * of type V using {@code valueMapper} {@link BiFunction}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then {@link PredicateUtil#biAlwaysTrue} will be applied.
+     *    If {@code filterPredicate} is {@code null} then all elements will be used. If {@code collectionFactory} is
+     * {@code null} then {@link ArrayList} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                           Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!"), (11, "Not")]        [(0,  [1])
-     *    (k, v) -> 10 > k                                                       (1,  [2])
-     *    (k, v) -> k % 3                                                        (2,  [5, 5])]
-     *    (k, v) -> v.length()
-     *    ArrayList::new
+     *    groupMap(                                                                 Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!"), (11, "Not")],         [(0,  [1])
+     *       (k, v) -> 10 > k,                                                        (1,  [2])
+     *       (k, v) -> k % 3,                                                         (2,  [5, 5])]
+     *       (k, v) -> v.length(),
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1740,21 +1729,20 @@ public class MapUtil {
      * Each element in the {@link Map} is transformed into a {@link Map.Entry} using {@code partialFunction}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                 Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (7, "!")]           [(1,  [3, 2])
-     *    PartialFunction.of(                                          (2,  [6])]
-     *      e -> null != e && 1 == e.getValue() % 2,
-     *      e -> null == e
-     *              ? null
-     *              : new AbstractMap.SimpleEntry<>(
-     *                      e.getKey() % 3,
-     *                      null == e.getValue()
-     *                         ? 0
-     *                         : e.getValue().length() + 1
-     *                )
-     *          )
+     *    groupMap(                                                            Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World"), (7, "!")],                 [(1,  [3, 2])
+     *       PartialFunction.of(                                                 (2,  [6])]
+     *          e -> null != e && 1 == e.getValue() % 2,
+     *          e -> null == e
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                 e.getKey() % 3,
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue().length() + 1
+     *               )
+     *       )
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1782,23 +1770,25 @@ public class MapUtil {
      *    Partitions given {@code sourceMap} into a {@link Map} of {@link List} according to {@code partialFunction}.
      * Each element in the {@link Map} is transformed into a {@link Map.Entry} using {@code partialFunction}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then {@link ArrayList} will be used.
      *
-     *   Parameters:                                                 Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (7, "!")]           [(1,  [3, 2])
-     *    PartialFunction.of(                                          (2,  [6])]
-     *      e -> null != e && 1 == e.getValue() % 2,
-     *      e -> null == e
-     *              ? null
-     *              : new AbstractMap.SimpleEntry<>(
-     *                      e.getKey() % 3,
-     *                      null == e.getValue()
-     *                         ? 0
-     *                         : e.getValue().length() + 1
-     *                )
-     *          )
-     *    ArrayList::new
+     * <pre>
+     *    groupMap(                                                            Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World"), (7, "!")],                 [(1,  [3, 2])
+     *       PartialFunction.of(                                                 (2,  [6])]
+     *          e -> null != e && 1 == e.getValue() % 2,
+     *          e -> null == e
+     *             ? null
+     *             : new AbstractMap.SimpleEntry<>(
+     *                 e.getKey() % 3,
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue().length() + 1
+     *               )
+     *       ),
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1851,13 +1841,12 @@ public class MapUtil {
      * and then reduced into a single value with {@code reduceValues}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                              Intermediate Map:          Result:
-     *    [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")]        [(0,  [1])                 [(0, 1),
-     *    (k, v) -> k % 3                                           (1,  [2])                  (1, 2),
-     *    (k, v) -> v.length()                                      (2,  [5, 5])]              (2, 10)]
-     *    Integer::sum
+     *    groupMapReduce(                                                 Intermediate Map:             Result:
+     *       [(1, "Hi"), (2, "Hello"), (5, "World"), (6, "!")],            [(0,  [1])                    [(0, 1),
+     *       (k, v) -> k % 3,                                               (1,  [2])                     (1, 2),
+     *       (k, v) -> v.length(),                                          (2,  [5, 5])]                 (2, 10)]
+     *       Integer::sum
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1903,22 +1892,22 @@ public class MapUtil {
      * after applying {@link PartialFunction#apply(Object)} are then reduced into a single value with {@code reduceValues}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                                   Intermediate Map:          Result:
-     *    [(1, "Hi"), (2, "Hola"), (4, ""), (5, "World"), (6, "!"), (11, "ABC")]        [(0,  [2])                 [(0, 2),
-     *    PartialFunction.of(                                                            (1,  [3, 1])               (1, 4),
-     *      e -> null != e && 10 > e.getKey(),                                           (2,  [5, 6])]              (2, 11)]
-     *      e -> null == e
+     *    groupMapReduce(                                                                  Intermediate Map:             Result:
+     *       [(1, "Hi"), (2, "Hola"), (4, ""), (5, "World"), (6, "!"), (11, "ABC")]         [(0,  [2])                    [(0, 2),
+     *       PartialFunction.of(                                                             (1,  [3, 1])                  (1, 4),
+     *          e -> null != e && 10 > e.getKey(),                                           (2,  [5, 6])]                 (2, 11)]
+     *          e -> null == e
      *             ? null
      *             : new AbstractMap.SimpleEntry<>(
-     *                     e.getKey() % 3,
-     *                     null == e.getValue()
-     *                       ? 0
-     *                       : e.getValue().length() + 1
+     *                 e.getKey() % 3,
+     *                 null == e.getValue()
+     *                    ? 0
+     *                    : e.getValue().length() + 1
      *               )
-     *      )
-     *   Integer::sum
+     *       ),
+     *       Integer::sum
+     *    )
+     * </pre>
      *
      * @param sourceMap
      *    Source {@link Map} with the elements to filter, transform and reduce
@@ -1961,11 +1950,10 @@ public class MapUtil {
      * Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                 Result:
-     *    [(1, "AGTF"), (3, "CD")]                                    [(1, 4), (3, 2)]
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
+     *    map(                                                                 Result:
+     *       [(1, "AGTF"), (3, "CD")],                                          [(1, 4), (3, 2)]
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -1990,13 +1978,15 @@ public class MapUtil {
     /**
      * Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                                                 Result:
-     *    [(1, "AGTF"), (3, "CD")]                                    [(1, 4), (3, 2)]
-     *    (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length())
-     *    HashMap::new
+     * <pre>
+     *    map(                                                                 Result:
+     *       [(1, "AGTF"), (3, "CD")],                                          [(1, 4), (3, 2)]
+     *       (k, v) -> new AbstractMap.SimpleEntry<>(k, v.length()),
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2042,11 +2032,10 @@ public class MapUtil {
      * as new values of returned {@link Map}, keeping existing keys.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                    Result:
-     *    [(1, "A"), (3, "C")]           [(1, 2), (3, 4)]
-     *    (k, v) -> k + v.length()
+     *    mapValues(                                       Result:
+     *       [(1, "A"), (3, "C")],                          [(1, 2), (3, 4)]
+     *       (k, v) -> k + v.length()
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2073,13 +2062,15 @@ public class MapUtil {
      *    Builds a new {@link Map} by applying a function to all elements of {@code sourceMap}, adding the results
      * as new values of returned {@link Map}, keeping existing keys.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                    Result:
-     *    [(1, "A"), (3, "C")]           [(1, 2), (3, 4)]
-     *    (k, v) -> k + v.length()
-     *    HashMap::new
+     * <pre>
+     *    mapValues(                                       Result:
+     *       [(1, "A"), (3, "C")],                          [(1, 2), (3, 4)]
+     *       (k, v) -> k + v.length(),
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2123,11 +2114,10 @@ public class MapUtil {
      * Finds the first element of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                   Result:
-     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional((5, "World"))
-     *    Map.Entry.comparingByKey();
+     *    max(                                                       Result:
+     *       [(1, "Hi"), (3, "Hello"), (5, "World")],                 Optional((5, "World"))
+     *       Map.Entry.comparingByKey()
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2184,13 +2174,6 @@ public class MapUtil {
      *          )
      *       </pre>
      *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                   Result:
-     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("World")
-     * </pre>
-     *
      * @param sourceMap
      *    {@link Map} used to find the largest value
      *
@@ -2211,11 +2194,10 @@ public class MapUtil {
      * Finds the first value of provided {@link Map} which yields the largest value measured by given {@link Comparator}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                   Result:
-     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("World")
-     *    String::compareTo
+     *    maxValue(                                                  Result:
+     *       [(1, "Hi"), (3, "Hello"), (5, "World")],                 Optional("World")
+     *       String::compareTo
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2244,11 +2226,10 @@ public class MapUtil {
      * Finds the first element of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                   Result:
-     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional((1, "Hi"))
-     *    (t1, t2) -> t1._1.compareTo(t2._1)
+     *    min(                                                       Result:
+     *       [(1, "Hi"), (3, "Hello"), (5, "World")],                 Optional((1, "Hi"))
+     *       (t1, t2) -> t1._1.compareTo(t2._1)
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2304,13 +2285,6 @@ public class MapUtil {
      *          )
      *       </pre>
      *
-     * <pre>
-     * Example:
-     *
-     *   Parameters:                                   Result:
-     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("World")
-     * </pre>
-     *
      * @param sourceMap
      *    {@link Map} used to find the smallest value
      *
@@ -2331,11 +2305,10 @@ public class MapUtil {
      * Finds the first value of provided {@link Map} which yields the smallest value measured by given {@link Comparator}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                   Result:
-     *    [(1, "Hi"), (3, "Hello"), (5, "World")]       Optional("Hello")
-     *    String::compareTo
+     *    minValue(                                                  Result:
+     *       [(1, "Hi"), (3, "Hello"), (5, "World")]                  Optional("Hello")
+     *       String::compareTo
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2365,11 +2338,10 @@ public class MapUtil {
      * {@code discriminator} and {@code false}, all elements that do not.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                       Result:
-     *    [(1, "Hi"), (2, "Hello")]         [(true,  [(2, "Hello")])
-     *    (k, v) -> k % 2 == 0               (false, [(1, "Hi")])]
+     *    partition(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(true,  [(2, "Hello")])
+     *       (k, v) -> 0 == k % 2                            (false, [(1, "Hi")])]
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2394,13 +2366,15 @@ public class MapUtil {
      *    Returns a {@link Map} of {@link Boolean} as key, on which {@code true} contains all elements that satisfy given
      * {@code discriminator} and {@code false}, all elements that do not.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
-     *   Parameters:                       Result:
-     *    [(1, "Hi"), (2, "Hello")]         [(true,  [(2, "Hello")])
-     *    (k, v) -> k % 2 == 0               (false, [(1, "Hi")])]
-     *    HashMap::new
+     * <pre>
+     *    partition(                                       Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(true,  [(2, "Hello")])
+     *       (k, v) -> 0 == k % 2,                           (false, [(1, "Hi")])]
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2442,15 +2416,14 @@ public class MapUtil {
      * the same type that {@code sourceMap} and only uses contained elements of provided {@link Map}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                       Result:
-     *    [(1, "Hi"), (2, "Hello")]                                         (3, 'Hi Hello')
-     *    (oldEntry, newEntry) ->
-     *       new AbstractMap.SimpleEntry<>(
-     *          oldEntry.getKey() + newEntry.getKey(),
-     *          oldEntry.getValue() + newEntry.getValue()
-     *       );
+     *    reduce(                                                    Result:
+     *       [(1, "Hi"), (2, "Hello")],                               (3, "Hi Hello")
+     *       (oldEntry, newEntry) ->
+     *          new AbstractMap.SimpleEntry<>(
+     *            oldEntry.getKey() + newEntry.getKey(),
+     *            oldEntry.getValue() + newEntry.getValue()
+     *          )
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2481,30 +2454,21 @@ public class MapUtil {
      * up to index {@code until} (excluding this one).
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(2, "Hello")]
-     *    1
-     *    3
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi")]
-     *    0
-     *    1
-     * </pre>
-     *
-     * <pre>
-     * Example 3:
-     *
-     *   Parameters:                      Result:
-     *    [(1, "Hi"), (2, "Hello")]        [(1, "Hi"), (2, "Hello")]
-     *    -1
-     *    2
+     *    slice(                                           Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(2, "Hello")]
+     *       1,
+     *       3
+     *    )
+     *    slice(                                           Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi")]
+     *       0,
+     *       1
+     *    )
+     *    slice(                                           Result:
+     *       [(1, "Hi"), (2, "Hello")],                     [(1, "Hi"), (2, "Hello")]
+     *       -1,
+     *       2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2556,22 +2520,17 @@ public class MapUtil {
 
 
     /**
-     * Loops through the provided {@link Map} one position every time, returning sublists with {@code size}
+     * Loops through the provided {@link Map} one position every time, returning sublists with {@code size}.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:                          Result:
-     *    [(1, "A"), (3, "C")]                 [[(1, "A"), (3, "C")]]
-     *    5
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:                          Result:
-     *    [(1, "A"), (3, "C"), (8, "Z")]       [[(1, "A"), (3, "C")], [(3, "C"), (8, "Z")]]
-     *    2
+     *    sliding(                                         Result:
+     *       [(1, "A"), (3, "C")],                          [[(1, "A"), (3, "C")]]
+     *       5
+     *    )
+     *    sliding(                                         Result:
+     *       [(1, "A"), (3, "C"), (8, "Z")],                [[(1, "A"), (3, "C")], [(3, "C"), (8, "Z")]]
+     *       2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2628,12 +2587,11 @@ public class MapUtil {
      *    By default, ordering  the maps, if the key exists its value will be updated with the latest one.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                            Result:
-     *    Map.Entry.comparingByKey();            [(1, "Yes"), (2, "No"), (3, "Hello")]
-     *    [(1, "Hi"), (3, "Hello")]
-     *    [(1, "Yes"), (2, "No")]
+     *    sort(                                            Result:
+     *       Map.Entry.comparingByKey(),                    [(1, "Yes"), (2, "No"), (3, "Hello")]
+     *       [(1, "Hi"), (3, "Hello")],
+     *       [(1, "Yes"), (2, "No")]
+     *    )
      * </pre>
      *
      * @param comparator
@@ -2662,13 +2620,12 @@ public class MapUtil {
      * to deal with a key/value {@link Comparator}, returning a sorted {@link Map} based on it.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                            Result:
-     *    Map.Entry.comparingByKey();            [(1, "Hi"), (2, "No"), (3, "Hello")]
-     *    (oldV, newV) -> oldV
-     *    [(1, "Hi"), (3, "Hello")]
-     *    [(1, "Yes"), (2, "No")]
+     *    sort(                                            Result:
+     *       Map.Entry.comparingByKey(),                    [(1, "Hi"), (2, "No"), (3, "Hello")]
+     *       (oldV, newV) -> oldV,
+     *       [(1, "Hi"), (3, "Hello")],
+     *       [(1, "Yes"), (2, "No")]
+     *    )
      * </pre>
      *
      * @param comparator
@@ -2715,22 +2672,17 @@ public class MapUtil {
 
 
     /**
-     * Splits the given {@link Map} in sublists with a size equal to the given {@code size}
+     * Splits the given {@link Map} in sublists with a size equal to the given {@code size}.
      *
      * <pre>
-     * Example 1:
-     *
-     *   Parameters:                          Result:
-     *    [(1, "A"), (3, "C"), (8, "Z")]       [[(1, "A"), (3, "C")], [(8, "Z")]]
-     *    2
-     * </pre>
-     *
-     * <pre>
-     * Example 2:
-     *
-     *   Parameters:                          Result:
-     *    [(1, "A"), (3, "C")]                 [[(1, "A"), (3, "C")]]
-     *    3
+     *    split(                                           Result:
+     *       [(1, "A"), (3, "C"), (8, "Z")],                [[(1, "A"), (3, "C")], [(8, "Z")]]
+     *       2
+     *    )
+     *    split(                                           Result:
+     *       [(1, "A"), (3, "C")],                          [[(1, "A"), (3, "C")]]
+     *       3
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2782,11 +2734,10 @@ public class MapUtil {
      *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                    Result:
-     *    [(2, "Hi"), (4, "Hello"), (5, "World")]        [(2, "Hi"), (4, "Hello")]
-     *    (k, v) -> k % 2 == 0
+     *    takeWhile(                                                 Result:
+     *       [(2, "Hi"), (4, "Hello"), (5, "World")],                 [(2, "Hi"), (4, "Hello")]
+     *       (k, v) -> 0 == k % 2
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2811,15 +2762,15 @@ public class MapUtil {
      * {@link BiPredicate} {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned.
+     *    If {@code filterPredicate} is {@code null} then all elements of {@code sourceCollection} will be returned. If
+     * {@code mapFactory} is {@code null} then {@link HashMap} will be used.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                    Result:
-     *    [(2, "Hi"), (4, "Hello"), (5, "World")]        [(2, "Hi"), (4, "Hello")]
-     *    (k, v) -> k % 2 == 0
-     *    HashMap::new
+     *    takeWhile(                                                 Result:
+     *       [(2, "Hi"), (4, "Hello"), (5, "World")],                 [(2, "Hi"), (4, "Hello")]
+     *       (k, v) -> 0 == k % 2,
+     *       HashMap::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2861,14 +2812,13 @@ public class MapUtil {
 
 
     /**
-     * Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}
+     * Converts the given {@link Map} in to a {@link List} using provided {@code keyValueMapper}.
      *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                            Result:
-     *    [("a", 1), ("b", 2), ("d", 4)]         [2, 3, 5]
-     *    (s, i) -> s.length() + i
+     *    toCollection(                                    Result:
+     *       [("a", 1), ("b", 2), ("d", 4)],                [2, 3, 5]
+     *       (s, i) -> s.length() + i
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2896,13 +2846,15 @@ public class MapUtil {
     /**
      * Converts the given {@link Map} in to a {@link Collection} using provided {@code keyValueMapper}
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then {@link ArrayList} will be used.
      *
-     *   Parameters:                            Result:
-     *    [("a", 1), ("b", 2), ("d", 4)]         [2, 3, 5]
-     *    (s, i) -> s.length() + i,
-     *    ArrayList::new
+     * <pre>
+     *    toCollection(                                    Result:
+     *       [("a", 1), ("b", 2), ("d", 4)],                [2, 3, 5]
+     *       (s, i) -> s.length() + i,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2933,14 +2885,16 @@ public class MapUtil {
      *    Converts the given {@link Map} in to a {@link Collection} using provided {@code keyValueMapper}, only with the
      * elements that satisfy the {@link BiPredicate} {@code filterPredicate}.
      *
-     * <pre>
-     * Example:
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then {@link ArrayList} will be used.
      *
-     *   Parameters:                            Result:
-     *    [("a", 1), ("b", 2), ("d", 4)]         [3, 5]
-     *    (s, i) -> s.length() + i
-     *    (s, i) -> 0 == i % 2,
-     *    ArrayList::new
+     * <pre>
+     *    toCollection(                                    Result:
+     *       [("a", 1), ("b", 2), ("d", 4)],                [3, 5]
+     *       (s, i) -> s.length() + i,
+     *       (s, i) -> 0 == i % 2,
+     *       ArrayList::new
+     *    )
      * </pre>
      *
      * @param sourceMap
@@ -2986,19 +2940,20 @@ public class MapUtil {
     /**
      * Converts the given {@link Map} in to a {@link Collection} using provided {@code partialFunction}.
      *
+     * @apiNote
+     *    If {@code collectionFactory} is {@code null} then {@link ArrayList} will be used.
+     *
      * <pre>
-     * Example:
-     *
-     *   Parameters:                                                      Result:
-     *    [("a", 1), ("b", 2), ("d", 4)]                                   [3, 5]
-     *    PartialFunction.of(
-     *      e -> null != e && 0 == e.getKey() % 2,
-     *      e -> null == e
-     *              ? 0
-     *              : e.getKey().length() + e.getValue()
-     *
+     *    toCollection(                                              Result:
+     *       [("a", 1), ("b", 2), ("d", 4)],                          [3, 5]
+     *       PartialFunction.of(
+     *          e -> null != e && 0 == e.getKey() % 2,
+     *          e -> null == e
+     *             ? 0
+     *             : e.getKey().length() + e.getValue()
+     *       ),
+     *       ArrayList::new
      *    )
-     *    ArrayList::new
      * </pre>
      *
      * @param sourceMap

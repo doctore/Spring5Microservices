@@ -194,9 +194,11 @@ public class DateTimeUtil {
 
     /**
      * Returns a {@link Tuple2} with the interval:
-     * <p>
+     *
+     * <pre>
      *   1. [ sourceDate - difference, sourceDate ]                if difference is lower than 0.
      *   2. [ sourceDate,              sourceDate + difference ]   if difference is greater than 0
+     * </pre>
      *
      * @param sourceDate
      *    {@link Date} value from which to add/subtract the specified {@code difference}. If {@code null} then new {@link Date} will be used
@@ -221,9 +223,10 @@ public class DateTimeUtil {
 
     /**
      * Returns a {@link Tuple2} with the interval:
-     * <p>
+     * <pre>
      *   1. [ sourceDate - difference, sourceDate ]                if difference is lower than 0.
      *   2. [ sourceDate,              sourceDate + difference ]   if difference is greater than 0
+     * </pre>
      *
      * @param sourceDate
      *    {@link Date} value from which to add/subtract the specified {@code difference}. If {@code null} then new {@link Date} will be used
@@ -264,9 +267,10 @@ public class DateTimeUtil {
 
     /**
      * Returns a {@link Tuple2} with the interval:
-     * <p>
+     * <pre>
      *   1. [ sourceLocalDateTime - difference, sourceLocalDateTime ]                if difference is lower than 0.
      *   2. [ sourceLocalDateTime,              sourceLocalDateTime + difference ]   if difference is greater than 0
+     * </pre>
      *
      * @param sourceLocalDateTime
      *    {@link LocalDateTime} value from which to add/subtract the specified {@code difference}. If {@code null} then {@link LocalDateTime#now()} will be used
@@ -291,9 +295,10 @@ public class DateTimeUtil {
 
     /**
      * Returns a {@link Tuple2} with the interval:
-     * <p>
+     * <pre>
      *   1. [ sourceLocalDateTime - difference, sourceLocalDateTime ]                if difference is lower than 0.
      *   2. [ sourceLocalDateTime,              sourceLocalDateTime + difference ]   if difference is greater than 0
+     * </pre>
      *
      * @param sourceLocalDateTime
      *    {@link LocalDateTime} value from which to add/subtract the specified {@code difference}. If {@code null} then {@link LocalDateTime#now()} will be used

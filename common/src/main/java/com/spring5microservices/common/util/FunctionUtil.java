@@ -95,8 +95,6 @@ public class FunctionUtil {
      * Helper method used in conflict resolution when old and new instance already exist, returning the new one.
      *
      * <pre>
-     * Example:
-     *
      *   toMap(
      *      Map.Entry::getKey,
      *      Map.Entry::getValue,
