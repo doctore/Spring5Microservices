@@ -932,7 +932,7 @@ public class StringUtil {
      * @param size
      *    The size to pad to
      *
-     * @return left padded {@link String} or {@code sourceString} if no padding is necessary
+     * @return right padded {@link String} or {@code sourceString} if no padding is necessary
      */
     public static String rightPad(final String sourceString,
                                   final int size) {
@@ -971,7 +971,7 @@ public class StringUtil {
      * @param padString
      *    {@link String} to pad with, {@code null} or empty treated as {@link StringUtil#BLANK_SPACE}
      *
-     * @return left padded {@link String} or {@code sourceString} if no padding is necessary
+     * @return right padded {@link String} or {@code sourceString} if no padding is necessary
      */
     public static String rightPad(final String sourceString,
                                   final int size,
