@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.gatewayserver</groupId>
     <artifactId>gateway-server</artifactId>
-    <version>1.1.8</version>
+    <version>1.1.9</version>
     <name>gateway-server</name>
     <description>Gateway server for Spring 5 with microservices</description>
 
@@ -21,7 +21,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
         <springfox-swagger.version>3.0.0</springfox-swagger.version>
-        <spring5-microservices-common.version>3.4.3</spring5-microservices-common.version>
+        <spring5-microservices-common.version>3.5.0</spring5-microservices-common.version>
     </properties>
 
     <dependencies>

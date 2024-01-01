@@ -6,7 +6,7 @@
 
     <groupId>com.spring5microservices.grpc</groupId>
     <artifactId>spring5-microservices-grpc</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <packaging>jar</packaging>
     <name>Spring5Microservices gRPC Api</name>
     <description>Spring 5 microservice related with gRPC communication</description>
@@ -19,7 +19,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
-        <spring5-microservices-common.version>3.4.3</spring5-microservices-common.version>
+        <spring5-microservices-common.version>3.5.0</spring5-microservices-common.version>
 
         <!-- gRPC -->
         <google-protobuf-protoc.version>3.24.4</google-protobuf-protoc.version>

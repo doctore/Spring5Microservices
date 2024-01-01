@@ -32,7 +32,7 @@ import static com.security.jwt.enums.TokenKeyEnum.EXPIRATION_TIME;
 import static com.security.jwt.enums.TokenKeyEnum.ISSUED_AT;
 import static com.security.jwt.enums.TokenKeyEnum.JWT_ID;
 import static com.security.jwt.enums.TokenKeyEnum.REFRESH_JWT_ID;
-import static com.spring5microservices.common.util.CollectionUtil.asSet;
+import static com.spring5microservices.common.util.CollectionUtil.toSet;
 import static java.util.Optional.ofNullable;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
@@ -192,7 +192,7 @@ public class AuthenticationService {
                 .map(t -> AuthenticationConfigurationEnum.getByClientId(clientId))
                 .map(authConfig -> applicationContext.getBean(authConfig.getAuthenticationGeneratorClass()))
                 .map(authGen -> {
-                    Set<String> keysToFilter = asSet(
+                    Set<String> keysToFilter = toSet(
                             authGen.getUsernameKey(),
                             authGen.getRolesKey(),
                             AUDIENCE.getKey(),
