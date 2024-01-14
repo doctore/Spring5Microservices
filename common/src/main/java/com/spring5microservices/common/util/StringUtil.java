@@ -2,14 +2,12 @@ package com.spring5microservices.common.util;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -24,10 +22,11 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
-import static org.springframework.util.StringUtils.hasLength;
 
 @UtilityClass
 public class StringUtil {
+
+    public final String EMPTY_STRING = "";
 
     private final String BLANK_SPACE = " ";
 
@@ -35,20 +34,20 @@ public class StringUtil {
 
     private final String DEFAULT_SEPARATOR_STRING = ",";
 
-    private final String EMPTY_STRING = "";
+    private static final int INDEX_NOT_FOUND = -1;
 
 
     /**
-     * Abbreviates the given {@code sourceString} using provided {@link StringUtil#DEFAULT_ABBREVIATION_STRING} as replacement marker.
+     * Abbreviates the given {@code sourceCS} using provided {@link StringUtil#DEFAULT_ABBREVIATION_STRING} as replacement marker.
      * <p>
      *    The following use cases will not return the expected replaced {@link String}:</p>
      *    <ul>
-     *      <li>If {@code sourceString} is {@code null} or empty then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is greater than or equal to {@code sourceString}'s length then {@code sourceString} will be returned</li>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is greater than or equal to {@code sourceCS}'s length then {@code sourceCS} is returned</li>
      *    </ul>
      * <p>
-     *    If {@code maxLength} is less than the first character of {@code sourceString} and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s
+     *    If {@code maxLength} is less than the first character of {@code sourceCS} and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s
      * length, then an {@link IllegalArgumentException} will be thrown.
      *
      * @apiNote
@@ -65,21 +64,21 @@ public class StringUtil {
      *    abbreviate("abcdef", 10)  = "abcdef"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to abbreviate
+     * @param sourceCS
+     *    {@link CharSequence} to abbreviate
      * @param maxLength
      *    Max size of the returned {@link String}. If it is less than 0 then 0 will be used
      *
-     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceString}'s length,
-     *         {@code sourceString} otherwise
+     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceCS}'s length,
+     *         {@link String} conversion of {@code sourceCS} otherwise
      *
-     * @throws IllegalArgumentException if {@code maxLength} is less than the first character of {@code sourceString}
+     * @throws IllegalArgumentException if {@code maxLength} is less than the first character of {@code sourceCS}
      *                                  and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s length
      */
-    public static String abbreviate(final String sourceString,
+    public static String abbreviate(final CharSequence sourceCS,
                                     final int maxLength) {
         return abbreviate(
-                sourceString,
+                sourceCS,
                 maxLength,
                 DEFAULT_ABBREVIATION_STRING
         );
@@ -87,16 +86,16 @@ public class StringUtil {
 
 
     /**
-     * Abbreviates the given {@code sourceString} using provided {@code abbreviationString} as replacement marker.
+     * Abbreviates the given {@code sourceCS} using provided {@code abbreviationString} as replacement marker.
      * <p>
      *    The following use cases will not return the expected replaced {@link String}:</p>
      *    <ul>
-     *      <li>If {@code sourceString} is {@code null} or empty then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is greater than or equal to {@code sourceString}'s length then {@code sourceString} will be returned</li>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is greater than or equal to {@code sourceCS}'s length then {@code sourceCS} is returned</li>
      *    </ul>
      * <p>
-     *    If {@code maxLength} is less than the first character of {@code sourceString} and {@code abbreviationString}'s
+     *    If {@code maxLength} is less than the first character of {@code sourceCS} and {@code abbreviationString}'s
      * length, then an {@link IllegalArgumentException} will be thrown.
      *
      * @apiNote
@@ -114,28 +113,28 @@ public class StringUtil {
      *    abbreviate("abcdef", 10, "...") = "abcdef"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to abbreviate
+     * @param sourceCS
+     *    {@link CharSequence} to abbreviate
      * @param maxLength
      *    Max size of the returned {@link String}. If it is less than 0 then 0 will be used
      * @param abbreviationString
      *    {@link String} to replace the middle characters. Default value will be {@link StringUtil#DEFAULT_ABBREVIATION_STRING}
      *
-     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceString}'s length,
-     *         {@code sourceString} otherwise
+     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceCS}'s length,
+     *         {@link String} conversion of {@code sourceCS} otherwise
      *
-     * @throws IllegalArgumentException if {@code maxLength} is less than the first character of {@code sourceString}
+     * @throws IllegalArgumentException if {@code maxLength} is less than the first character of {@code sourceCS}
      *                                  and {@code abbreviationString}'s length
      */
-    public static String abbreviate(final String sourceString,
+    public static String abbreviate(final CharSequence sourceCS,
                                     final int maxLength,
                                     final String abbreviationString) {
-        if (isEmpty(sourceString) ||
+        if (isEmpty(sourceCS) ||
                 0 >= maxLength) {
             return EMPTY_STRING;
         }
-        if (sourceString.length() <= maxLength) {
-            return sourceString;
+        if (sourceCS.length() <= maxLength) {
+            return sourceCS.toString();
         }
         final String finalAbbreviationString = ObjectUtil.getOrElse(
                 abbreviationString,
@@ -143,31 +142,31 @@ public class StringUtil {
         );
         Assert.isTrue(
                 maxLength >= (finalAbbreviationString.length() + 1),
-                format("Provided maxLength: %s is not enough to abbreviate at least first character of given sourceString: %s using abbreviationString: %s",
+                format("Provided maxLength: %s is not enough to abbreviate at least first character of given sourceCS: %s using abbreviationString: %s",
                         maxLength,
-                        sourceString,
+                        sourceCS,
                         finalAbbreviationString
                 )
         );
         final int startOffset = maxLength - finalAbbreviationString.length();
 
-        return sourceString.substring(0, startOffset)
+        return sourceCS.subSequence(0, startOffset)
                 + finalAbbreviationString;
     }
 
 
     /**
-     *    Abbreviates the given {@code sourceString} to the length passed, replacing the middle characters with
+     *    Abbreviates the given {@code sourceCS} to the length passed, replacing the middle characters with
      * {@link StringUtil#DEFAULT_ABBREVIATION_STRING}.
      * <p>
      *    The following use cases will not return the expected replaced {@link String}:</p>
      *    <ul>
-     *      <li>If {@code sourceString} is {@code null} or empty then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is greater than or equal to {@code sourceString}'s length then {@code sourceString} will be returned</li>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is greater than or equal to {@code sourceCS}'s length then {@code sourceCS} is returned</li>
      *    </ul>
      * <p>
-     *    If {@code maxLength} is less than the first and last characters of {@code sourceString} and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s
+     *    If {@code maxLength} is less than the first and last characters of {@code sourceCS} and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s
      * length, then an {@link IllegalArgumentException} will be thrown.
      *
      * @apiNote
@@ -184,21 +183,21 @@ public class StringUtil {
      *    abbreviateMiddle("abcdef", 10)  = "abcdef"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to abbreviate
+     * @param sourceCS
+     *    {@link CharSequence} to abbreviate
      * @param maxLength
      *    Max size of the returned {@link String}. If it is less than 0 then 0 will be used
      *
-     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceString}'s length,
-     *         {@code sourceString} otherwise
+     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceCS}'s length,
+     *         {@link String} conversion of {@code sourceCS} otherwise
      *
-     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceString}
+     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceCS}
      *                                  and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s length
      */
-    public static String abbreviateMiddle(final String sourceString,
+    public static String abbreviateMiddle(final CharSequence sourceCS,
                                           final int maxLength) {
         return abbreviateMiddle(
-          sourceString,
+                sourceCS,
           maxLength,
           DEFAULT_ABBREVIATION_STRING
         );
@@ -206,17 +205,17 @@ public class StringUtil {
 
 
     /**
-     *    Abbreviates the given {@code sourceString} to the length passed, replacing the middle characters with the supplied
+     *    Abbreviates the given {@code sourceCS} to the length passed, replacing the middle characters with the supplied
      * {@code abbreviationString}.
      * <p>
      *    The following use cases will not return the expected replaced {@link String}:</p>
      *    <ul>
-     *      <li>If {@code sourceString} is {@code null} or empty then empty {@link String} will be returned</li>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} will be returned</li>
      *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is greater than or equal to {@code sourceString}'s length then {@code sourceString} will be returned</li>
+     *      <li>If {@code maxLength} is greater than or equal to {@code sourceCS}'s length then {@code sourceCS} will be returned</li>
      *    </ul>
      * <p>
-     *    If {@code maxLength} is less than the first and last characters of {@code sourceString} and {@code abbreviationString}'s
+     *    If {@code maxLength} is less than the first and last characters of {@code sourceCS} and {@code abbreviationString}'s
      * length, then an {@link IllegalArgumentException} will be thrown.
      *
      * @apiNote
@@ -234,28 +233,28 @@ public class StringUtil {
      *    abbreviateMiddle("abcdef", 10, "...")  = "abcdef"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to abbreviate
+     * @param sourceCS
+     *    {@link CharSequence} to abbreviate
      * @param maxLength
      *    Max size of the returned {@link String}. If it is less than 0 then 0 will be used
      * @param abbreviationString
      *    {@link String} to replace the middle characters. Default value will be {@link StringUtil#DEFAULT_ABBREVIATION_STRING}
      *
-     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceString}'s length,
-     *         {@code sourceString} otherwise
+     * @return the abbreviated {@link String} if {@code maxLength} is greater than {@code sourceCS}'s length,
+     *         {@link String} conversion of {@code sourceCS} otherwise
      *
-     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceString}
+     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceCS}
      *                                  and {@code abbreviationString}'s length
      */
-    public static String abbreviateMiddle(final String sourceString,
+    public static String abbreviateMiddle(final CharSequence sourceCS,
                                           final int maxLength,
                                           final String abbreviationString) {
-        if (isEmpty(sourceString) ||
+        if (isEmpty(sourceCS) ||
                 0 >= maxLength) {
             return EMPTY_STRING;
         }
-        if (sourceString.length() <= maxLength) {
-            return sourceString;
+        if (sourceCS.length() <= maxLength) {
+            return sourceCS.toString();
         }
         final String finalAbbreviationString = ObjectUtil.getOrElse(
                 abbreviationString,
@@ -263,160 +262,235 @@ public class StringUtil {
         );
         Assert.isTrue(
                 maxLength >= (finalAbbreviationString.length() + 2),
-                format("Provided maxLength: %s is not enough to abbreviate at least first and last character of given sourceString: %s using abbreviationString: %s",
+                format("Provided maxLength: %s is not enough to abbreviate at least first and last character of given sourceCS: %s using abbreviationString: %s",
                         maxLength,
-                        sourceString,
+                        sourceCS,
                         finalAbbreviationString
                 )
         );
-        final int sizeOfDisplayedSourceString = maxLength - finalAbbreviationString.length();
-        final int startOffset = (sizeOfDisplayedSourceString / 2) + (sizeOfDisplayedSourceString % 2);
-        final int endOffset = sourceString.length() - (sizeOfDisplayedSourceString / 2);
+        final int sizeOfDisplayedString = maxLength - finalAbbreviationString.length();
+        final int startOffset = (sizeOfDisplayedString / 2) + (sizeOfDisplayedString % 2);
+        final int endOffset = sourceCS.length() - (sizeOfDisplayedString / 2);
 
-        return sourceString.substring(0, startOffset)
+        return sourceCS.subSequence(0, startOffset)
                 + finalAbbreviationString
-                + sourceString.substring(endOffset);
+                + sourceCS.subSequence(endOffset, sourceCS.length());
     }
 
 
     /**
-     * Verifies if the given {@code sourceString} contains {@code stringToSearch} ignoring case.
+     * Verifies if the given {@code sourceCS} contains {@code stringToSearch} ignoring case.
      *
-     * @param sourceString
-     *    {@link String} to check if contains {@code stringToSearch}
+     * <pre>
+     *    containsIgnoreCase(null, *)       = false
+     *    containsIgnoreCase("", "a")       = false
+     *    containsIgnoreCase("abc", "ac")   = false
+     *    containsIgnoreCase("", "")        = true
+     *    containsIgnoreCase("a", "")       = true
+     *    containsIgnoreCase("ABcD", "bC")  = true
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} to check if contains {@code stringToSearch}
      * @param stringToSearch
-     *    {@link String} to search in {@code sourceString}
+     *    {@link String} to search
      *
-     * @return {@code true} if {@code sourceString} contains {@code stringToSearch}, {@code false} otherwise.
+     * @return {@code true} if {@code sourceCS} contains {@code stringToSearch}, {@code false} otherwise.
      */
-    public static boolean containsIgnoreCase(final String sourceString,
+    public static boolean containsIgnoreCase(final CharSequence sourceCS,
                                              final String stringToSearch) {
-        if (isNull(sourceString) || isNull(stringToSearch)) {
+        if (isNull(sourceCS) || isNull(stringToSearch)) {
             return false;
         }
-        return sourceString.toLowerCase()
+        return sourceCS.toString().toLowerCase()
                 .contains(stringToSearch.toLowerCase());
     }
 
 
     /**
-     * Returns the substring of {@code sourceString} after the last occurrence of a {@code stringToFind}.
+     * Counts how many times {@code stringToSearch} appears in the given {@code sourceCS}.
      *
+     * @apiNote
+     *    Only counts non-overlapping matches.
+     * <p>
+     * Examples:
      * <pre>
-     *    getBeforeLastIndexOf(                  Result:
-     *       "1234-9-56",                         Optional("1234")
-     *       "-9"
-     *    )
+     *    count(null, *)        = 0
+     *    count("", *)          = 0
+     *    count(*, null)        = 0
+     *    count("", null)       = 0
+     *    count("abcab", "ab")  = 2
+     *    count("abcab", "xx")  = 0
+     *    count("aaaaa", "aa")  = 2
      * </pre>
      *
-     * @param sourceString
-     *    The {@link String} to get a substring from, may be {@code null}
-     * @param stringToFind
-     *    {@link String} to search
+     * @param sourceCS
+     *    {@link CharSequence} to check
+     * @param stringToSearch
+     *    {@link String} to count
      *
-     * @return {@link Optional} with the substring after the last occurrence of {@code stringToFind} if {@code sourceString} is not {@code null}.
-     *         {@link Optional#empty()} otherwise.
+     * @return the number of occurrences, 0 if {@code stringToSearch} or {@code sourceCS} are {@code null} or empty
      */
-    public static Optional<String> getBeforeLastIndexOf(final String sourceString,
-                                                        final String stringToFind) {
-        return ofNullable(sourceString)
-                .map(ss -> {
-                    if (!hasLength(stringToFind)) {
-                        return ss;
-                    }
-                    final int lastIndex = ss.lastIndexOf(stringToFind);
-                    return -1 == lastIndex
-                            ? ss
-                            : ss.substring(0, lastIndex);
-                });
+    public static int count(final CharSequence sourceCS,
+                            final String stringToSearch) {
+        if (isEmpty(sourceCS) ||
+                isEmpty(stringToSearch)) {
+            return 0;
+        }
+        final String sourceCSToString = sourceCS.toString();
+        int count = 0;
+        int idx = 0;
+        while ((idx = sourceCSToString.indexOf(stringToSearch, idx)) != INDEX_NOT_FOUND) {
+            count++;
+            idx += stringToSearch.length();
+        }
+        return count;
     }
 
 
     /**
-     *    Returns the substring of {@code sourceString} after the last occurrence of a {@code stringToFind}. If given
-     * {@code sourceString} is {@code null} or after removing {@code stringToFind} the result is an empty {@link String},
-     * returns provided {@code defaultValue}.
+     * Selects all {@link Character} of {@code sourceCS} which satisfy the {@link Predicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then {@link String} conversion of {@code sourceCS} will be returned.
      *
      * <pre>
-     *    getBeforeLastIndexOf(                  Result:
-     *       "1234-9-56",                         "1234"
-     *       "-9",
-     *       "654"
-     *    )
-     *    getBeforeLastIndexOf(                  Result:
-     *       "1234-9-56",                         "1234-9-56"
-     *       "88",
-     *       "654"
-     *    )
-     *    getBeforeLastIndexOf(                  Result:
-     *       "1234",                              "999"
-     *       "1234",
-     *       "999"
+     *    filter(                                          Result:
+     *       "abcDEfgIoU12",                                "aEIoU"
+     *       c -> -1 != "aeiouAEIOU".indexOf(c)
      *    )
      * </pre>
      *
-     * @param sourceString
-     *    The {@link String} to get a substring from, may be {@code null}
-     * @param stringToFind
-     *    {@link String} to search
-     * @param defaultValue
-     *    {@link String} to return if {@code sourceString} is {@code null} or {@code stringToFind} was not found
+     * @param sourceCS
+     *    {@link CharSequence} to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter characters from {@code sourceCS}
      *
-     * @return the substring after the last occurrence of {@code stringToFind} if {@code sourceString} is not {@code null}
-     *         and {@code stringToFind} was found but result is not an empty {@link String}. {@code defaultValue} otherwise.
+     * @return {@link Character}s of {@code sourceCS} which satisfy {@code filterPredicate}
      */
-    public static String getBeforeLastIndexOf(final String sourceString,
-                                              final String stringToFind,
-                                              final String defaultValue) {
-        return getBeforeLastIndexOf(sourceString, stringToFind)
-                .filter(StringUtils::hasLength)
-                .orElse(defaultValue);
+    public static String filter(final CharSequence sourceCS,
+                                final Predicate<Character> filterPredicate) {
+        if (isEmpty(sourceCS)) {
+            return EMPTY_STRING;
+        }
+        if (isNull(filterPredicate)) {
+            return new String(sourceCS.toString());
+        }
+        final StringBuilder result = new StringBuilder();
+        for (int i = 0; i < sourceCS.length(); i++) {
+            Character currentChar = sourceCS.charAt(i);
+            if (filterPredicate.test(currentChar)) {
+                result.append(currentChar);
+            }
+        }
+        return result.toString();
     }
 
 
     /**
-     * Returns a new {@link String} removing from the given {@code sourceString} all non-numeric characters.
+     * Selects all {@link Character} of {@code sourceCS} which do not satisfy the {@link Predicate} {@code filterPredicate}.
      *
-     * @param sourceString
-     *    {@link String} to get all non-numeric characters.
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then {@link String} conversion of {@code sourceCS} will be returned.
+     *
+     * <pre>
+     *    filterNot(                                       Result:
+     *       "abcDEfgIoU12",                                "bcDfg12"
+     *       c -> -1 != "aeiouAEIOU".indexOf(c)
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter characters from {@code sourceCS}
+     *
+     * @return {@link Character}s of {@code sourceCS} which do not satisfy {@code filterPredicate}
+     */
+    public static String filterNot(final CharSequence sourceCS,
+                                   final Predicate<Character> filterPredicate) {
+        final Predicate<Character> finalFilterPredicate =
+                isNull(filterPredicate)
+                        ? null
+                        : filterPredicate.negate();
+
+        return filter(
+                sourceCS,
+                finalFilterPredicate
+        );
+    }
+
+
+    /**
+     * Returns a new {@link String} removing from the given {@code sourceCS} all non-numeric characters.
+     *
+     * @param sourceCS
+     *    {@link CharSequence} to get all non-numeric characters.
      *
      * @return new {@link String} without non-numeric characters.
      */
-    public static String getDigits(final String sourceString) {
-        if (isEmpty(sourceString)) {
+    public static String getDigits(final CharSequence sourceCS) {
+        if (isEmpty(sourceCS)) {
             return EMPTY_STRING;
         }
-        final int sourceStringLength = sourceString.length();
-        final StringBuilder sourceStringDigits = new StringBuilder(EMPTY_STRING);
-        for (int i = 0; i < sourceStringLength; i++) {
-            final char tempChar = sourceString.charAt(i);
+        final int sourceCSLength = sourceCS.length();
+        final StringBuilder sourceCSDigits = new StringBuilder(EMPTY_STRING);
+        for (int i = 0; i < sourceCSLength; i++) {
+            final char tempChar = sourceCS.charAt(i);
             if (Character.isDigit(tempChar)) {
-                sourceStringDigits.append(tempChar);
+                sourceCSDigits.append(tempChar);
             }
         }
-        return sourceStringDigits.toString();
+        return sourceCSDigits.toString();
     }
 
 
     /**
-     * Return the given {@code sourceString} if is not {@code null}. Otherwise, returns {@code defaultValue}.
+     * Return the given {@code sourceCS} if is neither {@code null} nor empty. Otherwise, returns {@code defaultValue}.
      *
-     * @param sourceString
-     *    {@link String} returned only if is not {@code null}
+     * <pre>
+     *    getNotEmptyOrElse(null, "other")   = "other"
+     *    getNotEmptyOrElse("", "other")     = "other"
+     *    getNotEmptyOrElse("  ", "other")   = "  "
+     *    getNotEmptyOrElse("abc", "other")  = "abc"
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} returned only if is not {@code null}
      * @param defaultValue
      *    Alternative value to return
      *
-     * @return {@code sourceString} if is not {@code null}, {@code defaultValue} otherwise
+     * @return {@link String} conversion of {@code sourceCS} if contains characters, {@code defaultValue} otherwise
      */
-    public static String getOrElse(final String sourceString,
-                                   final String defaultValue) {
-        return ofNullable(sourceString)
+    public static String getNotEmptyOrElse(final CharSequence sourceCS,
+                                           final String defaultValue) {
+        return ofNullable(sourceCS)
+                .map(CharSequence::toString)
+                .filter(s -> !isEmpty(s))
                 .orElse(defaultValue);
     }
 
 
     /**
-     *    Return the given {@code sourceString} if is not {@code null} and verifies {@code predicateToMatch}.
+     * Return the given {@code sourceCS} if is not {@code null}. Otherwise, returns {@code defaultValue}.
+     *
+     * @param sourceCS
+     *    {@link CharSequence} returned only if is not {@code null}
+     * @param defaultValue
+     *    Alternative value to return
+     *
+     * @return {@link String} conversion of {@code sourceCS} if is not {@code null}, {@code defaultValue} otherwise
+     */
+    public static String getOrElse(final CharSequence sourceCS,
+                                   final String defaultValue) {
+        return ofNullable(sourceCS)
+                .map(CharSequence::toString)
+                .orElse(defaultValue);
+    }
+
+
+    /**
+     *    Return the given {@code sourceCS} if is not {@code null} and verifies {@code predicateToMatch}.
      * Otherwise, returns {@code defaultValue}.
      *
      * <pre>
@@ -427,60 +501,45 @@ public class StringUtil {
      *    )
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} returned only if is not {@code null}
+     * @param sourceCS
+     *    {@link CharSequence} returned only if is not {@code null}
      * @param predicateToMatch
-     *    {@link Predicate} to apply if {@code sourceInstance} is not {@code null}
+     *    {@link Predicate} to apply if {@code sourceCS} is not {@code null}
      * @param defaultValue
      *    Alternative value to return
      *
-     * @return {@code sourceString} if is not {@code null} and verifies {@code predicateToMatch},
+     * @return {@link String} conversion of {@code sourceCS} if is not {@code null} and verifies {@code predicateToMatch},
      *         {@code defaultValue} otherwise
      */
-    public static String getOrElse(final String sourceString,
-                                   final Predicate<String> predicateToMatch,
+    public static String getOrElse(final CharSequence sourceCS,
+                                   final Predicate<CharSequence> predicateToMatch,
                                    final String defaultValue) {
-        final Predicate<String> finalPredicateToMatch = ObjectUtil.getOrElse(
+        final Predicate<CharSequence> finalPredicateToMatch = ObjectUtil.getOrElse(
                 predicateToMatch,
                 alwaysTrue()
         );
-        return ofNullable(sourceString)
+        return ofNullable(sourceCS)
                 .filter(finalPredicateToMatch)
+                .map(CharSequence::toString)
                 .orElse(defaultValue);
     }
 
 
     /**
-     * Return the given {@code sourceString} if is not {@code null}. Otherwise, returns an empty {@link String}.
-     *
-     * @param sourceString
-     *    {@link String} returned only if is not {@code null}
-     *
-     * @return {@code sourceString} if is not {@code null}, empty {@link String} otherwise
-     */
-    public static String getOrEmpty(final String sourceString) {
-        return getOrElse(
-                sourceString,
-                EMPTY_STRING
-        );
-    }
-
-
-    /**
-     *    Abbreviates the given {@code sourceString} to the length passed, replacing the middle characters with
+     *    Abbreviates the given {@code sourceCS} to the length passed, replacing the middle characters with
      * {@link StringUtil#DEFAULT_ABBREVIATION_STRING}.
      * <p>
      * The following use cases will not return the expected replaced {@link String}:
      *    <ul>
-     *      <li>If {@code sourceString} is {@code null} or empty then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} will be returned</li>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} is returned</li>
      *    </ul>
      * <p>
-     *    If {@code maxLength} is less than the first and last characters of {@code sourceString} and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s
+     *    If {@code maxLength} is less than the first and last characters of {@code sourceCS} and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s
      * length, then an {@link IllegalArgumentException} will be thrown.
      * <p>
-     *    {@link StringUtil#abbreviateMiddle(String, int)} returns {@code sourceString} when {@code maxLength} is greater
-     * than or equals to {@code sourceString}'s length however, the current function always tries to hide middle characters
+     *    {@link StringUtil#abbreviateMiddle(CharSequence, int)} returns {@code sourceCS} when {@code maxLength} is greater
+     * than or equals to {@code sourceCS}'s length however, the current function always tries to hide middle characters
      * if it is possible:
      * <p>
      * Examples:
@@ -501,21 +560,21 @@ public class StringUtil {
      *    hideMiddle("abcdef", 10)  = "ab...f"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to abbreviate
+     * @param sourceCS
+     *    {@link CharSequence} to abbreviate
      * @param maxLength
      *    Max size of the returned {@link String}. If it is less than 0 then 0 will be used
      *
      * @return the abbreviated {@link String} if {@code maxLength} is greater than 2,
-     *         {@code sourceString} otherwise
+     *         {@link String} conversion of {@code sourceCS} otherwise
      *
-     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceString}
+     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceCS}
      *                                  and {@link StringUtil#DEFAULT_ABBREVIATION_STRING}'s length
      */
-    public static String hideMiddle(final String sourceString,
+    public static String hideMiddle(final CharSequence sourceCS,
                                     final int maxLength) {
         return hideMiddle(
-                sourceString,
+                sourceCS,
                 maxLength,
                 DEFAULT_ABBREVIATION_STRING
         );
@@ -523,20 +582,20 @@ public class StringUtil {
 
 
     /**
-     *    Abbreviates the given {@code sourceString} to the length passed, replacing the middle characters with the supplied
+     *    Abbreviates the given {@code sourceCS} to the length passed, replacing the middle characters with the supplied
      * {@code abbreviationString}.
      * <p>
      * The following use cases will not return the expected replaced {@link String}:
      *    <ul>
-     *      <li>If {@code sourceString} is {@code null} or empty then empty {@link String} will be returned</li>
-     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} will be returned</li>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code maxLength} is less than or equal to 0 then empty {@link String} is returned</li>
      *    </ul>
      * <p>
-     *    If {@code maxLength} is less than the first and last characters of {@code sourceString} and {@code abbreviationString}'s
+     *    If {@code maxLength} is less than the first and last characters of {@code sourceCS} and {@code abbreviationString}'s
      * length, then an {@link IllegalArgumentException} will be thrown.
      * <p>
-     *    {@link StringUtil#abbreviateMiddle(String, int, String)} returns {@code sourceString} when {@code maxLength}
-     * is greater than or equals to {@code sourceString}'s length however, the current function always tries to hide middle
+     *    {@link StringUtil#abbreviateMiddle(CharSequence, int, String)} returns {@code sourceCS} when {@code maxLength}
+     * is greater than or equals to {@code sourceCS}'s length however, the current function always tries to hide middle
      * characters if it is possible:
      * <p>
      * Examples:
@@ -563,28 +622,28 @@ public class StringUtil {
      *    hideMiddle("abcdef", 10, "...")  = "ab...f"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to abbreviate
+     * @param sourceCS
+     *    {@link CharSequence} to abbreviate
      * @param maxLength
      *    Max size of the returned {@link String}. If it is less than 0 then 0 will be used
      * @param abbreviationString
      *    {@link String} to replace the middle characters. Default value will be {@link StringUtil#DEFAULT_ABBREVIATION_STRING}
      *
      * @return the abbreviated {@link String} if {@code maxLength} is greater than 2,
-     *         {@code sourceString} otherwise
+     *         {@link String} conversion of {@code sourceCS} otherwise
      *
-     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceString}
+     * @throws IllegalArgumentException if {@code maxLength} is less than the first and last characters of {@code sourceCS}
      *                                  and {@code abbreviationString}'s length
      */
-    public static String hideMiddle(final String sourceString,
+    public static String hideMiddle(final CharSequence sourceCS,
                                     final int maxLength,
                                     final String abbreviationString) {
-        if (isEmpty(sourceString) ||
+        if (isEmpty(sourceCS) ||
                 0 >= maxLength) {
             return EMPTY_STRING;
         }
-        if (2 >= sourceString.length()) {
-            return sourceString;
+        if (2 >= sourceCS.length()) {
+            return sourceCS.toString();
         }
         final String finalAbbreviationString = ObjectUtil.getOrElse(
                 abbreviationString,
@@ -592,27 +651,27 @@ public class StringUtil {
         );
         Assert.isTrue(
                 maxLength >= (finalAbbreviationString.length() + 2),
-                format("Provided maxLength: %s is not enough to abbreviate at least first and last character of given sourceString: %s using abbreviationString: %s",
+                format("Provided maxLength: %s is not enough to abbreviate at least first and last character of given sourceCS: %s using abbreviationString: %s",
                         maxLength,
-                        sourceString,
+                        sourceCS,
                         finalAbbreviationString
                 )
         );
-        final int sizeOfDisplayedSourceString = maxLength < sourceString.length()
+        final int sizeOfDisplayedString = maxLength < sourceCS.length()
                 ? maxLength - finalAbbreviationString.length()
-                : sourceString.length() - finalAbbreviationString.length();
+                : sourceCS.length() - finalAbbreviationString.length();
 
-        final int startOffset = (sizeOfDisplayedSourceString / 2) + (sizeOfDisplayedSourceString % 2);
-        final int endOffset = sourceString.length() - (sizeOfDisplayedSourceString / 2);
+        final int startOffset = (sizeOfDisplayedString / 2) + (sizeOfDisplayedString % 2);
+        final int endOffset = sourceCS.length() - (sizeOfDisplayedString / 2);
 
-        return sourceString.substring(0, startOffset)
+        return sourceCS.subSequence(0, startOffset)
                 + finalAbbreviationString
-                + sourceString.substring(endOffset);
+                + sourceCS.subSequence(endOffset, sourceCS.length());
     }
 
 
     /**
-     * Checks if the given {@code sourceString} is {@code null}, an empty {@link String} ('') or whitespace.
+     * Checks if the given {@code sourceCS} is {@code null}, an empty {@link String} ('') or whitespace.
      *
      * <pre>
      *    isBlank(null)    = true
@@ -621,26 +680,26 @@ public class StringUtil {
      *    isBlank("  a ")  = false
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to verify
+     * @param sourceCS
+     *    {@link CharSequence} to verify
      *
-     * @return {@code true} if {@code sourceString} is {@code null} or has no characters
+     * @return {@code true} if {@code sourceCS} is {@code null} or has no characters
      */
-    public static boolean isBlank(final String sourceString) {
-        if (isEmpty(sourceString)) {
+    public static boolean isBlank(final CharSequence sourceCS) {
+        if (isEmpty(sourceCS)) {
             return true;
         }
-        return IntStream.range(0, sourceString.length())
+        return IntStream.range(0, sourceCS.length())
                 .allMatch(i ->
                         Character.isWhitespace(
-                                sourceString.charAt(i)
+                                sourceCS.charAt(i)
                         )
                 );
     }
 
 
     /**
-     * Checks if the given {@code sourceString} is {@code null} or an empty {@link String} ('').
+     * Checks if the given {@code sourceCS} is {@code null} or an empty {@link String} ('').
      *
      * <pre>
      *    isEmpty(null)    = true
@@ -649,14 +708,14 @@ public class StringUtil {
      *    isEmpty("  a ")  = false
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to verify
+     * @param sourceCS
+     *    {@link CharSequence} to verify
      *
-     * @return {@code true} if {@code sourceString} is {@code null} or has no characters
+     * @return {@code true} if {@code sourceCS} is {@code null} or has no characters
      */
-    public static boolean isEmpty(final String sourceString) {
-        return sourceString == null ||
-                sourceString.isEmpty();
+    public static boolean isEmpty(final CharSequence sourceCS) {
+        return null == sourceCS ||
+                sourceCS.isEmpty();
     }
 
 
@@ -809,11 +868,12 @@ public class StringUtil {
 
 
     /**
-     * Left pad the {@link String} {@code sourceString} with spaces (' ') up to the provided {@code size}.
+     * Left pad the {@link String} {@code sourceCS} with spaces (' ') up to the provided {@code size}.
      *
      * @apiNote
      *    If {@code size} is less than 0 then 0 will be used.
-     *
+     * <p>
+     * Examples:
      * <pre>
      *    leftPad(null, -1)   = ""
      *    leftPad(null, 0)    = ""
@@ -825,17 +885,17 @@ public class StringUtil {
      *    leftPad("bat", 5)   = "  bat"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to pad out
+     * @param sourceCS
+     *    {@link CharSequence} to pad out
      * @param size
      *    The size to pad to
      *
-     * @return left padded {@link String} or {@code sourceString} if no padding is necessary
+     * @return left padded {@link String} or {@link String} conversion of {@code sourceCS} if no padding is necessary
      */
-    public static String leftPad(final String sourceString,
+    public static String leftPad(final CharSequence sourceCS,
                                  final int size) {
         return leftPad(
-                sourceString,
+                sourceCS,
                 size,
                 BLANK_SPACE
         );
@@ -843,12 +903,13 @@ public class StringUtil {
 
 
     /**
-     * Left pad the {@link String} {@code sourceString} with {@code padString} up to the provided {@code size}.
+     * Left pad the {@link String} {@code sourceCS} with {@code padString} up to the provided {@code size}.
      *
      * @apiNote
      *    If {@code size} is less than 0 then 0 will be used. If {@code padString} is {@code null} then
      * {@link StringUtil#BLANK_SPACE} will be used.
-     *
+     * <p>
+     * Examples:
      * <pre>
      *    leftPad(null, -1, *)     = ""
      *    leftPad(null, 0, *)      = ""
@@ -862,43 +923,42 @@ public class StringUtil {
      *    leftPad("bat", 5, "z")   = "zzbat"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to pad out
+     * @param sourceCS
+     *    {@link CharSequence} to pad out
      * @param size
      *    The size to pad to
      * @param padString
      *    {@link String} to pad with, {@code null} or empty treated as {@link StringUtil#BLANK_SPACE}
      *
-     * @return left padded {@link String} or {@code sourceString} if no padding is necessary
+     * @return left padded {@link String} or {@link String} conversion of {@code sourceCS} if no padding is necessary
      */
-    public static String leftPad(final String sourceString,
+    public static String leftPad(final CharSequence sourceCS,
                                  final int size,
                                  final String padString) {
-        final String finalSourceString = isNull(sourceString)
+        final String finalSourceCS = isNull(sourceCS)
                 ? EMPTY_STRING
-                : sourceString;
+                : sourceCS.toString();
 
         final int finalSize = Math.max(0, size);
-
         final String finalPadString =
                 isNull(padString)
                         ? BLANK_SPACE
                         : padString;
 
-        final int sourceStringLength = finalSourceString.length();
+        final int sourceStringLength = finalSourceCS.length();
         final int padStringLength = finalPadString.length();
         final int pads = finalSize - sourceStringLength;
 
-        // Returns original sourceString when possible
+        // Returns original sourceCS when possible
         if (0 >= pads) {
-            return finalSourceString;
+            return finalSourceCS;
         }
         if (pads == padStringLength) {
-            return finalPadString.concat(finalSourceString);
+            return finalPadString.concat(finalSourceCS);
         }
         if (pads < padStringLength) {
             return finalPadString.substring(0, pads)
-                    .concat(finalSourceString);
+                    .concat(finalSourceCS);
         }
         final char[] padding = new char[pads];
         final char[] padChars = finalPadString.toCharArray();
@@ -906,16 +966,17 @@ public class StringUtil {
             padding[i] = padChars[i % padStringLength];
         }
         return new String(padding)
-                .concat(finalSourceString);
+                .concat(finalSourceCS);
     }
 
 
     /**
-     * Right pad the {@link String} {@code sourceString} with spaces (' ') up to the provided {@code size}.
+     * Right pad the {@link String} {@code sourceCS} with spaces (' ') up to the provided {@code size}.
      *
      * @apiNote
      *    If {@code size} is less than 0 then 0 will be used.
-     *
+     * <p>
+     * Examples:
      * <pre>
      *    rightPad(null, -1)   = ""
      *    rightPad(null, 0)    = ""
@@ -927,17 +988,17 @@ public class StringUtil {
      *    rightPad("bat", 5)   = "bat  "
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to pad out
+     * @param sourceCS
+     *    {@link CharSequence} to pad out
      * @param size
      *    The size to pad to
      *
-     * @return right padded {@link String} or {@code sourceString} if no padding is necessary
+     * @return right padded {@link String} or {@link String} conversion of {@code sourceCS} if no padding is necessary
      */
-    public static String rightPad(final String sourceString,
+    public static String rightPad(final CharSequence sourceCS,
                                   final int size) {
         return rightPad(
-                sourceString,
+                sourceCS,
                 size,
                 BLANK_SPACE
         );
@@ -945,12 +1006,13 @@ public class StringUtil {
 
 
     /**
-     * Right pad the {@link String} {@code sourceString} with {@code padString} up to the provided {@code size}.
+     * Right pad the {@link String} {@code sourceCS} with {@code padString} up to the provided {@code size}.
      *
      * @apiNote
      *    If {@code size} is less than 0 then 0 will be used. If {@code padString} is {@code null} then
      * {@link StringUtil#BLANK_SPACE} will be used.
-     *
+     * <p>
+     * Examples:
      * <pre>
      *    rightPad(null, -1, *)     = ""
      *    rightPad(null, 0, *)      = ""
@@ -964,42 +1026,41 @@ public class StringUtil {
      *    rightPad("bat", 5, "z")   = "batzz"
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to pad out
+     * @param sourceCS
+     *    {@link CharSequence} to pad out
      * @param size
      *    The size to pad to
      * @param padString
      *    {@link String} to pad with, {@code null} or empty treated as {@link StringUtil#BLANK_SPACE}
      *
-     * @return right padded {@link String} or {@code sourceString} if no padding is necessary
+     * @return right padded {@link String} or {@link String} conversion of {@code sourceCS} if no padding is necessary
      */
-    public static String rightPad(final String sourceString,
+    public static String rightPad(final CharSequence sourceCS,
                                   final int size,
                                   final String padString) {
-        final String finalSourceString = isNull(sourceString)
+        final String finalSourceCS = isNull(sourceCS)
                 ? EMPTY_STRING
-                : sourceString;
+                : sourceCS.toString();
 
         final int finalSize = Math.max(0, size);
-
         final String finalPadString =
                 isNull(padString)
                         ? BLANK_SPACE
                         : padString;
 
-        final int sourceStringLength = finalSourceString.length();
+        final int sourceStringLength = finalSourceCS.length();
         final int padStringLength = finalPadString.length();
         final int pads = finalSize - sourceStringLength;
 
-        // Returns original sourceString when possible
+        // Returns original sourceCS when possible
         if (0 >= pads) {
-            return finalSourceString;
+            return finalSourceCS;
         }
         if (pads == padStringLength) {
-            return finalSourceString.concat(finalPadString);
+            return finalSourceCS.concat(finalPadString);
         }
         if (pads < padStringLength) {
-            return finalSourceString.concat(
+            return finalSourceCS.concat(
                     finalPadString.substring(0, pads)
             );
         }
@@ -1008,14 +1069,14 @@ public class StringUtil {
         for (int i = 0; i < pads; i++) {
             padding[i] = padChars[i % padStringLength];
         }
-        return finalSourceString.concat(
+        return finalSourceCS.concat(
                 new String(padding)
         );
     }
 
 
     /**
-     * Loops through the provided {@link String} one position every time, returning sublists with {@code size}.
+     * Loops through the provided {@link CharSequence} one position every time, returning sublists with {@code size}.
      *
      * <pre>
      *    sliding(                     Result:
@@ -1028,29 +1089,29 @@ public class StringUtil {
      *    )
      * </pre>
      *
-     * @param sourceString
-     *    {@link String} to slide
+     * @param sourceCS
+     *    {@link CharSequence} to slide
      * @param size
      *    Size of every sublist
      *
      * @return {@link List} of {@link String}
      */
-    public static List<String> sliding(final String sourceString,
+    public static List<String> sliding(final CharSequence sourceCS,
                                        final int size) {
-        if (isNull(sourceString)) {
+        if (isNull(sourceCS)) {
             return new ArrayList<>();
         }
         if (1 > size ||
-                size >= sourceString.length()) {
-            return asList(sourceString);
+                size >= sourceCS.length()) {
+            return asList(sourceCS.toString());
         }
         List<String> parts = new ArrayList<>();
-        for (int i = 0; i < sourceString.length() - size + 1; i++) {
+        for (int i = 0; i < sourceCS.length() - size + 1; i++) {
             parts.add(
-                    sourceString.substring(
+                    sourceCS.subSequence(
                             i,
                             i + size
-                    )
+                    ).toString()
             );
         }
         return parts;
@@ -1388,5 +1449,196 @@ public class StringUtil {
                 })
                 .orElseGet(finalCollectionFactory);
     }
+
+
+    /**
+     *    Returns the substring of {@code sourceCS} after the first occurrence of a {@code separator}. {@code separator}
+     * is not returned.
+     * <p>
+     *    The following are special use cases:</p>
+     *    <ul>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code separator} is {@code null} then empty {@link String} is returned</li>
+     *      <li>If {@code separator} is empty then {@link String} conversion of {@code sourceCS} is returned</li>
+     *      <li>If nothing is found, empty {@link String} is returned</li>
+     *    </ul>
+     * <p>
+     * Examples:
+     * <pre>
+     *    substringAfter(null, *)      = ""
+     *    substringAfter("", *)        = ""
+     *    substringAfter(*, null)      = ""
+     *    substringAfter("abc", "")    = "abc"
+     *    substringAfter("abc", "z")   = ""
+     *    substringAfter("abc", "a")   = "bd"
+     *    substringAfter("abc", "c")   = ""
+     *    substringAfter("abcb", "b")  = "cb"
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} to get a substring from
+     * @param separator
+     *     {@link String} to search for
+     *
+     * @return the substring after the first occurrence of the {@code separator},
+     *         empty {@link String} if {@code sourceCS} is {@code null} or empty
+     */
+    public static String substringAfter(final CharSequence sourceCS,
+                                        final String separator) {
+        if (isNull(sourceCS) || isNull(separator)) {
+            return EMPTY_STRING;
+        }
+        final String sourceCSToString = sourceCS.toString();
+        final int pos = sourceCSToString.indexOf(separator);
+        return INDEX_NOT_FOUND == pos
+                ? EMPTY_STRING
+                : sourceCSToString.substring(pos + separator.length());
+    }
+
+
+    /**
+     *    Returns the substring of {@code sourceCS} after the last occurrence of a {@code separator}. {@code separator}
+     * is not returned.
+     * <p>
+     *    The following are special use cases:</p>
+     *    <ul>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code separator} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If nothing is found, empty {@link String} is returned</li>
+     *    </ul>
+     * <p>
+     * Examples:
+     * <pre>
+     *    substringAfterLast(null, *)       = ""
+     *    substringAfterLast("", *)         = ""
+     *    substringAfterLast(*, null)       = ""
+     *    substringAfterLast(*, "")         = ""
+     *    substringAfterLast("abc", "z")    = ""
+     *    substringAfterLast("abc", "a")    = "bd"
+     *    substringAfterLast("abc", "c")    = ""
+     *    substringAfterLast("abcba", "b")  = "a"
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} to get a substring from
+     * @param separator
+     *     {@link String} to search for
+     *
+     * @return the substring after the last occurrence of the {@code separator},
+     *         empty {@link String} if {@code sourceCS} is {@code null} or empty
+     */
+    public static String substringAfterLast(final CharSequence sourceCS,
+                                            final String separator) {
+        if (isEmpty(sourceCS) || isEmpty(separator)) {
+            return EMPTY_STRING;
+        }
+        final String sourceCSToString = sourceCS.toString();
+        final int pos = sourceCSToString.lastIndexOf(separator);
+        if (pos == INDEX_NOT_FOUND ||
+                pos == sourceCSToString.length() - separator.length()) {
+            return EMPTY_STRING;
+        }
+        return sourceCSToString.substring(pos + separator.length());
+    }
+
+
+    /**
+     *    Returns the substring of {@code sourceCS} before the first occurrence of a {@code separator}. {@code separator}
+     * is not returned.
+     * <p>
+     *    The following are special use cases:</p>
+     *    <ul>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code separator} is {@code null} or empty then {@link String} conversion of {@code sourceCS} is returned</li>
+     *      <li>If nothing is found, {@link String} conversion of {@code sourceCS} is returned</li>
+     *    </ul>
+     * <p>
+     * Examples:
+     * <pre>
+     *    substringBefore(null, *)      = ""
+     *    substringBefore("", *)        = ""
+     *    substringBefore("abc", null)  = "abc"
+     *    substringBefore("abc", "")    = "abc"
+     *    substringBefore("a", "a")     = ""
+     *    substringBefore("a", "z")     = "a"
+     *    substringBefore("abc", "c")   = "ab"
+     *    substringBefore("abcb", "b")  = "a"
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} to get a substring from
+     * @param separator
+     *     {@link String} to search for
+     *
+     * @return the substring before the first occurrence of the {@code separator},
+     *         empty {@link String} if {@code sourceCS} is {@code null} or empty
+     */
+    public static String substringBefore(final CharSequence sourceCS,
+                                         final String separator) {
+        return ofNullable(sourceCS)
+                .map(CharSequence::toString)
+                .map(source -> {
+                    if (isEmpty(separator)) {
+                        return source;
+                    }
+                    final int pos = source.indexOf(separator);
+                    return INDEX_NOT_FOUND == pos
+                            ? source
+                            : source.substring(0, pos);
+                })
+                .orElse(EMPTY_STRING);
+    }
+
+
+    /**
+     *    Returns the substring of {@code sourceCS} before the last occurrence of a {@code separator}. {@code separator}
+     * is not returned.
+     * <p>
+     *    The following are special use cases:</p>
+     *    <ul>
+     *      <li>If {@code sourceCS} is {@code null} or empty then empty {@link String} is returned</li>
+     *      <li>If {@code separator} is {@code null} or empty then {@link String} conversion of {@code sourceCS} is returned</li>
+     *      <li>If nothing is found, {@link String} conversion of {@code sourceCS} is returned</li>
+     *    </ul>
+     * <p>
+     * Examples:
+     * <pre>
+     *    substringBeforeLast(null, *)      = ""
+     *    substringBeforeLast("", *)        = ""
+     *    substringBeforeLast("abc", null)  = "abc"
+     *    substringBeforeLast("abc", "")    = "abc"
+     *    substringBeforeLast("a", "a")     = ""
+     *    substringBeforeLast("a", "z")     = "a"
+     *    substringBeforeLast("abc", "c")   = "ab"
+     *    substringBeforeLast("abcb", "b")  = "abc"
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} to get a substring from
+     * @param separator
+     *     {@link String} to search for
+     *
+     * @return the substring before the last occurrence of the {@code separator},
+     *         empty {@link String} if {@code sourceCS} is {@code null} or empty
+     */
+    public static String substringBeforeLast(final CharSequence sourceCS,
+                                             final String separator) {
+        return ofNullable(sourceCS)
+                .map(CharSequence::toString)
+                .map(source -> {
+                    if (isEmpty(separator)) {
+                        return source;
+                    }
+                    final int pos = source.lastIndexOf(separator);
+                    return INDEX_NOT_FOUND == pos
+                            ? source
+                            : source.substring(0, pos);
+                })
+                .orElse(EMPTY_STRING);
+    }
+
+
+    // TODO:
+    // filter, filterNot
 
 }

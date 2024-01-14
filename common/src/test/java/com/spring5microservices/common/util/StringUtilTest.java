@@ -9,7 +9,6 @@ import org.springframework.util.StringUtils;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -20,10 +19,12 @@ import static com.spring5microservices.common.util.CollectionUtil.toSet;
 import static com.spring5microservices.common.util.StringUtil.abbreviate;
 import static com.spring5microservices.common.util.StringUtil.abbreviateMiddle;
 import static com.spring5microservices.common.util.StringUtil.containsIgnoreCase;
-import static com.spring5microservices.common.util.StringUtil.getBeforeLastIndexOf;
+import static com.spring5microservices.common.util.StringUtil.count;
+import static com.spring5microservices.common.util.StringUtil.filter;
+import static com.spring5microservices.common.util.StringUtil.filterNot;
 import static com.spring5microservices.common.util.StringUtil.getDigits;
+import static com.spring5microservices.common.util.StringUtil.getNotEmptyOrElse;
 import static com.spring5microservices.common.util.StringUtil.getOrElse;
-import static com.spring5microservices.common.util.StringUtil.getOrEmpty;
 import static com.spring5microservices.common.util.StringUtil.hideMiddle;
 import static com.spring5microservices.common.util.StringUtil.isBlank;
 import static com.spring5microservices.common.util.StringUtil.isEmpty;
@@ -33,447 +34,597 @@ import static com.spring5microservices.common.util.StringUtil.rightPad;
 import static com.spring5microservices.common.util.StringUtil.sliding;
 import static com.spring5microservices.common.util.StringUtil.split;
 import static com.spring5microservices.common.util.StringUtil.splitMultilevel;
+import static com.spring5microservices.common.util.StringUtil.substringAfter;
+import static com.spring5microservices.common.util.StringUtil.substringAfterLast;
+import static com.spring5microservices.common.util.StringUtil.substringBefore;
+import static com.spring5microservices.common.util.StringUtil.substringBeforeLast;
 import static java.util.Arrays.asList;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StringUtilTest {
 
-    static Stream<Arguments> abbreviateWithSourceStringAndMaxLengthTestCases() {
+    static Stream<Arguments> abbreviateWithSourceCSAndMaxLengthTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("abcdef");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   maxLength,   expectedException,                expectedResult
-                Arguments.of( null,           0,           null,                             "" ),
-                Arguments.of( "abc",          0,           null,                             "" ),
-                Arguments.of( "abc",          -1,          null,                             "" ),
-                Arguments.of( "abc",          1,           IllegalArgumentException.class,   null ),
-                Arguments.of( "abcdef",       3,           IllegalArgumentException.class,   null ),
-                Arguments.of( "ab",           3,           null,                             "ab" ),
-                Arguments.of( "abc",          3,           null,                             "abc" ),
-                Arguments.of( "abcdef",       4,           null,                             "a..." ),
-                Arguments.of( "abcdef",       5,           null,                             "ab..." ),
-                Arguments.of( "abcdef",       6,           null,                             "abcdef" ),
-                Arguments.of( "abcdef",       7,           null,                             "abcdef" ),
-                Arguments.of( "abcdefg",      6,           null,                             "abc..." )
+                //            sourceCS,          maxLength,   expectedException,                expectedResult
+                Arguments.of( null,              0,           null,                             "" ),
+                Arguments.of( nullBuffer,        0,           null,                             "" ),
+                Arguments.of( "abc",             0,           null,                             "" ),
+                Arguments.of( "abc",             -1,          null,                             "" ),
+                Arguments.of( "abc",             1,           IllegalArgumentException.class,   null ),
+                Arguments.of( "abcdef",          3,           IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   3,           IllegalArgumentException.class,   null ),
+                Arguments.of( "ab",              3,           null,                             "ab" ),
+                Arguments.of( "abc",             3,           null,                             "abc" ),
+                Arguments.of( "abcdef",          4,           null,                             "a..." ),
+                Arguments.of( "abcdef",          5,           null,                             "ab..." ),
+                Arguments.of( "abcdef",          6,           null,                             "abcdef" ),
+                Arguments.of( "abcdef",          7,           null,                             "abcdef" ),
+                Arguments.of( "abcdefg",         6,           null,                             "abc..." ),
+                Arguments.of( notEmptyBuilder,   4,           null,                             "a..." ),
+                Arguments.of( notEmptyBuilder,   5,           null,                             "ab..." ),
+                Arguments.of( notEmptyBuilder,   6,           null,                             "abcdef" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("abbreviateWithSourceStringAndMaxLengthTestCases")
-    @DisplayName("abbreviate: with source string and max length parameters test cases")
-    public void abbreviateWithSourceStringAndMaxLength_testCases(String sourceString,
-                                                                 int maxLength,
-                                                                 Class<? extends Exception> expectedException,
-                                                                 String expectedResult) {
+    @MethodSource("abbreviateWithSourceCSAndMaxLengthTestCases")
+    @DisplayName("abbreviate: with source and max length parameters test cases")
+    public void abbreviateWithSourceCSAndMaxLength_testCases(CharSequence sourceCS,
+                                                             int maxLength,
+                                                             Class<? extends Exception> expectedException,
+                                                             String expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> abbreviate(sourceString, maxLength));
+            assertThrows(expectedException, () -> abbreviate(sourceCS, maxLength));
         } else {
-            assertEquals(expectedResult, abbreviate(sourceString, maxLength));
+            assertEquals(expectedResult, abbreviate(sourceCS, maxLength));
         }
     }
 
 
     static Stream<Arguments> abbreviateAllParametersTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("abcdef");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   maxLength,   abbreviationString,   expectedException,                expectedResult
-                Arguments.of( null,           0,           null,                 null,                             "" ),
-                Arguments.of( "abc",          0,           null,                 null,                             "" ),
-                Arguments.of( "abc",          -1,          ".",                  null,                             "" ),
-                Arguments.of( "abc",          1,           ".",                  IllegalArgumentException.class,   null ),
-                Arguments.of( "abcdef",       3,           "...",                IllegalArgumentException.class,   null ),
-                Arguments.of( "ab",           3,           "...",                null,                             "ab" ),
-                Arguments.of( "abc",          3,           ".",                  null,                             "abc" ),
-                Arguments.of( "abcdef",       4,           ".",                  null,                             "abc." ),
-                Arguments.of( "abcdef",       5,           ".",                  null,                             "abcd." ),
-                Arguments.of( "abcdef",       5,           null,                 null,                             "ab..." ),
-                Arguments.of( "abcdef",       5,           "...",                null,                             "ab..." ),
-                Arguments.of( "abcdef",       6,           "...",                null,                             "abcdef" ),
-                Arguments.of( "abcdef",       7,           "...",                null,                             "abcdef" ),
-                Arguments.of( "abcdefg",      6,           "...",                null,                             "abc..." ),
-                Arguments.of( "abcdefg",      6,           "...",                null,                             "abc..." )
+                //            sourceCS,          maxLength,   abbreviationString,   expectedException,                expectedResult
+                Arguments.of( null,              0,           null,                 null,                             "" ),
+                Arguments.of( nullBuffer,        0,           null,                 null,                             "" ),
+                Arguments.of( "abc",             0,           null,                 null,                             "" ),
+                Arguments.of( "abc",             -1,          ".",                  null,                             "" ),
+                Arguments.of( "abc",             1,           ".",                  IllegalArgumentException.class,   null ),
+                Arguments.of( "abcdef",          3,           "...",                IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   3,           "...",                IllegalArgumentException.class,   null ),
+                Arguments.of( "ab",              3,           "...",                null,                             "ab" ),
+                Arguments.of( "abc",             3,           ".",                  null,                             "abc" ),
+                Arguments.of( "abcdef",          4,           ".",                  null,                             "abc." ),
+                Arguments.of( "abcdef",          5,           ".",                  null,                             "abcd." ),
+                Arguments.of( "abcdef",          5,           null,                 null,                             "ab..." ),
+                Arguments.of( "abcdef",          5,           "...",                null,                             "ab..." ),
+                Arguments.of( "abcdef",          6,           "...",                null,                             "abcdef" ),
+                Arguments.of( "abcdef",          7,           "...",                null,                             "abcdef" ),
+                Arguments.of( "abcdefg",         6,           "...",                null,                             "abc..." ),
+                Arguments.of( "abcdefg",         6,           "...",                null,                             "abc..." ),
+                Arguments.of( notEmptyBuilder,   4,           ".",                  null,                             "abc." ),
+                Arguments.of( notEmptyBuilder,   5,           ".",                  null,                             "abcd." ),
+                Arguments.of( notEmptyBuilder,   5,           null,                 null,                             "ab..." ),
+                Arguments.of( notEmptyBuilder,   5,           "...",                null,                             "ab..." ),
+                Arguments.of( notEmptyBuilder,   6,           "...",                null,                             "abcdef" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("abbreviateAllParametersTestCases")
     @DisplayName("abbreviate: with all parameters test cases")
-    public void abbreviateAllParameters_testCases(String sourceString,
+    public void abbreviateAllParameters_testCases(CharSequence sourceCS,
                                                   int maxLength,
                                                   String abbreviationString,
                                                   Class<? extends Exception> expectedException,
                                                   String expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> abbreviate(sourceString, maxLength, abbreviationString));
+            assertThrows(expectedException, () -> abbreviate(sourceCS, maxLength, abbreviationString));
         } else {
-            assertEquals(expectedResult, abbreviate(sourceString, maxLength, abbreviationString));
+            assertEquals(expectedResult, abbreviate(sourceCS, maxLength, abbreviationString));
         }
     }
 
 
-    static Stream<Arguments> abbreviateMiddleWithSourceStringAndMaxLengthTestCases() {
+    static Stream<Arguments> abbreviateMiddleWithSourceCSAndMaxLengthTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("abcdef");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   maxLength,   expectedException,                expectedResult
-                Arguments.of( null,           0,           null,                             "" ),
-                Arguments.of( "abc",          0,           null,                             "" ),
-                Arguments.of( "abc",          -1,          null,                             "" ),
-                Arguments.of( "abc",          1,           IllegalArgumentException.class,   null ),
-                Arguments.of( "abcdef",       4,           IllegalArgumentException.class,   null ),
-                Arguments.of( "ab",           3,           null,                             "ab" ),
-                Arguments.of( "abc",          3,           null,                             "abc" ),
-                Arguments.of( "abcdef",       5,           null,                             "a...f" ),
-                Arguments.of( "abcdef",       6,           null,                             "abcdef" ),
-                Arguments.of( "abcdef",       7,           null,                             "abcdef" ),
-                Arguments.of( "abcdefg",      6,           null,                             "ab...g" )
+                //            sourceCS,          maxLength,   expectedException,                expectedResult
+                Arguments.of( null,              0,           null,                             "" ),
+                Arguments.of( nullBuffer,        0,           null,                             "" ),
+                Arguments.of( "abc",             0,           null,                             "" ),
+                Arguments.of( "abc",             -1,          null,                             "" ),
+                Arguments.of( "abc",             1,           IllegalArgumentException.class,   null ),
+                Arguments.of( "abcdef",          4,           IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   4,           IllegalArgumentException.class,   null ),
+                Arguments.of( "ab",              3,           null,                             "ab" ),
+                Arguments.of( "abc",             3,           null,                             "abc" ),
+                Arguments.of( "abcdef",          5,           null,                             "a...f" ),
+                Arguments.of( "abcdef",          6,           null,                             "abcdef" ),
+                Arguments.of( "abcdef",          7,           null,                             "abcdef" ),
+                Arguments.of( "abcdefg",         6,           null,                             "ab...g" ),
+                Arguments.of( notEmptyBuilder,   5,           null,                             "a...f" ),
+                Arguments.of( notEmptyBuilder,   6,           null,                             "abcdef" ),
+                Arguments.of( notEmptyBuilder,   7,           null,                             "abcdef" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("abbreviateMiddleWithSourceStringAndMaxLengthTestCases")
-    @DisplayName("abbreviateMiddle: with source string and max length parameters test cases")
-    public void abbreviateMiddleWithSourceStringAndMaxLength_testCases(String sourceString,
-                                                                       int maxLength,
-                                                                       Class<? extends Exception> expectedException,
-                                                                       String expectedResult) {
+    @MethodSource("abbreviateMiddleWithSourceCSAndMaxLengthTestCases")
+    @DisplayName("abbreviateMiddle: with source and max length parameters test cases")
+    public void abbreviateMiddleWithSourceCSAndMaxLength_testCases(CharSequence sourceCS,
+                                                                   int maxLength,
+                                                                   Class<? extends Exception> expectedException,
+                                                                   String expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> abbreviateMiddle(sourceString, maxLength));
+            assertThrows(expectedException, () -> abbreviateMiddle(sourceCS, maxLength));
         } else {
-            assertEquals(expectedResult, abbreviateMiddle(sourceString, maxLength));
+            assertEquals(expectedResult, abbreviateMiddle(sourceCS, maxLength));
         }
     }
 
 
     static Stream<Arguments> abbreviateMiddleAllParametersTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("abcdef");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   maxLength,   abbreviationString,   expectedException,                expectedResult
-                Arguments.of( null,           0,           null,                 null,                             "" ),
-                Arguments.of( "abc",          0,           null,                 null,                             "" ),
-                Arguments.of( "abc",          -1,          ".",                  null,                             "" ),
-                Arguments.of( "abc",          2,           ".",                  IllegalArgumentException.class,   null ),
-                Arguments.of( "abcdef",       4,           "...",                IllegalArgumentException.class,   null ),
-                Arguments.of( "ab",           3,           "...",                null,                             "ab" ),
-                Arguments.of( "abc",          3,           ".",                  null,                             "abc" ),
-                Arguments.of( "abcdef",       4,           ".",                  null,                             "ab.f" ),
-                Arguments.of( "abcdef",       5,           ".",                  null,                             "ab.ef" ),
-                Arguments.of( "abcdef",       5,           null,                 null,                             "a...f" ),
-                Arguments.of( "abcdef",       5,           "...",                null,                             "a...f" ),
-                Arguments.of( "abcdef",       6,           "...",                null,                             "abcdef" ),
-                Arguments.of( "abcdef",       7,           "...",                null,                             "abcdef" ),
-                Arguments.of( "abcdefg",      6,           "...",                null,                             "ab...g" )
+                //            sourceCS,          maxLength,   abbreviationString,   expectedException,                expectedResult
+                Arguments.of( null,              0,           null,                 null,                             "" ),
+                Arguments.of( nullBuffer,        0,           null,                 null,                             "" ),
+                Arguments.of( "abc",             0,           null,                 null,                             "" ),
+                Arguments.of( "abc",             -1,          ".",                  null,                             "" ),
+                Arguments.of( "abc",             2,           ".",                  IllegalArgumentException.class,   null ),
+                Arguments.of( "abcdef",          4,           "...",                IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   4,           "...",                IllegalArgumentException.class,   null ),
+                Arguments.of( "ab",              3,           "...",                null,                             "ab" ),
+                Arguments.of( "abc",             3,           ".",                  null,                             "abc" ),
+                Arguments.of( "abcdef",          4,           ".",                  null,                             "ab.f" ),
+                Arguments.of( "abcdef",          5,           ".",                  null,                             "ab.ef" ),
+                Arguments.of( "abcdef",          5,           null,                 null,                             "a...f" ),
+                Arguments.of( "abcdef",          5,           "...",                null,                             "a...f" ),
+                Arguments.of( "abcdef",          6,           "...",                null,                             "abcdef" ),
+                Arguments.of( "abcdef",          7,           "...",                null,                             "abcdef" ),
+                Arguments.of( "abcdefg",         6,           "...",                null,                             "ab...g" ),
+                Arguments.of( notEmptyBuilder,   4,           ".",                  null,                             "ab.f" ),
+                Arguments.of( notEmptyBuilder,   5,           ".",                  null,                             "ab.ef" ),
+                Arguments.of( notEmptyBuilder,   5,           null,                 null,                             "a...f" ),
+                Arguments.of( notEmptyBuilder,   5,           "...",                null,                             "a...f" ),
+                Arguments.of( notEmptyBuilder,   6,           "...",                null,                             "abcdef" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("abbreviateMiddleAllParametersTestCases")
     @DisplayName("abbreviateMiddle: with all parameters test cases")
-    public void abbreviateMiddleAllParameters_testCases(String sourceString,
+    public void abbreviateMiddleAllParameters_testCases(CharSequence sourceCS,
                                                         int maxLength,
                                                         String abbreviationString,
                                                         Class<? extends Exception> expectedException,
                                                         String expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> abbreviateMiddle(sourceString, maxLength, abbreviationString));
+            assertThrows(expectedException, () -> abbreviateMiddle(sourceCS, maxLength, abbreviationString));
         } else {
-            assertEquals(expectedResult, abbreviateMiddle(sourceString, maxLength, abbreviationString));
+            assertEquals(expectedResult, abbreviateMiddle(sourceCS, maxLength, abbreviationString));
         }
     }
 
 
     static Stream<Arguments> containsIgnoreCaseTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("abCdE");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   stringToSearch,  expectedResult
-                Arguments.of( null,           null,            false ),
-                Arguments.of( null,           "test",          false ),
-                Arguments.of( "test",         null,            false ),
-                Arguments.of( "abc",          "ac",            false ),
-                Arguments.of( "ABC",          "AC",            false ),
-                Arguments.of( "ac",           "abc",           false ),
-                Arguments.of( "AC",           "ABC",           false ),
-                Arguments.of( "abcd",         "bc",            true ),
-                Arguments.of( "ABcD",         "bC",            true )
+                //            sourceCS,          stringToSearch,   expectedResult
+                Arguments.of( null,              null,                         false ),
+                Arguments.of( null,              "",                           false ),
+                Arguments.of( null,              "test",                       false ),
+                Arguments.of( nullBuffer,        null,                         false ),
+                Arguments.of( nullBuffer,        "",                           false ),
+                Arguments.of( nullBuffer,        "test",                       false ),
+                Arguments.of( "test",            null,                         false ),
+                Arguments.of( "",                "",                           true ),
+                Arguments.of( "",                "ac",                         false ),
+                Arguments.of( "abc",             "ac",                         false ),
+                Arguments.of( "ABC",             "AC",                         false ),
+                Arguments.of( "ac",              "abc",                        false ),
+                Arguments.of( "AC",              "ABC",                        false ),
+                Arguments.of( "abcd",            "bc",                         true ),
+                Arguments.of( "ABcD",            "bC",                         true ),
+                Arguments.of( "abcd",            "ABCD",                       true ),
+                Arguments.of( "abc",             "",                           true ),
+                Arguments.of( notEmptyBuilder,   "bd",                         false ),
+                Arguments.of( notEmptyBuilder,   "ac",                         false ),
+                Arguments.of( notEmptyBuilder,   "c",                          true ),
+                Arguments.of( notEmptyBuilder,   "De",                         true ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.toString(),   true )
         ); //@formatter:on
     }
+
 
     @ParameterizedTest
     @MethodSource("containsIgnoreCaseTestCases")
     @DisplayName("containsIgnoreCase: test cases")
-    public void containsIgnoreCase_testCases(String sourceString,
+    public void containsIgnoreCase_testCases(CharSequence sourceCS,
                                              String stringToSearch,
                                              boolean expectedResult) {
-        assertEquals(expectedResult, containsIgnoreCase(sourceString, stringToSearch));
+        assertEquals(expectedResult, containsIgnoreCase(sourceCS, stringToSearch));
     }
 
 
-    static Stream<Arguments> getBeforeLastIndexOf_NoDefaultValue_TestCases() {
-        String str = "1234-34-5678";
+    static Stream<Arguments> countTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("aaaaa");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   stringToSearch,  expectedResult
-                Arguments.of( null,           null,            empty() ),
-                Arguments.of( "",             null,            of("") ),
-                Arguments.of( "",             "",              of("") ),
-                Arguments.of( str,            null,            of(str) ),
-                Arguments.of( str,            "",              of(str) ),
-                Arguments.of( str,            "666",           of(str) ),
-                Arguments.of( str,            "34",            of("1234-") ),
-                Arguments.of( str,            "-",             of("1234-34") )
+                //            sourceCS,          stringToSearch,   expectedResult
+                Arguments.of( null,              null,             0 ),
+                Arguments.of( null,              "",               0 ),
+                Arguments.of( null,              "ab",             0 ),
+                Arguments.of( nullBuffer,        null,             0 ),
+                Arguments.of( nullBuffer,        "",               0 ),
+                Arguments.of( nullBuffer,        "ab",             0 ),
+                Arguments.of( "",                null,             0 ),
+                Arguments.of( "",                null,             0 ),
+                Arguments.of( "ab",              null,             0 ),
+                Arguments.of( "abcab",           "ab",             2 ),
+                Arguments.of( "abcabb",          "b",              3 ),
+                Arguments.of( "abab",            "x",              0 ),
+                Arguments.of( "aa",              "aa",             1 ),
+                Arguments.of( "aaa",             "aa",             1 ),
+                Arguments.of( "aaaa",            "aa",             2 ),
+                Arguments.of( "aaaaa",           "aa",             2 ),
+                Arguments.of( notEmptyBuilder,   "x",              0 ),
+                Arguments.of( notEmptyBuilder,   "a",              5 ),
+                Arguments.of( notEmptyBuilder,   "aa",             2 ),
+                Arguments.of( notEmptyBuilder,   "aaa",            1 )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("getBeforeLastIndexOf_NoDefaultValue_TestCases")
-    @DisplayName("getBeforeLastIndexOf: no default value provided test cases")
-    public void getBeforeLastIndexOf_NoDefaultValue_testCases(String sourceString,
-                                                              String stringToSearch,
-                                                              Optional<String> expectedResult) {
-        assertEquals(expectedResult, getBeforeLastIndexOf(sourceString, stringToSearch));
+    @MethodSource("countTestCases")
+    @DisplayName("count: test cases")
+    public void count_testCases(CharSequence sourceCS,
+                                String stringToSearch,
+                                int expectedResult) {
+        assertEquals(expectedResult, count(sourceCS, stringToSearch));
     }
 
 
-    static Stream<Arguments> getBeforeLastIndexOf_DefaultValue_TestCases() {
-        String str = "1234-34-5678";
-        String defaultStr = "abc";
+    static Stream<Arguments> filterTestCases() {
+        String str = "abcDEfgIoU12";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(str);
+
+        Predicate<Character> isVowel = c -> -1 != "aeiouAEIOU".indexOf(c);
+        String expectedResult = "aEIoU";
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   stringToFind,   defaultValue,   expectedResult
-                Arguments.of( null,           null,           null,           null ),
-                Arguments.of( null,           null,           defaultStr,     defaultStr ),
-                Arguments.of( "",             null,           null,           null ),
-                Arguments.of( "",             null,           defaultStr,     defaultStr ),
-                Arguments.of( "",             "",             null,           null ),
-                Arguments.of( "",             "",             defaultStr,     defaultStr ),
-                Arguments.of( str,            null,           null,           str ),
-                Arguments.of( str,            null,           defaultStr,     str ),
-                Arguments.of( str,            "666",          null,           str ),
-                Arguments.of( str,            "666",          defaultStr,     str ),
-                Arguments.of( str,            "34",           null,           "1234-" ),
-                Arguments.of( str,            "34",           defaultStr,     "1234-" ),
-                Arguments.of( str,            str,            defaultStr,     defaultStr )
+                //            sourceCS,          filterPredicate,   expectedResult
+                Arguments.of( null,              null,              "" ),
+                Arguments.of( null,              isVowel,           "" ),
+                Arguments.of( nullBuffer,        null,              "" ),
+                Arguments.of( nullBuffer,        isVowel,           "" ),
+                Arguments.of( "",                null,              "" ),
+                Arguments.of( "",                isVowel,           "" ),
+                Arguments.of( str,               null,              str ),
+                Arguments.of( str,               isVowel,           expectedResult ),
+                Arguments.of( notEmptyBuilder,   null,              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   isVowel,           expectedResult )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("getBeforeLastIndexOf_DefaultValue_TestCases")
-    @DisplayName("getBeforeLastIndexOf: with default value test cases")
-    public void getBeforeLastIndexOf_DefaultValue_testCases(String sourceString,
-                                                            String stringToSearch,
-                                                            String defaultValue,
-                                                            String expectedResult) {
-        assertEquals(expectedResult, getBeforeLastIndexOf(sourceString, stringToSearch, defaultValue));
+    @MethodSource("filterTestCases")
+    @DisplayName("filter: test cases")
+    public void filter_testCases(CharSequence sourceCS,
+                                 Predicate<Character> filterPredicate,
+                                 String expectedResult) {
+        assertEquals(expectedResult, filter(sourceCS, filterPredicate));
+    }
+
+
+    static Stream<Arguments> filterNotTestCases() {
+        String str = "abcDEfgIoU12";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(str);
+
+        Predicate<Character> isVowel = c -> -1 != "aeiouAEIOU".indexOf(c);
+        String expectedResult = "bcDfg12";
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          filterPredicate,   expectedResult
+                Arguments.of( null,              null,              "" ),
+                Arguments.of( null,              isVowel,           "" ),
+                Arguments.of( nullBuffer,        null,              "" ),
+                Arguments.of( nullBuffer,        isVowel,           "" ),
+                Arguments.of( "",                null,              "" ),
+                Arguments.of( "",                isVowel,           "" ),
+                Arguments.of( str,               null,              str ),
+                Arguments.of( str,               isVowel,           expectedResult ),
+                Arguments.of( notEmptyBuilder,   null,              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   isVowel,           expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterNotTestCases")
+    @DisplayName("filterNot: test cases")
+    public void filterNot_testCases(CharSequence sourceCS,
+                                    Predicate<Character> filterPredicate,
+                                    String expectedResult) {
+        assertEquals(expectedResult, filterNot(sourceCS, filterPredicate));
     }
 
 
     static Stream<Arguments> getDigitsTestCases() {
+        StringBuffer sbuffer = new StringBuffer("   ");
+        StringBuilder sbuilder = new StringBuilder("  a 3h7 8");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,     expectedResult
+                //            sourceCS,         expectedResult
                 Arguments.of( null,             "" ),
                 Arguments.of( "",               "" ),
                 Arguments.of( "  ",             "" ),
+                Arguments.of( sbuffer,          "" ),
                 Arguments.of( "123",            "123" ),
                 Arguments.of( "373-030-9447",   "3730309447" ),
                 Arguments.of( "aSf35~yt99Th",   "3599" ),
-                Arguments.of( "12-34 56$",      "123456" )
+                Arguments.of( "12-34 56$",      "123456" ),
+                Arguments.of( sbuilder,         "378" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getDigitsTestCases")
     @DisplayName("getDigits: test cases")
-    public void getDigits_testCases(String sourceString,
+    public void getDigits_testCases(CharSequence sourceCS,
                                     String expectedResult) {
-        assertEquals(expectedResult, getDigits(sourceString));
+        assertEquals(expectedResult, getDigits(sourceCS));
+    }
+
+
+    static Stream<Arguments> getNotEmptyOrElseTestCases() {
+        String emptyString = "";
+        String notEmptyString = "Test string";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(notEmptyString);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          defaultValue,         expectedResult
+                Arguments.of( null,              null,                 null ),
+                Arguments.of( null,              notEmptyString,       notEmptyString ),
+                Arguments.of( nullBuffer,        null,                 null ),
+                Arguments.of( nullBuffer,        notEmptyString,       notEmptyString ),
+                Arguments.of( emptyString,       null,                 null ),
+                Arguments.of( emptyString,       notEmptyString,       notEmptyString ),
+                Arguments.of( notEmptyString,    null,                 notEmptyString ),
+                Arguments.of( notEmptyString,    "testDefaultValue",   notEmptyString ),
+                Arguments.of( notEmptyBuilder,   null,                 notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "testDefaultValue",   notEmptyBuilder.toString() )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("getNotEmptyOrElseTestCases")
+    @DisplayName("getNotEmptyOrElse: test cases")
+    public void getNotEmptyOrElse_testCases(CharSequence sourceCS,
+                                            String defaultValue,
+                                            String expectedResult) {
+        assertEquals(expectedResult, getNotEmptyOrElse(sourceCS, defaultValue));
     }
 
 
     static Stream<Arguments> getOrElse_SourceDefaultParametersTestCases() {
         String notEmptyString = "Test string";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("   3");
         return Stream.of(
                 //@formatter:off
-                //            sourceInstance,   defaultValue,         expectedResult
-                Arguments.of( null,             null,                 null ),
-                Arguments.of( null,             notEmptyString,       notEmptyString ),
-                Arguments.of( notEmptyString,   null,                 notEmptyString ),
-                Arguments.of( notEmptyString,   "testDefaultValue",   notEmptyString )
+                //            sourceCS,          defaultValue,         expectedResult
+                Arguments.of( null,              null,                 null ),
+                Arguments.of( null,              notEmptyString,       notEmptyString ),
+                Arguments.of( nullBuffer,        null,                 null ),
+                Arguments.of( nullBuffer,        notEmptyString,       notEmptyString ),
+                Arguments.of( notEmptyString,    null,                 notEmptyString ),
+                Arguments.of( notEmptyString,    "testDefaultValue",   notEmptyString ),
+                Arguments.of( notEmptyBuilder,   null,                 notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "testDefaultValue",   notEmptyBuilder.toString() )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getOrElse_SourceDefaultParametersTestCases")
     @DisplayName("getOrElse: with source and default value as parameters test cases")
-    public void getOrElse_SourceDefaultParameters_testCases(String sourceInstance,
+    public void getOrElse_SourceDefaultParameters_testCases(CharSequence sourceCS,
                                                             String defaultValue,
                                                             String expectedResult) {
-        assertEquals(expectedResult, getOrElse(sourceInstance, defaultValue));
+        assertEquals(expectedResult, getOrElse(sourceCS, defaultValue));
     }
 
 
     static Stream<Arguments> getOrElse_SourcePredicateDefaultParametersTestCases() {
         String emptyString = "   ";
         String notEmptyString = "Test string";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("   3");
+
         Predicate<String> notEmptyStringPredicate = StringUtils::hasText;
+        Predicate<CharSequence> notEmptyCharSequencePredicate = StringUtils::hasText;
         return Stream.of(
                 //@formatter:off
-                //            sourceInstance,   predicateToMatch,          defaultValue,     expectedResult
-                Arguments.of( null,             null,                      null,             null ),
-                Arguments.of( null,             null,                      notEmptyString,   notEmptyString ),
-                Arguments.of( null,             notEmptyStringPredicate,   null,             null ),
-                Arguments.of( null,             notEmptyStringPredicate,   notEmptyString,   notEmptyString ),
-                Arguments.of( emptyString,      null,                      notEmptyString,   emptyString ),
-                Arguments.of( emptyString,      notEmptyStringPredicate,   notEmptyString,   notEmptyString ),
-                Arguments.of( notEmptyString,   notEmptyStringPredicate,   emptyString,      notEmptyString )
+                //            sourceCS,          predicateToMatch,                defaultValue,     expectedResult
+                Arguments.of( null,              null,                            null,             null ),
+                Arguments.of( null,              null,                            notEmptyString,   notEmptyString ),
+                Arguments.of( null,              notEmptyStringPredicate,         null,             null ),
+                Arguments.of( null,              notEmptyStringPredicate,         notEmptyString,   notEmptyString ),
+                Arguments.of( nullBuffer,        null,                            null,             null ),
+                Arguments.of( nullBuffer,        null,                            notEmptyString,   notEmptyString ),
+                Arguments.of( nullBuffer,        notEmptyStringPredicate,         null,             null ),
+                Arguments.of( nullBuffer,        notEmptyStringPredicate,         notEmptyString,   notEmptyString ),
+                Arguments.of( emptyString,       null,                            notEmptyString,   emptyString ),
+                Arguments.of( emptyString,       notEmptyStringPredicate,         notEmptyString,   notEmptyString ),
+                Arguments.of( notEmptyString,    notEmptyStringPredicate,         emptyString,      notEmptyString ),
+                Arguments.of( notEmptyBuilder,   null,                            null,             notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   null,                            emptyString,      notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyCharSequencePredicate,   emptyString,      notEmptyBuilder.toString() )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("getOrElse_SourcePredicateDefaultParametersTestCases")
     @DisplayName("getOrElse: using source, predicate and default value parameters test cases")
-    public void getOrElse_GenericDefaultValue_SourcePredicateDefaultParameters_testCases(String sourceInstance,
-                                                                                         Predicate<String> predicateToMatch,
+    public void getOrElse_GenericDefaultValue_SourcePredicateDefaultParameters_testCases(CharSequence sourceCS,
+                                                                                         Predicate<CharSequence> predicateToMatch,
                                                                                          String defaultValue,
                                                                                          String expectedResult) {
-        assertEquals(expectedResult, getOrElse(sourceInstance, predicateToMatch, defaultValue));
+        assertEquals(expectedResult, getOrElse(sourceCS, predicateToMatch, defaultValue));
     }
 
 
-    static Stream<Arguments> getOrEmptyTestCases() {
-        String emptyString = "";
-        String notEmptyString = "Test string";
+    static Stream<Arguments> hideMiddleWithSourceCSAndMaxLengthTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("abcdefg");
         return Stream.of(
                 //@formatter:off
-                //            sourceInstance,   expectedResult
-                Arguments.of( null,             emptyString ),
-                Arguments.of( notEmptyString,   notEmptyString )
+                //            sourceCS,          maxLength,   expectedException,                expectedResult
+                Arguments.of( null,              0,           null,                             "" ),
+                Arguments.of( nullBuffer,        0,           null,                             "" ),
+                Arguments.of( "abc",             0,           null,                             "" ),
+                Arguments.of( "abc",             -1,          null,                             "" ),
+                Arguments.of( "abc",             3,           IllegalArgumentException.class,   null ),
+                Arguments.of( "abcdef",          4,           IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   4,           IllegalArgumentException.class,   null ),
+                Arguments.of( "ab",              3,           null,                             "ab" ),
+                Arguments.of( "abcdef",          5,           null,                             "a...f" ),
+                Arguments.of( "abcdef",          6,           null,                             "ab...f" ),
+                Arguments.of( "abcdef",          7,           null,                             "ab...f" ),
+                Arguments.of( "abcdef",          10,          null,                             "ab...f" ),
+                Arguments.of( "abcdefg",         6,           null,                             "ab...g" ),
+                Arguments.of( "abcdefg",         10,          null,                             "ab...fg" ),
+                Arguments.of( notEmptyBuilder,   6,           null,                             "ab...g" ),
+                Arguments.of( notEmptyBuilder,   10,          null,                             "ab...fg" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("getOrEmptyTestCases")
-    @DisplayName("getOrEmpty: test cases")
-    public void getOrEmpty_testCases(String sourceInstance,
-                                     String expectedResult) {
-        assertEquals(expectedResult, getOrEmpty(sourceInstance));
-    }
-
-
-    static Stream<Arguments> hideMiddleWithSourceStringAndMaxLengthTestCases() {
-        return Stream.of(
-                //@formatter:off
-                //            sourceString,   maxLength,   expectedException,                expectedResult
-                Arguments.of( null,           0,           null,                             "" ),
-                Arguments.of( "abc",          0,           null,                             "" ),
-                Arguments.of( "abc",          -1,          null,                             "" ),
-                Arguments.of( "abc",          3,           IllegalArgumentException.class,   null ),
-                Arguments.of( "abcdef",       4,           IllegalArgumentException.class,   null ),
-                Arguments.of( "ab",           3,           null,                             "ab" ),
-                Arguments.of( "abcdef",       5,           null,                             "a...f" ),
-                Arguments.of( "abcdef",       6,           null,                             "ab...f" ),
-                Arguments.of( "abcdef",       7,           null,                             "ab...f" ),
-                Arguments.of( "abcdef",       10,          null,                             "ab...f" ),
-                Arguments.of( "abcdefg",      6,           null,                             "ab...g" ),
-                Arguments.of( "abcdefg",      10,          null,                             "ab...fg" )
-        ); //@formatter:on
-    }
-
-    @ParameterizedTest
-    @MethodSource("hideMiddleWithSourceStringAndMaxLengthTestCases")
-    @DisplayName("hideMiddle: with source string and max length parameters test cases")
-    public void hideMiddleWithSourceStringAndMaxLength_testCases(String sourceString,
-                                                                 int maxLength,
-                                                                 Class<? extends Exception> expectedException,
-                                                                 String expectedResult) {
+    @MethodSource("hideMiddleWithSourceCSAndMaxLengthTestCases")
+    @DisplayName("hideMiddle: with source and max length parameters test cases")
+    public void hideMiddleWithSourceCSAndMaxLength_testCases(CharSequence sourceCS,
+                                                             int maxLength,
+                                                             Class<? extends Exception> expectedException,
+                                                             String expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> hideMiddle(sourceString, maxLength));
+            assertThrows(expectedException, () -> hideMiddle(sourceCS, maxLength));
         } else {
-            assertEquals(expectedResult, hideMiddle(sourceString, maxLength));
+            assertEquals(expectedResult, hideMiddle(sourceCS, maxLength));
         }
     }
 
 
     static Stream<Arguments> hideMiddleAllParametersTestCases() {
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder("abcdefg");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   maxLength,   abbreviationString,   expectedException,                expectedResult
-                Arguments.of( null,           0,           null,                 null,                             "" ),
-                Arguments.of( "abc",          0,           null,                 null,                             "" ),
-                Arguments.of( "abc",          -1,          ".",                  null,                             "" ),
-                Arguments.of( "abc",          2,           ".",                  IllegalArgumentException.class,   null ),
-                Arguments.of( "abcdef",       4,           "...",                IllegalArgumentException.class,   null ),
-                Arguments.of( "ab",           3,           "...",                null,                             "ab" ),
-                Arguments.of( "abc",          3,           ".",                  null,                             "a.c" ),
-                Arguments.of( "abcdef",       4,           ".",                  null,                             "ab.f" ),
-                Arguments.of( "abcdef",       5,           ".",                  null,                             "ab.ef" ),
-                Arguments.of( "abcdef",       5,           null,                 null,                             "a...f" ),
-                Arguments.of( "abcdef",       5,           "...",                null,                             "a...f" ),
-                Arguments.of( "abcdef",       6,           "...",                null,                             "ab...f" ),
-                Arguments.of( "abcdef",       7,           "...",                null,                             "ab...f" ),
-                Arguments.of( "abcdef",       10,          "..",                 null,                             "ab..ef" ),
-                Arguments.of( "abcdef",       10,          "...",                null,                             "ab...f" ),
-                Arguments.of( "abcdefg",      6,           "..",                 null,                             "ab..fg" ),
-                Arguments.of( "abcdefg",      6,           "...",                null,                             "ab...g" ),
-                Arguments.of( "abcdefg",      10,          "..",                 null,                             "abc..fg" ),
-                Arguments.of( "abcdefg",      10,          "...",                null,                             "ab...fg" )
+                //            sourceCS,          maxLength,   abbreviationString,   expectedException,                expectedResult
+                Arguments.of( null,              0,           null,                 null,                             "" ),
+                Arguments.of( nullBuffer,        0,           null,                 null,                             "" ),
+                Arguments.of( "abc",             0,           null,                 null,                             "" ),
+                Arguments.of( "abc",             -1,          ".",                  null,                             "" ),
+                Arguments.of( "abc",             2,           ".",                  IllegalArgumentException.class,   null ),
+                Arguments.of( "abcdef",          4,           "...",                IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   4,           "...",                IllegalArgumentException.class,   null ),
+                Arguments.of( "ab",              3,           "...",                null,                             "ab" ),
+                Arguments.of( "abc",             3,           ".",                  null,                             "a.c" ),
+                Arguments.of( "abcdef",          4,           ".",                  null,                             "ab.f" ),
+                Arguments.of( "abcdef",          5,           ".",                  null,                             "ab.ef" ),
+                Arguments.of( "abcdef",          5,           null,                 null,                             "a...f" ),
+                Arguments.of( "abcdef",          5,           "...",                null,                             "a...f" ),
+                Arguments.of( "abcdef",          6,           "...",                null,                             "ab...f" ),
+                Arguments.of( "abcdef",          7,           "...",                null,                             "ab...f" ),
+                Arguments.of( "abcdef",          10,          "..",                 null,                             "ab..ef" ),
+                Arguments.of( "abcdef",          10,          "...",                null,                             "ab...f" ),
+                Arguments.of( "abcdefg",         6,           "..",                 null,                             "ab..fg" ),
+                Arguments.of( "abcdefg",         6,           "...",                null,                             "ab...g" ),
+                Arguments.of( "abcdefg",         10,          "..",                 null,                             "abc..fg" ),
+                Arguments.of( "abcdefg",         10,          "...",                null,                             "ab...fg" ),
+                Arguments.of( notEmptyBuilder,   6,           "..",                 null,                             "ab..fg" ),
+                Arguments.of( notEmptyBuilder,   6,           "...",                null,                             "ab...g" ),
+                Arguments.of( notEmptyBuilder,   10,          "..",                 null,                             "abc..fg" ),
+                Arguments.of( notEmptyBuilder,   10,          "...",                null,                             "ab...fg" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("hideMiddleAllParametersTestCases")
     @DisplayName("hideMiddle: with all parameters test cases")
-    public void hideMiddleAllParameters_testCases(String sourceString,
+    public void hideMiddleAllParameters_testCases(CharSequence sourceCS,
                                                   int maxLength,
                                                   String abbreviationString,
                                                   Class<? extends Exception> expectedException,
                                                   String expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> hideMiddle(sourceString, maxLength, abbreviationString));
+            assertThrows(expectedException, () -> hideMiddle(sourceCS, maxLength, abbreviationString));
         } else {
-            assertEquals(expectedResult, hideMiddle(sourceString, maxLength, abbreviationString));
+            assertEquals(expectedResult, hideMiddle(sourceCS, maxLength, abbreviationString));
         }
     }
 
 
     static Stream<Arguments> isBlankTestCases() {
+        StringBuffer sbuffer = new StringBuffer("   ");
+        StringBuilder sbuilder = new StringBuilder("   3");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   expectedResult
-                Arguments.of( null,           true ),
-                Arguments.of( "",             true ),
-                Arguments.of( "  ",           true ),
-                Arguments.of( "  123 ",       false )
+                //            sourceCS,   expectedResult
+                Arguments.of( null,       true ),
+                Arguments.of( "",         true ),
+                Arguments.of( "  ",       true ),
+                Arguments.of( sbuffer,    true ),
+                Arguments.of( "  123 ",   false ),
+                Arguments.of( sbuilder,   false )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("isBlankTestCases")
     @DisplayName("isBlank: test cases")
-    public void isBlank_testCases(String sourceString,
+    public void isBlank_testCases(CharSequence sourceCS,
                                   boolean expectedResult) {
-        assertEquals(expectedResult, isBlank(sourceString));
+        assertEquals(expectedResult, isBlank(sourceCS));
     }
 
 
     static Stream<Arguments> isEmptyTestCases() {
+        StringBuffer sbuffer = new StringBuffer();
+        StringBuilder sbuilder = new StringBuilder("   3");
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   expectedResult
-                Arguments.of( null,           true ),
-                Arguments.of( "",             true ),
-                Arguments.of( "  ",           false ),
-                Arguments.of( "  123 ",       false )
+                //            sourceCS,   expectedResult
+                Arguments.of( null,       true ),
+                Arguments.of( "",         true ),
+                Arguments.of( sbuffer,    true ),
+                Arguments.of( "  ",       false ),
+                Arguments.of( "  123 ",   false ),
+                Arguments.of( sbuilder,   false )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("isEmptyTestCases")
     @DisplayName("isEmpty: test cases")
-    public void isEmpty_testCases(String sourceString,
+    public void isEmpty_testCases(CharSequence sourceCS,
                                   boolean expectedResult) {
-        assertEquals(expectedResult, isEmpty(sourceString));
+        assertEquals(expectedResult, isEmpty(sourceCS));
     }
 
 
@@ -651,151 +802,213 @@ public class StringUtilTest {
     }
 
 
-    static Stream<Arguments> leftPadWithSourceStringAndSizeTestCases() {
+    static Stream<Arguments> leftPadWithSourceCSAndSizeTestCases() {
         String sourceString = "abc";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   size,   expectedResult
-                Arguments.of( null,           -1,                          "" ),
-                Arguments.of( null,           0,                           "" ),
-                Arguments.of( null,           2,                           "  " ),
-                Arguments.of( "",             -1,                          "" ),
-                Arguments.of( "",             0,                           "" ),
-                Arguments.of( "",             3,                           "   " ),
-                Arguments.of( sourceString,   -1,                          sourceString ),
-                Arguments.of( sourceString,   0,                           sourceString ),
-                Arguments.of( sourceString,   1,                           sourceString ),
-                Arguments.of( sourceString,   sourceString.length(),       sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 2,   "  " + sourceString )
+                //            sourceCS,          size,                           expectedResult
+                Arguments.of( null,              -1,                             "" ),
+                Arguments.of( null,              0,                              "" ),
+                Arguments.of( null,              2,                              "  " ),
+                Arguments.of( nullBuffer,        -1,                             "" ),
+                Arguments.of( nullBuffer,        0,                              "" ),
+                Arguments.of( nullBuffer,        2,                              "  " ),
+                Arguments.of( "",                -1,                             "" ),
+                Arguments.of( "",                0,                              "" ),
+                Arguments.of( "",                3,                              "   " ),
+                Arguments.of( sourceString,      -1,                             sourceString ),
+                Arguments.of( sourceString,      0,                              sourceString ),
+                Arguments.of( sourceString,      1,                              sourceString ),
+                Arguments.of( sourceString,      sourceString.length(),          sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 2,      "  " + sourceString ),
+                Arguments.of( notEmptyBuilder,   -1,                             notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   0,                              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   1,                              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   sourceString.length(),          notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 2,   "  " + notEmptyBuilder )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("leftPadWithSourceStringAndSizeTestCases")
-    @DisplayName("leftPad: with source string and size test cases")
-    public void leftPadWithSourceStringAndSize_testCases(String sourceString,
-                                                         int size,
-                                                         String expectedResult) {
-        assertEquals(expectedResult, leftPad(sourceString, size));
+    @MethodSource("leftPadWithSourceCSAndSizeTestCases")
+    @DisplayName("leftPad: with source and size test cases")
+    public void leftPadWithSourceCSAndSize_testCases(CharSequence sourceCS,
+                                                     int size,
+                                                     String expectedResult) {
+        assertEquals(expectedResult, leftPad(sourceCS, size));
     }
 
 
     static Stream<Arguments> leftPadAllParametersTestCases() {
         String sourceString = "abc";
         String padString = "zz";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   size,   padString,                        expectedResult
-                Arguments.of( null,           -1,                          null,        "" ),
-                Arguments.of( null,           0,                           null,        "" ),
-                Arguments.of( null,           -1,                          padString,   "" ),
-                Arguments.of( null,            0,                          padString,   "" ),
-                Arguments.of( null,            1,                          padString,   "z" ),
-                Arguments.of( null,            2,                          padString,   "zz" ),
-                Arguments.of( "",             -1,                          null,        "" ),
-                Arguments.of( "",             0,                           null,        "" ),
-                Arguments.of( "",             -1,                          padString,   "" ),
-                Arguments.of( "",             0,                           padString,   "" ),
-                Arguments.of( "",             1,                           padString,   "z" ),
-                Arguments.of( "",             2,                           padString,   "zz" ),
-                Arguments.of( sourceString,   -1,                          null,        sourceString ),
-                Arguments.of( sourceString,   0,                           null,        sourceString ),
-                Arguments.of( sourceString,   1,                           null,        sourceString ),
-                Arguments.of( sourceString,   sourceString.length(),       null,        sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 2,   null,        "  " + sourceString ),
-                Arguments.of( sourceString,   -1,                          padString,   sourceString ),
-                Arguments.of( sourceString,   0,                           padString,   sourceString ),
-                Arguments.of( sourceString,   1,                           padString,   sourceString ),
-                Arguments.of( sourceString,   sourceString.length(),       padString,   sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 1,   padString,   "z" + sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 2,   padString,   "zz" + sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 3,   padString,   "zzz" + sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 4,   padString,   "zzzz" + sourceString )
+                //            sourceCS,          size,                           padString,   expectedResult
+                Arguments.of( null,              -1,                             null,        "" ),
+                Arguments.of( null,              0,                              null,        "" ),
+                Arguments.of( null,              -1,                             padString,   "" ),
+                Arguments.of( null,              0,                              padString,   "" ),
+                Arguments.of( null,              1,                              padString,   "z" ),
+                Arguments.of( null,              2,                              padString,   "zz" ),
+                Arguments.of( nullBuffer,        -1,                             null,        "" ),
+                Arguments.of( nullBuffer,        0,                              null,        "" ),
+                Arguments.of( nullBuffer,        -1,                             padString,   "" ),
+                Arguments.of( nullBuffer,        0,                              padString,   "" ),
+                Arguments.of( nullBuffer,        1,                              padString,   "z" ),
+                Arguments.of( nullBuffer,        2,                              padString,   "zz" ),
+                Arguments.of( "",                -1,                             null,        "" ),
+                Arguments.of( "",                0,                              null,        "" ),
+                Arguments.of( "",                -1,                             padString,   "" ),
+                Arguments.of( "",                0,                              padString,   "" ),
+                Arguments.of( "",                1,                              padString,   "z" ),
+                Arguments.of( "",                2,                              padString,   "zz" ),
+                Arguments.of( sourceString,      -1,                             null,        sourceString ),
+                Arguments.of( sourceString,      0,                              null,        sourceString ),
+                Arguments.of( sourceString,      1,                              null,        sourceString ),
+                Arguments.of( sourceString,      sourceString.length(),          null,        sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 2,      null,        "  " + sourceString ),
+                Arguments.of( sourceString,      -1,                             padString,   sourceString ),
+                Arguments.of( sourceString,      0,                              padString,   sourceString ),
+                Arguments.of( sourceString,      1,                              padString,   sourceString ),
+                Arguments.of( sourceString,      sourceString.length(),          padString,   sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 1,      padString,   "z" + sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 2,      padString,   "zz" + sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 3,      padString,   "zzz" + sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 4,      padString,   "zzzz" + sourceString ),
+                Arguments.of( notEmptyBuilder,   -1,                             null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   0,                              null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   1,                              null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length(),       null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 2,   null,        "  " + notEmptyBuilder ),
+                Arguments.of( notEmptyBuilder,   -1,                             padString,   notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   0,                              padString,   notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   1,                              padString,   notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length(),       padString,   sourceString ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 1,   padString,   "z" + notEmptyBuilder ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 2,   padString,   "zz" + notEmptyBuilder ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 3,   padString,   "zzz" + notEmptyBuilder ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 4,   padString,   "zzzz" + notEmptyBuilder )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("leftPadAllParametersTestCases")
     @DisplayName("leftPad: with all parameters test cases")
-    public void leftPadAllParameters_testCases(String sourceString,
+    public void leftPadAllParameters_testCases(CharSequence sourceCS,
                                                int size,
                                                String padString,
                                                String expectedResult) {
-        assertEquals(expectedResult, leftPad(sourceString, size, padString));
+        assertEquals(expectedResult, leftPad(sourceCS, size, padString));
     }
 
 
-    static Stream<Arguments> rightPadWithSourceStringAndSizeTestCases() {
+    static Stream<Arguments> rightPadWithSourceCSAndSizeTestCases() {
         String sourceString = "abc";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   size,   expectedResult
-                Arguments.of( null,           -1,                          "" ),
-                Arguments.of( null,           0,                           "" ),
-                Arguments.of( null,           2,                           "  " ),
-                Arguments.of( "",             -1,                          "" ),
-                Arguments.of( "",             0,                           "" ),
-                Arguments.of( "",             3,                           "   " ),
-                Arguments.of( sourceString,   -1,                          sourceString ),
-                Arguments.of( sourceString,   0,                           sourceString ),
-                Arguments.of( sourceString,   1,                           sourceString ),
-                Arguments.of( sourceString,   sourceString.length(),       sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 2,   sourceString + "  " )
+                //            sourceCS,          size,                           expectedResult
+                Arguments.of( null,              -1,                             "" ),
+                Arguments.of( null,              0,                              "" ),
+                Arguments.of( null,              2,                              "  " ),
+                Arguments.of( nullBuffer,        -1,                             "" ),
+                Arguments.of( nullBuffer,        0,                              "" ),
+                Arguments.of( nullBuffer,        2,                              "  " ),
+                Arguments.of( "",                -1,                             "" ),
+                Arguments.of( "",                0,                              "" ),
+                Arguments.of( "",                3,                              "   " ),
+                Arguments.of( sourceString,      -1,                             sourceString ),
+                Arguments.of( sourceString,      0,                              sourceString ),
+                Arguments.of( sourceString,      1,                              sourceString ),
+                Arguments.of( sourceString,      sourceString.length(),          sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 2,      sourceString + "  " ),
+                Arguments.of( notEmptyBuilder,   -1,                             notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   0,                              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   1,                              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length(),       notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 2,   notEmptyBuilder + "  " )
         ); //@formatter:on
     }
 
     @ParameterizedTest
-    @MethodSource("rightPadWithSourceStringAndSizeTestCases")
-    @DisplayName("rightPad: with source string and size test cases")
-    public void rightPadWithSourceStringAndSize_testCases(String sourceString,
+    @MethodSource("rightPadWithSourceCSAndSizeTestCases")
+    @DisplayName("rightPad: with source and size test cases")
+    public void rightPadWithSourceCSAndSize_testCases(CharSequence sourceCS,
                                                           int size,
                                                           String expectedResult) {
-        assertEquals(expectedResult, rightPad(sourceString, size));
+        assertEquals(expectedResult, rightPad(sourceCS, size));
     }
 
 
     static Stream<Arguments> rightPadAllParametersTestCases() {
         String sourceString = "abc";
         String padString = "zz";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
         return Stream.of(
                 //@formatter:off
-                //            sourceString,   size,   padString,                        expectedResult
-                Arguments.of( null,           -1,                          null,        "" ),
-                Arguments.of( null,           0,                           null,        "" ),
-                Arguments.of( null,           -1,                          padString,   "" ),
-                Arguments.of( null,            0,                          padString,   "" ),
-                Arguments.of( null,            1,                          padString,   "z" ),
-                Arguments.of( null,            2,                          padString,   "zz" ),
-                Arguments.of( "",             -1,                          null,        "" ),
-                Arguments.of( "",             0,                           null,        "" ),
-                Arguments.of( "",             -1,                          padString,   "" ),
-                Arguments.of( "",             0,                           padString,   "" ),
-                Arguments.of( "",             1,                           padString,   "z" ),
-                Arguments.of( "",             2,                           padString,   "zz" ),
-                Arguments.of( sourceString,   -1,                          null,        sourceString ),
-                Arguments.of( sourceString,   0,                           null,        sourceString ),
-                Arguments.of( sourceString,   1,                           null,        sourceString ),
-                Arguments.of( sourceString,   sourceString.length(),       null,        sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 2,   null,        sourceString + "  " ),
-                Arguments.of( sourceString,   -1,                          padString,   sourceString ),
-                Arguments.of( sourceString,   0,                           padString,   sourceString ),
-                Arguments.of( sourceString,   1,                           padString,   sourceString ),
-                Arguments.of( sourceString,   sourceString.length(),       padString,   sourceString ),
-                Arguments.of( sourceString,   sourceString.length() + 1,   padString,   sourceString + "z" ),
-                Arguments.of( sourceString,   sourceString.length() + 2,   padString,   sourceString + "zz" ),
-                Arguments.of( sourceString,   sourceString.length() + 3,   padString,   sourceString + "zzz" ),
-                Arguments.of( sourceString,   sourceString.length() + 4,   padString,   sourceString + "zzzz" )
+                //            sourceString,      size,                           padString,   expectedResult
+                Arguments.of( null,              -1,                             null,        "" ),
+                Arguments.of( null,              0,                              null,        "" ),
+                Arguments.of( null,              -1,                             padString,   "" ),
+                Arguments.of( null,              0,                              padString,   "" ),
+                Arguments.of( null,              1,                              padString,   "z" ),
+                Arguments.of( null,              2,                              padString,   "zz" ),
+                Arguments.of( nullBuffer,        -1,                             null,        "" ),
+                Arguments.of( nullBuffer,        0,                              null,        "" ),
+                Arguments.of( nullBuffer,        -1,                             padString,   "" ),
+                Arguments.of( nullBuffer,        0,                              padString,   "" ),
+                Arguments.of( nullBuffer,        1,                              padString,   "z" ),
+                Arguments.of( nullBuffer,        2,                              padString,   "zz" ),
+                Arguments.of( "",                -1,                             null,        "" ),
+                Arguments.of( "",                0,                              null,        "" ),
+                Arguments.of( "",                -1,                             padString,   "" ),
+                Arguments.of( "",                0,                              padString,   "" ),
+                Arguments.of( "",                1,                              padString,   "z" ),
+                Arguments.of( "",                2,                              padString,   "zz" ),
+                Arguments.of( sourceString,      -1,                             null,        sourceString ),
+                Arguments.of( sourceString,      0,                              null,        sourceString ),
+                Arguments.of( sourceString,      1,                              null,        sourceString ),
+                Arguments.of( sourceString,      sourceString.length(),          null,        sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 2,      null,        sourceString + "  " ),
+                Arguments.of( sourceString,      -1,                             padString,   sourceString ),
+                Arguments.of( sourceString,      0,                              padString,   sourceString ),
+                Arguments.of( sourceString,      1,                              padString,   sourceString ),
+                Arguments.of( sourceString,      sourceString.length(),          padString,   sourceString ),
+                Arguments.of( sourceString,      sourceString.length() + 1,      padString,   sourceString + "z" ),
+                Arguments.of( sourceString,      sourceString.length() + 2,      padString,   sourceString + "zz" ),
+                Arguments.of( sourceString,      sourceString.length() + 3,      padString,   sourceString + "zzz" ),
+                Arguments.of( sourceString,      sourceString.length() + 4,      padString,   sourceString + "zzzz" ),
+                Arguments.of( notEmptyBuilder,   -1,                             null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   0,                              null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   1,                              null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length(),       null,        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 2,   null,        notEmptyBuilder + "  " ),
+                Arguments.of( notEmptyBuilder,   -1,                             padString,   notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   0,                              padString,   notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   1,                              padString,   notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length(),       padString,   notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 1,   padString,   notEmptyBuilder + "z" ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 2,   padString,   notEmptyBuilder + "zz" ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 3,   padString,   notEmptyBuilder + "zzz" ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.length() + 4,   padString,   notEmptyBuilder + "zzzz" )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("rightPadAllParametersTestCases")
     @DisplayName("rightPad: with all parameters test cases")
-    public void rightPadAllParameters_testCases(String sourceString,
+    public void rightPadAllParameters_testCases(CharSequence sourceCS,
                                                 int size,
                                                 String padString,
                                                 String expectedResult) {
-        assertEquals(expectedResult, rightPad(sourceString, size, padString));
+        assertEquals(expectedResult, rightPad(sourceCS, size, padString));
     }
 
 
@@ -803,29 +1016,34 @@ public class StringUtilTest {
         String emptyString = "";
         String stringValue1 = "abcdefg";
         String stringValue2 = "1234";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(stringValue1);
 
         List<String> stringValue1Size8Result = List.of("abcdefg");
         List<String> stringValue1Size3Result = List.of("abc", "bcd", "cde", "def", "efg");
         List<String> stringValue2Size2Result = List.of("12", "23", "34");
         return Stream.of(
                 //@formatter:off
-                //            sourceCollection,   size,   expectedResult
-                Arguments.of( null,               5,      List.of() ),
-                Arguments.of( emptyString,        0,      List.of("") ),
-                Arguments.of( emptyString,        5,      List.of("") ),
-                Arguments.of( stringValue1,       8,      stringValue1Size8Result ),
-                Arguments.of( stringValue1,       3,      stringValue1Size3Result ),
-                Arguments.of( stringValue2,       2,      stringValue2Size2Result )
+                //            sourceCS,          size,   expectedResult
+                Arguments.of( null,              2,      List.of() ),
+                Arguments.of( nullBuffer,        5,      List.of() ),
+                Arguments.of( emptyString,       0,      List.of("") ),
+                Arguments.of( emptyString,       5,      List.of("") ),
+                Arguments.of( stringValue1,      8,      stringValue1Size8Result ),
+                Arguments.of( stringValue1,      3,      stringValue1Size3Result ),
+                Arguments.of( stringValue2,      2,      stringValue2Size2Result ),
+                Arguments.of( notEmptyBuilder,   8,      stringValue1Size8Result ),
+                Arguments.of( notEmptyBuilder,   3,      stringValue1Size3Result )
         ); //@formatter:on
     }
 
     @ParameterizedTest
     @MethodSource("slidingTestCases")
     @DisplayName("sliding: test cases")
-    public void sliding_testCases(String sourceString,
+    public void sliding_testCases(CharSequence sourceCS,
                                   int size,
                                   List<String> expectedResult) {
-        assertEquals(expectedResult, sliding(sourceString, size));
+        assertEquals(expectedResult, sliding(sourceCS, size));
     }
 
 
@@ -1032,6 +1250,186 @@ public class StringUtilTest {
                         : separators.toArray(new String[0]);
 
         assertEquals(expectedResult, splitMultilevel(source, collectionFactory, finalSeparators));
+    }
+
+
+    static Stream<Arguments> substringAfterTestCases() {
+        String str = "1234-34-5678";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(str);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          separator,                    expectedResult
+                Arguments.of( null,              null,                         "" ),
+                Arguments.of( null,              "",                           "" ),
+                Arguments.of( null,              "abc",                        "" ),
+                Arguments.of( nullBuffer,        null,                         "" ),
+                Arguments.of( nullBuffer,        "",                           "" ),
+                Arguments.of( nullBuffer,        "12",                         "" ),
+                Arguments.of( "",                null,                         "" ),
+                Arguments.of( "",                "t2s",                        "" ),
+                Arguments.of( "",                "",                           "" ),
+                Arguments.of( str,               null,                         "" ),
+                Arguments.of( str,               "",                           str ),
+                Arguments.of( str,               "666",                        "" ),
+                Arguments.of( str,               "1",                          "234-34-5678" ),
+                Arguments.of( str,               "34",                         "-34-5678" ),
+                Arguments.of( str,               "-",                          "34-5678" ),
+                Arguments.of( str,               "78",                         "" ),
+                Arguments.of( str,               str,                          "" ),
+                Arguments.of( notEmptyBuilder,   null,                         "" ),
+                Arguments.of( notEmptyBuilder,   "",                           notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "666",                        "" ),
+                Arguments.of( notEmptyBuilder,   "1",                          "234-34-5678" ),
+                Arguments.of( notEmptyBuilder,   "34",                         "-34-5678" ),
+                Arguments.of( notEmptyBuilder,   "-",                          "34-5678" ),
+                Arguments.of( notEmptyBuilder,   "78",                         "" ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.toString(),   "" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("substringAfterTestCases")
+    @DisplayName("substringAfter: test cases")
+    public void substringAfter_testCases(CharSequence sourceCS,
+                                         String separator,
+                                         String expectedResult) {
+        assertEquals(expectedResult, substringAfter(sourceCS, separator));
+    }
+
+
+    static Stream<Arguments> substringAfterLastTestCases() {
+        String str = "1234-34-5678";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(str);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          separator,                    expectedResult
+                Arguments.of( null,              null,                         "" ),
+                Arguments.of( null,              "",                           "" ),
+                Arguments.of( null,              "abc",                        "" ),
+                Arguments.of( nullBuffer,        null,                         "" ),
+                Arguments.of( nullBuffer,        "",                           "" ),
+                Arguments.of( nullBuffer,        "12",                         "" ),
+                Arguments.of( "",                null,                         "" ),
+                Arguments.of( "",                "t2s",                        "" ),
+                Arguments.of( "",                "",                           "" ),
+                Arguments.of( str,               null,                         "" ),
+                Arguments.of( str,               "",                           "" ),
+                Arguments.of( str,               "666",                        "" ),
+                Arguments.of( str,               "1",                          "234-34-5678" ),
+                Arguments.of( str,               "34",                         "-5678" ),
+                Arguments.of( str,               "-",                          "5678" ),
+                Arguments.of( str,               "78",                         "" ),
+                Arguments.of( str,               str,                          "" ),
+                Arguments.of( notEmptyBuilder,   null,                         "" ),
+                Arguments.of( notEmptyBuilder,   "",                           "" ),
+                Arguments.of( notEmptyBuilder,   "666",                        "" ),
+                Arguments.of( notEmptyBuilder,   "1",                          "234-34-5678" ),
+                Arguments.of( notEmptyBuilder,   "34",                         "-5678" ),
+                Arguments.of( notEmptyBuilder,   "-",                          "5678" ),
+                Arguments.of( notEmptyBuilder,   "78",                         "" ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.toString(),   "" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("substringAfterLastTestCases")
+    @DisplayName("substringAfterLast: test cases")
+    public void substringAfterLast_testCases(CharSequence sourceCS,
+                                             String separator,
+                                             String expectedResult) {
+        assertEquals(expectedResult, substringAfterLast(sourceCS, separator));
+    }
+
+
+    static Stream<Arguments> substringBeforeTestCases() {
+        String str = "1234-34-5678";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(str);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          separator,                    expectedResult
+                Arguments.of( null,              null,                         "" ),
+                Arguments.of( null,              "",                           "" ),
+                Arguments.of( null,              "abc",                        "" ),
+                Arguments.of( nullBuffer,        null,                         "" ),
+                Arguments.of( nullBuffer,        "",                           "" ),
+                Arguments.of( nullBuffer,        "12",                         "" ),
+                Arguments.of( "",                null,                         "" ),
+                Arguments.of( "",                "t2s",                        "" ),
+                Arguments.of( "",                "",                           "" ),
+                Arguments.of( str,               null,                         str ),
+                Arguments.of( str,               "",                           str ),
+                Arguments.of( str,               "666",                        str ),
+                Arguments.of( str,               "1",                          "" ),
+                Arguments.of( str,               "34",                         "12" ),
+                Arguments.of( str,               "-",                          "1234" ),
+                Arguments.of( str,               "78",                         "1234-34-56" ),
+                Arguments.of( str,               str,                          "" ),
+                Arguments.of( notEmptyBuilder,   null,                         notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "",                           notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "666",                        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "1",                          "" ),
+                Arguments.of( notEmptyBuilder,   "34",                         "12" ),
+                Arguments.of( notEmptyBuilder,   "-",                          "1234" ),
+                Arguments.of( notEmptyBuilder,   "78",                         "1234-34-56" ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.toString(),   "" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("substringBeforeTestCases")
+    @DisplayName("substringBefore: test cases")
+    public void substringBefore_testCases(CharSequence sourceCS,
+                                          String separator,
+                                          String expectedResult) {
+        assertEquals(expectedResult, substringBefore(sourceCS, separator));
+    }
+
+
+    static Stream<Arguments> substringBeforeLastTestCases() {
+        String str = "1234-34-5678";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(str);
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          separator,                    expectedResult
+                Arguments.of( null,              null,                         "" ),
+                Arguments.of( null,              "",                           "" ),
+                Arguments.of( null,              "abc",                        "" ),
+                Arguments.of( nullBuffer,        null,                         "" ),
+                Arguments.of( nullBuffer,        "",                           "" ),
+                Arguments.of( nullBuffer,        "12",                         "" ),
+                Arguments.of( "",                null,                         "" ),
+                Arguments.of( "",                "t2s",                        "" ),
+                Arguments.of( "",                "",                           "" ),
+                Arguments.of( str,               null,                         str ),
+                Arguments.of( str,               "",                           str ),
+                Arguments.of( str,               "666",                        str ),
+                Arguments.of( str,               "1",                          "" ),
+                Arguments.of( str,               "34",                         "1234-" ),
+                Arguments.of( str,               "-",                          "1234-34" ),
+                Arguments.of( str,               "78",                         "1234-34-56" ),
+                Arguments.of( str,               str,                          "" ),
+                Arguments.of( notEmptyBuilder,   null,                         notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "",                           notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "666",                        notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   "1",                          "" ),
+                Arguments.of( notEmptyBuilder,   "34",                         "1234-" ),
+                Arguments.of( notEmptyBuilder,   "-",                          "1234-34" ),
+                Arguments.of( notEmptyBuilder,   "78",                         "1234-34-56" ),
+                Arguments.of( notEmptyBuilder,   notEmptyBuilder.toString(),   "" )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("substringBeforeLastTestCases")
+    @DisplayName("substringBeforeLast: test cases")
+    public void substringBeforeLast_testCases(CharSequence sourceCS,
+                                              String separator,
+                                              String expectedResult) {
+        assertEquals(expectedResult, substringBeforeLast(sourceCS, separator));
     }
 
 }

@@ -1060,7 +1060,7 @@ public class MapUtil {
                                              final Supplier<Map<T, E>> mapFactory) {
         final BiPredicate<? super T, ? super E> finalFilterPredicate =
                 isNull(filterPredicate)
-                        ? biAlwaysTrue()
+                        ? null
                         : filterPredicate.negate();
 
         return filter(

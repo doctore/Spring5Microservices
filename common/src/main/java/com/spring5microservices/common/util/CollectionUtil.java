@@ -934,7 +934,7 @@ public class CollectionUtil {
                                               final Supplier<Collection<T>> collectionFactory) {
         final Predicate<? super T> finalFilterPredicate =
                 isNull(filterPredicate)
-                        ? alwaysTrue()
+                        ? null
                         : filterPredicate.negate();
 
         return filter(

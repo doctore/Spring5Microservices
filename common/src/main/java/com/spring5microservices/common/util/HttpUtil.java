@@ -6,7 +6,7 @@ import lombok.experimental.UtilityClass;
 
 import java.util.Base64;
 
-import static com.spring5microservices.common.util.StringUtil.getOrEmpty;
+import static com.spring5microservices.common.util.StringUtil.getOrElse;
 import static java.lang.String.format;
 
 @UtilityClass
@@ -30,8 +30,14 @@ public class HttpUtil {
      */
     public static String encodeBasicAuthentication(final String username,
                                                    final String password) {
-        final String finalUsername = getOrEmpty(username);
-        final String finalPassword = getOrEmpty(password);
+        final String finalUsername = getOrElse(
+                username,
+                StringUtil.EMPTY_STRING
+        );
+        final String finalPassword = getOrElse(
+                password,
+                StringUtil.EMPTY_STRING
+        );
         if (finalUsername.contains(BASIC_AUTHORIZATION_HEADER_SEPARATOR)) {
             throw new IllegalArgumentException(
                     format("Given username: %s must not contain the character: '%s'",
@@ -64,7 +70,10 @@ public class HttpUtil {
      *                                  if after decoding {@code encodeBasicAuth}, it does not contain {@link HttpUtil#BASIC_AUTHORIZATION_HEADER_SEPARATOR}
      */
     public static Tuple2<String, String> decodeBasicAuthentication(final String encodeBasicAuth) {
-        final String finalEncodeBasicAuth = getOrEmpty(encodeBasicAuth);
+        final String finalEncodeBasicAuth = getOrElse(
+                encodeBasicAuth,
+                StringUtil.EMPTY_STRING
+        );
         if (!finalEncodeBasicAuth.startsWith(BASIC_AUTHORIZATION_HEADER)) {
             throw new IllegalArgumentException(
                     format("Given encode basic authentication: %s must start with: '%s'",
