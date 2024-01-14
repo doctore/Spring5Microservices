@@ -1637,8 +1637,4 @@ public class StringUtil {
                 .orElse(EMPTY_STRING);
     }
 
-
-    // TODO:
-    // filter, filterNot
-
 }
