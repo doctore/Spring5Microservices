@@ -364,7 +364,7 @@ public class MapUtil {
 
 
     /**
-     * Returns a {@link Map} after:
+     * Returns a new {@link Map} after applying to {@code sourceMap}:
      * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
@@ -405,7 +405,7 @@ public class MapUtil {
 
 
     /**
-     * Returns a {@link Map} after:
+     * Returns a new {@link Map} after applying to {@code sourceMap}:
      * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
@@ -459,7 +459,7 @@ public class MapUtil {
 
 
     /**
-     * Returns a {@link Map} after:
+     * Returns a new {@link Map} after applying to {@code sourceMap}:
      * <p>
      *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
@@ -502,7 +502,7 @@ public class MapUtil {
 
 
     /**
-     * Returns a {@link Map} after:
+     * Returns a new {@link Map} after applying to {@code sourceMap}:
      * <p>
      *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}

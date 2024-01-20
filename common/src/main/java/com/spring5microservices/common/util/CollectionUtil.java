@@ -347,7 +347,7 @@ public class CollectionUtil {
 
 
     /**
-     * Returns a {@link Collection} after:
+     * Returns a new {@link Collection} after applying to {@code sourceCollection}:
      * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
@@ -389,7 +389,7 @@ public class CollectionUtil {
 
 
     /**
-     * Returns a {@link Collection} after:
+     * Returns a new {@link Collection} after applying to {@code sourceCollection}:
      * <p>
      *  - Filter its elements using {@code filterPredicate}
      *  - Transform its filtered elements using {@code mapFunction}
@@ -443,7 +443,7 @@ public class CollectionUtil {
 
 
     /**
-     * Returns a {@link Collection} after:
+     * Returns a new {@link Collection} after applying to {@code sourceCollection}:
      * <p>
      *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
@@ -482,7 +482,7 @@ public class CollectionUtil {
 
 
     /**
-     * Returns a {@link Collection} after:
+     * Returns a new {@link Collection} after applying to {@code sourceCollection}:
      * <p>
      *  - Filter its elements using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
      *  - Transform its filtered elements using {@link PartialFunction#apply(Object)} of {@code partialFunction}
