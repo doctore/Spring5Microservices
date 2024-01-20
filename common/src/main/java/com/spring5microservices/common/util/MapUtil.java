@@ -1205,6 +1205,9 @@ public class MapUtil {
      *    Folds given {@link Map} values from the left, starting with {@code initialValue} and successively
      * calling {@code accumulator}.
      *
+     * @apiNote
+     *    If {@code sourceMap} or {@code accumulator} are {@code null} then {@code initialValue} is returned.
+     *
      * <pre>
      *    foldLeft(                                        Result:
      *       [(1, "Hi"), (2, "Hello")],                     10
@@ -1240,7 +1243,8 @@ public class MapUtil {
      * calling {@code accumulator}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
+     *    If {@code sourceMap} or {@code accumulator} are {@code null} then {@code initialValue} is returned.
+     * If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
      *
      * <pre>
      *    foldLeft(                                        Result:

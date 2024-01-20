@@ -1077,6 +1077,9 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
      * elements of {@code sourceCollection}, going left to right.
      *
+     * @apiNote
+     *    If {@code sourceCollection} or {@code accumulator} are {@code null} then {@code initialValue} is returned.
+     *
      * <pre>
      *    foldLeft(                      Result:
      *       [5, 7, 9],                   315
@@ -1112,7 +1115,8 @@ public class CollectionUtil {
      * of {@code sourceCollection} that verify {@code filterPredicate}, going left to right.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
+     *    If {@code sourceCollection} or {@code accumulator} are {@code null} then {@code initialValue} is returned.
+     * If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
      *
      * <pre>
      *    foldLeft(                      Result:
@@ -1161,6 +1165,9 @@ public class CollectionUtil {
      *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
      * elements of {@code sourceCollection}, going right to left.
      *
+     * @apiNote
+     *    If {@code sourceCollection} or {@code accumulator} are {@code null} then {@code initialValue} is returned.
+     *
      * <pre>
      *    foldRight(                     Result:
      *       [5, 7, 9],                   315
@@ -1196,7 +1203,8 @@ public class CollectionUtil {
      * of {@code sourceCollection} that verify {@code filterPredicate}, going right to left.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
+     *    If {@code sourceCollection} or {@code accumulator} are {@code null} then {@code initialValue} is returned.
+     * If {@code filterPredicate} is {@code null} then all elements will be used to calculate the final value.
      *
      * <pre>
      *    foldRight(                     Result:
@@ -2004,7 +2012,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the property to extract.
+     *    Source {@link Collection} to used as source of the new one
      * @param mapFunction
      *    {@link Function} to apply to {@code sourceCollection}'s elements
      *
@@ -2038,7 +2046,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the property to extract
+     *    Source {@link Collection} to used as source of the new one
      * @param mapFunction
      *    {@link Function} to apply to {@code sourceCollection}'s elements
      * @param collectionFactory
@@ -2077,7 +2085,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the properties to extract
+     *    Source {@link Collection} to used as source of the new one
      * @param mapFunctions
      *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
      *
@@ -2113,7 +2121,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the properties to extract
+     *    Source {@link Collection} to used as source of the new one
      * @param mapFunctions
      *    Array of {@link Function} to apply to {@code sourceCollection}'s elements
      * @param collectionFactory
