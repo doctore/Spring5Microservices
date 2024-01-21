@@ -843,7 +843,6 @@ public class CollectionUtilTest {
         ); //@formatter:on
     }
 
-
     @ParameterizedTest
     @MethodSource("dropWhileNoCollectionFactoryTestCases")
     @DisplayName("dropWhile: without collection factory test cases")

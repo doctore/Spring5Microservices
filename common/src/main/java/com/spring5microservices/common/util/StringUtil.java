@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.interfaces.functional.PartialFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -18,10 +20,13 @@ import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.CollectionUtil.toList;
 import static com.spring5microservices.common.util.PredicateUtil.alwaysTrue;
+import static com.spring5microservices.common.util.PredicateUtil.getOrAlwaysTrue;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
 
 @UtilityClass
 public class StringUtil {
@@ -279,8 +284,104 @@ public class StringUtil {
 
 
     /**
+     * Returns a {@link String} after applying to {@code sourceCS}:
+     * <p>
+     *  - Filter its {@link Character}s using {@code filterPredicate}
+     *  - Transform its filtered {@link Character}s using {@code mapFunction}
+     *
+     * @apiNote
+     *    If {@code sourceCS} is {@code null} or empty then {@link StringUtil#EMPTY_STRING} is returned. If {@code filterPredicate}
+     * is {@code null} then all {@link Character}s will be transformed.
+     *
+     * <pre>
+     *    collect(                                         Result:
+     *       "abcDEfgIoU12",                                "a2E2I2o2U2"
+     *       c -> -1 != "aeiouAEIOU".indexOf(c),
+     *       c -> c + "2"
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} with the {@link Character}s to filter and transform
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@link Character}s from {@code sourceCS}
+     * @param mapFunction
+     *    {@link Function} to transform filtered {@link Character}s of {@code sourceCS}
+     *
+     * @return new {@link String} from applying the given {@link Function} to each {@link Character}s of {@code sourceCS}
+     *         on which {@link Predicate} returns {@code true} and collecting the results
+     *
+     * @throws IllegalArgumentException if {@code mapFunction} is {@code null} with a not empty {@code sourceCS}
+     */
+    public static String collect(final CharSequence sourceCS,
+                                 final Predicate<Character> filterPredicate,
+                                 final Function<Character, String> mapFunction) {
+        if (isEmpty(sourceCS)) {
+            return EMPTY_STRING;
+        }
+        Assert.notNull(mapFunction, "mapFunction must be not null");
+        return collect(
+          sourceCS,
+          PartialFunction.of(
+                  getOrAlwaysTrue(filterPredicate),
+                  mapFunction
+          )
+        );
+    }
+
+
+    /**
+     * Returns a {@link String} after applying to {@code sourceCS}:
+     * <p>
+     *  - Filter its {@link Character}s using {@link PartialFunction#isDefinedAt(Object)} of {@code partialFunction}
+     *  - Transform its filtered {@link Character}s using {@link PartialFunction#apply(Object)} of {@code partialFunction}
+     *
+     * @apiNote
+     *    If {@code sourceCS} is {@code null} or empty then {@link StringUtil#EMPTY_STRING} is returned.
+     *
+     * <pre>
+     *    collect(                                                        Result:
+     *       "abcDEfgIoU12",                                               "a2E2I2o2U2"
+     *       PartialFunction.of(
+     *          c -> null != c && -1 != "aeiouAEIOU".indexOf(c),
+     *          c -> null == c
+     *             ? ""
+     *             : c + "2"
+     *       )
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} with the {@link Character}s to filter and transform
+     * @param partialFunction
+     *    {@link PartialFunction} to filter and transform elements of {@code sourceCS}
+     *
+     * @return new {@link String} from applying the given {@link PartialFunction} to each {@link Character}s of {@code sourceCS}
+     *         on which it is defined and collecting the results
+     *
+     * @throws IllegalArgumentException if {@code partialFunction} is {@code null} with a not empty {@code sourceCS}
+     */
+    public static String collect(final CharSequence sourceCS,
+                                 final PartialFunction<Character, String> partialFunction) {
+        if (isEmpty(sourceCS)) {
+            return EMPTY_STRING;
+        }
+        Assert.notNull(partialFunction, "partialFunction must be not null");
+        return sourceCS
+                .codePoints()
+                .filter(c -> partialFunction.isDefinedAt((char) c))
+                .mapToObj(c -> partialFunction.apply((char) c))
+                .collect(joining());
+    }
+
+
+    /**
      * Verifies if the given {@code sourceCS} contains {@code stringToSearch} ignoring case.
      *
+     * @apiNote
+     *    If {@code sourceCS} or {@code stringToSearch} are {@code null} then {@code false} is returned.
+     * <p>
+     * Examples:
      * <pre>
      *    containsIgnoreCase(null, *)       = false
      *    containsIgnoreCase("", "a")       = false
@@ -311,14 +412,14 @@ public class StringUtil {
      * Counts how many times {@code stringToSearch} appears in the given {@code sourceCS}.
      *
      * @apiNote
-     *    Only counts non-overlapping matches.
+     *    If {@code sourceCS} or {@code stringToSearch} are {@code null} or empty then 0 is returned. Only counts
+     * non-overlapping matches.
      * <p>
      * Examples:
      * <pre>
      *    count(null, *)        = 0
      *    count("", *)          = 0
      *    count(*, null)        = 0
-     *    count("", null)       = 0
      *    count("abcab", "ab")  = 2
      *    count("abcab", "xx")  = 0
      *    count("aaaaa", "aa")  = 2
@@ -349,10 +450,49 @@ public class StringUtil {
 
 
     /**
+     *    Returns a {@link String} removing the longest prefix of {@link Character}s included in {@code sourceCS} that
+     * satisfy the {@link Predicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code sourceCS} is {@code null} or empty then {@link StringUtil#EMPTY_STRING} is returned.
+     * If {@code filterPredicate} is {@code null} then {@link String} conversion of {@code sourceCS} is returned.
+     *
+     * <pre>
+     *    dropWhile(                                       Result:
+     *       "aEibc12",                                     "bc12"
+     *       c -> -1 != "aeiouAEIOU".indexOf(c)
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} with the {@link Character}s to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@link Character}s from {@code sourceCS}
+     *
+     * @return the longest suffix of provided {@code sourceCS} whose first {@link Character} does not satisfy {@code filterPredicate}
+     */
+    public static String dropWhile(final CharSequence sourceCS,
+                                   final Predicate<Character> filterPredicate) {
+        if (isEmpty(sourceCS)) {
+            return EMPTY_STRING;
+        }
+        if (isNull(filterPredicate)) {
+            return new String(sourceCS.toString());
+        }
+        return sourceCS
+                .codePoints()
+                .dropWhile(c -> filterPredicate.test((char) c))
+                .mapToObj(i -> Character.valueOf((char) i).toString())
+                .collect(joining());
+    }
+
+
+    /**
      * Selects all {@link Character} of {@code sourceCS} which satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then {@link String} conversion of {@code sourceCS} will be returned.
+     *    If {@code sourceCS} is {@code null} or empty then {@link StringUtil#EMPTY_STRING} is returned. If {@code filterPredicate}
+     * is {@code null} then {@link String} conversion of {@code sourceCS} will be returned.
      *
      * <pre>
      *    filter(                                          Result:
@@ -364,7 +504,7 @@ public class StringUtil {
      * @param sourceCS
      *    {@link CharSequence} to filter
      * @param filterPredicate
-     *    {@link Predicate} to filter characters from {@code sourceCS}
+     *    {@link Predicate} to filter {@link Character}s from {@code sourceCS}
      *
      * @return {@link Character}s of {@code sourceCS} which satisfy {@code filterPredicate}
      */
@@ -391,7 +531,8 @@ public class StringUtil {
      * Selects all {@link Character} of {@code sourceCS} which do not satisfy the {@link Predicate} {@code filterPredicate}.
      *
      * @apiNote
-     *    If {@code filterPredicate} is {@code null} then {@link String} conversion of {@code sourceCS} will be returned.
+     *    If {@code sourceCS} is {@code null} or empty then {@link StringUtil#EMPTY_STRING} is returned. If {@code filterPredicate}
+     * is {@code null} then {@link String} conversion of {@code sourceCS} will be returned.
      *
      * <pre>
      *    filterNot(                                       Result:
@@ -418,6 +559,49 @@ public class StringUtil {
                 sourceCS,
                 finalFilterPredicate
         );
+    }
+
+
+    /**
+     *    Using the given value {@code initialValue} as initial one, applies the provided {@link BiFunction} to all
+     * {@link Character}s of {@code sourceCS}, going left to right.
+     *
+     * @apiNote
+     *    If {@code sourceCS} or {@code accumulator} are {@code null} then {@code initialValue} is returned.
+     *
+     * <pre>
+     *    foldLeft(                              Result:
+     *       "ab12",                              295
+     *       1,
+     *       (r, c) -> r + (int) c
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} with {@link Character}s to combine
+     * @param initialValue
+     *    The initial value to start with
+     * @param accumulator
+     *    A {@link BiFunction} which combines elements
+     *
+     * @return result of inserting {@code accumulator} between consecutive {@link Character}s of {@code sourceCS}, going
+     *         left to right with the start value {@code initialValue} on the left.
+     */
+    public static <R> R foldLeft(final CharSequence sourceCS,
+                                 final R initialValue,
+                                 final BiFunction<R, Character, R> accumulator) {
+        return ofNullable(sourceCS)
+                .map(sc -> {
+                    R result = initialValue;
+                    if (nonNull(accumulator)) {
+                        for (int i = 0; i < sourceCS.length(); i++) {
+                            Character currentChar = sourceCS.charAt(i);
+                            result = accumulator.apply(result, currentChar);
+                        }
+                    }
+                    return result;
+                })
+                .orElse(initialValue);
     }
 
 
@@ -860,7 +1044,7 @@ public class StringUtil {
                     return collectionStream
                             .map(e -> Objects.toString(e, EMPTY_STRING))
                             .collect(
-                                    Collectors.joining(finalSeparator)
+                                    joining(finalSeparator)
                             );
                 })
                 .orElse(EMPTY_STRING);
@@ -967,6 +1151,47 @@ public class StringUtil {
         }
         return new String(padding)
                 .concat(finalSourceCS);
+    }
+
+
+    /**
+     * Builds a new {@link String} by applying a {@link Function} to all {@link Character}s of provided {@code sourceCS}.
+     *
+     * @apiNote
+     *    If {@code sourceCS} is {@code null} or empty then {@link StringUtil#EMPTY_STRING} is returned. If {@code mapFunction}
+     * is {@code null} then {@link String} conversion of {@code sourceCS} is returned.
+     *
+     * <pre>
+     *    map(                                                                 Result:
+     *       "aEibc1U2"                                                         "bc12"
+     *       c -> -1 != "aeiouAEIOU".indexOf(c) ? "" : c.toString()
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *     {@link CharSequence} to used as source of the returned {@link String}
+     * @param mapFunction
+     *    {@link Function} to apply to each {@link Character}
+     *
+     * @return new {@link String} from applying the given {@link Function} to each {@link Character} of {@code sourceCS}
+     */
+    public static String map(final CharSequence sourceCS,
+                             final Function<Character, String> mapFunction) {
+        if (isEmpty(sourceCS)) {
+            return EMPTY_STRING;
+        }
+        if (isNull(mapFunction)) {
+            return new String(sourceCS.toString());
+        }
+        final StringBuilder result = new StringBuilder();
+        for (int i = 0; i < sourceCS.length(); i++) {
+            result.append(
+                    mapFunction.apply(
+                            sourceCS.charAt(i)
+                    )
+            );
+        }
+        return result.toString();
     }
 
 
@@ -1635,6 +1860,44 @@ public class StringUtil {
                             : source.substring(0, pos);
                 })
                 .orElse(EMPTY_STRING);
+    }
+
+
+    /**
+     *    Returns a {@link String} with the longest prefix of {@link Character}s included in {@code sourceCS} that
+     * satisfy the {@link Predicate} {@code filterPredicate}.
+     *
+     * @apiNote
+     *    If {@code sourceCS} is {@code null} or empty then {@link StringUtil#EMPTY_STRING} is returned.
+     * If {@code filterPredicate} is {@code null} then {@link String} conversion of {@code sourceCS} is returned.
+     *
+     * <pre>
+     *    takeWhile(                                       Result:
+     *       "aEibc12",                                     "aEi"
+     *       c -> -1 != "aeiouAEIOU".indexOf(c)
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    {@link CharSequence} with the {@link Character}s to filter
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@link Character}s from {@code sourceCS}
+     *
+     * @return the longest prefix of provided {@code sourceCS} whose {@link Character}s all satisfy {@code filterPredicate}
+     */
+    public static String takeWhile(final CharSequence sourceCS,
+                                   final Predicate<Character> filterPredicate) {
+        if (isEmpty(sourceCS)) {
+            return EMPTY_STRING;
+        }
+        if (isNull(filterPredicate)) {
+            return new String(sourceCS.toString());
+        }
+        return sourceCS
+                .codePoints()
+                .takeWhile(c -> filterPredicate.test((char) c))
+                .mapToObj(i -> Character.valueOf((char) i).toString())
+                .collect(joining());
     }
 
 }

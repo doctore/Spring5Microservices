@@ -1,5 +1,6 @@
 package com.spring5microservices.common.util;
 
+import com.spring5microservices.common.interfaces.functional.PartialFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,6 +11,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -18,10 +20,13 @@ import java.util.stream.Stream;
 import static com.spring5microservices.common.util.CollectionUtil.toSet;
 import static com.spring5microservices.common.util.StringUtil.abbreviate;
 import static com.spring5microservices.common.util.StringUtil.abbreviateMiddle;
+import static com.spring5microservices.common.util.StringUtil.collect;
 import static com.spring5microservices.common.util.StringUtil.containsIgnoreCase;
 import static com.spring5microservices.common.util.StringUtil.count;
+import static com.spring5microservices.common.util.StringUtil.dropWhile;
 import static com.spring5microservices.common.util.StringUtil.filter;
 import static com.spring5microservices.common.util.StringUtil.filterNot;
+import static com.spring5microservices.common.util.StringUtil.foldLeft;
 import static com.spring5microservices.common.util.StringUtil.getDigits;
 import static com.spring5microservices.common.util.StringUtil.getNotEmptyOrElse;
 import static com.spring5microservices.common.util.StringUtil.getOrElse;
@@ -30,6 +35,7 @@ import static com.spring5microservices.common.util.StringUtil.isBlank;
 import static com.spring5microservices.common.util.StringUtil.isEmpty;
 import static com.spring5microservices.common.util.StringUtil.join;
 import static com.spring5microservices.common.util.StringUtil.leftPad;
+import static com.spring5microservices.common.util.StringUtil.map;
 import static com.spring5microservices.common.util.StringUtil.rightPad;
 import static com.spring5microservices.common.util.StringUtil.sliding;
 import static com.spring5microservices.common.util.StringUtil.split;
@@ -38,6 +44,7 @@ import static com.spring5microservices.common.util.StringUtil.substringAfter;
 import static com.spring5microservices.common.util.StringUtil.substringAfterLast;
 import static com.spring5microservices.common.util.StringUtil.substringBefore;
 import static com.spring5microservices.common.util.StringUtil.substringBeforeLast;
+import static com.spring5microservices.common.util.StringUtil.takeWhile;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -218,6 +225,98 @@ public class StringUtilTest {
     }
 
 
+    static Stream<Arguments> collectWithPredicateAndFunctionTestCases() {
+        String sourceString = "abcDEfgIoU12";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        Predicate<Character> isVowel = c -> -1 != "aeiouAEIOU".indexOf(c);
+        Function<Character, String> ifNullEmptyElseAdd2 = c -> null == c ? "" : c + "2";
+
+        String expectecResultWithFilter = "a2E2I2o2U2";
+        String expectecResultWithoutFilter = "a2b2c2D2E2f2g2I2o2U21222";
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          filterPredicate,   mapFunction,           expectedException,                expectedResult
+                Arguments.of( null,              null,              null,                  null,                             "" ),
+                Arguments.of( null,              isVowel,           null,                  null,                             "" ),
+                Arguments.of( null,              isVowel,           ifNullEmptyElseAdd2,   null,                             "" ),
+                Arguments.of( nullBuffer,        null,              null,                  null,                             "" ),
+                Arguments.of( nullBuffer,        isVowel,           null,                  null,                             "" ),
+                Arguments.of( nullBuffer,        isVowel,           ifNullEmptyElseAdd2,   null,                             "" ),
+                Arguments.of( "",                null,              null,                  null,                             "" ),
+                Arguments.of( "",                isVowel,           null,                  null,                             "" ),
+                Arguments.of( "",                isVowel,           ifNullEmptyElseAdd2,   null,                             "" ),
+                Arguments.of( sourceString,      null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( sourceString,      isVowel,           null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   null,              null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   isVowel,           null,                  IllegalArgumentException.class,   null ),
+                Arguments.of( sourceString,      null,              ifNullEmptyElseAdd2,   null,                             expectecResultWithoutFilter ),
+                Arguments.of( sourceString,      isVowel,           ifNullEmptyElseAdd2,   null,                             expectecResultWithFilter ),
+                Arguments.of( notEmptyBuilder,   null,              ifNullEmptyElseAdd2,   null,                             expectecResultWithoutFilter ),
+                Arguments.of( notEmptyBuilder,   isVowel,           ifNullEmptyElseAdd2,   null,                             expectecResultWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectWithPredicateAndFunctionTestCases")
+    @DisplayName("collect: with Predicate and Function test cases")
+    public void collectWithPredicateAndFunction_testCases(CharSequence sourceCS,
+                                                          Predicate<Character> filterPredicate,
+                                                          Function<Character, String> mapFunction,
+                                                          Class<? extends Exception> expectedException,
+                                                          String expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collect(sourceCS, filterPredicate, mapFunction));
+        } else {
+            assertEquals(expectedResult, collect(sourceCS, filterPredicate, mapFunction));
+        }
+    }
+
+
+    static Stream<Arguments> collectWithPartialFunctionTestCases() {
+        String sourceString = "abcDEfgIoU12";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        PartialFunction<Character, String> ifVowelAdd2ElseRemove = PartialFunction.of(
+                c -> null != c && -1 != "aeiouAEIOU".indexOf(c),
+                c -> null == c
+                        ? ""
+                        : c + "2"
+        );
+        String expectecResult = "a2E2I2o2U2";
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          partialFunction,         expectedException,                expectedResult
+                Arguments.of( null,              null,                    null,                             "" ),
+                Arguments.of( null,              ifVowelAdd2ElseRemove,   null,                             "" ),
+                Arguments.of( nullBuffer,        null,                    null,                             "" ),
+                Arguments.of( nullBuffer,        ifVowelAdd2ElseRemove,   null,                             "" ),
+                Arguments.of( "",                null,                    null,                             "" ),
+                Arguments.of( "",                ifVowelAdd2ElseRemove,   null,                             "" ),
+                Arguments.of( sourceString,      null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   null,                    IllegalArgumentException.class,   null ),
+                Arguments.of( sourceString,      ifVowelAdd2ElseRemove,   null,                             expectecResult ),
+                Arguments.of( notEmptyBuilder,   ifVowelAdd2ElseRemove,   null,                             expectecResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("collectWithPartialFunctionTestCases")
+    @DisplayName("collect: with PartialFunction test cases")
+    public void collectWithPartialFunction_testCases(CharSequence sourceCS,
+                                                     PartialFunction<Character, String> partialFunction,
+                                                     Class<? extends Exception> expectedException,
+                                                     String expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> collect(sourceCS, partialFunction));
+        } else {
+            assertEquals(expectedResult, collect(sourceCS, partialFunction));
+        }
+    }
+
+
     static Stream<Arguments> containsIgnoreCaseTestCases() {
         StringBuffer nullBuffer = null;
         StringBuilder notEmptyBuilder = new StringBuilder("abCdE");
@@ -299,6 +398,40 @@ public class StringUtilTest {
     }
 
 
+    static Stream<Arguments> dropWhileTestCases() {
+        String sourceString = "aEibc12";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        Predicate<Character> isVowel = c -> -1 != "aeiouAEIOU".indexOf(c);
+
+        String expectecResultWithFilter = "bc12";
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          filterPredicate,   expectedResult
+                Arguments.of( null,              null,              "" ),
+                Arguments.of( null,              isVowel,           "" ),
+                Arguments.of( nullBuffer,        null,              "" ),
+                Arguments.of( nullBuffer,        isVowel,           "" ),
+                Arguments.of( "",                null,              "" ),
+                Arguments.of( "",                isVowel,           "" ),
+                Arguments.of( sourceString,      null,              sourceString ),
+                Arguments.of( sourceString,      isVowel,           expectecResultWithFilter ),
+                Arguments.of( notEmptyBuilder,   null,              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   isVowel,           expectecResultWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("dropWhileTestCases")
+    @DisplayName("dropWhile: test cases")
+    public void dropWhile_testCases(CharSequence sourceCS,
+                                    Predicate<Character> filterPredicate,
+                                    String expectedResult) {
+        assertEquals(expectedResult, dropWhile(sourceCS, filterPredicate));
+    }
+
+
     static Stream<Arguments> filterTestCases() {
         String str = "abcDEfgIoU12";
         StringBuffer nullBuffer = null;
@@ -362,6 +495,47 @@ public class StringUtilTest {
                                     Predicate<Character> filterPredicate,
                                     String expectedResult) {
         assertEquals(expectedResult, filterNot(sourceCS, filterPredicate));
+    }
+
+
+    static Stream<Arguments> foldLeftTestCases() {
+        String sourceString = "ab12";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        Integer initialValue = 1;
+        BiFunction<Integer, Character, Integer> sumASCIIValues = (r, c) -> r + (int) c;
+
+        Integer expectecResult = 295;
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          initialValue,   accumulator,      expectedResult
+                Arguments.of( null,              null,           null,             null ),
+                Arguments.of( null,              initialValue,   null,             initialValue ),
+                Arguments.of( null,              initialValue,   sumASCIIValues,   initialValue ),
+                Arguments.of( nullBuffer,        null,           null,             null ),
+                Arguments.of( nullBuffer,        initialValue,   null,             initialValue ),
+                Arguments.of( nullBuffer,        initialValue,   sumASCIIValues,   initialValue ),
+                Arguments.of( "",                null,           null,             null ),
+                Arguments.of( "",                initialValue,   null,             initialValue ),
+                Arguments.of( "",                initialValue,   sumASCIIValues,   initialValue ),
+                Arguments.of( sourceString,      null,           null,             null ),
+                Arguments.of( sourceString,      initialValue,   null,             initialValue ),
+                Arguments.of( sourceString,      initialValue,   sumASCIIValues,   expectecResult ),
+                Arguments.of( notEmptyBuilder,   null,           null,             null ),
+                Arguments.of( notEmptyBuilder,   initialValue,   null,             initialValue ),
+                Arguments.of( notEmptyBuilder,   initialValue,   sumASCIIValues,   expectecResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("foldLeftTestCases")
+    @DisplayName("foldLeft: test cases")
+    public <R> void foldLeft_testCases(CharSequence sourceCS,
+                                       R initialValue,
+                                       BiFunction<R, Character, R> accumulator,
+                                       R expectedResult) {
+        assertEquals(expectedResult, foldLeft(sourceCS, initialValue, accumulator));
     }
 
 
@@ -907,6 +1081,40 @@ public class StringUtilTest {
     }
 
 
+    static Stream<Arguments> mapTestCases() {
+        String sourceString = "aEibc1U2";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        Function<Character, String> ifVowelEmptyElseCurrent = c -> -1 != "aeiouAEIOU".indexOf(c) ? "" : c.toString();
+
+        String expectecResult = "bc12";
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,   mapFunction,                      expectedResult
+                Arguments.of( null,              null,                      "" ),
+                Arguments.of( null,              ifVowelEmptyElseCurrent,   "" ),
+                Arguments.of( nullBuffer,        null,                      "" ),
+                Arguments.of( nullBuffer,        ifVowelEmptyElseCurrent,   "" ),
+                Arguments.of( "",                null,                      "" ),
+                Arguments.of( "",                ifVowelEmptyElseCurrent,   "" ),
+                Arguments.of( sourceString,      null,                      sourceString ),
+                Arguments.of( sourceString,      ifVowelEmptyElseCurrent,   expectecResult ),
+                Arguments.of( notEmptyBuilder,   null,                      notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   ifVowelEmptyElseCurrent,   expectecResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("mapTestCases")
+    @DisplayName("map: test cases")
+    public void map_testCases(CharSequence sourceCS,
+                              Function<Character, String> mapFunction,
+                              String expectedResult) {
+            assertEquals(expectedResult, map(sourceCS, mapFunction));
+    }
+
+
     static Stream<Arguments> rightPadWithSourceCSAndSizeTestCases() {
         String sourceString = "abc";
         StringBuffer nullBuffer = null;
@@ -1430,6 +1638,40 @@ public class StringUtilTest {
                                               String separator,
                                               String expectedResult) {
         assertEquals(expectedResult, substringBeforeLast(sourceCS, separator));
+    }
+
+
+    static Stream<Arguments> takeWhileTestCases() {
+        String sourceString = "aEibc12";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        Predicate<Character> isVowel = c -> -1 != "aeiouAEIOU".indexOf(c);
+
+        String expectecResultWithFilter = "aEi";
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          filterPredicate,   expectedResult
+                Arguments.of( null,              null,              "" ),
+                Arguments.of( null,              isVowel,           "" ),
+                Arguments.of( nullBuffer,        null,              "" ),
+                Arguments.of( nullBuffer,        isVowel,           "" ),
+                Arguments.of( "",                null,              "" ),
+                Arguments.of( "",                isVowel,           "" ),
+                Arguments.of( sourceString,      null,              sourceString ),
+                Arguments.of( sourceString,      isVowel,           expectecResultWithFilter ),
+                Arguments.of( notEmptyBuilder,   null,              notEmptyBuilder.toString() ),
+                Arguments.of( notEmptyBuilder,   isVowel,           expectecResultWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("takeWhileTestCases")
+    @DisplayName("takeWhile: test cases")
+    public void takeWhile_testCases(CharSequence sourceCS,
+                                    Predicate<Character> filterPredicate,
+                                    String expectedResult) {
+        assertEquals(expectedResult, takeWhile(sourceCS, filterPredicate));
     }
 
 }
