@@ -8,8 +8,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -18,33 +21,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.spring5microservices.common.util.CollectionUtil.toSet;
-import static com.spring5microservices.common.util.StringUtil.abbreviate;
-import static com.spring5microservices.common.util.StringUtil.abbreviateMiddle;
-import static com.spring5microservices.common.util.StringUtil.collect;
-import static com.spring5microservices.common.util.StringUtil.containsIgnoreCase;
-import static com.spring5microservices.common.util.StringUtil.count;
-import static com.spring5microservices.common.util.StringUtil.dropWhile;
-import static com.spring5microservices.common.util.StringUtil.filter;
-import static com.spring5microservices.common.util.StringUtil.filterNot;
-import static com.spring5microservices.common.util.StringUtil.foldLeft;
-import static com.spring5microservices.common.util.StringUtil.getDigits;
-import static com.spring5microservices.common.util.StringUtil.getNotEmptyOrElse;
-import static com.spring5microservices.common.util.StringUtil.getOrElse;
-import static com.spring5microservices.common.util.StringUtil.hideMiddle;
-import static com.spring5microservices.common.util.StringUtil.isBlank;
-import static com.spring5microservices.common.util.StringUtil.isEmpty;
-import static com.spring5microservices.common.util.StringUtil.join;
-import static com.spring5microservices.common.util.StringUtil.leftPad;
-import static com.spring5microservices.common.util.StringUtil.map;
-import static com.spring5microservices.common.util.StringUtil.rightPad;
-import static com.spring5microservices.common.util.StringUtil.sliding;
-import static com.spring5microservices.common.util.StringUtil.split;
-import static com.spring5microservices.common.util.StringUtil.splitMultilevel;
-import static com.spring5microservices.common.util.StringUtil.substringAfter;
-import static com.spring5microservices.common.util.StringUtil.substringAfterLast;
-import static com.spring5microservices.common.util.StringUtil.substringBefore;
-import static com.spring5microservices.common.util.StringUtil.substringBeforeLast;
-import static com.spring5microservices.common.util.StringUtil.takeWhile;
+import static com.spring5microservices.common.util.StringUtil.*;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -635,7 +612,7 @@ public class StringUtilTest {
         Predicate<CharSequence> notEmptyCharSequencePredicate = StringUtils::hasText;
         return Stream.of(
                 //@formatter:off
-                //            sourceCS,          predicateToMatch,                defaultValue,     expectedResult
+                //            sourceCS,          filterPredicate,                 defaultValue,     expectedResult
                 Arguments.of( null,              null,                            null,             null ),
                 Arguments.of( null,              null,                            notEmptyString,   notEmptyString ),
                 Arguments.of( null,              notEmptyStringPredicate,         null,             null ),
@@ -661,6 +638,120 @@ public class StringUtilTest {
                                                                                          String defaultValue,
                                                                                          String expectedResult) {
         assertEquals(expectedResult, getOrElse(sourceCS, predicateToMatch, defaultValue));
+    }
+
+
+    static Stream<Arguments> groupByWithSourceCSAndDiscriminatorKeyTestCases() {
+        String sourceString = "essae";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        Function<Character, String> toString = Objects::toString;
+        Function<Character, Integer> countCharacters = c -> count(sourceString, c.toString());
+
+        Map<String, String> expectedResultToString = new HashMap<>() {{
+            put("e", "ee");
+            put("s", "ss");
+            put("a", "a");
+        }};
+        Map<Integer, String> expectedResultCountCharacters = new HashMap<>() {{
+            put(1, "a");
+            put(2, "esse");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          discriminatorKey,   expectedException,                expectedResult
+                Arguments.of( null,              null,               null,                             Map.of() ),
+                Arguments.of( null,              toString,           null,                             Map.of() ),
+                Arguments.of( nullBuffer,        null,               null,                             Map.of() ),
+                Arguments.of( nullBuffer,        countCharacters,    null,                             Map.of() ),
+                Arguments.of( "",                null,               null,                             Map.of() ),
+                Arguments.of( "",                toString,           null,                             Map.of() ),
+                Arguments.of( sourceString,      null,               IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   null,               IllegalArgumentException.class,   null ),
+                Arguments.of( sourceString,      toString,           null,                             expectedResultToString ),
+                Arguments.of( sourceString,      countCharacters,    null,                             expectedResultCountCharacters )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByWithSourceCSAndDiscriminatorKeyTestCases")
+    @DisplayName("groupBy: with source and discriminator parameters test cases")
+    public <K> void groupByWithSourceCSAndDiscriminatorKey_testCases(CharSequence sourceCS,
+                                                                     Function<Character, ? extends K> discriminatorKey,
+                                                                     Class<? extends Exception> expectedException,
+                                                                     Map<K, String> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupBy(sourceCS, discriminatorKey));
+        } else {
+            assertEquals(expectedResult, groupBy(sourceCS, discriminatorKey));
+        }
+    }
+
+
+    static Stream<Arguments> groupByAllParametersTestCases() {
+        String sourceString = "essae";
+        StringBuffer nullBuffer = null;
+        StringBuilder notEmptyBuilder = new StringBuilder(sourceString);
+
+        Function<Character, String> toString = Objects::toString;
+        Function<Character, Integer> countCharacters = c -> count(sourceString, c.toString());
+
+        Predicate<Character> isVowel = c -> -1 != "aeiouAEIOU".indexOf(c);
+
+        Map<String, String> expectedResultToStringNoFilter = new HashMap<>() {{
+            put("e", "ee");
+            put("s", "ss");
+            put("a", "a");
+        }};
+        Map<String, String> expectedResultToStringWithFilter = new HashMap<>() {{
+            put("e", "ee");
+            put("a", "a");
+        }};
+        Map<Integer, String> expectedResultCountCharactersNoFilter = new HashMap<>() {{
+            put(1, "a");
+            put(2, "esse");
+        }};
+        Map<Integer, String> expectedResultCountCharactersWithFilter = new HashMap<>() {{
+            put(1, "a");
+            put(2, "ee");
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCS,          discriminatorKey,   filterPredicate,   expectedException,                expectedResult
+                Arguments.of( null,              null,               null,              null,                             Map.of() ),
+                Arguments.of( null,              toString,           null,              null,                             Map.of() ),
+                Arguments.of( null,              toString,           isVowel,           null,                             Map.of() ),
+                Arguments.of( nullBuffer,        null,               null,              null,                             Map.of() ),
+                Arguments.of( nullBuffer,        countCharacters,    null,              null,                             Map.of() ),
+                Arguments.of( nullBuffer,        countCharacters,    isVowel,           null,                             Map.of() ),
+                Arguments.of( "",                null,               null,              null,                             Map.of() ),
+                Arguments.of( "",                toString,           null,              null,                             Map.of() ),
+                Arguments.of( "",                toString,           isVowel,           null,                             Map.of() ),
+                Arguments.of( sourceString,      null,               null,              IllegalArgumentException.class,   null ),
+                Arguments.of( sourceString,      null,               isVowel,           IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   null,               null,              IllegalArgumentException.class,   null ),
+                Arguments.of( notEmptyBuilder,   null,               isVowel,           IllegalArgumentException.class,   null ),
+                Arguments.of( sourceString,      toString,           null,              null,                             expectedResultToStringNoFilter ),
+                Arguments.of( sourceString,      toString,           isVowel,           null,                             expectedResultToStringWithFilter ),
+                Arguments.of( sourceString,      countCharacters,    null,              null,                             expectedResultCountCharactersNoFilter ),
+                Arguments.of( sourceString,      countCharacters,    isVowel,           null,                             expectedResultCountCharactersWithFilter )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByAllParametersTestCases")
+    @DisplayName("groupBy: with all parameters test cases")
+    public <K> void groupByAllParameters_testCases(CharSequence sourceCS,
+                                                   Function<Character, ? extends K> discriminatorKey,
+                                                   Predicate<Character> filterPredicate,
+                                                   Class<? extends Exception> expectedException,
+                                                   Map<K, String> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupBy(sourceCS, discriminatorKey, filterPredicate));
+        } else {
+            assertEquals(expectedResult, groupBy(sourceCS, discriminatorKey, filterPredicate));
+        }
     }
 
 

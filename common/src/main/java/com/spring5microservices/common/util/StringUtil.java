@@ -7,7 +7,9 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -203,8 +205,8 @@ public class StringUtil {
                                           final int maxLength) {
         return abbreviateMiddle(
                 sourceCS,
-          maxLength,
-          DEFAULT_ABBREVIATION_STRING
+                maxLength,
+                DEFAULT_ABBREVIATION_STRING
         );
     }
 
@@ -477,12 +479,18 @@ public class StringUtil {
             return EMPTY_STRING;
         }
         if (isNull(filterPredicate)) {
-            return new String(sourceCS.toString());
+            return new String(
+                    sourceCS.toString()
+            );
         }
         return sourceCS
                 .codePoints()
-                .dropWhile(c -> filterPredicate.test((char) c))
-                .mapToObj(i -> Character.valueOf((char) i).toString())
+                .dropWhile(c ->
+                        filterPredicate.test((char) c)
+                )
+                .mapToObj(i ->
+                        Character.valueOf((char) i).toString()
+                )
                 .collect(joining());
     }
 
@@ -674,7 +682,7 @@ public class StringUtil {
 
 
     /**
-     *    Return the given {@code sourceCS} if is not {@code null} and verifies {@code predicateToMatch}.
+     *    Return the given {@code sourceCS} if is not {@code null} and verifies {@code filterPredicate}.
      * Otherwise, returns {@code defaultValue}.
      *
      * <pre>
@@ -687,25 +695,126 @@ public class StringUtil {
      *
      * @param sourceCS
      *    {@link CharSequence} returned only if is not {@code null}
-     * @param predicateToMatch
+     * @param filterPredicate
      *    {@link Predicate} to apply if {@code sourceCS} is not {@code null}
      * @param defaultValue
      *    Alternative value to return
      *
-     * @return {@link String} conversion of {@code sourceCS} if is not {@code null} and verifies {@code predicateToMatch},
+     * @return {@link String} conversion of {@code sourceCS} if is not {@code null} and verifies {@code filterPredicate},
      *         {@code defaultValue} otherwise
      */
     public static String getOrElse(final CharSequence sourceCS,
-                                   final Predicate<CharSequence> predicateToMatch,
+                                   final Predicate<CharSequence> filterPredicate,
                                    final String defaultValue) {
-        final Predicate<CharSequence> finalPredicateToMatch = ObjectUtil.getOrElse(
-                predicateToMatch,
+        final Predicate<CharSequence> finalFilterPredicate = ObjectUtil.getOrElse(
+                filterPredicate,
                 alwaysTrue()
         );
         return ofNullable(sourceCS)
-                .filter(finalPredicateToMatch)
+                .filter(finalFilterPredicate)
                 .map(CharSequence::toString)
                 .orElse(defaultValue);
+    }
+
+
+    /**
+     * Partitions given {@code sourceCS} into a {@link Map} of {@link String} according to {@code discriminatorKey}.
+     *
+     * <pre>
+     *    groupBy(                                                   Result:
+     *       "essae",                                                 [("e", "ee")
+     *       Object::toString                                          ("s", "ss")
+     *    )                                                            ("a", "a")]
+     *
+     *    groupBy(                                                   Result:
+     *       "essae",                                                 [(1, "a")
+     *       c -> StringUtil.count("essae", c.toString())              (2, "esse")]
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    Source {@link CharSequence} with the elements to group
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     *
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceCS}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceCS}
+     */
+    public static <K> Map<K, String> groupBy(final CharSequence sourceCS,
+                                             final Function<Character, ? extends K> discriminatorKey) {
+        return groupBy(
+              sourceCS,
+              discriminatorKey,
+              null
+        );
+    }
+
+
+    /**
+     * Partitions given {@code sourceCS} into a {@link Map} of {@link String} according to {@code discriminatorKey}.
+     *
+     * @apiNote
+     *    If {@code filterPredicate} is {@code null} then all elements will be used.
+     *
+     * <pre>
+     *    groupBy(                                                   Result:
+     *       "essae",                                                 [("e", "ee")
+     *       Object::toString,                                         ("a", "a")]
+     *       c -> -1 != "aeiouAEIOU".indexOf(c)
+     *    )
+     *    groupBy(                                                   Result:
+     *       "essae",                                                 [(1, "a")
+     *       c -> StringUtil.count("essae", c.toString()),             (2, "ee")]
+     *       c -> -1 != "aeiouAEIOU".indexOf(c)
+     *    )
+     * </pre>
+     *
+     * @param sourceCS
+     *    Source {@link CharSequence} with the elements to filter and group
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param filterPredicate
+     *    {@link Predicate} to filter {@link Character}s from {@code sourceCS}
+     *
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceCS}
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceCS}
+     */
+    public static <K> Map<K, String> groupBy(final CharSequence sourceCS,
+                                             final Function<Character, ? extends K> discriminatorKey,
+                                             final Predicate<Character> filterPredicate) {
+        if (isEmpty(sourceCS)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        final Predicate<Character> finalFilterPredicate = ObjectUtil.getOrElse(
+                filterPredicate,
+                alwaysTrue()
+        );
+        final Map<K, StringBuilder> tempResult = new HashMap<>();
+        for (int i = 0; i < sourceCS.length(); i++) {
+            Character currentChar = sourceCS.charAt(i);
+
+            if (finalFilterPredicate.test(currentChar)) {
+                K discriminatorKeyResult = discriminatorKey.apply(currentChar);
+                tempResult.putIfAbsent(
+                        discriminatorKeyResult,
+                        new StringBuilder()
+                );
+                tempResult.get(discriminatorKeyResult)
+                        .append(currentChar);
+            }
+        }
+        final Map<K, String> result = new HashMap<>();
+        tempResult.forEach(
+                (k, v) ->
+                        result.put(
+                                k,
+                                v.toString()
+                        )
+        );
+        return result;
     }
 
 
@@ -1891,13 +2000,21 @@ public class StringUtil {
             return EMPTY_STRING;
         }
         if (isNull(filterPredicate)) {
-            return new String(sourceCS.toString());
+            return new String(
+                    sourceCS.toString()
+            );
         }
         return sourceCS
                 .codePoints()
-                .takeWhile(c -> filterPredicate.test((char) c))
-                .mapToObj(i -> Character.valueOf((char) i).toString())
-                .collect(joining());
+                .takeWhile(c ->
+                        filterPredicate.test((char) c)
+                )
+                .mapToObj(i ->
+                        Character.valueOf((char) i).toString()
+                )
+                .collect(
+                        joining()
+                );
     }
 
 }
