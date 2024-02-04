@@ -1442,7 +1442,7 @@ public class CollectionUtilTest {
     }
 
 
-    static Stream<Arguments> groupMapWithDiscriminatorKeyTestCases() {
+    static Stream<Arguments> groupByWithDiscriminatorKeyTestCases() {
         Set<Integer> ints = new LinkedHashSet<>(List.of(1, 3, 5, 6));
         Function<Integer, Integer> mod3 = i -> i % 3;
         Map<Integer, List<Integer>> usingMod3AsDiscriminatorKey = new HashMap<>() {{
@@ -1463,16 +1463,181 @@ public class CollectionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("groupMapWithDiscriminatorKeyTestCases")
-    @DisplayName("groupMap: with discriminatorKey test cases")
-    public <T, K> void groupMapWithDiscriminatorKey_testCases(Collection<? extends T> sourceCollection,
-                                                              Function<? super T, ? extends K> discriminatorKey,
-                                                              Class<? extends Exception> expectedException,
-                                                              Map<K, List<T>> expectedResult) {
+    @MethodSource("groupByWithDiscriminatorKeyTestCases")
+    @DisplayName("groupBy: with discriminatorKey test cases")
+    public <T, K> void groupByWithDiscriminatorKey_testCases(Collection<? extends T> sourceCollection,
+                                                             Function<? super T, ? extends K> discriminatorKey,
+                                                             Class<? extends Exception> expectedException,
+                                                             Map<K, List<T>> expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> groupMap(sourceCollection, discriminatorKey));
+            assertThrows(expectedException, () -> groupBy(sourceCollection, discriminatorKey));
         } else {
-            assertEquals(expectedResult, groupMap(sourceCollection, discriminatorKey));
+            assertEquals(expectedResult, groupBy(sourceCollection, discriminatorKey));
+        }
+    }
+
+
+    static Stream<Arguments> groupByAllParametersTestCases() {
+        List<Integer> ints = new ArrayList<>(List.of(1, 3, 5, 6, 3));
+        Function<Integer, Integer> mod3 = i -> i % 3;
+
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Map<Integer, List<Integer>> expectedResultDefaultCollectionFactory = new HashMap<>() {{
+            put(0, List.of(3, 6, 3));
+            put(1, List.of(1));
+            put(2, List.of(5));
+        }};
+        Map<Integer, Set<Integer>> expectedResultWithSetCollectionFactory = new HashMap<>() {{
+            put(0, Set.of(3, 6));
+            put(1, Set.of(1));
+            put(2, Set.of(5));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,               null,                null,                             Map.of() ),
+                Arguments.of( null,               null,               setSupplier,         null,                             Map.of() ),
+                Arguments.of( null,               mod3,               null,                null,                             Map.of() ),
+                Arguments.of( null,               mod3,               setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(),          null,               null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          null,               setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(1),         null,               null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,               setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          mod3,               null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          mod3,               setSupplier,         null,                             Map.of() ),
+                Arguments.of( ints,               mod3,               null,                null,                             expectedResultDefaultCollectionFactory ),
+                Arguments.of( ints,               mod3,               setSupplier,         null,                             expectedResultWithSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByAllParametersTestCases")
+    @DisplayName("groupBy: with all parameters test cases")
+    public <T, K> void groupByAllParameters_testCases(Collection<? extends T> sourceCollection,
+                                                      Function<? super T, ? extends K> discriminatorKey,
+                                                      Supplier<Collection<T>> collectionFactory,
+                                                      Class<? extends Exception> expectedException,
+                                                      Map<K, Collection<T>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupBy(sourceCollection, discriminatorKey, collectionFactory));
+        } else {
+            assertEquals(expectedResult, groupBy(sourceCollection, discriminatorKey, collectionFactory));
+        }
+    }
+
+
+    static Stream<Arguments> groupByMultiKeyWithDiscriminatorKeyTestCases() {
+        Set<Integer> ints = new LinkedHashSet<>(List.of(1, 2, 3, 6, 11, 12));
+        Function<Integer, List<String>> oddEvenAndCompareWith10Key = i -> {
+            List<String> keys = new ArrayList<>();
+            if (0 == i % 2) {
+                keys.add("even");
+            } else {
+                keys.add("odd");
+            }
+            if (10 > i) {
+                keys.add("smaller10");
+            } else {
+                keys.add("greaterEqual10");
+            }
+            return keys;
+        };
+
+        Map<String, List<Integer>> expectedResult = new HashMap<>() {{
+            put("even", List.of(2, 6, 12));
+            put("odd", List.of(1, 3, 11));
+            put("smaller10", List.of(1, 2, 3, 6));
+            put("greaterEqual10", List.of(11, 12));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,             expectedException,                expectedResult
+                Arguments.of( null,               null,                         null,                             Map.of() ),
+                Arguments.of( List.of(),          null,                         null,                             Map.of() ),
+                Arguments.of( List.of(1),         null,                         IllegalArgumentException.class,   null ),
+                Arguments.of( null,               oddEvenAndCompareWith10Key,   null,                             Map.of() ),
+                Arguments.of( List.of(),          oddEvenAndCompareWith10Key,   null,                             Map.of() ),
+                Arguments.of( ints,               oddEvenAndCompareWith10Key,   null,                             expectedResult )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByMultiKeyWithDiscriminatorKeyTestCases")
+    @DisplayName("groupByMultiKey: with discriminatorKey test cases")
+    public <T, K> void groupByMultiKeyWithDiscriminatorKey_testCases(Collection<? extends T> sourceCollection,
+                                                                     Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                                     Class<? extends Exception> expectedException,
+                                                                     Map<K, List<T>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupByMultiKey(sourceCollection, discriminatorKey));
+        } else {
+            assertEquals(expectedResult, groupByMultiKey(sourceCollection, discriminatorKey));
+        }
+    }
+
+
+    static Stream<Arguments> groupByMultiKeyAllParametersTestCases() {
+        List<Integer> ints = new ArrayList<>(List.of(1, 2, 3, 6, 11, 12, 2));
+        Function<Integer, List<String>> oddEvenAndCompareWith10Key = i -> {
+            List<String> keys = new ArrayList<>();
+            if (0 == i % 2) {
+                keys.add("even");
+            } else {
+                keys.add("odd");
+            }
+            if (10 > i) {
+                keys.add("smaller10");
+            } else {
+                keys.add("greaterEqual10");
+            }
+            return keys;
+        };
+
+        Supplier<Collection<String>> setSupplier = LinkedHashSet::new;
+
+        Map<String, List<Integer>> expectedResultDefaultCollectionFactory = new HashMap<>() {{
+            put("even", List.of(2, 6, 12, 2));
+            put("odd", List.of(1, 3, 11));
+            put("smaller10", List.of(1, 2, 3, 6, 2));
+            put("greaterEqual10", List.of(11, 12));
+        }};
+        Map<String, Set<Integer>> expectedResultWithSetCollectionFactory = new HashMap<>() {{
+            put("even", Set.of(2, 6, 12));
+            put("odd", Set.of(1, 3, 11));
+            put("smaller10", Set.of(1, 2, 3, 6));
+            put("greaterEqual10", Set.of(11, 12));
+        }};
+        return Stream.of(
+                //@formatter:off
+                //            sourceCollection,   discriminatorKey,   collectionFactory,   expectedException,                expectedResult
+                Arguments.of( null,               null,                         null,                null,                             Map.of() ),
+                Arguments.of( null,               null,                         setSupplier,         null,                             Map.of() ),
+                Arguments.of( null,               oddEvenAndCompareWith10Key,   null,                null,                             Map.of() ),
+                Arguments.of( null,               oddEvenAndCompareWith10Key,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(),          null,                         null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          null,                         setSupplier,         null,                             Map.of() ),
+                Arguments.of( List.of(1),         null,                         null,                IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(1),         null,                         setSupplier,         IllegalArgumentException.class,   null ),
+                Arguments.of( List.of(),          oddEvenAndCompareWith10Key,   null,                null,                             Map.of() ),
+                Arguments.of( List.of(),          oddEvenAndCompareWith10Key,   setSupplier,         null,                             Map.of() ),
+                Arguments.of( ints,               oddEvenAndCompareWith10Key,   null,                null,                             expectedResultDefaultCollectionFactory ),
+                Arguments.of( ints,               oddEvenAndCompareWith10Key,   setSupplier,         null,                             expectedResultWithSetCollectionFactory )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("groupByMultiKeyAllParametersTestCases")
+    @DisplayName("groupByMultiKey: with all parameters test cases")
+    public <T, K> void groupByMultiKeyAllParameters_testCases(Collection<? extends T> sourceCollection,
+                                                              Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                              Supplier<Collection<T>> collectionFactory,
+                                                              Class<? extends Exception> expectedException,
+                                                              Map<K, Collection<T>> expectedResult) {
+        if (null != expectedException) {
+            assertThrows(expectedException, () -> groupByMultiKey(sourceCollection, discriminatorKey, collectionFactory));
+        } else {
+            assertEquals(expectedResult, groupByMultiKey(sourceCollection, discriminatorKey, collectionFactory));
         }
     }
 

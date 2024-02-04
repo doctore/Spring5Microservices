@@ -1355,32 +1355,206 @@ public class CollectionUtil {
      * Elements added as values of returned {@link Map} will be the same as original {@code sourceCollection}.
      *
      * <pre>
-     *    groupMap(                      Result:
+     *    groupBy(                       Result:
      *       [1, 3, 5, 6],                [(0,  [3, 6])
      *       i -> i % 3                    (1,  [1])
      *    )                                (2,  [5])]
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
+     *    Source {@link Collection} with the elements to group
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      *
      * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceCollection}
+     *         to generate the keys of the returned one
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
-     *                                  with a not empty {@code sourceCollection}
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceCollection}
      */
     @SuppressWarnings("unchecked")
-    public static <T, K> Map<K, List<T>> groupMap(final Collection<? extends T> sourceCollection,
-                                                  final Function<? super T, ? extends K> discriminatorKey) {
-        return (Map) groupMap(
+    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> sourceCollection,
+                                                 final Function<? super T, ? extends K> discriminatorKey) {
+        return (Map) groupBy(
                 sourceCollection,
-                alwaysTrue(),
                 discriminatorKey,
-                Function.identity(),
                 ArrayList::new
         );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Elements added as values of returned {@link Map} will be the same as original {@code sourceCollection}.
+     *
+     * <pre>
+     *    groupBy(                       Result:
+     *       [1, 3, 5, 6],                [(0,  [3, 6])
+     *       i -> i % 3,                   (1,  [1])
+     *       ArrayList::new                (2,  [5])]
+     *    )
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to group
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceCollection}
+     *         to generate the keys of the returned one
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceCollection}
+     */
+    public static <T, K> Map<K, Collection<T>> groupBy(final Collection<? extends T> sourceCollection,
+                                                       final Function<? super T, ? extends K> discriminatorKey,
+                                                       final Supplier<Collection<T>> collectionFactory) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+
+        Map<K, Collection<T>> result = new HashMap<>();
+        sourceCollection
+                .forEach(
+                        e -> {
+                            K discriminatorResult = discriminatorKey.apply(e);
+                            result.putIfAbsent(
+                                    discriminatorResult,
+                                    finalCollectionFactory.get()
+                            );
+                            result.get(discriminatorResult)
+                                    .add(e);
+                        }
+                );
+        return result;
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Elements added as values of returned {@link Map} will be the same as original {@code sourceCollection}.
+     *
+     * @apiNote
+     *    This method is similar to {@link CollectionUtil#groupBy(Collection, Function)} but {@code discriminatorKey}
+     * returns a {@link Collection} of related key values.
+     *
+     * <pre>
+     *    groupByMultiKey(                                  Result:
+     *       [1, 2, 3, 6, 11, 12],                           [("even",  [2, 6, 12])
+     *       i -> {                                           ("odd",   [1, 3, 11])
+     *          List<String> keys = new ArrayList<>();        ("smaller10",  [1, 2, 3, 6])
+     *          if (0 == i % 2) {                             ("greaterEqual10",  [11, 12])]
+     *             keys.add("even");
+     *          } else {
+     *             keys.add("odd");
+     *          }
+     *          if (10 > i) {
+     *             keys.add("smaller10");
+     *          } else {
+     *             keys.add("greaterEqual10");
+     *          }
+     *          return keys;
+     *       }
+     *    )
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform and group
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     *
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceCollection}
+     *         to generate the keys of the returned one
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceCollection}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, K> Map<K, List<T>> groupByMultiKey(final Collection<? extends T> sourceCollection,
+                                                         final Function<? super T, Collection<? extends K>> discriminatorKey) {
+        return (Map) groupByMultiKey(
+                sourceCollection,
+                discriminatorKey,
+                ArrayList::new
+        );
+    }
+
+
+    /**
+     *    Partitions given {@code sourceCollection} into a {@link Map} of {@link List} according to {@code discriminatorKey}.
+     * Elements added as values of returned {@link Map} will be the same as original {@code sourceCollection}.
+     *
+     * @apiNote
+     *    This method is similar to {@link CollectionUtil#groupBy(Collection, Function, Supplier)} but {@code discriminatorKey}
+     * returns a {@link Collection} of related key values.
+     *
+     * <pre>
+     *    groupByMultiKey(                                  Result:
+     *       [1, 2, 3, 6, 11, 12],                           [("even",  [2, 6, 12])
+     *       i -> {                                           ("odd",   [1, 3, 11])
+     *          List<String> keys = new ArrayList<>();        ("smaller10",  [1, 2, 3, 6])
+     *          if (0 == i % 2) {                             ("greaterEqual10",  [11, 12])]
+     *             keys.add("even");
+     *          } else {
+     *             keys.add("odd");
+     *          }
+     *          if (10 > i) {
+     *             keys.add("smaller10");
+     *          } else {
+     *             keys.add("greaterEqual10");
+     *          }
+     *          return keys;
+     *       },
+     *       ArrayList::new
+     *    )
+     * </pre>
+     *
+     * @param sourceCollection
+     *    Source {@link Collection} with the elements to transform and group
+     * @param discriminatorKey
+     *    The discriminator {@link Function} to get the key values of returned {@link Map}
+     * @param collectionFactory
+     *    {@link Supplier} of the {@link Collection} used to store the returned elements.
+     *    If {@code null} then {@link ArrayList}
+     *
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceCollection}
+     *         to generate the keys of the returned one
+     *
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceCollection}
+     */
+    public static <T, K> Map<K, Collection<T>> groupByMultiKey(final Collection<? extends T> sourceCollection,
+                                                               final Function<? super T, Collection<? extends K>> discriminatorKey,
+                                                               final Supplier<Collection<T>> collectionFactory) {
+        if (CollectionUtils.isEmpty(sourceCollection)) {
+            return new HashMap<>();
+        }
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+        final Supplier<Collection<T>> finalCollectionFactory = getFinalCollectionFactory(collectionFactory);
+
+        Map<K, Collection<T>> result = new HashMap<>();
+        sourceCollection
+                .forEach(
+                        e -> {
+                            Collection<? extends K> discriminatorKeyResult = getOrElse(
+                                    discriminatorKey.apply(e),
+                                    new ArrayList<>()
+                            );
+                            discriminatorKeyResult
+                                    .forEach(
+                                            k -> {
+                                                result.putIfAbsent(
+                                                        k,
+                                                        finalCollectionFactory.get()
+                                                );
+                                                result.get(k)
+                                                        .add(e);
+                                            }
+                                    );
+                        }
+                );
+        return result;
     }
 
 
@@ -1397,7 +1571,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
+     *    Source {@link Collection} with the elements to transform and group
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1441,7 +1615,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform.
+     *    Source {@link Collection} with the elements to transform and group
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param discriminatorKey
@@ -1490,7 +1664,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
+     *    Source {@link Collection} with the elements to transform and group
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param discriminatorKey
@@ -1549,7 +1723,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
+     *    Source {@link Collection} with the elements to transform and group
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      *
@@ -1593,7 +1767,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
+     *    Source {@link Collection} with the elements to transform and group
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      * @param collectionFactory
@@ -1662,7 +1836,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
+     *    Source {@link Collection} with the elements to transform and group
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1671,7 +1845,7 @@ public class CollectionUtil {
      * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
      *         of {@code sourceCollection}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} are {@code null}
      *                                  with a not empty {@code sourceCollection}
      */
     @SuppressWarnings("unchecked")
@@ -1720,7 +1894,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform.
+     *    Source {@link Collection} with the elements to transform and group.
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param discriminatorKey
@@ -1731,7 +1905,7 @@ public class CollectionUtil {
      * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
      *         of {@code sourceCollection} that verifies {@code filterPredicate}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} are {@code null}
      *                                  with a not empty {@code sourceCollection}
      */
     @SuppressWarnings("unchecked")
@@ -1784,7 +1958,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform
+     *    Source {@link Collection} with the elements to transform and group
      * @param filterPredicate
      *    {@link Predicate} to filter elements from {@code sourceCollection}
      * @param discriminatorKey
@@ -1798,7 +1972,7 @@ public class CollectionUtil {
      * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
      *         of {@code sourceCollection} that verifies {@code filterPredicate}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} are {@code null}
      *                                  with a not empty {@code sourceCollection}
      */
     public static <T, K, V> Map<K, Collection<V>> groupMapMultiKey(final Collection<? extends T> sourceCollection,
@@ -1858,7 +2032,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to transform and reduce
+     *    Source {@link Collection} with the elements to transform, group and reduce
      * @param discriminatorKey
      *    The discriminator {@link Function} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1916,7 +2090,7 @@ public class CollectionUtil {
      * </pre>
      *
      * @param sourceCollection
-     *    Source {@link Collection} with the elements to filter, transform and reduce
+     *    Source {@link Collection} with the elements to filter, transform, group and reduce
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceCollection}
      * @param reduceValues
@@ -3292,14 +3466,14 @@ public class CollectionUtil {
      * Transposes the rows and columns of the given {@code sourceCollection}.
      *
      * <pre>
-     *    transpose(                                       Result:
-     *       [[1, 2, 3], [4, 5, 6]]                         [1]
+     *    transpose(                                            Result:
+     *       [[1, 2, 3], [4, 5, 6]]                              [1]
      *    )
-     *    transpose(                                        Result:
-     *       [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]       [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
+     *    transpose(                                            Result:
+     *       [["a1", "a2"], ["b1", "b2], ["c1", "c2"]]           [["a1", "b1", "c1"], ["a2", "b2", "c2"]]
      *    )
-     *    transpose(                                        Result:
-     *       [[1, 2], [0], [7, 8, 9]]                        [[1, 0, 7], [2, 8], [9]]
+     *    transpose(                                            Result:
+     *       [[1, 2], [0], [7, 8, 9]]                            [[1, 0, 7], [2, 8], [9]]
      *    )
      * </pre>
      *

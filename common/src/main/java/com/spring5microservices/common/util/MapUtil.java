@@ -1374,7 +1374,7 @@ public class MapUtil {
 
 
     /**
-     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminatorKey} {@link BiFunction}.
      *
      * <pre>
      *    groupBy(                                                   Result:
@@ -1384,21 +1384,20 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    {@link Map} to filter
-     * @param discriminator
+     *    {@link Map} to group
+     * @param discriminatorKey
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      *
-     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
-     *         the keys of the returned one
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceMap}
+     *         to generate the keys of the returned one
      *
-     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
-     *                                  {@code sourceMap}
+     * @throws IllegalArgumentException if {@code discriminator} is {@code null} with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
-                                                      final BiFunction<? super T, ? super E, ? extends R> discriminator) {
+    public static <T, E, K> Map<K, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
+                                                      final BiFunction<? super T, ? super E, ? extends K> discriminatorKey) {
         return groupBy(
                 sourceMap,
-                discriminator,
+                discriminatorKey,
                 HashMap::new,
                 HashMap::new
         );
@@ -1406,7 +1405,7 @@ public class MapUtil {
 
 
     /**
-     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminatorKey} {@link BiFunction}.
      *
      * <pre>
      *    groupBy(                                                   Result:
@@ -1418,8 +1417,8 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    {@link Map} to filter
-     * @param discriminator
+     *    {@link Map} to group
+     * @param discriminatorKey
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      * @param mapResultFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
@@ -1428,34 +1427,41 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
      *    If {@code null} then {@link HashMap}
      *
-     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
-     *        the keys of the returned one
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceMap}
+     *         to generate the keys of the returned one
      *
-     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
-     *                                  {@code sourceMap}
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<R, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
-                                                      final BiFunction<? super T, ? super E, ? extends R> discriminator,
-                                                      final Supplier<Map<R, Map<T, E>>> mapResultFactory,
+    public static <T, E, K> Map<K, Map<T, E>> groupBy(final Map<? extends T, ? extends E> sourceMap,
+                                                      final BiFunction<? super T, ? super E, ? extends K> discriminatorKey,
+                                                      final Supplier<Map<K, Map<T, E>>> mapResultFactory,
                                                       final Supplier<Map<T, E>> mapValuesFactory) {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        Assert.notNull(discriminator, "discriminator must be not null");
-        return groupByMultiKey(
-                sourceMap,
-                (T t, E e) ->
-                    List.of(
-                            discriminator.apply(t, e)
-                    ),
-                mapResultFactory,
-                mapValuesFactory
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
+
+        final Supplier<Map<K, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
+        final Supplier<Map<T, E>> finalMapValuesFactory = getFinalMapFactory(mapValuesFactory);
+
+        Map<K, Map<T, E>> result = finalMapResultFactory.get();
+        sourceMap.forEach(
+                (k, v) -> {
+                    K discriminatorResult = discriminatorKey.apply(k, v);
+                    result.putIfAbsent(
+                            discriminatorResult,
+                            finalMapValuesFactory.get()
+                    );
+                    result.get(discriminatorResult)
+                            .put(k, v);
+                }
         );
+        return result;
     }
 
 
     /**
-     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminatorKey} {@link BiFunction}.
      *
      * @apiNote
      *    This method is similar to {@link MapUtil#groupBy(Map, BiFunction)} but {@code discriminatorKey} returns a
@@ -1482,21 +1488,20 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    {@link Map} to filter
-     * @param discriminator
+     *    {@link Map} to group
+     * @param discriminatorKey
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      *
      * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
      *         the keys of the returned one
      *
-     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
-     *                                  {@code sourceMap}
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<R, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
-                                                              final BiFunction<? super T, ? super E, Collection<? extends R>> discriminator) {
+    public static <T, E, K> Map<K, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
+                                                              final BiFunction<? super T, ? super E, Collection<? extends K>> discriminatorKey) {
         return groupByMultiKey(
                 sourceMap,
-                discriminator,
+                discriminatorKey,
                 HashMap::new,
                 HashMap::new
         );
@@ -1504,10 +1509,10 @@ public class MapUtil {
 
 
     /**
-     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminator} {@link BiFunction}.
+     * Partitions {@code sourceMap} into a {@link Map} of maps according to given {@code discriminatorKey} {@link BiFunction}.
      *
      * @apiNote
-     *    This method is similar to {@link MapUtil#groupBy(Map, BiFunction, Supplier, Supplier)} but {@code discriminator}
+     *    This method is similar to {@link MapUtil#groupBy(Map, BiFunction, Supplier, Supplier)} but {@code discriminatorKey}
      * returns a {@link Collection} of related key values.
      *
      * <pre>
@@ -1533,8 +1538,8 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    {@link Map} to filter
-     * @param discriminator
+     *    {@link Map} to group
+     * @param discriminatorKey
      *    {@link BiFunction} used to split the elements of {@code sourceMap}
      * @param mapResultFactory
      *    {@link Supplier} of the {@link Map} used to store the returned elements.
@@ -1543,29 +1548,28 @@ public class MapUtil {
      *    {@link Supplier} of the {@link Map} used to store the values inside returned {@link Map}.
      *    If {@code null} then {@link HashMap}
      *
-     * @return new {@link Map} from applying the given {@link BiFunction} to each element of {@code sourceMap} to generate
-     *         the keys of the returned one
+     * @return new {@link Map} from applying the given {@code discriminatorKey} to each element of {@code sourceMap}
+     *         to generate the keys of the returned one
      *
-     * @throws IllegalArgumentException if {@code discriminator} or {@code valueMapper} is {@code null} with a not empty
-     *                                  {@code sourceMap}
+     * @throws IllegalArgumentException if {@code discriminatorKey} is {@code null} with a not empty {@code sourceMap}
      */
-    public static <T, E, R> Map<R, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
-                                                              final BiFunction<? super T, ? super E, Collection<? extends R>> discriminator,
-                                                              final Supplier<Map<R, Map<T, E>>> mapResultFactory,
+    public static <T, E, K> Map<K, Map<T, E>> groupByMultiKey(final Map<? extends T, ? extends E> sourceMap,
+                                                              final BiFunction<? super T, ? super E, Collection<? extends K>> discriminatorKey,
+                                                              final Supplier<Map<K, Map<T, E>>> mapResultFactory,
                                                               final Supplier<Map<T, E>> mapValuesFactory) {
         if (CollectionUtils.isEmpty(sourceMap)) {
             return new HashMap<>();
         }
-        Assert.notNull(discriminator, "discriminator must be not null");
+        Assert.notNull(discriminatorKey, "discriminatorKey must be not null");
 
-        final Supplier<Map<R, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
+        final Supplier<Map<K, Map<T, E>>> finalMapResultFactory = getFinalMapFactory(mapResultFactory);
         final Supplier<Map<T, E>> finalMapValuesFactory = getFinalMapFactory(mapValuesFactory);
 
-        Map<R, Map<T, E>> result = finalMapResultFactory.get();
+        Map<K, Map<T, E>> result = finalMapResultFactory.get();
         sourceMap.forEach(
                 (k, v) -> {
-                    Collection<? extends R> discriminatorResult = ObjectUtil.getOrElse(
-                            discriminator.apply(k, v),
+                    Collection<? extends K> discriminatorResult = ObjectUtil.getOrElse(
+                            discriminatorKey.apply(k, v),
                             new ArrayList<>()
                     );
                     discriminatorResult
@@ -1596,7 +1600,7 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform.
+     *    Source {@link Map} with the elements to transform and group
      * @param discriminatorKey
      *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1605,8 +1609,8 @@ public class MapUtil {
      * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
      *         of {@code sourceMap}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
-     *                                  with a not empty {@code sourceMap}
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} are {@code null} with a
+     *                                  not empty {@code sourceMap}
      */
     @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
@@ -1640,7 +1644,7 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform
+     *    Source {@link Map} with the elements to transform and group
      * @param filterPredicate
      *    {@link BiPredicate} used to filter elements of {@code sourceMap}
      * @param discriminatorKey
@@ -1651,8 +1655,8 @@ public class MapUtil {
      * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
      *         of {@code sourceMap} that verifies {@code filterPredicate}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
-     *                                  with a not empty {@code sourceMap}
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} are {@code null} with a
+     *                                  not empty {@code sourceMap}
      */
     @SuppressWarnings("unchecked")
     public static <K1, K2, V1, V2> Map<K2, List<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
@@ -1689,7 +1693,7 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform
+     *    Source {@link Map} with the elements to transform and group
      * @param filterPredicate
      *    {@link BiPredicate} used to filter elements of {@code sourceMap}
      * @param discriminatorKey
@@ -1703,8 +1707,8 @@ public class MapUtil {
      * @return new {@link Map} from applying the given {@code discriminatorKey} and {@code valueMapper} to each element
      *         of {@code sourceMap} that verifies {@code filterPredicate}
      *
-     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} is {@code null}
-     *                                  with a not empty {@code sourceMap}
+     * @throws IllegalArgumentException if {@code discriminatorKey} or {@code valueMapper} are {@code null} with a
+     *                                  not empty {@code sourceMap}
      */
     public static <K1, K2, V1, V2> Map<K2, Collection<V2>> groupMap(final Map<? extends K1, ? extends V1> sourceMap,
                                                                     final BiPredicate<? super K1, ? super V1> filterPredicate,
@@ -1750,7 +1754,7 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform.
+     *    Source {@link Map} with the elements to transform and group
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      *
@@ -1796,7 +1800,7 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform.
+     *    Source {@link Map} with the elements to transform and group
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      * @param collectionFactory
@@ -1854,7 +1858,7 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to transform and reduce
+     *    Source {@link Map} with the elements to transform, group and reduce
      * @param discriminatorKey
      *    The discriminator {@link BiFunction} to get the key values of returned {@link Map}
      * @param valueMapper
@@ -1914,7 +1918,7 @@ public class MapUtil {
      * </pre>
      *
      * @param sourceMap
-     *    Source {@link Map} with the elements to filter, transform and reduce
+     *    Source {@link Map} with the elements to filter, transform, group and reduce
      * @param partialFunction
      *    {@link PartialFunction} to filter and transform elements of {@code sourceMap}
      * @param reduceValues
