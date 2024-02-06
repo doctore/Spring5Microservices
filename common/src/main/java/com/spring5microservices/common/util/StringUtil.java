@@ -806,15 +806,10 @@ public class StringUtil {
                         .append(currentChar);
             }
         }
-        final Map<K, String> result = new HashMap<>();
-        tempResult.forEach(
-                (k, v) ->
-                        result.put(
-                                k,
-                                v.toString()
-                        )
+        return MapUtil.mapValues(
+                tempResult,
+                (k, v) -> v.toString()
         );
-        return result;
     }
 
 

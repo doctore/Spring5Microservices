@@ -1,5 +1,7 @@
 package com.spring5microservices.common.util.Try;
 
+import com.spring5microservices.common.interfaces.functional.HeptaFunction;
+import com.spring5microservices.common.interfaces.functional.HexaFunction;
 import com.spring5microservices.common.interfaces.functional.PentaFunction;
 import com.spring5microservices.common.interfaces.functional.QuadFunction;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
@@ -210,6 +212,82 @@ public class TryTest {
                                                                   PentaFunction<T1, T2, T3, T4, T5, R> function,
                                                                   Try<R> expectedResult) {
         Try<R> result = Try.of(t1, t2, t3, t4, t5, function);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> ofHexaFunctionTestCases() {
+        HexaFunction<String, String, String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4, s5, s6) -> Integer.valueOf(s1 + s2 + s3 + s4 + s5 + s6);
+
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.HexaFunction.apply(Object, Object, Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcdef\""));
+        return Stream.of(
+                //@formatter:off
+                //             t1,    t2,     t3,     t4,     t5,     t6,     function,              expectedResult
+                Arguments.of( null,   null,   null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    null,   null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   "1",    null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   "1",    null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   "1",    null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   null,   "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   null,   null,   "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    "1",    "1",    "1",    "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    "b",    "c",    "d",    "e",    "f",    fromStringToInteger,   expectedFailureNumberFormatException ),
+                Arguments.of( "1",    "2",    "3",    "4",    "5",    "6",    fromStringToInteger,   Try.success(123456) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofHexaFunctionTestCases")
+    @DisplayName("of: using a HexaFunction test cases")
+    public <T1, T2, T3, T4, T5, T6, R> void ofHexaFunction_testCases(T1 t1,
+                                                                     T2 t2,
+                                                                     T3 t3,
+                                                                     T4 t4,
+                                                                     T5 t5,
+                                                                     T6 t6,
+                                                                     HexaFunction<T1, T2, T3, T4, T5, T6, R> function,
+                                                                     Try<R> expectedResult) {
+        Try<R> result = Try.of(t1, t2, t3, t4, t5, t6, function);
+        compareTry(expectedResult, result);
+    }
+
+
+    static Stream<Arguments> ofHeptaFunctionTestCases() {
+        HeptaFunction<String, String, String, String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4, s5, s6, s7) -> Integer.valueOf(s1 + s2 + s3 + s4 + s5 + s6 + s7);
+
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.HeptaFunction.apply(Object, Object, Object, Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcdefg\""));
+        return Stream.of(
+                //@formatter:off
+                //             t1,    t2,     t3,     t4,     t5,     t6,     t7,     function,              expectedResult
+                Arguments.of( null,   null,   null,   null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    null,   null,   null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   "1",    null,   null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   "1",    null,   null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   "1",    null,   null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   null,   "1",    null,   null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   null,   null,   "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( null,   null,   null,   null,   null,   null,   "1",    null,                  expectedFailureNullFunction ),
+                Arguments.of( "1",    "1",    "1",    "1",    "1",    "1",    null,   null,                  expectedFailureNullFunction ),
+                Arguments.of( "a",    "b",    "c",    "d",    "e",    "f",    "g",    fromStringToInteger,   expectedFailureNumberFormatException ),
+                Arguments.of( "1",    "2",    "3",    "4",    "5",    "6",    "7",    fromStringToInteger,   Try.success(1234567) )
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("ofHeptaFunctionTestCases")
+    @DisplayName("of: using a HeptaFunction test cases")
+    public <T1, T2, T3, T4, T5, T6, T7, R> void ofHeptaFunction_testCases(T1 t1,
+                                                                          T2 t2,
+                                                                          T3 t3,
+                                                                          T4 t4,
+                                                                          T5 t5,
+                                                                          T6 t6,
+                                                                          T7 t7,
+                                                                          HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> function,
+                                                                          Try<R> expectedResult) {
+        Try<R> result = Try.of(t1, t2, t3, t4, t5, t6, t7, function);
         compareTry(expectedResult, result);
     }
 

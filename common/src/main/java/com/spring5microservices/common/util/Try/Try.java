@@ -1,5 +1,7 @@
 package com.spring5microservices.common.util.Try;
 
+import com.spring5microservices.common.interfaces.functional.HeptaFunction;
+import com.spring5microservices.common.interfaces.functional.HexaFunction;
 import com.spring5microservices.common.interfaces.functional.PentaFunction;
 import com.spring5microservices.common.interfaces.functional.QuadFunction;
 import com.spring5microservices.common.interfaces.functional.TriFunction;
@@ -225,6 +227,86 @@ public abstract class Try<T> implements Serializable {
         try {
             return success(
                     function.apply(t1, t2, t3, t4, t5)
+            );
+        } catch (Throwable t) {
+            return failure(t);
+        }
+    }
+
+
+    /**
+     * Creates a {@link Success} invoking the provided {@link HexaFunction} with given input parameters.
+     *
+     * @param t1
+     *    First input parameter used by given {@link HexaFunction}
+     * @param t2
+     *    Second input parameter used by given {@link HexaFunction}
+     * @param t3
+     *    Third input parameter used by given {@link HexaFunction}
+     * @param t4
+     *    Fourth input parameter used by given {@link HexaFunction}
+     * @param t5
+     *    Fifth input parameter used by given {@link HexaFunction}
+     * @param t6
+     *    Sixth input parameter used by given {@link HexaFunction}
+     * @param function
+     *    {@link HexaFunction} used to get the value to store in the returned {@link Success}
+     *
+     * @return {@link Success} if invoking the {@link HexaFunction} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
+     */
+    public static <T1, T2, T3, T4, T5, T6, R> Try<R> of(final T1 t1,
+                                                        final T2 t2,
+                                                        final T3 t3,
+                                                        final T4 t4,
+                                                        final T5 t5,
+                                                        final T6 t6,
+                                                        final HexaFunction<T1, T2, T3, T4, T5, T6, R> function) {
+        try {
+            return success(
+                    function.apply(t1, t2, t3, t4, t5, t6)
+            );
+        } catch (Throwable t) {
+            return failure(t);
+        }
+    }
+
+
+    /**
+     * Creates a {@link Success} invoking the provided {@link HeptaFunction} with given input parameters.
+     *
+     * @param t1
+     *    First input parameter used by given {@link HeptaFunction}
+     * @param t2
+     *    Second input parameter used by given {@link HeptaFunction}
+     * @param t3
+     *    Third input parameter used by given {@link HeptaFunction}
+     * @param t4
+     *    Fourth input parameter used by given {@link HeptaFunction}
+     * @param t5
+     *    Fifth input parameter used by given {@link HeptaFunction}
+     * @param t6
+     *    Sixth input parameter used by given {@link HeptaFunction}
+     * @param t7
+     *    Seventh input parameter used by given {@link HeptaFunction}
+     *
+     * @param function
+     *    {@link HeptaFunction} used to get the value to store in the returned {@link Success}
+     *
+     * @return {@link Success} if invoking the {@link HeptaFunction} no {@link Throwable} was thrown,
+     *         {@link Failure} otherwise.
+     */
+    public static <T1, T2, T3, T4, T5, T6, T7, R> Try<R> of(final T1 t1,
+                                                            final T2 t2,
+                                                            final T3 t3,
+                                                            final T4 t4,
+                                                            final T5 t5,
+                                                            final T6 t6,
+                                                            final T7 t7,
+                                                            final HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> function) {
+        try {
+            return success(
+                    function.apply(t1, t2, t3, t4, t5, t6, t7)
             );
         } catch (Throwable t) {
             return failure(t);
