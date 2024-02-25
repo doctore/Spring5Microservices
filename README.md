@@ -257,9 +257,10 @@ Generic interfaces used to provide common conversion functionality using [MapStr
 
 And functional programming structures and useful classes like:
 
-* [Function](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/interfaces/functional) improvements
 * [Either](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/either)
+* [Function](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/interfaces/function) improvements
 * [Lazy](https://github.com/doctore/Spring5Microservices/blob/master/common/src/main/java/com/spring5microservices/common/util/Lazy.java)
+* [Predicate](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/interfaces/predicate) improvements 
 * [Try](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/Try) 
 * [Tuple](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/collection/tuple)
 * [Validation](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/validation)
