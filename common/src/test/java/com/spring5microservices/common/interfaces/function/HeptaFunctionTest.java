@@ -1,4 +1,4 @@
-package com.spring5microservices.common.interfaces.functional;
+package com.spring5microservices.common.interfaces.function;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,7 +22,7 @@ public class HeptaFunctionTest {
                 (t1, t2, t3, t4, t5, t6, t7) -> (long) t1 * t2.length() * t3 * t4.length() * t5 * t6.length() * t7;
         return Stream.of(
                 //@formatter:off
-                //            t1,    t2,     t3,    t4,      t5,   t6,     t7,       heptaFunction,                     expectedResult
+                //            t1,    t2,     t3,    t4,      t5,   t6,     t7,       function,                         expectedResult
                 Arguments.of( 0,     5,      4,     3,       9,    -1,     11,       sumAllIntegers,                   31 ),
                 Arguments.of( "A",   "Bb",   "C",   "FFF",   "",   "h",    "12Yu",   sumAllStringLength,               12 ),
                 Arguments.of( 3,     "x",    7,     "RT",    2,    "yC",   4,        multiplyIntegerAndStringLength,   672L )
@@ -39,9 +39,9 @@ public class HeptaFunctionTest {
                                                                 T5 t5,
                                                                 T6 t6,
                                                                 T7 t7,
-                                                                HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> heptaFunction,
+                                                                HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> function,
                                                                 R expectedResult) {
-        assertEquals(expectedResult, heptaFunction.apply(t1, t2, t3, t4, t5, t6, t7));
+        assertEquals(expectedResult, function.apply(t1, t2, t3, t4, t5, t6, t7));
     }
 
 
@@ -57,7 +57,7 @@ public class HeptaFunctionTest {
         Function<String, Integer> stringLength = String::length;
         return Stream.of(
                 //@formatter:off
-                //            t1,      t2,     t3,     t4,     t5,     t6,      t7,       heptaFunction,        afterFunction,       expectedException,            expectedResult
+                //            t1,      t2,     t3,     t4,     t5,     t6,      t7,       function,             afterFunction,       expectedException,            expectedResult
                 Arguments.of( 0,       0,      0,      0,      0,      0,       0,        null,                 null,                NullPointerException.class,   null ),
                 Arguments.of( 3,       3,      3,      3,      3,      -1,      9,        sumAllIntegers,       null,                NullPointerException.class,   null ),
                 Arguments.of( 2,       5,      1,      4,      7,      3,       -1,       sumAllIntegers,       multiply2,           null,                         42 ),
@@ -76,14 +76,14 @@ public class HeptaFunctionTest {
                                                                      T5 t5,
                                                                      T6 t6,
                                                                      T7 t7,
-                                                                     HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> heptaFunction,
+                                                                     HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> function,
                                                                      Function<? super R, ? extends Z> afterFunction,
                                                                      Class<? extends Exception> expectedException,
                                                                      Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> heptaFunction.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7));
+            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7));
         } else {
-            assertEquals(expectedResult, heptaFunction.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7));
+            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7));
         }
     }
 

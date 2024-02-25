@@ -1,4 +1,4 @@
-package com.spring5microservices.common.interfaces.functional;
+package com.spring5microservices.common.interfaces.function;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,7 +22,7 @@ public class TriFunctionTest {
                 (t1, t2, t3) -> (long) t1 * t2.length() * t3;
         return Stream.of(
                 //@formatter:off
-                //            t1,    t2,     t3,    triFunction,                      expectedResult
+                //            t1,    t2,     t3,    function,                         expectedResult
                 Arguments.of( 0,     5,      4,     sumAllIntegers,                   9 ),
                 Arguments.of( "A",   "Bb",   "C",   sumAllStringLength,               4 ),
                 Arguments.of( 3,     "x",    7,     multiplyIntegerAndStringLength,   21L )
@@ -35,9 +35,9 @@ public class TriFunctionTest {
     public <T1, T2, T3, R> void apply_testCases(T1 t1,
                                                 T2 t2,
                                                 T3 t3,
-                                                TriFunction<T1, T2, T3, R> triFunction,
+                                                TriFunction<T1, T2, T3, R> function,
                                                 R expectedResult) {
-        assertEquals(expectedResult, triFunction.apply(t1, t2, t3));
+        assertEquals(expectedResult, function.apply(t1, t2, t3));
     }
 
 
@@ -53,7 +53,7 @@ public class TriFunctionTest {
         Function<String, Integer> stringLength = String::length;
         return Stream.of(
                 //@formatter:off
-                //            t1,      t2,     t3,     triFunction,          afterFunction,       expectedException,            expectedResult
+                //            t1,      t2,     t3,     function,             afterFunction,       expectedException,            expectedResult
                 Arguments.of( 0,       0,      0,      null,                 null,                NullPointerException.class,   null ),
                 Arguments.of( 3,       3,      3,      sumAllIntegers,       null,                NullPointerException.class,   null ),
                 Arguments.of( 2,       5,      1,      sumAllIntegers,       multiply2,           null,                         16 ),
@@ -68,14 +68,14 @@ public class TriFunctionTest {
     public <T1, T2, T3, R, Z> void andThen_testCases(T1 t1,
                                                      T2 t2,
                                                      T3 t3,
-                                                     TriFunction<T1, T2, T3, R> triFunction,
+                                                     TriFunction<T1, T2, T3, R> function,
                                                      Function<? super R, ? extends Z> afterFunction,
                                                      Class<? extends Exception> expectedException,
                                                      Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> triFunction.andThen(afterFunction).apply(t1, t2, t3));
+            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3));
         } else {
-            assertEquals(expectedResult, triFunction.andThen(afterFunction).apply(t1, t2, t3));
+            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3));
         }
     }
 

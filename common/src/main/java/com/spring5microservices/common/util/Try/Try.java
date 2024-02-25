@@ -1,10 +1,10 @@
 package com.spring5microservices.common.util.Try;
 
-import com.spring5microservices.common.interfaces.functional.HeptaFunction;
-import com.spring5microservices.common.interfaces.functional.HexaFunction;
-import com.spring5microservices.common.interfaces.functional.PentaFunction;
-import com.spring5microservices.common.interfaces.functional.QuadFunction;
-import com.spring5microservices.common.interfaces.functional.TriFunction;
+import com.spring5microservices.common.interfaces.function.HeptaFunction;
+import com.spring5microservices.common.interfaces.function.HexaFunction;
+import com.spring5microservices.common.interfaces.function.PentaFunction;
+import com.spring5microservices.common.interfaces.function.QuadFunction;
+import com.spring5microservices.common.interfaces.function.TriFunction;
 import com.spring5microservices.common.util.ObjectUtil;
 import com.spring5microservices.common.util.either.Either;
 import com.spring5microservices.common.util.validation.Validation;

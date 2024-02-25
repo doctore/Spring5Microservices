@@ -2,7 +2,7 @@ package com.spring5microservices.common.util;
 
 import com.spring5microservices.common.collection.tuple.Tuple;
 import com.spring5microservices.common.collection.tuple.Tuple2;
-import com.spring5microservices.common.interfaces.functional.PartialFunction;
+import com.spring5microservices.common.interfaces.function.PartialFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;

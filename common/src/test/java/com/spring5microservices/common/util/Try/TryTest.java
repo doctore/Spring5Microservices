@@ -1,10 +1,10 @@
 package com.spring5microservices.common.util.Try;
 
-import com.spring5microservices.common.interfaces.functional.HeptaFunction;
-import com.spring5microservices.common.interfaces.functional.HexaFunction;
-import com.spring5microservices.common.interfaces.functional.PentaFunction;
-import com.spring5microservices.common.interfaces.functional.QuadFunction;
-import com.spring5microservices.common.interfaces.functional.TriFunction;
+import com.spring5microservices.common.interfaces.function.HeptaFunction;
+import com.spring5microservices.common.interfaces.function.HexaFunction;
+import com.spring5microservices.common.interfaces.function.PentaFunction;
+import com.spring5microservices.common.interfaces.function.QuadFunction;
+import com.spring5microservices.common.interfaces.function.TriFunction;
 import com.spring5microservices.common.util.either.Either;
 import com.spring5microservices.common.util.validation.Validation;
 import org.junit.jupiter.api.DisplayName;
@@ -119,7 +119,7 @@ public class TryTest {
     static Stream<Arguments> ofTriFunctionTestCases() {
         TriFunction<String, String, String, Integer> fromStringToInteger = (s1, s2, s3) -> Integer.valueOf(s1 + s2 + s3);
 
-        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.TriFunction.apply(Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.function.TriFunction.apply(Object, Object, Object)\" because \"function\" is null"));
         Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abc\""));
         return Stream.of(
                 //@formatter:off
@@ -151,7 +151,7 @@ public class TryTest {
     static Stream<Arguments> ofQuadFunctionTestCases() {
         QuadFunction<String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4) -> Integer.valueOf(s1 + s2 + s3 + s4);
 
-        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.QuadFunction.apply(Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.function.QuadFunction.apply(Object, Object, Object, Object)\" because \"function\" is null"));
         Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcd\""));
         return Stream.of(
                 //@formatter:off
@@ -184,7 +184,7 @@ public class TryTest {
     static Stream<Arguments> ofPentaFunctionTestCases() {
         PentaFunction<String, String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4, s5) -> Integer.valueOf(s1 + s2 + s3 + s4 + s5);
 
-        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.PentaFunction.apply(Object, Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.function.PentaFunction.apply(Object, Object, Object, Object, Object)\" because \"function\" is null"));
         Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcde\""));
         return Stream.of(
                 //@formatter:off
@@ -219,7 +219,7 @@ public class TryTest {
     static Stream<Arguments> ofHexaFunctionTestCases() {
         HexaFunction<String, String, String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4, s5, s6) -> Integer.valueOf(s1 + s2 + s3 + s4 + s5 + s6);
 
-        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.HexaFunction.apply(Object, Object, Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.function.HexaFunction.apply(Object, Object, Object, Object, Object, Object)\" because \"function\" is null"));
         Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcdef\""));
         return Stream.of(
                 //@formatter:off
@@ -256,7 +256,7 @@ public class TryTest {
     static Stream<Arguments> ofHeptaFunctionTestCases() {
         HeptaFunction<String, String, String, String, String, String, String, Integer> fromStringToInteger = (s1, s2, s3, s4, s5, s6, s7) -> Integer.valueOf(s1 + s2 + s3 + s4 + s5 + s6 + s7);
 
-        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.functional.HeptaFunction.apply(Object, Object, Object, Object, Object, Object, Object)\" because \"function\" is null"));
+        Try<Long> expectedFailureNullFunction = Try.failure(new NullPointerException("Cannot invoke \"com.spring5microservices.common.interfaces.function.HeptaFunction.apply(Object, Object, Object, Object, Object, Object, Object)\" because \"function\" is null"));
         Try<Long> expectedFailureNumberFormatException = Try.failure(new NumberFormatException("For input string: \"abcdefg\""));
         return Stream.of(
                 //@formatter:off

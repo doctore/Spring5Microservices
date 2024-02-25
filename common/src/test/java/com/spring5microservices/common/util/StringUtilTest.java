@@ -1,6 +1,6 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.interfaces.functional.PartialFunction;
+import com.spring5microservices.common.interfaces.function.PartialFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

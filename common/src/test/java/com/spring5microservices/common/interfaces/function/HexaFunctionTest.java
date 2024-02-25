@@ -1,4 +1,4 @@
-package com.spring5microservices.common.interfaces.functional;
+package com.spring5microservices.common.interfaces.function;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,7 +22,7 @@ public class HexaFunctionTest {
                 (t1, t2, t3, t4, t5, t6) -> (long) t1 * t2.length() * t3 * t4.length() * t5 * t6.length();
         return Stream.of(
                 //@formatter:off
-                //            t1,    t2,     t3,    t4,      t5,   t6,     hexaFunction,                     expectedResult
+                //            t1,    t2,     t3,    t4,      t5,   t6,     function,                         expectedResult
                 Arguments.of( 0,     5,      4,     3,       9,    -1,     sumAllIntegers,                   20 ),
                 Arguments.of( "A",   "Bb",   "C",   "FFF",   "",   "h",    sumAllStringLength,               8 ),
                 Arguments.of( 3,     "x",    7,     "RT",    2,    "yC",   multiplyIntegerAndStringLength,   168L )
@@ -38,9 +38,9 @@ public class HexaFunctionTest {
                                                             T4 t4,
                                                             T5 t5,
                                                             T6 t6,
-                                                            HexaFunction<T1, T2, T3, T4, T5, T6, R> hexaFunction,
+                                                            HexaFunction<T1, T2, T3, T4, T5, T6, R> function,
                                                             R expectedResult) {
-        assertEquals(expectedResult, hexaFunction.apply(t1, t2, t3, t4, t5, t6));
+        assertEquals(expectedResult, function.apply(t1, t2, t3, t4, t5, t6));
     }
 
 
@@ -56,7 +56,7 @@ public class HexaFunctionTest {
         Function<String, Integer> stringLength = String::length;
         return Stream.of(
                 //@formatter:off
-                //            t1,      t2,     t3,     t4,     t5,     t6,      hexaFunction,        afterFunction,       expectedException,            expectedResult
+                //            t1,      t2,     t3,     t4,     t5,     t6,      function,             afterFunction,       expectedException,            expectedResult
                 Arguments.of( 0,       0,      0,      0,      0,      0,       null,                 null,                NullPointerException.class,   null ),
                 Arguments.of( 3,       3,      3,      3,      3,      -1,      sumAllIntegers,       null,                NullPointerException.class,   null ),
                 Arguments.of( 2,       5,      1,      4,      7,      3,       sumAllIntegers,       multiply2,           null,                         44 ),
@@ -74,14 +74,14 @@ public class HexaFunctionTest {
                                                                  T4 t4,
                                                                  T5 t5,
                                                                  T6 t6,
-                                                                 HexaFunction<T1, T2, T3, T4, T5, T6, R> hexaFunction,
+                                                                 HexaFunction<T1, T2, T3, T4, T5, T6, R> function,
                                                                  Function<? super R, ? extends Z> afterFunction,
                                                                  Class<? extends Exception> expectedException,
                                                                  Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> hexaFunction.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6));
+            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6));
         } else {
-            assertEquals(expectedResult, hexaFunction.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6));
+            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6));
         }
     }
 

@@ -1,4 +1,4 @@
-package com.spring5microservices.common.interfaces.functional;
+package com.spring5microservices.common.interfaces.function;
 
 import java.util.Map;
 import java.util.Optional;

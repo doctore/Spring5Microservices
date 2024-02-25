@@ -1,4 +1,4 @@
-package com.spring5microservices.common.interfaces.functional;
+package com.spring5microservices.common.interfaces.function;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -54,7 +54,7 @@ public interface QuadFunction<T1, T2, T3, T4, R> {
      * to the caller of the composed {@link QuadFunction}.
      *
      * @param after
-     *    The {@link Function} to apply after this {@link QuadFunction} is applied
+     *    The {@link Function} to apply after this {@link QuadFunction}
      * @param <Z>
      *    The type of the output of the {@code after} {@link Function}, and of the composed {@link QuadFunction}
      *
@@ -65,13 +65,10 @@ public interface QuadFunction<T1, T2, T3, T4, R> {
      */
     default <Z> QuadFunction<T1, T2, T3, T4, Z> andThen(final Function<? super R, ? extends Z> after) {
         requireNonNull(after, "after must be not null");
-        return (T1 t1,
-                T2 t2,
-                T3 t3,
-                T4 t4) ->
-                   after.apply(
-                           apply(t1, t2, t3, t4)
-                   );
+        return (t1, t2, t3, t4) ->
+                after.apply(
+                        apply(t1, t2, t3, t4)
+                );
     }
 
 }

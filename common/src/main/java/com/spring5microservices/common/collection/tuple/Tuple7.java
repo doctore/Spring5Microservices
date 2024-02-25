@@ -1,6 +1,6 @@
 package com.spring5microservices.common.collection.tuple;
 
-import com.spring5microservices.common.interfaces.functional.HeptaFunction;
+import com.spring5microservices.common.interfaces.function.HeptaFunction;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;

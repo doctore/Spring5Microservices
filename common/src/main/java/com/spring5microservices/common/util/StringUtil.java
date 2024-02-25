@@ -1,6 +1,6 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.interfaces.functional.PartialFunction;
+import com.spring5microservices.common.interfaces.function.PartialFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 

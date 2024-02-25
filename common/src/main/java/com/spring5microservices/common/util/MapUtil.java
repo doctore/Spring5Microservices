@@ -1,7 +1,7 @@
 package com.spring5microservices.common.util;
 
-import com.spring5microservices.common.interfaces.functional.PartialFunction;
-import com.spring5microservices.common.interfaces.functional.TriFunction;
+import com.spring5microservices.common.interfaces.function.PartialFunction;
+import com.spring5microservices.common.interfaces.function.TriFunction;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;

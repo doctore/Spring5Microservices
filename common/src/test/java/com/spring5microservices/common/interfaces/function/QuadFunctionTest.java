@@ -1,4 +1,4 @@
-package com.spring5microservices.common.interfaces.functional;
+package com.spring5microservices.common.interfaces.function;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,7 +22,7 @@ public class QuadFunctionTest {
                 (t1, t2, t3, t4) -> (long) t1 * t2.length() * t3 * t4.length();
         return Stream.of(
                 //@formatter:off
-                //            t1,    t2,     t3,    t4,       quadFunction,                     expectedResult
+                //            t1,    t2,     t3,    t4,       function,                        expectedResult
                 Arguments.of( 0,     5,      4,     3,       sumAllIntegers,                   12 ),
                 Arguments.of( "A",   "Bb",   "C",   "FFF",   sumAllStringLength,               7 ),
                 Arguments.of( 3,     "x",    7,     "RT",    multiplyIntegerAndStringLength,   42L )
@@ -36,9 +36,9 @@ public class QuadFunctionTest {
                                                     T2 t2,
                                                     T3 t3,
                                                     T4 t4,
-                                                    QuadFunction<T1, T2, T3, T4, R> quadFunction,
+                                                    QuadFunction<T1, T2, T3, T4, R> function,
                                                     R expectedResult) {
-        assertEquals(expectedResult, quadFunction.apply(t1, t2, t3, t4));
+        assertEquals(expectedResult, function.apply(t1, t2, t3, t4));
     }
 
 
@@ -54,7 +54,7 @@ public class QuadFunctionTest {
         Function<String, Integer> stringLength = String::length;
         return Stream.of(
                 //@formatter:off
-                //            t1,      t2,     t3,     t4,     quadFunction,         afterFunction,       expectedException,            expectedResult
+                //            t1,      t2,     t3,     t4,     function,             afterFunction,       expectedException,            expectedResult
                 Arguments.of( 0,       0,      0,      0,      null,                 null,                NullPointerException.class,   null ),
                 Arguments.of( 3,       3,      3,      3,      sumAllIntegers,       null,                NullPointerException.class,   null ),
                 Arguments.of( 2,       5,      1,      4,      sumAllIntegers,       multiply2,           null,                         24 ),
@@ -70,14 +70,14 @@ public class QuadFunctionTest {
                                                          T2 t2,
                                                          T3 t3,
                                                          T4 t4,
-                                                         QuadFunction<T1, T2, T3, T4, R> quadFunction,
+                                                         QuadFunction<T1, T2, T3, T4, R> function,
                                                          Function<? super R, ? extends Z> afterFunction,
                                                          Class<? extends Exception> expectedException,
                                                          Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> quadFunction.andThen(afterFunction).apply(t1, t2, t3, t4));
+            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3, t4));
         } else {
-            assertEquals(expectedResult, quadFunction.andThen(afterFunction).apply(t1, t2, t3, t4));
+            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3, t4));
         }
     }
 

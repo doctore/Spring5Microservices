@@ -1,6 +1,6 @@
 package com.spring5microservices.common.collection.tuple;
 
-import com.spring5microservices.common.interfaces.functional.QuadFunction;
+import com.spring5microservices.common.interfaces.function.QuadFunction;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;

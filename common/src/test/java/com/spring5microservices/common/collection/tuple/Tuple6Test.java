@@ -1,6 +1,6 @@
 package com.spring5microservices.common.collection.tuple;
 
-import com.spring5microservices.common.interfaces.functional.HexaFunction;
+import com.spring5microservices.common.interfaces.function.HexaFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

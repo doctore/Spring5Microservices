@@ -1,6 +1,6 @@
 package com.spring5microservices.common.collection.tuple;
 
-import com.spring5microservices.common.interfaces.functional.TriFunction;
+import com.spring5microservices.common.interfaces.function.TriFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

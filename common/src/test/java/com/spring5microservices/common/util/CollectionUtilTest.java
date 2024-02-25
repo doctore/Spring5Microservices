@@ -8,7 +8,7 @@ import com.spring5microservices.common.collection.tuple.Tuple2;
 import com.spring5microservices.common.collection.tuple.Tuple3;
 import com.spring5microservices.common.collection.tuple.Tuple4;
 import com.spring5microservices.common.collection.tuple.Tuple6;
-import com.spring5microservices.common.interfaces.functional.PartialFunction;
+import com.spring5microservices.common.interfaces.function.PartialFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

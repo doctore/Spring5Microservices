@@ -1,4 +1,4 @@
-package com.spring5microservices.common.interfaces.functional;
+package com.spring5microservices.common.interfaces.function;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -69,7 +69,7 @@ public interface HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> {
      * to the caller of the composed {@link HeptaFunction}.
      *
      * @param after
-     *    The {@link Function} to apply after this {@link HeptaFunction} is applied
+     *    The {@link Function} to apply after this {@link HeptaFunction}
      * @param <Z>
      *    The type of the output of the {@code after} {@link Function}, and of the composed {@link HeptaFunction}
      *
@@ -80,16 +80,10 @@ public interface HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> {
      */
     default <Z> HeptaFunction<T1, T2, T3, T4, T5, T6, T7, Z> andThen(final Function<? super R, ? extends Z> after) {
         requireNonNull(after, "after must be not null");
-        return (T1 t1,
-                T2 t2,
-                T3 t3,
-                T4 t4,
-                T5 t5,
-                T6 t6,
-                T7 t7) ->
-                   after.apply(
-                           apply(t1, t2, t3, t4, t5, t6, t7)
-                   );
+        return (t1, t2, t3, t4, t5, t6, t7) ->
+                after.apply(
+                        apply(t1, t2, t3, t4, t5, t6, t7)
+                );
     }
 
 }
