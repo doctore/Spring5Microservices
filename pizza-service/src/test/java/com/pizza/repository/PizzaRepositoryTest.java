@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -159,6 +160,30 @@ public class PizzaRepositoryTest {
         // Then
         assertTrue(optionalPizza.isPresent());
         assertEquals(hawaiian, optionalPizza.get());
+    }
+
+
+    @Test
+    public void findByCostRange_whenThereAreNoPizzasWithProvidedCostRange_thenEmptyListIsReturned() {
+        // When
+        List<Pizza> pizzas = repository.findByCostRange(0d, 5d);
+
+        // Then
+        assertNotNull(pizzas);
+        assertTrue(pizzas.isEmpty());
+    }
+
+
+    @Test
+    public void findByCostRange_whenThereArePizzasWithProvidedCostRange_thenExpectedOnesAreReturned() {
+        // When
+        List<Pizza> pizzas = repository.findByCostRange(7d, 7.50d);
+
+        // Then
+        assertNotNull(pizzas);
+        assertEquals(2, pizzas.size());
+        assertEquals(carbonara, pizzas.get(0));
+        assertEquals(margherita, pizzas.get(1));
     }
 
 }

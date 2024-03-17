@@ -15,6 +15,11 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -22,12 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
 @Repository
 public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, QuerydslPredicateExecutor<Pizza> {
+
+    Logger log = Logger.getLogger(PizzaRepository.class.getName());
 
     /**
      *    Gets paged all the {@link Pizza}s with their {@link Ingredient}s using the given {@link Pageable}
@@ -131,6 +139,45 @@ public interface PizzaRepository extends ExtendedJpaRepository<Pizza, Integer>, 
     default Optional<Pizza> findByName(@Nullable final PizzaEnum name) {
         return ofNullable(name)
                 .flatMap(n -> findOne(QPizza.pizza.name.eq(n)));
+    }
+
+
+    /**
+     * Gets the {@link Pizza}s whose cost is between those provided.
+     *
+     * @param costGreaterOrEqual
+     *    Lower limit to compare {@link Pizza#getCost()}
+     * @param costLessOrEqual
+     *    Upper limit to compare {@link Pizza#getCost()}
+     *
+     * @return {@link Pizza}s with cost greater than or equal to {@code costGreaterOrEqual} and
+     *         less than or equal to {@code costLessOrEqual}
+     *
+     */
+    default List<Pizza> findByCostRange(final double costGreaterOrEqual,
+                                        final double costLessOrEqual) {
+        CriteriaBuilder criteriaBuilder = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<Pizza> criteriaQuery = criteriaBuilder.createQuery(Pizza.class);
+
+        Root<Pizza> pizzaRoot = criteriaQuery.from(Pizza.class);
+        Predicate costPredicate = criteriaBuilder.and(
+                criteriaBuilder.ge(
+                        pizzaRoot.get("cost"), costGreaterOrEqual
+                ),
+                criteriaBuilder.le(
+                        pizzaRoot.get("cost"), costLessOrEqual
+                )
+        );
+        criteriaQuery.where(costPredicate);
+        criteriaQuery.orderBy(
+                criteriaBuilder.asc(
+                        pizzaRoot.get("name")
+                )
+        );
+        TypedQuery<Pizza> query = getEntityManager().createQuery(criteriaQuery);
+        log.info(getHQLQuery(query));
+
+        return query.getResultList();
     }
 
 }
