@@ -60,8 +60,8 @@ public interface HexaFunction<T1, T2, T3, T4, T5, T6, R> {
 
     /**
      *    Returns a composed {@link HexaFunction} that first applies this {@link HexaFunction} to its input, and then
-     * applies the after {@link Function} to the result. If evaluation of either function throws an exception, it is relayed
-     * to the caller of the composed {@link HexaFunction}.
+     * applies the {@code after} {@link Function} to the result. If evaluation of either function throws an exception,
+     * it is relayed to the caller of the composed {@link HexaFunction}.
      *
      * @param after
      *    The {@link Function} to apply after this {@link HexaFunction}

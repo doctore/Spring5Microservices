@@ -259,9 +259,9 @@ public interface PartialFunction<T, R> extends Function<T, R> {
 
 
     /**
-     *    Returns a composed {@link PartialFunction} that first applies this {@link PartialFunction} to its input, and then
-     * applies the after {@link Function} to the result. If evaluation of either {@link Function} throws an {@link Exception},
-     * it is relayed to the caller of the composed {@link PartialFunction}.
+     *    Returns a composed {@link PartialFunction} that first applies this {@link PartialFunction} to its input, and
+     * then applies the {@code after} {@link Function} to the result. If evaluation of either {@link Function} throws
+     * an {@link Exception}, it is relayed to the caller of the composed {@link PartialFunction}.
      *
      * @param after
      *    The {@link Function} to apply after this {@link PartialFunction} is applied
@@ -298,9 +298,9 @@ public interface PartialFunction<T, R> extends Function<T, R> {
 
 
     /**
-     *    Returns a composed {@link PartialFunction} that first applies this {@link PartialFunction} to its input, and then
-     * applies the after {@link PartialFunction} to the result. If evaluation of either {@link Function} throws an {@link Exception},
-     * it is relayed to the caller of the composed {@link PartialFunction}.
+     *    Returns a composed {@link PartialFunction} that first applies this {@link PartialFunction} to its input, and
+     * then applies the {@code after} {@link PartialFunction} to the result. If evaluation of either {@link Function}
+     * throws an {@link Exception}, it is relayed to the caller of the composed {@link PartialFunction}.
      *
      * @param after
      *    The {@link PartialFunction} to apply after this {@link PartialFunction} is applied
@@ -361,8 +361,8 @@ public interface PartialFunction<T, R> extends Function<T, R> {
 
     /**
      *    Returns a composed {@link PartialFunction} that first applies {@code before} {@link Function} to its input, and
-     * then applies this {@link PartialFunction} to the result. If evaluation of either {@link Function} throws an {@link Exception},
-     * it is relayed to the caller of the composed {@link PartialFunction}.
+     * then applies this {@link PartialFunction} to the result. If evaluation of either {@link Function} throws an
+     * {@link Exception}, it is relayed to the caller of the composed {@link PartialFunction}.
      *
      * @param before
      *    The {@link Function} to apply before this {@link PartialFunction} is applied
@@ -440,8 +440,9 @@ public interface PartialFunction<T, R> extends Function<T, R> {
     /**
      * Turns this {@link PartialFunction} into a {@link Function} returning an {@link Optional} result.
      *
-     * @return {@link Function} that takes an argument {@code x} to {@link Optional} of {@link PartialFunction#apply(Object)} if {@code x}
-     *         belongs to the {@link PartialFunction}'s domain, {@link Optional#empty()} otherwise.
+     * @return {@link Function} that takes an argument {@code x} to {@link Optional} of {@link PartialFunction#apply(Object)}
+     *         if {@code x} belongs to the {@link PartialFunction}'s domain,
+     *         {@link Optional#empty()} otherwise.
      */
     default Function<T, Optional<R>> lift() {
         return t ->

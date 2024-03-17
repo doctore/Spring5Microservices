@@ -65,8 +65,8 @@ public interface HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> {
 
     /**
      *    Returns a composed {@link HeptaFunction} that first applies this {@link HeptaFunction} to its input, and then
-     * applies the after {@link Function} to the result. If evaluation of either function throws an exception, it is relayed
-     * to the caller of the composed {@link HeptaFunction}.
+     * applies the {@code after} {@link Function} to the result. If evaluation of either function throws an exception,
+     * it is relayed to the caller of the composed {@link HeptaFunction}.
      *
      * @param after
      *    The {@link Function} to apply after this {@link HeptaFunction}

@@ -50,8 +50,8 @@ public interface QuadFunction<T1, T2, T3, T4, R> {
 
     /**
      *    Returns a composed {@link QuadFunction} that first applies this {@link QuadFunction} to its input, and then
-     * applies the after {@link Function} to the result. If evaluation of either function throws an exception, it is relayed
-     * to the caller of the composed {@link QuadFunction}.
+     * applies the {@code after} {@link Function} to the result. If evaluation of either function throws an exception,
+     * it is relayed to the caller of the composed {@link QuadFunction}.
      *
      * @param after
      *    The {@link Function} to apply after this {@link QuadFunction}
