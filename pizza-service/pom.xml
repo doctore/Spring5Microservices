@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.pizza</groupId>
     <artifactId>pizza-service</artifactId>
-    <version>1.1.11</version>
+    <version>1.1.12</version>
     <name>pizza-service</name>
     <description>Spring 5 microservice related with pizzas</description>
 
@@ -24,9 +24,9 @@
         <maven.compiler.release>17</maven.compiler.release>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <spring-cloud.version>2021.0.9</spring-cloud.version>
-        <springdoc.version>1.7.0</springdoc.version>
-        <spring5-microservices-common.version>3.7.0</spring5-microservices-common.version>
-        <spring5-microservices-grpc.version>1.0.12</spring5-microservices-grpc.version>
+        <springdoc.version>1.8.0</springdoc.version>
+        <spring5-microservices-common.version>3.7.1</spring5-microservices-common.version>
+        <spring5-microservices-grpc.version>1.0.13</spring5-microservices-grpc.version>
     </properties>
 
     <dependencies>
