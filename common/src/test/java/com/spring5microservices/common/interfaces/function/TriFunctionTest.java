@@ -37,7 +37,10 @@ public class TriFunctionTest {
                                                 T3 t3,
                                                 TriFunction<T1, T2, T3, R> function,
                                                 R expectedResult) {
-        assertEquals(expectedResult, function.apply(t1, t2, t3));
+        assertEquals(
+                expectedResult,
+                function.apply(t1, t2, t3)
+        );
     }
 
 
@@ -73,9 +76,15 @@ public class TriFunctionTest {
                                                      Class<? extends Exception> expectedException,
                                                      Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3));
+            assertThrows(
+                    expectedException,
+                    () -> function.andThen(afterFunction).apply(t1, t2, t3)
+            );
         } else {
-            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3));
+            assertEquals(
+                    expectedResult,
+                    function.andThen(afterFunction).apply(t1, t2, t3)
+            );
         }
     }
 

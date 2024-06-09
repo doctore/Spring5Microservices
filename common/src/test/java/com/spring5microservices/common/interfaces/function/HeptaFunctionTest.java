@@ -41,7 +41,10 @@ public class HeptaFunctionTest {
                                                                 T7 t7,
                                                                 HeptaFunction<T1, T2, T3, T4, T5, T6, T7, R> function,
                                                                 R expectedResult) {
-        assertEquals(expectedResult, function.apply(t1, t2, t3, t4, t5, t6, t7));
+        assertEquals(
+                expectedResult,
+                function.apply(t1, t2, t3, t4, t5, t6, t7)
+        );
     }
 
 
@@ -81,9 +84,15 @@ public class HeptaFunctionTest {
                                                                      Class<? extends Exception> expectedException,
                                                                      Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7));
+            assertThrows(
+                    expectedException,
+                    () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7)
+            );
         } else {
-            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7));
+            assertEquals(
+                    expectedResult,
+                    function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6, t7)
+            );
         }
     }
 

@@ -38,7 +38,10 @@ public class PartialFunctionTest {
     public <T, R> void identity_testCases(T t,
                                           PartialFunction<T, R> partialFunction,
                                           R expectedResult) {
-        assertEquals(expectedResult, partialFunction.apply(t));
+        assertEquals(
+                expectedResult,
+                partialFunction.apply(t)
+        );
     }
 
 
@@ -66,11 +69,20 @@ public class PartialFunctionTest {
                                                             R expectedApplyResult,
                                                             Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, mapFunction));
+            assertThrows(
+                    expectedException,
+                    () -> PartialFunction.of(filterPredicate, mapFunction)
+            );
         } else {
             PartialFunction<T, R> ofResult = PartialFunction.of(filterPredicate, mapFunction);
-            assertEquals(expectedApplyResult, ofResult.apply(t));
-            assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(t));
+            assertEquals(
+                    expectedApplyResult,
+                    ofResult.apply(t)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    ofResult.isDefinedAt(t)
+            );
         }
     }
 
@@ -103,11 +115,20 @@ public class PartialFunctionTest {
                                                                 Map.Entry<K, V> expectedApplyResult,
                                                                 Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, keyMapper, valueMapper));
+            assertThrows(
+                    expectedException,
+                    () -> PartialFunction.of(filterPredicate, keyMapper, valueMapper)
+            );
         } else {
             PartialFunction<T, Map.Entry<K, V>> ofResult = PartialFunction.of(filterPredicate, keyMapper, valueMapper);
-            assertEquals(expectedApplyResult, ofResult.apply(t));
-            assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(t));
+            assertEquals(
+                    expectedApplyResult,
+                    ofResult.apply(t)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    ofResult.isDefinedAt(t)
+            );
         }
     }
 
@@ -161,11 +182,20 @@ public class PartialFunctionTest {
                                                                           Map.Entry<K2, V2> expectedApplyResult,
                                                                           Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, mapFunction));
+            assertThrows(
+                    expectedException,
+                    () -> PartialFunction.of(filterPredicate, mapFunction)
+            );
         } else {
             PartialFunction<Map.Entry<K1, V1>, Map.Entry<K2, V2>> ofResult = PartialFunction.of(filterPredicate, mapFunction);
-            assertEquals(expectedApplyResult, ofResult.apply(entry));
-            assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(entry));
+            assertEquals(
+                    expectedApplyResult,
+                    ofResult.apply(entry)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    ofResult.isDefinedAt(entry)
+            );
         }
     }
 
@@ -215,11 +245,20 @@ public class PartialFunctionTest {
                                                                            Map.Entry<K2, V2> expectedApplyResult,
                                                                            Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> PartialFunction.of(filterPredicate, keyMapper, valueMapper));
+            assertThrows(
+                    expectedException,
+                    () -> PartialFunction.of(filterPredicate, keyMapper, valueMapper)
+            );
         } else {
             PartialFunction<Map.Entry<K1, V1>, Map.Entry<K2, V2>> ofResult = PartialFunction.of(filterPredicate, keyMapper, valueMapper);
-            assertEquals(expectedApplyResult, ofResult.apply(entry));
-            assertEquals(expectedIsDefinedAtResult, ofResult.isDefinedAt(entry));
+            assertEquals(
+                    expectedApplyResult,
+                    ofResult.apply(entry)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    ofResult.isDefinedAt(entry)
+            );
         }
     }
 
@@ -240,7 +279,10 @@ public class PartialFunctionTest {
     public <T, R> void apply_testCases(T t,
                                        PartialFunction<T, R> partialFunction,
                                        R expectedResult) {
-        assertEquals(expectedResult, partialFunction.apply(t));
+        assertEquals(
+                expectedResult,
+                partialFunction.apply(t)
+        );
     }
 
 
@@ -260,7 +302,10 @@ public class PartialFunctionTest {
     public <T, R> void isDefinedAt_testCases(T t,
                                              PartialFunction<T, R> partialFunction,
                                              boolean expectedResult) {
-        assertEquals(expectedResult, partialFunction.isDefinedAt(t));
+        assertEquals(
+                expectedResult,
+                partialFunction.isDefinedAt(t)
+        );
     }
 
 
@@ -287,11 +332,20 @@ public class PartialFunctionTest {
                                                         V expectedApplyResult,
                                                         Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> partialFunction.andThen(afterFunction));
+            assertThrows(
+                    expectedException,
+                    () -> partialFunction.andThen(afterFunction)
+            );
         } else {
             PartialFunction<T, V> andThenResult = partialFunction.andThen(afterFunction);
-            assertEquals(expectedApplyResult, andThenResult.apply(t));
-            assertEquals(expectedIsDefinedAtResult, andThenResult.isDefinedAt(t));
+            assertEquals(
+                    expectedApplyResult,
+                    andThenResult.apply(t)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    andThenResult.isDefinedAt(t)
+            );
         }
     }
 
@@ -319,11 +373,20 @@ public class PartialFunctionTest {
                                                                V expectedApplyResult,
                                                                Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> partialFunction.andThen(afterFunction));
+            assertThrows(
+                    expectedException,
+                    () -> partialFunction.andThen(afterFunction)
+            );
         } else {
             PartialFunction<T, V> andThenResult = partialFunction.andThen(afterFunction);
-            assertEquals(expectedApplyResult, andThenResult.apply(t));
-            assertEquals(expectedIsDefinedAtResult, andThenResult.isDefinedAt(t));
+            assertEquals(
+                    expectedApplyResult,
+                    andThenResult.apply(t)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    andThenResult.isDefinedAt(t)
+            );
         }
     }
 
@@ -349,9 +412,15 @@ public class PartialFunctionTest {
                                              Class<? extends Exception> expectedException,
                                              R expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> partialFunction.applyOrElse(t, defaultFunction));
+            assertThrows(
+                    expectedException,
+                    () -> partialFunction.applyOrElse(t, defaultFunction)
+            );
         } else {
-            assertEquals(expectedResult, partialFunction.applyOrElse(t, defaultFunction));
+            assertEquals(
+                    expectedResult,
+                    partialFunction.applyOrElse(t, defaultFunction)
+            );
         }
     }
 
@@ -379,11 +448,20 @@ public class PartialFunctionTest {
                                                         R expectedApplyResult,
                                                         Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> partialFunction.compose(beforeFunction));
+            assertThrows(
+                    expectedException,
+                    () -> partialFunction.compose(beforeFunction)
+            );
         } else {
             PartialFunction<V, R> composeResult = partialFunction.compose(beforeFunction);
-            assertEquals(expectedApplyResult, composeResult.apply(v));
-            assertEquals(expectedIsDefinedAtResult, composeResult.isDefinedAt(v));
+            assertEquals(
+                    expectedApplyResult,
+                    composeResult.apply(v)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    composeResult.isDefinedAt(v)
+            );
         }
     }
 
@@ -411,11 +489,20 @@ public class PartialFunctionTest {
                                                                R expectedApplyResult,
                                                                Boolean expectedIsDefinedAtResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> partialFunction.compose(beforeFunction));
+            assertThrows(
+                    expectedException,
+                    () -> partialFunction.compose(beforeFunction)
+            );
         } else {
             PartialFunction<V, R> composeResult = partialFunction.compose(beforeFunction);
-            assertEquals(expectedApplyResult, composeResult.apply(v));
-            assertEquals(expectedIsDefinedAtResult, composeResult.isDefinedAt(v));
+            assertEquals(
+                    expectedApplyResult,
+                    composeResult.apply(v)
+            );
+            assertEquals(
+                    expectedIsDefinedAtResult,
+                    composeResult.isDefinedAt(v)
+            );
         }
     }
 
@@ -441,7 +528,10 @@ public class PartialFunctionTest {
                                       PartialFunction<T, R> partialFunction,
                                       Optional<R> expectedResult) {
         Function<T, Optional<R>> liftedPartialFunction = partialFunction.lift();
-        assertEquals(expectedResult, liftedPartialFunction.apply(t));
+        assertEquals(
+                expectedResult,
+                liftedPartialFunction.apply(t)
+        );
     }
 
 
@@ -467,8 +557,14 @@ public class PartialFunctionTest {
                                         R expectedApplyResult,
                                         Boolean expectedIsDefinedAtResult) {
         PartialFunction<T, R> orElseResult = partialFunction.orElse(defaultPartialFunction);
-        assertEquals(expectedApplyResult, orElseResult.apply(t));
-        assertEquals(expectedIsDefinedAtResult, orElseResult.isDefinedAt(t));
+        assertEquals(
+                expectedApplyResult,
+                orElseResult.apply(t)
+        );
+        assertEquals(
+                expectedIsDefinedAtResult,
+                orElseResult.isDefinedAt(t)
+        );
     }
 
 

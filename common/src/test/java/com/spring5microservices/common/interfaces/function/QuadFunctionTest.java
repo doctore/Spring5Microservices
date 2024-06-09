@@ -38,7 +38,10 @@ public class QuadFunctionTest {
                                                     T4 t4,
                                                     QuadFunction<T1, T2, T3, T4, R> function,
                                                     R expectedResult) {
-        assertEquals(expectedResult, function.apply(t1, t2, t3, t4));
+        assertEquals(
+                expectedResult,
+                function.apply(t1, t2, t3, t4)
+        );
     }
 
 
@@ -75,9 +78,15 @@ public class QuadFunctionTest {
                                                          Class<? extends Exception> expectedException,
                                                          Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3, t4));
+            assertThrows(
+                    expectedException,
+                    () -> function.andThen(afterFunction).apply(t1, t2, t3, t4)
+            );
         } else {
-            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3, t4));
+            assertEquals(
+                    expectedResult,
+                    function.andThen(afterFunction).apply(t1, t2, t3, t4)
+            );
         }
     }
 

@@ -39,7 +39,10 @@ public class PentaFunctionTest {
                                                         T5 t5,
                                                         PentaFunction<T1, T2, T3, T4, T5, R> function,
                                                         R expectedResult) {
-        assertEquals(expectedResult, function.apply(t1, t2, t3, t4, t5));
+        assertEquals(
+                expectedResult,
+                function.apply(t1, t2, t3, t4, t5)
+        );
     }
 
 
@@ -77,9 +80,15 @@ public class PentaFunctionTest {
                                                              Class<? extends Exception> expectedException,
                                                              Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5));
+            assertThrows(
+                    expectedException,
+                    () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5)
+            );
         } else {
-            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3, t4, t5));
+            assertEquals(
+                    expectedResult,
+                    function.andThen(afterFunction).apply(t1, t2, t3, t4, t5)
+            );
         }
     }
 

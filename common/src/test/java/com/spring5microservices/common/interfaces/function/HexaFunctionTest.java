@@ -40,7 +40,10 @@ public class HexaFunctionTest {
                                                             T6 t6,
                                                             HexaFunction<T1, T2, T3, T4, T5, T6, R> function,
                                                             R expectedResult) {
-        assertEquals(expectedResult, function.apply(t1, t2, t3, t4, t5, t6));
+        assertEquals(
+                expectedResult,
+                function.apply(t1, t2, t3, t4, t5, t6)
+        );
     }
 
 
@@ -79,9 +82,15 @@ public class HexaFunctionTest {
                                                                  Class<? extends Exception> expectedException,
                                                                  Z expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6));
+            assertThrows(
+                    expectedException,
+                    () -> function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6)
+            );
         } else {
-            assertEquals(expectedResult, function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6));
+            assertEquals(
+                    expectedResult,
+                    function.andThen(afterFunction).apply(t1, t2, t3, t4, t5, t6)
+            );
         }
     }
 
