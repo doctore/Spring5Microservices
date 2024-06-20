@@ -4,7 +4,7 @@ import com.security.jwt.configuration.Constants;
 import com.security.jwt.interfaces.IUserService;
 import com.security.jwt.application.spring5microservices.model.User;
 import com.security.jwt.application.spring5microservices.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,15 +16,20 @@ import org.springframework.util.StringUtils;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor
 @Service(value = Constants.APPLICATIONS.SPRING5_MICROSERVICES + "UserDetailsService")
 public class UserService implements IUserService {
 
-    @Lazy
     private final UserRepository repository;
 
-    @Lazy
     private final PasswordEncoder passwordEncoder;
+
+
+    @Autowired
+    public UserService(@Lazy final UserRepository repository,
+                       @Lazy final PasswordEncoder passwordEncoder) {
+        this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
 
     /**

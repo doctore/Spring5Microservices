@@ -11,6 +11,7 @@ import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
 import io.grpc.ServerInterceptor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -29,29 +30,25 @@ import static java.util.Objects.nonNull;
 @Log4j2
 public class GrpcServer {
 
-    @Lazy
     private final GrpcConfiguration grpcConfiguration;
 
-    @Lazy
     private final RequestIdInterceptor requestIdInterceptor;
 
-    @Lazy
     private final AuthenticationInterceptor authenticationInterceptor;
 
-    @Lazy
     private final ExceptionHandlerInterceptor exceptionHandlerInterceptor;
 
-    @Lazy
     private final IngredientServiceGrpcImpl ingredientServiceGrpc;
 
     private final Server server;
 
 
-    public GrpcServer(final GrpcConfiguration grpcConfiguration,
-                      final RequestIdInterceptor requestIdInterceptor,
-                      final AuthenticationInterceptor authenticationInterceptor,
-                      final ExceptionHandlerInterceptor exceptionHandlerInterceptor,
-                      final IngredientServiceGrpcImpl ingredientServiceGrpc) {
+    @Autowired
+    public GrpcServer(@Lazy final GrpcConfiguration grpcConfiguration,
+                      @Lazy final RequestIdInterceptor requestIdInterceptor,
+                      @Lazy final AuthenticationInterceptor authenticationInterceptor,
+                      @Lazy final ExceptionHandlerInterceptor exceptionHandlerInterceptor,
+                      @Lazy final IngredientServiceGrpcImpl ingredientServiceGrpc) {
         this.grpcConfiguration = grpcConfiguration;
         this.requestIdInterceptor = requestIdInterceptor;
         this.authenticationInterceptor = authenticationInterceptor;

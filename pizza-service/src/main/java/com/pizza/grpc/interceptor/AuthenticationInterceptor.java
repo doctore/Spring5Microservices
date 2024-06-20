@@ -12,8 +12,8 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -26,13 +26,18 @@ import static java.lang.String.format;
  *    Gets {@link GrpcHeader#AUTHORIZATION} from the metadata, verifies it and sets the client identifier
  * obtained from the provided data into the {@link Context}.
  */
-@AllArgsConstructor
 @Log4j2
 @Component
 public class AuthenticationInterceptor implements ServerInterceptor {
 
-    @Lazy
     private final SecurityConfiguration securityConfiguration;
+
+
+    @Autowired
+    public AuthenticationInterceptor(@Lazy final SecurityConfiguration securityConfiguration) {
+        this.securityConfiguration = securityConfiguration;
+    }
+
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(final ServerCall<ReqT, RespT> serverCall,

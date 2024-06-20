@@ -10,8 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +35,6 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 /**
  * Rest services to work with users
  */
-@AllArgsConstructor
 @Log4j2
 @RestController
 @RequestMapping(RestRoutes.USER.ROOT)
@@ -43,8 +42,13 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 @Tag(name = "UserController", description = "Endpoints to manage operations related blacklist of users")
 public class UserController {
 
-    @Lazy
     private final UserBlacklistCacheService userBlackListCacheService;
+
+
+    @Autowired
+    public UserController(@Lazy final UserBlacklistCacheService userBlackListCacheService) {
+        this.userBlackListCacheService = userBlackListCacheService;
+    }
 
 
     /**

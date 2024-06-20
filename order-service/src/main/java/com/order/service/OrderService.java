@@ -5,7 +5,6 @@ import com.order.dto.OrderDto;
 import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.util.converter.OrderConverter;
-import lombok.AllArgsConstructor;
 import org.jooq.exception.DataAccessException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -16,18 +15,23 @@ import java.util.Set;
 
 import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor
 @Service
 public class OrderService {
 
-    @Lazy
-    private OrderDao dao;
+    private final OrderDao dao;
 
-    @Lazy
-    private OrderConverter converter;
+    private final OrderConverter converter;
 
-    @Lazy
-    private OrderLineService orderLineService;
+    private final OrderLineService orderLineService;
+
+
+    public OrderService(@Lazy final OrderDao dao,
+                        @Lazy final OrderConverter converter,
+                        @Lazy final OrderLineService orderLineService) {
+        this.dao = dao;
+        this.converter = converter;
+        this.orderLineService = orderLineService;
+    }
 
 
     /**

@@ -2,7 +2,6 @@ package com.security.oauth.configuration.security;
 
 import com.security.oauth.configuration.rest.RestRoutes;
 import com.security.oauth.service.UserService;
-import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -17,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.http.HttpMethod.GET;
 
-@AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -25,8 +23,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final String SPRING_ACTUATOR_PATH = "/actuator";
     private final String ALLOW_ALL_ENDPOINTS = "/**";
 
-    @Lazy
     private final UserService userService;
+
+
+    public WebSecurityConfiguration(@Lazy final UserService userService) {
+        this.userService = userService;
+    }
 
 
     @Override

@@ -13,8 +13,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,15 +41,19 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 /**
  * Rest services to work with {@link Order}
  */
-@AllArgsConstructor
 @Log4j2
 @RestController
 @RequestMapping(RestRoutes.ORDER.ROOT)
 @Validated
 public class OrderController {
 
-    @Lazy
     private final OrderService service;
+
+
+    @Autowired
+    public OrderController(@Lazy final OrderService service) {
+        this.service = service;
+    }
 
 
     /**

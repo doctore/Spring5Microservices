@@ -15,8 +15,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -48,7 +48,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 /**
  * Rest services to work with {@link Pizza}
  */
-@AllArgsConstructor
 @Log4j2
 @RestController
 @RequestMapping(RestRoutes.PIZZA.ROOT)
@@ -56,11 +55,17 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Tag(name = "PizzaController", description = "Endpoints to manage operations related with pizzas")
 public class PizzaController {
 
-    @Lazy
     private final PizzaService service;
 
-    @Lazy
     private final PizzaConverter converter;
+
+
+    @Autowired
+    public PizzaController(@Lazy final PizzaService service,
+                           @Lazy final PizzaConverter converter) {
+        this.service = service;
+        this.converter = converter;
+    }
 
 
     /**

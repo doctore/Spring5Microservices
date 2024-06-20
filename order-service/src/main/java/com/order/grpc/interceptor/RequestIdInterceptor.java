@@ -8,7 +8,7 @@ import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingClientCall;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.TraceContext;
 import org.springframework.cloud.sleuth.Tracer;
@@ -35,12 +35,16 @@ import static java.util.Optional.ofNullable;
  *
  * @see <a href="https://docs.spring.io/spring-cloud-sleuth/docs/current/reference/html/">Spring Sleuth</a>
  */
-@AllArgsConstructor
 @Component
 public class RequestIdInterceptor implements ClientInterceptor {
 
-    @Lazy
     private final Tracer tracer;
+
+
+    @Autowired
+    public RequestIdInterceptor(@Lazy final Tracer tracer) {
+        this.tracer = tracer;
+    }
 
 
     @Override

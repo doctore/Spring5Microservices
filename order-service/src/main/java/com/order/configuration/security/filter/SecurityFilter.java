@@ -2,7 +2,7 @@ package com.order.configuration.security.filter;
 
 import com.order.configuration.security.SecurityConfiguration;
 import com.order.configuration.security.SecurityManager;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -20,12 +20,16 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 /**
  * Invoke security validations for the given Http requests
  */
-@AllArgsConstructor
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
-    @Lazy
     private final SecurityManager securityManager;
+
+
+    @Autowired
+    public SecurityFilter(@Lazy final SecurityManager securityManager) {
+        this.securityManager = securityManager;
+    }
 
 
     @Override

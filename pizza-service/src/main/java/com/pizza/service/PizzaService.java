@@ -5,7 +5,7 @@ import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.repository.PizzaRepository;
 import com.pizza.util.PageUtil;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,16 +17,20 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor
 @Service
 public class PizzaService {
 
-    @Lazy
     private final PizzaRepository repository;
 
-    @Lazy
     private final IngredientService ingredientService;
 
+
+    @Autowired
+    public PizzaService(@Lazy final PizzaRepository repository,
+                        @Lazy final IngredientService ingredientService) {
+        this.repository = repository;
+        this.ingredientService = ingredientService;
+    }
 
     /**
      * Returns the {@link Pizza} which name matches with the given one.

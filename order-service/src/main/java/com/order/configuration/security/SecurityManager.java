@@ -2,8 +2,8 @@ package com.order.configuration.security;
 
 import com.order.configuration.security.client.SecurityServerRestClient;
 import com.order.dto.UsernameAuthoritiesDto;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,13 +25,17 @@ import static java.util.stream.Collectors.toList;
  * to get and fill the required {@link UsernamePasswordAuthenticationToken} used later to know if the
  * user has the correct {@link GrantedAuthority}.
  */
-@AllArgsConstructor
 @Component
 @Log4j2
 public class SecurityManager {
 
-    @Lazy
     private final SecurityServerRestClient securityServerRestClient;
+
+
+    @Autowired
+    public SecurityManager(@Lazy final SecurityServerRestClient securityServerRestClient) {
+        this.securityServerRestClient = securityServerRestClient;
+    }
 
 
     public Optional<Authentication> authenticate(final String authToken) {

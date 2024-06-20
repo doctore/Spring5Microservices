@@ -1,7 +1,6 @@
 package com.pizza.configuration.security;
 
 import com.pizza.configuration.documentation.DocumentationConfiguration;
-import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -16,7 +15,6 @@ import static org.springframework.http.HttpMethod.OPTIONS;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
-@AllArgsConstructor
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class WebSecurityConfiguration {
@@ -24,14 +22,20 @@ public class WebSecurityConfiguration {
     private final String SPRING_ACTUATOR_PATH = "/actuator";
     private final String ALLOW_ALL_ENDPOINTS = "/**";
 
-    @Lazy
     private final DocumentationConfiguration documentationConfiguration;
 
-    @Lazy
     private final SecurityContextRepository securityContextRepository;
 
-    @Lazy
     private final SecurityManager securityManager;
+
+
+    public WebSecurityConfiguration(@Lazy final DocumentationConfiguration documentationConfiguration,
+                                    @Lazy final SecurityContextRepository securityContextRepository,
+                                    @Lazy final SecurityManager securityManager) {
+        this.documentationConfiguration = documentationConfiguration;
+        this.securityContextRepository = securityContextRepository;
+        this.securityManager = securityManager;
+    }
 
 
     @Bean

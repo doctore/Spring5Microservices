@@ -2,7 +2,6 @@ package com.order.configuration.security;
 
 import com.order.configuration.documentation.DocumentationConfiguration;
 import com.order.configuration.security.filter.SecurityFilter;
-import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -18,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.OPTIONS;
 
-@AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -27,11 +25,17 @@ public class WebSecurityConfiguration {
     private final String SPRING_ACTUATOR_PATH = "/actuator";
     private final String ALLOW_ALL_ENDPOINTS = "/**";
 
-    @Lazy
     private final DocumentationConfiguration documentationConfiguration;
 
-    @Lazy
     private final SecurityFilter securityFilter;
+
+
+    public WebSecurityConfiguration(@Lazy final DocumentationConfiguration documentationConfiguration,
+                                    @Lazy final SecurityFilter securityFilter) {
+        this.documentationConfiguration = documentationConfiguration;
+        this.securityFilter = securityFilter;
+    }
+
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {

@@ -8,7 +8,7 @@ import com.order.grpc.service.IngredientServiceGrpcImpl;
 import com.order.model.Order;
 import com.spring5microservices.common.util.CollectionUtil;
 import com.spring5microservices.grpc.IngredientResponse;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -22,15 +22,20 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
-@AllArgsConstructor
 @Service
 public class IngredientService {
 
-    @Lazy
     private final IngredientServiceGrpcImpl ingredientServiceGrpc;
 
-    @Lazy
     private final OrderService orderService;
+
+
+    @Autowired
+    public IngredientService(@Lazy final IngredientServiceGrpcImpl ingredientServiceGrpc,
+                             @Lazy final OrderService orderService) {
+        this.ingredientServiceGrpc = ingredientServiceGrpc;
+        this.orderService = orderService;
+    }
 
 
     /**

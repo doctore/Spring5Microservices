@@ -6,7 +6,6 @@ import com.spring5microservices.grpc.PizzaRequest;
 import com.pizza.grpc.converter.IngredientGrpcConverter;
 import com.pizza.service.IngredientService;
 import io.grpc.stub.StreamObserver;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -15,16 +14,20 @@ import static com.spring5microservices.common.util.ObjectUtil.getOrElse;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor
 @Log4j2
 @Service
 public class IngredientServiceGrpcImpl extends IngredientServiceGrpc.IngredientServiceImplBase {
 
-    @Lazy
     private final IngredientService ingredientService;
 
-    @Lazy
     private final IngredientGrpcConverter ingredientGrpcConverter;
+
+
+    public IngredientServiceGrpcImpl(@Lazy final IngredientService ingredientService,
+                                     @Lazy final IngredientGrpcConverter ingredientGrpcConverter) {
+        this.ingredientService = ingredientService;
+        this.ingredientGrpcConverter = ingredientGrpcConverter;
+    }
 
 
     @Override

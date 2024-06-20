@@ -10,6 +10,7 @@ import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -28,13 +29,10 @@ import static java.util.Objects.nonNull;
 @Log4j2
 public class GrpcClient {
 
-    @Lazy
     private final GrpcConfiguration grpcConfiguration;
 
-    @Lazy
     private final SecurityConfiguration securityConfiguration;
 
-    @Lazy
     private final RequestIdInterceptor requestIdInterceptor;
 
     private final ManagedChannel channel;
@@ -42,9 +40,10 @@ public class GrpcClient {
     private final IngredientServiceGrpc.IngredientServiceBlockingStub ingredientServiceGrpc;
 
 
-    public GrpcClient(final GrpcConfiguration grpcConfiguration,
-                      final SecurityConfiguration securityConfiguration,
-                      final RequestIdInterceptor requestIdInterceptor) {
+    @Autowired
+    public GrpcClient(@Lazy final GrpcConfiguration grpcConfiguration,
+                      @Lazy final SecurityConfiguration securityConfiguration,
+                      @Lazy final RequestIdInterceptor requestIdInterceptor) {
         this.grpcConfiguration = grpcConfiguration;
         this.securityConfiguration = securityConfiguration;
         this.requestIdInterceptor = requestIdInterceptor;

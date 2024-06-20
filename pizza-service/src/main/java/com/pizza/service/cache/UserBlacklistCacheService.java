@@ -2,23 +2,28 @@ package com.pizza.service.cache;
 
 import com.pizza.configuration.cache.CacheConfiguration;
 import com.spring5microservices.common.service.CacheService;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor
 @Service
 public class UserBlacklistCacheService {
 
     private static final boolean DEFAULT_BOOLEAN_VALUE = true;
 
-    @Lazy
     private final CacheConfiguration cacheConfiguration;
 
-    @Lazy
     private final CacheService cacheService;
+
+
+    @Autowired
+    public UserBlacklistCacheService(@Lazy final CacheConfiguration cacheConfiguration,
+                                     @Lazy final CacheService cacheService) {
+        this.cacheConfiguration = cacheConfiguration;
+        this.cacheService = cacheService;
+    }
 
 
     /**

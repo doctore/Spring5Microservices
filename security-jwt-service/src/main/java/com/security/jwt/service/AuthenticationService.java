@@ -12,7 +12,7 @@ import com.spring5microservices.common.dto.AuthenticationInformationDto;
 import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.exception.TokenExpiredException;
 import com.spring5microservices.common.exception.UnauthorizedException;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,27 +37,36 @@ import static java.util.Optional.ofNullable;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 
-@AllArgsConstructor
 @Service
 public class AuthenticationService {
 
-    @Lazy
     private final ApplicationContext applicationContext;
 
-    @Lazy
     private final JwtClientDetailsService jwtClientDetailsService;
 
-    @Lazy
     private final JweConfiguration jweConfiguration;
 
-    @Lazy
     private final JweUtil jweUtil;
 
-    @Lazy
     private final JwsUtil jwsUtil;
 
-    @Lazy
     private final TextEncryptor encryptor;
+
+
+    @Autowired
+    public AuthenticationService(@Lazy final ApplicationContext applicationContext,
+                                 @Lazy final JwtClientDetailsService jwtClientDetailsService,
+                                 @Lazy final JweConfiguration jweConfiguration,
+                                 @Lazy final JweUtil jweUtil,
+                                 @Lazy final JwsUtil jwsUtil,
+                                 @Lazy final TextEncryptor encryptor) {
+        this.applicationContext = applicationContext;
+        this.jwtClientDetailsService = jwtClientDetailsService;
+        this.jweConfiguration = jweConfiguration;
+        this.jweUtil = jweUtil;
+        this.jwsUtil = jwsUtil;
+        this.encryptor = encryptor;
+    }
 
 
     /**

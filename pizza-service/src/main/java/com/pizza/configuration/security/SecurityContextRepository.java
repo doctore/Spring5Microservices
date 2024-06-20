@@ -1,7 +1,7 @@
 package com.pizza.configuration.security;
 
 import com.pizza.configuration.Constants;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -18,12 +18,16 @@ import reactor.core.publisher.Mono;
  *    Gets the token included in {@code Authorization} Http header and
  * forwarded to {@link SecurityManager} to verify it.
  */
-@AllArgsConstructor
 @Component
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
-    @Lazy
     private final SecurityManager securityManager;
+
+
+    @Autowired
+    public SecurityContextRepository(@Lazy final SecurityManager securityManager) {
+        this.securityManager = securityManager;
+    }
 
 
     @Override

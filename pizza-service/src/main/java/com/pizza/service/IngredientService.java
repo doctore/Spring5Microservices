@@ -3,7 +3,7 @@ package com.pizza.service;
 import com.pizza.model.Ingredient;
 import com.pizza.model.Pizza;
 import com.pizza.repository.IngredientRepository;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +15,16 @@ import java.util.Set;
 
 import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor
 @Service
 public class IngredientService {
 
-    @Lazy
     private final IngredientRepository repository;
+
+
+    @Autowired
+    public IngredientService(@Lazy final IngredientRepository repository) {
+        this.repository = repository;
+    }
 
 
     /**

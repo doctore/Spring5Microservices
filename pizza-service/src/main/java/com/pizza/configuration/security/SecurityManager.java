@@ -5,8 +5,8 @@ import com.spring5microservices.common.dto.UsernameAuthoritiesDto;
 import com.spring5microservices.common.enums.ExtendedHttpStatus;
 import com.spring5microservices.common.exception.UnauthorizedException;
 import com.spring5microservices.common.util.HttpUtil;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -40,19 +40,25 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
  * to get and fill the required {@link UsernamePasswordAuthenticationToken} used later to know if the
  * user has the correct {@link GrantedAuthority}.
  */
-@AllArgsConstructor
 @Component
 @Log4j2
 public class SecurityManager implements ReactiveAuthenticationManager {
 
-    @Lazy
     private final SecurityConfiguration securityConfiguration;
 
-    @Lazy
     private final UserBlacklistCacheService userBlacklistCacheService;
 
-    @Lazy
     private final WebClient webClient;
+
+
+    @Autowired
+    public SecurityManager(@Lazy final SecurityConfiguration securityConfiguration,
+                           @Lazy final UserBlacklistCacheService userBlacklistCacheService,
+                           @Lazy final WebClient webClient) {
+        this.securityConfiguration = securityConfiguration;
+        this.userBlacklistCacheService = userBlacklistCacheService;
+        this.webClient = webClient;
+    }
 
 
     @Override

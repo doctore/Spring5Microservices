@@ -2,7 +2,7 @@ package com.security.jwt.configuration.security;
 
 import com.security.jwt.configuration.documentation.DocumentationConfiguration;
 import com.security.jwt.service.JwtClientDetailsService;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -20,7 +20,6 @@ import static org.springframework.http.HttpMethod.OPTIONS;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
-@AllArgsConstructor
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class WebSecurityConfiguration {
@@ -28,14 +27,20 @@ public class WebSecurityConfiguration {
     private final String SPRING_ACTUATOR_PATH = "/actuator";
     private final String ALLOW_ALL_ENDPOINTS = "/**";
 
-    @Lazy
     private final DocumentationConfiguration documentationConfiguration;
 
-    @Lazy
     private final JwtClientDetailsService jwtClientDetailsService;
 
-    @Lazy
     private final PasswordEncoder passwordEncoder;
+
+
+    public WebSecurityConfiguration(@Lazy final DocumentationConfiguration documentationConfiguration,
+                                    @Lazy final JwtClientDetailsService jwtClientDetailsService,
+                                    @Lazy final PasswordEncoder passwordEncoder) {
+        this.documentationConfiguration = documentationConfiguration;
+        this.jwtClientDetailsService = jwtClientDetailsService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
 
     @Bean

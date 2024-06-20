@@ -5,7 +5,7 @@ import com.security.jwt.exception.ClientNotFoundException;
 import com.security.jwt.model.JwtClientDetails;
 import com.security.jwt.repository.JwtClientDetailsRepository;
 import com.security.jwt.service.cache.JwtClientDetailsCacheService;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -17,15 +17,20 @@ import java.util.Optional;
 
 import static java.lang.String.format;
 
-@AllArgsConstructor
 @Service
 public class JwtClientDetailsService implements ReactiveUserDetailsService {
 
-    @Lazy
     private final JwtClientDetailsCacheService jwtClientDetailsCacheService;
 
-    @Lazy
     private final JwtClientDetailsRepository jwtClientDetailsRepository;
+
+
+    @Autowired
+    public JwtClientDetailsService(@Lazy final JwtClientDetailsCacheService jwtClientDetailsCacheService,
+                                   @Lazy final JwtClientDetailsRepository jwtClientDetailsRepository) {
+        this.jwtClientDetailsCacheService = jwtClientDetailsCacheService;
+        this.jwtClientDetailsRepository = jwtClientDetailsRepository;
+    }
 
 
     /**

@@ -5,8 +5,8 @@ import com.spring5microservices.grpc.IngredientServiceGrpc;
 import com.spring5microservices.grpc.PizzaRequest;
 import com.order.grpc.client.GrpcClient;
 import com.spring5microservices.common.util.CollectionUtil;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +16,17 @@ import java.util.List;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
-@AllArgsConstructor
 @Log4j2
 @Service
 public class IngredientServiceGrpcImpl {
 
-    @Lazy
     private final GrpcClient grpcClient;
+
+
+    @Autowired
+    public IngredientServiceGrpcImpl(@Lazy final GrpcClient grpcClient) {
+        this.grpcClient = grpcClient;
+    }
 
 
     public List<IngredientResponse> findByPizzaId(Short pizzaId) {
