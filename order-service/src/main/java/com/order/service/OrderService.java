@@ -6,6 +6,7 @@ import com.order.dto.OrderLineDto;
 import com.order.model.Order;
 import com.order.util.converter.OrderConverter;
 import org.jooq.exception.DataAccessException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class OrderService {
     private final OrderLineService orderLineService;
 
 
+    @Autowired
     public OrderService(@Lazy final OrderDao dao,
                         @Lazy final OrderConverter converter,
                         @Lazy final OrderLineService orderLineService) {
