@@ -134,7 +134,7 @@ public class NumberUtil {
     @SuppressWarnings("unchecked")
     public static <T extends Number> Either<String, Optional<T>> fromString(final String potentialNumber,
                                                                             final Class<T> clazzReturnedInstance) {
-        if (isNull(potentialNumber)) {
+        if (StringUtil.isBlank(potentialNumber)) {
             return right(empty());
         }
         final Class<T> finalClazzReturnedInstance = (Class<T>) getOrElse(

@@ -60,7 +60,10 @@ public class NumberUtilTest {
                                                                Class<? extends Exception> expectedException,
                                                                CompareToResult expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> NumberUtil.compare(one, two, numberOfDecimals));
+            assertThrows(
+                    expectedException,
+                    () -> NumberUtil.compare(one, two, numberOfDecimals)
+            );
         } else {
             int result = NumberUtil.compare(one, two, numberOfDecimals);
             switch (expectedResult) {
@@ -111,7 +114,10 @@ public class NumberUtilTest {
                                                          Class<? extends Exception> expectedException,
                                                          CompareToResult expectedResult) {
         if (null != expectedException) {
-            assertThrows(expectedException, () -> NumberUtil.compare(one, two, numberOfDecimals, roundingMode));
+            assertThrows(
+                    expectedException,
+                    () -> NumberUtil.compare(one, two, numberOfDecimals, roundingMode)
+            );
         } else {
             int result = NumberUtil.compare(one, two, numberOfDecimals, roundingMode);
             switch (expectedResult) {
@@ -132,6 +138,8 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   expectedResult
                 Arguments.of( null,              right(empty()) ),
+                Arguments.of( "",                right(empty()) ),
+                Arguments.of( "  ",              right(empty()) ),
                 Arguments.of( "aa",              left(errorMessageNoNumber) ),
                 Arguments.of( "12.1",            left(errorMessageNoInteger) ),
                 Arguments.of( "12",              right(of(12)) )
@@ -143,7 +151,10 @@ public class NumberUtilTest {
     @DisplayName("fromString: without class instance test cases")
     public void fromStringWithoutClassInstanceToReturn_testCases(String potentialNumber,
                                                                  Either<String, Optional<Integer>> expectedResult) {
-        assertEquals(expectedResult, fromString(potentialNumber));
+        assertEquals(
+                expectedResult,
+                fromString(potentialNumber)
+        );
     }
 
 
@@ -156,6 +167,11 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   clazzReturnedInstance,   expectedResult
                 Arguments.of( null,              null,                    right(empty()) ),
+                Arguments.of( null,              Integer.class,           right(empty()) ),
+                Arguments.of( "",                null,                    right(empty()) ),
+                Arguments.of( "",                Long.class,              right(empty()) ),
+                Arguments.of( "  ",              null,                    right(empty()) ),
+                Arguments.of( "  ",              Double.class,            right(empty()) ),
                 Arguments.of( "aa",              null,                    left(errorMessageNoNumber) ),
                 Arguments.of( "aa",              Integer.class,           left(errorMessageNoNumber) ),
                 Arguments.of( "12",              null,                    right(of(12)) ),
@@ -173,17 +189,22 @@ public class NumberUtilTest {
     public <T extends Number> void fromStringAllParameters_testCases(String potentialNumber,
                                                                      Class<T> clazzReturnedInstance,
                                                                      Either<String, Optional<Integer>> expectedResult) {
-        assertEquals(expectedResult, fromString(potentialNumber, clazzReturnedInstance));
+        assertEquals(
+                expectedResult,
+                fromString(potentialNumber, clazzReturnedInstance)
+        );
     }
 
 
     static Stream<Arguments> toByteWithoutDefaultValueTestCases() {
-        Byte expectedIfError = (byte) 0;
+        Byte expectedIfNoConversion = (byte) 0;
         return Stream.of(
                 //@formatter:off
                 //            potentialNumber,   expectedResult
-                Arguments.of( null,              expectedIfError ),
-                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( null,              expectedIfNoConversion ),
+                Arguments.of( "",                expectedIfNoConversion ),
+                Arguments.of( "  ",              expectedIfNoConversion ),
+                Arguments.of( "aa",              expectedIfNoConversion ),
                 Arguments.of( "21",              (byte) 21 )
         ); //@formatter:on
     }
@@ -193,7 +214,10 @@ public class NumberUtilTest {
     @DisplayName("toByte: without default value test cases")
     public void toByteWithoutDefaultValue_testCases(String potentialNumber,
                                                     Byte expectedResult) {
-        assertEquals(expectedResult, toByte(potentialNumber));
+        assertEquals(
+                expectedResult,
+                toByte(potentialNumber)
+        );
     }
 
 
@@ -203,6 +227,8 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   defaultValue,   expectedResult
                 Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "",                defaultValue,   defaultValue ),
+                Arguments.of( "  ",              defaultValue,   defaultValue ),
                 Arguments.of( "aa",              defaultValue,   defaultValue ),
                 Arguments.of( "50",              defaultValue,   (byte) 50 )
         ); //@formatter:on
@@ -214,17 +240,22 @@ public class NumberUtilTest {
     public void toByteAllParameters_testCases(String potentialNumber,
                                               byte defaultValue,
                                               Byte expectedResult) {
-        assertEquals(expectedResult, toByte(potentialNumber, defaultValue));
+        assertEquals(
+                expectedResult,
+                toByte(potentialNumber, defaultValue)
+        );
     }
 
 
     static Stream<Arguments> toDoubleWithoutDefaultValueTestCases() {
-        Double expectedIfError = 0.0d;
+        Double expectedIfNoConversion = 0.0d;
         return Stream.of(
                 //@formatter:off
                 //            potentialNumber,   expectedResult
-                Arguments.of( null,              expectedIfError ),
-                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( null,              expectedIfNoConversion ),
+                Arguments.of( "",                expectedIfNoConversion ),
+                Arguments.of( "  ",              expectedIfNoConversion ),
+                Arguments.of( "aa",              expectedIfNoConversion ),
                 Arguments.of( "321.3",           321.3d )
         ); //@formatter:on
     }
@@ -234,7 +265,10 @@ public class NumberUtilTest {
     @DisplayName("toDouble: without default value test cases")
     public void toDoubleWithoutDefaultValue_testCases(String potentialNumber,
                                                       Double expectedResult) {
-        assertEquals(expectedResult, toDouble(potentialNumber));
+        assertEquals(
+                expectedResult,
+                toDouble(potentialNumber)
+        );
     }
 
 
@@ -244,6 +278,8 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   defaultValue,   expectedResult
                 Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "",                defaultValue,   defaultValue ),
+                Arguments.of( "  ",              defaultValue,   defaultValue ),
                 Arguments.of( "aa",              defaultValue,   defaultValue ),
                 Arguments.of( "50.2",            defaultValue,   50.2d )
         ); //@formatter:on
@@ -255,17 +291,22 @@ public class NumberUtilTest {
     public void toDoubleAllParameters_testCases(String potentialNumber,
                                                 double defaultValue,
                                                 Double expectedResult) {
-        assertEquals(expectedResult, toDouble(potentialNumber, defaultValue));
+        assertEquals(
+                expectedResult,
+                toDouble(potentialNumber, defaultValue)
+        );
     }
 
 
     static Stream<Arguments> toFloatWithoutDefaultValueTestCases() {
-        Float expectedIfError = 0.0f;
+        Float expectedIfNoConversion = 0.0f;
         return Stream.of(
                 //@formatter:off
                 //            potentialNumber,   expectedResult
-                Arguments.of( null,              expectedIfError ),
-                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( null,              expectedIfNoConversion ),
+                Arguments.of( "",                expectedIfNoConversion ),
+                Arguments.of( "  ",              expectedIfNoConversion ),
+                Arguments.of( "aa",              expectedIfNoConversion ),
                 Arguments.of( "321.9",           321.9f )
         ); //@formatter:on
     }
@@ -275,7 +316,10 @@ public class NumberUtilTest {
     @DisplayName("toFloat: without default value test cases")
     public void toFloatWithoutDefaultValue_testCases(String potentialNumber,
                                                      Float expectedResult) {
-        assertEquals(expectedResult, toFloat(potentialNumber));
+        assertEquals(
+                expectedResult,
+                toFloat(potentialNumber)
+        );
     }
 
 
@@ -285,6 +329,8 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   defaultValue,   expectedResult
                 Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "",                defaultValue,   defaultValue ),
+                Arguments.of( "  ",              defaultValue,   defaultValue ),
                 Arguments.of( "aa",              defaultValue,   defaultValue ),
                 Arguments.of( "50.4",            defaultValue,   50.4f )
         ); //@formatter:on
@@ -294,19 +340,24 @@ public class NumberUtilTest {
     @MethodSource("toFloatAllParametersTestCases")
     @DisplayName("toFloat: with all parameters test cases")
     public void toFloatAllParameters_testCases(String potentialNumber,
-                                                float defaultValue,
-                                                Float expectedResult) {
-        assertEquals(expectedResult, toFloat(potentialNumber, defaultValue));
+                                               float defaultValue,
+                                               Float expectedResult) {
+        assertEquals(
+                expectedResult,
+                toFloat(potentialNumber, defaultValue)
+        );
     }
 
 
     static Stream<Arguments> toIntegerWithoutDefaultValueTestCases() {
-        Integer expectedIfError = 0;
+        Integer expectedIfNoConversion = 0;
         return Stream.of(
                 //@formatter:off
                 //            potentialNumber,   expectedResult
-                Arguments.of( null,              expectedIfError ),
-                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( null,              expectedIfNoConversion ),
+                Arguments.of( "",                expectedIfNoConversion ),
+                Arguments.of( "  ",              expectedIfNoConversion ),
+                Arguments.of( "aa",              expectedIfNoConversion ),
                 Arguments.of( "321",             321 )
         ); //@formatter:on
     }
@@ -316,7 +367,10 @@ public class NumberUtilTest {
     @DisplayName("toInteger: without default value test cases")
     public void toIntegerWithoutDefaultValue_testCases(String potentialNumber,
                                                        Integer expectedResult) {
-        assertEquals(expectedResult, toInteger(potentialNumber));
+        assertEquals(
+                expectedResult,
+                toInteger(potentialNumber)
+        );
     }
 
 
@@ -326,6 +380,8 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   defaultValue,   expectedResult
                 Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "",                defaultValue,   defaultValue ),
+                Arguments.of( "  ",              defaultValue,   defaultValue ),
                 Arguments.of( "aa",              defaultValue,   defaultValue ),
                 Arguments.of( "50",              defaultValue,   50 )
         ); //@formatter:on
@@ -337,17 +393,22 @@ public class NumberUtilTest {
     public void toIntegerAllParameters_testCases(String potentialNumber,
                                                  int defaultValue,
                                                  Integer expectedResult) {
-        assertEquals(expectedResult, toInteger(potentialNumber, defaultValue));
+        assertEquals(
+                expectedResult,
+                toInteger(potentialNumber, defaultValue)
+        );
     }
 
 
     static Stream<Arguments> toLongWithoutDefaultValueTestCases() {
-        Long expectedIfError = 0L;
+        Long expectedIfNoConversion = 0L;
         return Stream.of(
                 //@formatter:off
                 //            potentialNumber,   expectedResult
-                Arguments.of( null,              expectedIfError ),
-                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( null,              expectedIfNoConversion ),
+                Arguments.of( "",                expectedIfNoConversion ),
+                Arguments.of( "  ",              expectedIfNoConversion ),
+                Arguments.of( "aa",              expectedIfNoConversion ),
                 Arguments.of( "321",             321L )
         ); //@formatter:on
     }
@@ -357,7 +418,10 @@ public class NumberUtilTest {
     @DisplayName("toLong: without default value test cases")
     public void toLongWithoutDefaultValue_testCases(String potentialNumber,
                                                     Long expectedResult) {
-        assertEquals(expectedResult, toLong(potentialNumber));
+        assertEquals(
+                expectedResult,
+                toLong(potentialNumber)
+        );
     }
 
 
@@ -367,6 +431,8 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   defaultValue,   expectedResult
                 Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "",                defaultValue,   defaultValue ),
+                Arguments.of( "  ",              defaultValue,   defaultValue ),
                 Arguments.of( "aa",              defaultValue,   defaultValue ),
                 Arguments.of( "50",              defaultValue,   50L )
         ); //@formatter:on
@@ -378,17 +444,22 @@ public class NumberUtilTest {
     public void toLongAllParameters_testCases(String potentialNumber,
                                               long defaultValue,
                                               Long expectedResult) {
-        assertEquals(expectedResult, toLong(potentialNumber, defaultValue));
+        assertEquals(
+                expectedResult,
+                toLong(potentialNumber, defaultValue)
+        );
     }
 
 
     static Stream<Arguments> toShortWithoutDefaultValueTestCases() {
-        Short expectedIfError = (short) 0;
+        Short expectedIfNoConversion = (short) 0;
         return Stream.of(
                 //@formatter:off
                 //            potentialNumber,   expectedResult
-                Arguments.of( null,              expectedIfError ),
-                Arguments.of( "aa",              expectedIfError ),
+                Arguments.of( null,              expectedIfNoConversion ),
+                Arguments.of( "",                expectedIfNoConversion ),
+                Arguments.of( "  ",              expectedIfNoConversion ),
+                Arguments.of( "aa",              expectedIfNoConversion ),
                 Arguments.of( "88",              (short) 88 )
         ); //@formatter:on
     }
@@ -398,7 +469,10 @@ public class NumberUtilTest {
     @DisplayName("toShort: without default value test cases")
     public void toShortWithoutDefaultValue_testCases(String potentialNumber,
                                                      Short expectedResult) {
-        assertEquals(expectedResult, toShort(potentialNumber));
+        assertEquals(
+                expectedResult,
+                toShort(potentialNumber)
+        );
     }
 
 
@@ -408,6 +482,8 @@ public class NumberUtilTest {
                 //@formatter:off
                 //            potentialNumber,   defaultValue,   expectedResult
                 Arguments.of( null,              defaultValue,   defaultValue ),
+                Arguments.of( "",                defaultValue,   defaultValue ),
+                Arguments.of( "  ",              defaultValue,   defaultValue ),
                 Arguments.of( "aa",              defaultValue,   defaultValue ),
                 Arguments.of( "50",              defaultValue,   (short) 50 )
         ); //@formatter:on
@@ -419,7 +495,10 @@ public class NumberUtilTest {
     public void toShortAllParameters_testCases(String potentialNumber,
                                                short defaultValue,
                                                Short expectedResult) {
-        assertEquals(expectedResult, toShort(potentialNumber, defaultValue));
+        assertEquals(
+                expectedResult,
+                toShort(potentialNumber, defaultValue)
+        );
     }
 
 
