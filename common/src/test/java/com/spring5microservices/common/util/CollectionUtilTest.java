@@ -3086,7 +3086,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> toListOnlyElementsTestCases() {
-        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2);
+        List<Integer> elements = asList(1, 2, 3, 6, null, 2);
 
         List<Integer> emptyList = new ArrayList<>();
         List<Integer> expectedResult = new ArrayList<>(elements);
@@ -3526,7 +3526,7 @@ public class CollectionUtilTest {
 
 
     static Stream<Arguments> toSetOnlyElementsTestCases() {
-        List<Integer> elements = List.of(1, 2, 3, 6, 6, 2);
+        List<Integer> elements = asList(1, 2, 3, 6, null, 2);
 
         Set<Integer> emptySet = new LinkedHashSet<>();
         Set<Integer> expectedResult = new LinkedHashSet<>(elements);

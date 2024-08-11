@@ -274,11 +274,10 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      * @throws NullPointerException if {@code after} is {@code null}
      */
     @Override
-    @SuppressWarnings("unchecked")
     default <V> PartialFunction<T, V> andThen(final Function<? super R, ? extends V> after) {
         requireNonNull(after, "after must be not null");
         if (after instanceof PartialFunction) {
-            return andThen((PartialFunction) after);
+            return andThen(after);
         }
         return new PartialFunction<>() {
 
@@ -375,11 +374,10 @@ public interface PartialFunction<T, R> extends Function<T, R> {
      * @throws NullPointerException if {@code before} is {@code null}
      */
     @Override
-    @SuppressWarnings("unchecked")
     default <V> PartialFunction<V, R> compose(final Function<? super V, ? extends T> before) {
         requireNonNull(before, "before must be not null");
         if (before instanceof PartialFunction) {
-            return compose((PartialFunction) before);
+            return compose(before);
         }
         return new PartialFunction<>() {
 

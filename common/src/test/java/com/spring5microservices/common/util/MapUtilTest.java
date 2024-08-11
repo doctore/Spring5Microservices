@@ -35,8 +35,8 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MapUtilTest {
 
@@ -1111,7 +1111,7 @@ public class MapUtilTest {
         if (null != expectedResult && !expectedResult.isEmpty()) {
             expectedResult.clear();
             assertEquals(0, expectedResult.size());
-            assertTrue(0 < result.size());
+            assertFalse(result.isEmpty());
         }
     }
 
@@ -1149,7 +1149,7 @@ public class MapUtilTest {
         if (null != expectedResult && !expectedResult.isEmpty()) {
             expectedResult.clear();
             assertEquals(0, expectedResult.size());
-            assertTrue(0 < result.size());
+            assertFalse(result.isEmpty());
         }
     }
 

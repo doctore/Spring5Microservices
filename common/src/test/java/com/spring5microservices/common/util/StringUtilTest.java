@@ -1396,6 +1396,36 @@ public class StringUtilTest {
     }
 
 
+    static Stream<Arguments> splitWithSourceAndSeparatorAndValueExtractorFactoryTestCases() {
+        String integers = "1,2,3,2";
+        String roles = "R1,  R2, R3,R3";
+        Function<String, Integer> fromStringToInteger = Integer::parseInt;
+        Function<String, String> fromToStringWithTrim = String::trim;
+        return Stream.of(
+                //@formatter:off
+                //            sourceString,   separator,   valueExtractor,         expectedResult
+                Arguments.of( null,           null,        null,                   List.of() ),
+                Arguments.of( integers,       null,        null,                   List.of() ),
+                Arguments.of( integers,       ",",         null,                   List.of() ),
+                Arguments.of( integers,       ",",         fromStringToInteger,    List.of(1, 2, 3, 2) ),
+                Arguments.of( roles,          ",",         fromToStringWithTrim,   List.of("R1", "R2", "R3", "R3"))
+        ); //@formatter:on
+    }
+
+    @ParameterizedTest
+    @MethodSource("splitWithSourceAndSeparatorAndValueExtractorFactoryTestCases")
+    @DisplayName("split: with source, separator and valueExtractor test cases")
+    public <T> void splitWithSourceAndSeparatorAndValueExtractor_testCases(String source,
+                                                                           String separator,
+                                                                           Function<String, T> valueExtractor,
+                                                                           Collection<T> expectedResult) {
+        assertEquals(
+                expectedResult,
+                split(source, valueExtractor, separator)
+        );
+    }
+
+
     static Stream<Arguments> splitWithSourceAndSeparatorAndValueExtractorAndCollectionFactoryTestCases() {
         String integers = "1,2,3,2";
         String characters = "A-B-3-B";

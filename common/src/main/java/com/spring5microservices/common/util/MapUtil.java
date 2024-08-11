@@ -1133,6 +1133,7 @@ public class MapUtil {
      *
      * @throws IllegalArgumentException if {@code flattener} is {@code null} and {@code sourceMap} is not empty.
      */
+    @SuppressWarnings("unchecked")
     public static <T, E, R, U> List<U> flatten(final Map<? extends T, ? extends E> sourceMap,
                                                final BiFunction<? super T, ? super E, ? extends R> flattener) {
         return (List<U>) flatten(

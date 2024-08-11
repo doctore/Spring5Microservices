@@ -266,6 +266,9 @@ And functional programming structures and useful classes like:
 * [Validation](https://github.com/doctore/Spring5Microservices/tree/master/common/src/main/java/com/spring5microservices/common/util/validation)
 <br><br>
 
+There is a newer version of most above functionality using Java 21, [here](https://github.com/doctore/Spring6Microservices/tree/main/common-core).
+<br><br>
+
 
 ### sql
 

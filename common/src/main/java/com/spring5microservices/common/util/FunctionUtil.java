@@ -21,7 +21,7 @@ public class FunctionUtil {
      *
      * @return {@link Function} to transform {@link Map#entry(Object, Object)} instances into another object
      *
-     * @throws IllegalArgumentException if {@code keyMapper} or {@code valueMapper} are {@code null}
+     * @throws IllegalArgumentException if {@code keyValueMapper} is {@code null}
      * @throws NullPointerException if provided {@link Map#entry(Object, Object)} is {@code null}
      */
     public static <T, K, V> Function<Map.Entry<K, V>, T> fromBiFunctionToMapEntryFunction(final BiFunction<? super K, ? super V, ? extends T> keyValueMapper) {
@@ -88,7 +88,6 @@ public class FunctionUtil {
                         valueMapper.apply(t)
                 );
     }
-
 
 
     /**

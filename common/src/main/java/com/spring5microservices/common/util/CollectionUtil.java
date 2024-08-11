@@ -2119,7 +2119,7 @@ public class CollectionUtil {
                 (k, v) ->
                         result.put(
                                 k,
-                                v.stream().reduce(reduceValues).get()
+                                v.stream().reduce(reduceValues).orElse(null)
                         )
         );
         return result;

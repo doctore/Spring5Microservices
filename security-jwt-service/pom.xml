@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.security.jwt.service</groupId>
     <artifactId>security-jwt-service</artifactId>
-    <version>1.1.13</version>
+    <version>1.1.14</version>
     <name>security-jwt-service</name>
     <description>Service related with security functionality based on JWT token</description>
 
@@ -23,7 +23,7 @@
         <nimbus-jose-jwt.version>9.40</nimbus-jose-jwt.version>
         <spring-cloud.version>2021.0.9</spring-cloud.version>
         <springdoc.version>1.8.0</springdoc.version>
-        <spring5-microservices-common.version>3.7.2</spring5-microservices-common.version>
+        <spring5-microservices-common.version>3.7.3</spring5-microservices-common.version>
     </properties>
 
     <dependencies>

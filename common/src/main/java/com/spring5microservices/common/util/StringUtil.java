@@ -479,9 +479,7 @@ public class StringUtil {
             return EMPTY_STRING;
         }
         if (isNull(filterPredicate)) {
-            return new String(
-                    sourceCS.toString()
-            );
+            return sourceCS.toString();
         }
         return sourceCS
                 .codePoints()
@@ -522,7 +520,7 @@ public class StringUtil {
             return EMPTY_STRING;
         }
         if (isNull(filterPredicate)) {
-            return new String(sourceCS.toString());
+            return sourceCS.toString();
         }
         final StringBuilder result = new StringBuilder();
         for (int i = 0; i < sourceCS.length(); i++) {
@@ -1285,7 +1283,7 @@ public class StringUtil {
             return EMPTY_STRING;
         }
         if (isNull(mapFunction)) {
-            return new String(sourceCS.toString());
+            return sourceCS.toString();
         }
         final StringBuilder result = new StringBuilder();
         for (int i = 0; i < sourceCS.length(); i++) {
@@ -1995,9 +1993,7 @@ public class StringUtil {
             return EMPTY_STRING;
         }
         if (isNull(filterPredicate)) {
-            return new String(
-                    sourceCS.toString()
-            );
+            return sourceCS.toString();
         }
         return sourceCS
                 .codePoints()
