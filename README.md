@@ -35,6 +35,8 @@
 Basically to know how to create a project using the microservices approach with 5th version of Spring framework. Due to there are several options we
 can use for different features included in a microservice architecture, the main purpose of this project is explore the most widely used creating a
 good base we will be able to use in a real one.
+
+There is a newer project using the 6th version of Spring framework: [Spring6Microservices](https://github.com/doctore/Spring6Microservices).
 <br><br>
 
 
