@@ -23,7 +23,7 @@
 
         <!-- gRPC -->
         <google-protobuf-protoc.version>3.25.3</google-protobuf-protoc.version>
-        <grpc.version>1.63.1</grpc.version>
+        <grpc.version>1.75.0</grpc.version>
         <maven-protobuf-plugin.version>0.6.1</maven-protobuf-plugin.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
     </properties>
